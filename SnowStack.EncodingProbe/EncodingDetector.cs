@@ -313,29 +313,50 @@ namespace SnowStack.EncodingProbe
         private byte[] _buffer = null;
 
         /// <summary>
-        /// コンストラクタ
+        /// バイト配列を受け取るコンストラクタ
         /// </summary>
-        public EncodingDetector(int filesize)
+        /// <param name="buffer">判定対象のバイト配列</param>
+        /// <exception cref="ArgumentNullException"><paramref name="buffer"/> が null の場合</exception>
+        public EncodingDetector(byte[] buffer)
         {
-            if(filesize <= 0)
-            {
-                this.BufferSize = 0;
-                this._buffer = null;
-            }
-            else
-            {
-                this._buffer = new byte[filesize];
-            }
+            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+            this._buffer = buffer;
+            this.BufferSize = buffer.Length;
         }
 
         /// <summary>
-        /// バッファを呼び主が与えるコンストラクタ
+        /// ファイルストリームを受け取るコンストラクタ。
+        /// ストリームの現在位置から末尾までを読み込んで判定する。
         /// </summary>
-        /// <param name="buffer"></param>
-        public EncodingDetector(byte[] buffer)
+        /// <param name="stream">判定対象のファイルストリーム</param>
+        /// <exception cref="ArgumentNullException"><paramref name="stream"/> が null の場合</exception>
+        /// <exception cref="ArgumentException"><paramref name="stream"/> が読み取り不可の場合</exception>
+        public EncodingDetector(Stream stream)
         {
-            this._buffer = buffer;
-            this.BufferSize = buffer.Length;
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
+            if (!stream.CanRead) throw new ArgumentException("読み取り不可能なストリームです。", nameof(stream));
+
+            using var ms = new MemoryStream();
+            stream.CopyTo(ms);
+            this._buffer = ms.ToArray();
+            this.BufferSize = this._buffer.Length;
+        }
+
+        /// <summary>
+        /// ファイルパスを受け取るコンストラクタ。
+        /// 指定したファイルを開いてバイト配列として読み込んで判定する。
+        /// </summary>
+        /// <param name="filePath">判定対象のファイルパス</param>
+        /// <exception cref="ArgumentNullException"><paramref name="filePath"/> が null または空の場合</exception>
+        public EncodingDetector(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException(nameof(filePath));
+
+            using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var ms = new MemoryStream();
+            fs.CopyTo(ms);
+            this._buffer = ms.ToArray();
+            this.BufferSize = this._buffer.Length;
         }
 
         /// <summary>
