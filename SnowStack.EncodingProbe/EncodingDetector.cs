@@ -116,10 +116,6 @@ namespace SnowStack.EncodingProbe
             {
                 return LineBreakType.CrLf;
             }
-            else if (countCrLf == countLf && countCrLf == countCr)
-            {
-                return LineBreakType.CrLf;
-            }
             else if (countLf > 0 && countCr == 0 && countCrLf == 0)
             {
                 return LineBreakType.Lf;

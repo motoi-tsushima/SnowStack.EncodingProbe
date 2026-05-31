@@ -2,5 +2,8 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EncodingProbe.Tests/EncodingProbe.Tests.csproj" />
+  </Folder>
   <Project Path="SnowStack.EncodingProbe/SnowStack.EncodingProbe.csproj" />
 </Solution>
