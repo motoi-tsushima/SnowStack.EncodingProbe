@@ -4,7 +4,7 @@ using SnowStack.EncodingProbe;  // クラスライブラリのnamespace
 namespace SnowStack.EncodingProbe.PowerShell.Cmdlets;
 
 [Cmdlet(VerbsDiagnostic.Resolve, "Encoding")]
-[OutputType(typeof(DetectionResult))]
+[OutputType(typeof(EncodingInfomation))]
 public sealed class ResolveEncodingCmdlet : PSCmdlet
 {
     [Parameter(

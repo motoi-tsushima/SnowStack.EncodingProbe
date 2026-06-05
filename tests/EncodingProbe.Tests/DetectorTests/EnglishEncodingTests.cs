@@ -17,10 +17,10 @@ namespace EncodingProbe.Tests.DetectorTests
         // ─── byte[] コンストラクタ経由 ─────────────────────────────────────────
 
         [Theory]
-        [InlineData("sample_ascii.txt",    20127, "us-ascii")]
-        [InlineData("sample_utf8.txt",     65001, "utf-8")]
-        [InlineData("sample_utf8_bom.txt", 65001, "utf-8")]
-        public void Detection_English_FromByteArray(string fileName, int expectedCodePage, string expectedEncodingName)
+        [InlineData("sample_ascii.txt",    20127, "us-ascii", "ascii")]
+        [InlineData("sample_utf8.txt",     65001, "utf-8",    "utf8NoBOM")]
+        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",    "utf8BOM")]
+        public void Detection_English_FromByteArray(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
         {
             var buffer = TestDataHelper.ReadBytes("English", fileName);
             var detector = new EncodingDetector(buffer);
@@ -29,15 +29,16 @@ namespace EncodingProbe.Tests.DetectorTests
 
             Assert.Equal(expectedCodePage, result.CodePage);
             Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedPSEncodingName, result.PSEncodingName);
         }
 
         // ─── Stream コンストラクタ経由 ─────────────────────────────────────────
 
         [Theory]
-        [InlineData("sample_ascii.txt",    20127, "us-ascii")]
-        [InlineData("sample_utf8.txt",     65001, "utf-8")]
-        [InlineData("sample_utf8_bom.txt", 65001, "utf-8")]
-        public void Detection_English_FromStream(string fileName, int expectedCodePage, string expectedEncodingName)
+        [InlineData("sample_ascii.txt",    20127, "us-ascii", "ascii")]
+        [InlineData("sample_utf8.txt",     65001, "utf-8",    "utf8NoBOM")]
+        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",    "utf8BOM")]
+        public void Detection_English_FromStream(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
         {
             using var stream = TestDataHelper.OpenStream("English", fileName);
             var detector = new EncodingDetector(stream);
@@ -46,15 +47,16 @@ namespace EncodingProbe.Tests.DetectorTests
 
             Assert.Equal(expectedCodePage, result.CodePage);
             Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedPSEncodingName, result.PSEncodingName);
         }
 
         // ─── filePath コンストラクタ経由 ───────────────────────────────────────
 
         [Theory]
-        [InlineData("sample_ascii.txt",    20127, "us-ascii")]
-        [InlineData("sample_utf8.txt",     65001, "utf-8")]
-        [InlineData("sample_utf8_bom.txt", 65001, "utf-8")]
-        public void Detection_English_FromFilePath(string fileName, int expectedCodePage, string expectedEncodingName)
+        [InlineData("sample_ascii.txt",    20127, "us-ascii", "ascii")]
+        [InlineData("sample_utf8.txt",     65001, "utf-8",    "utf8NoBOM")]
+        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",    "utf8BOM")]
+        public void Detection_English_FromFilePath(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
         {
             var path = TestDataHelper.GetPath("English", fileName);
             var detector = new EncodingDetector(path);
@@ -63,6 +65,7 @@ namespace EncodingProbe.Tests.DetectorTests
 
             Assert.Equal(expectedCodePage, result.CodePage);
             Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedPSEncodingName, result.PSEncodingName);
         }
 
         // ─── BOM フラグ検証 ────────────────────────────────────────────────────

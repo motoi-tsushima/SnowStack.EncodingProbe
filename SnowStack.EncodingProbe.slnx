@@ -3,6 +3,7 @@
     <File Path=".editorconfig" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/EncodingProbe.PowerShell.Tests/EncodingProbe.PowerShell.Tests.csproj" />
     <Project Path="tests/EncodingProbe.Tests/EncodingProbe.Tests.csproj" />
   </Folder>
   <Project Path="SnowStack.EncodingProbe.PowerShell/SnowStack.EncodingProbe.PowerShell.csproj" Id="19160dea-d3d2-4cbe-871c-e885b9ac8414" />

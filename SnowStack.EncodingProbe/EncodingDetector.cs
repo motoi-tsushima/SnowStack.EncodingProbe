@@ -31,140 +31,7 @@ namespace SnowStack.EncodingProbe
         /// <summary>LF・CR・CR-LF の混在</summary>
         LfAndCrAndCrLf,
     }
-
-    /// <summary>
-    /// 文字エンコーディング判定情報
-    /// </summary>
-    public class EncodingInfomation
-    {
-        /// <summary>コードページ</summary>
-        public int CodePage { get; set; }
-
-        /// <summary>エンコーディング名</summary>
-        public string EncodingName { get; set; }
-
-        /// <summary>BOMの有無</summary>
-        public bool Bom { get; set; }
-
-        /// <summary>エンコーディング</summary>
-        public Encoding Encoding { get; set; }
-
-        /// <summary>エンコーディングのバリアント（例: HKSCS）</summary>
-        public string EncodingVariant { get; set; }
-
-        /// <summary>改行コードの種類</summary>
-        public LineBreakType LineBreak { get; set; } = LineBreakType.None;
-
-        /// <summary>実行中のOSがWindowsかどうか</summary>
-        public bool IsWindowsOs { get; } = OperatingSystem.IsWindows();
-
-        /// <summary>実行中のOSがmacOSかどうか</summary>
-        public bool IsMacOs { get; } = OperatingSystem.IsMacOS();
-
-        /// <summary>実行中のOSがLinuxかどうか</summary>
-        public bool IsLinuxOs { get; } = OperatingSystem.IsLinux();
-
-        /// <summary>
-        /// バイト配列から改行コードの種類を判定してセットする
-        /// </summary>
-        /// <param name="buffer">判定対象のバイト配列</param>
-        public void DetectLineBreak(byte[] buffer)
-        {
-            if (buffer == null || buffer.Length == 0)
-            {
-                LineBreak = LineBreakType.None;
-                return;
-            }
-
-            int countCrLf = 0;
-            int countLf = 0;
-            int countCr = 0;
-
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                if (buffer[i] == 0x0D)
-                {
-                    if (i + 1 < buffer.Length && buffer[i + 1] == 0x0A)
-                    {
-                        countCrLf++;
-                        i++; // 0x0A をスキップ
-                    }
-                    else
-                    {
-                        countCr++;
-                    }
-                }
-                else if (buffer[i] == 0x0A)
-                {
-                    countLf++;
-                }
-            }
-
-            LineBreak = DetermineLineBreakType(countCrLf, countLf, countCr);
-        }
-
-        /// <summary>
-        /// 改行コード出現回数から種類を判定する
-        /// </summary>
-        private static LineBreakType DetermineLineBreakType(int countCrLf, int countLf, int countCr)
-        {
-            if (countLf == 0 && countCr == 0 && countCrLf == 0)
-            {
-                return LineBreakType.None;
-            }
-            else if (countCrLf > 0 && countCrLf == countLf + countCrLf && countCr == 0 && countLf == 0)
-            {
-                return LineBreakType.CrLf;
-            }
-            else if (countLf > 0 && countCr == 0 && countCrLf == 0)
-            {
-                return LineBreakType.Lf;
-            }
-            else if (countCr > 0 && countLf == 0 && countCrLf == 0)
-            {
-                return LineBreakType.Cr;
-            }
-            else if (countLf > 0 && countCrLf > 0 && countCr == 0)
-            {
-                return LineBreakType.LfAndCrLf;
-            }
-            else if (countCr > 0 && countCrLf > 0 && countLf == 0)
-            {
-                return LineBreakType.CrAndCrLf;
-            }
-            else if (countCrLf == 0 && countCr > 0 && countLf > 0)
-            {
-                return LineBreakType.LfAndCr;
-            }
-            else
-            {
-                return LineBreakType.LfAndCrAndCrLf;
-            }
-        }
-
-        /// <summary>
-        /// 改行コードの種類を文字列で返す（表示用）
-        /// </summary>
-        public string LineBreakDisplayString
-        {
-            get
-            {
-                return LineBreak switch
-                {
-                    LineBreakType.None          => "No",
-                    LineBreakType.CrLf          => "CR-LF",
-                    LineBreakType.Lf            => "LF",
-                    LineBreakType.Cr            => "CR",
-                    LineBreakType.LfAndCrLf     => "LF & CR-LF",
-                    LineBreakType.CrAndCrLf     => "CR & CR-LF",
-                    LineBreakType.LfAndCr       => "LF & CR",
-                    LineBreakType.LfAndCrAndCrLf => "LF & CR & CR-LF",
-                    _                           => "Unknown",
-                };
-            }
-        }
-    }
-
+    
     /*-- 一時退避 bgin ----
     public static class EncodingDetectorControl
     {
@@ -229,10 +96,10 @@ namespace SnowStack.EncodingProbe
     }
     --- 一時退避 end ----*/
 
-    /// <summary>
-    /// 文字エンコーディング判定
-    /// </summary>
-    public class EncodingDetector
+        /// <summary>
+        /// 文字エンコーディング判定
+        /// </summary>
+        public class EncodingDetector
     {
         /// <summary>コードページ：US-ASCII</summary>
         private const int CodePageAscii = 20127;
@@ -356,81 +223,176 @@ namespace SnowStack.EncodingProbe
         }
 
         /// <summary>
+        /// バイト配列から改行コードの種類を判定してセットする
+        /// </summary>
+        /// <param name="buffer">判定対象のバイト配列</param>
+        public LineBreakType DetectLineBreak(byte[] buffer)
+        {
+            if (buffer == null || buffer.Length == 0)
+            {
+                return  LineBreakType.None;
+            }
+
+            int countCrLf = 0;
+            int countLf = 0;
+            int countCr = 0;
+
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                if (buffer[i] == 0x0D)
+                {
+                    if (i + 1 < buffer.Length && buffer[i + 1] == 0x0A)
+                    {
+                        countCrLf++;
+                        i++; // 0x0A をスキップ
+                    }
+                    else
+                    {
+                        countCr++;
+                    }
+                }
+                else if (buffer[i] == 0x0A)
+                {
+                    countLf++;
+                }
+            }
+
+            return  DetermineLineBreakType(countCrLf, countLf, countCr);
+        }
+
+        /// <summary>
+        /// 改行コード出現回数から種類を判定する
+        /// </summary>
+        private static LineBreakType DetermineLineBreakType(int countCrLf, int countLf, int countCr)
+        {
+            if (countLf == 0 && countCr == 0 && countCrLf == 0)
+            {
+                return LineBreakType.None;
+            }
+            else if (countCrLf > 0 && countCrLf == countLf + countCrLf && countCr == 0 && countLf == 0)
+            {
+                return LineBreakType.CrLf;
+            }
+            else if (countLf > 0 && countCr == 0 && countCrLf == 0)
+            {
+                return LineBreakType.Lf;
+            }
+            else if (countCr > 0 && countLf == 0 && countCrLf == 0)
+            {
+                return LineBreakType.Cr;
+            }
+            else if (countLf > 0 && countCrLf > 0 && countCr == 0)
+            {
+                return LineBreakType.LfAndCrLf;
+            }
+            else if (countCr > 0 && countCrLf > 0 && countLf == 0)
+            {
+                return LineBreakType.CrAndCrLf;
+            }
+            else if (countCrLf == 0 && countCr > 0 && countLf > 0)
+            {
+                return LineBreakType.LfAndCr;
+            }
+            else
+            {
+                return LineBreakType.LfAndCrAndCrLf;
+            }
+        }
+
+        /*--- 一時退避 begin ---
+        /// <summary>
+        /// 改行コードの種類を文字列で返す（表示用）
+        /// </summary>
+        public string LineBreakDisplayString
+        {
+            get
+            {
+                return LineBreak switch
+                {
+                    LineBreakType.None => "No",
+                    LineBreakType.CrLf => "CR-LF",
+                    LineBreakType.Lf => "LF",
+                    LineBreakType.Cr => "CR",
+                    LineBreakType.LfAndCrLf => "LF & CR-LF",
+                    LineBreakType.CrAndCrLf => "CR & CR-LF",
+                    LineBreakType.LfAndCr => "LF & CR",
+                    LineBreakType.LfAndCrAndCrLf => "LF & CR & CR-LF",
+                    _ => "Unknown",
+                };
+            }
+        }
+        --- 一時退避 end ---*/
+
+        /// <summary>
         /// コードページからエンコーディング名を取得する
         /// </summary>
         /// <param name="codePage">コードページ</param>
         /// <returns>エンコーディング名</returns>
-        public string EncodingName(int codePage)
-        {
-            string encodingName;
-
-            switch (codePage)
+        public string EncodingName(int codePage) =>
+            codePage switch
             {
-                case 20127:
-                    encodingName = "us-ascii";
-                    break;
-                case 50220:
-                    encodingName = "iso-2022-jp";
-                    break;
-                case 50225:
-                    encodingName = "iso-2022-kr";
-                    break;
-                case 50227:
-                    encodingName = "x-cp50227";
-                    break;
-                case 50229:
-                    encodingName = "iso-2022-tw";
-                    break;
-                case 65001:
-                    encodingName = "utf-8";
-                    break;
-                case 20932:
-                    encodingName = "euc-jp";
-                    break;
-                case 51936:
-                    encodingName = "euc-cn";
-                    break;
-                case 51949:
-                    encodingName = "euc-kr";
-                    break;
-                case 51950:
-                    encodingName = "euc-tw";
-                    break;
-                case 932:
-                    encodingName = "shift_jis";
-                    break;
-                case 949:
-                    encodingName = "cp949";
-                    break;
-                case 936:
-                    encodingName = "gbk";
-                    break;
-                case 54936:
-                    encodingName = "gb18030";
-                    break;
-                case 950:
-                    encodingName = "big5";
-                    break;
-                case 1200:
-                    encodingName = "utf-16";
-                    break;
-                case 1201:
-                    encodingName = "unicodeFFFE";
-                    break;
-                case 12000:
-                    encodingName = "utf-32";
-                    break;
-                case 12001:
-                    encodingName = "utf-32BE";
-                    break;
-                default:
-                    encodingName = "I do not know.";
-                    break;
-            }
+                20127 => "us-ascii",
+                50220 => "iso-2022-jp",
+                50225 => "iso-2022-kr",
+                50227 => "x-cp50227",
+                50229 => "iso-2022-tw",
+                65001 => "utf-8",
+                20932 => "euc-jp",
+                51936 => "euc-cn",
+                51949 => "euc-kr",
+                51950 => "euc-tw",
+                  932 => "shift_jis",
+                  949 => "cp949",
+                  936 => "gbk",
+                54936 => "gb18030",
+                  950 => "big5",
+                 1200 => "utf-16",
+                 1201 => "unicodeFFFE",
+                12000 => "utf-32",
+                12001 => "utf-32BE",
+                    _ => "I do not know.",
+            };
 
-            return encodingName;
+        /// <summary>
+        /// コードページ番号と BOM の有無から、PowerShell 6.2+/7.x の
+        /// -Encoding に渡せる値を返す。
+        /// </summary>
+        /// <param name="codePage">エンコーディングのコードページ番号(例: 65001, 932)。</param>
+        /// <param name="bom">BOM を伴うか。UTF-8 でのみ名前に反映される。</param>
+        /// <returns>-Encoding に渡せるフレンドリ名、または数値コードページの文字列。</returns>
+        public string PSEncodingName(int codePage, bool bom)
+        {
+            if (codePage <= 0)
+                throw new ArgumentOutOfRangeException(nameof(codePage), codePage, "コードページ番号が不正です。");
+
+            return codePage switch
+            {
+                // UTF-8: PowerShell が名前で BOM 有無を区別する唯一のケース
+                65001 => bom ? "utf8BOM" : "utf8NoBOM",
+
+                // UTF-16 / UTF-32: フレンドリ名は常に BOM 付きで、BOM なしの名前は存在しない。
+                // よって bom では分岐しない(読み取り時はデコーダが BOM 有無を吸収するため実害なし)。
+                1200 => "unicode",          // UTF-16 LE
+                1201 => "bigendianunicode", // UTF-16 BE
+                12000 => "utf32",            // UTF-32 LE
+                12001 => "bigendianutf32",   // UTF-32 BE
+
+                20127 => "ascii",            // US-ASCII (7-bit)
+                65000 => "utf7",             // 非推奨(.NET 側の生成は net48 のみ可)
+
+                // フレンドリ名なし: Shift-JIS, EUC-JP, ISO-2022-JP, GB2312, Big5, EUC-KR,
+                // ISO-8859-x など。PowerShell 6.2+ は数値コードページを -Encoding に直接受け付ける。
+                // 数値指定なので WebName 衝突(51932/20932, 50220/50222)の影響を受けない。
+                _ => codePage.ToString(CultureInfo.InvariantCulture),
+            };
         }
 
+        /// <summary>
+        /// バイト配列の先頭が指定したBOMと一致するかどうかを判定する
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="bom"></param>
+        /// <returns></returns>
         private bool IsMatched(byte[] data, byte[] bom)
         {
             if (data == null || data.Length < bom.Length)
@@ -479,7 +441,6 @@ namespace SnowStack.EncodingProbe
                 int readCount = fs.Read(this._buffer, 0, this.BufferSize);
 
                 encInfo = Detection();
-                encInfo.DetectLineBreak(this._buffer);
 
                 //Console.WriteLine("EncodingDetector : Encoding = {0} , Codepage = {1} , BOM = {2}", encInfo.encodingName, encInfo.codePage, encInfo.bom);
             }
@@ -497,12 +458,17 @@ namespace SnowStack.EncodingProbe
             EncodingInfomation encInfo = new EncodingInfomation();
             ByteOrderMarkDetection bomJudg = new ByteOrderMarkDetection();
 
+            //改行コードの種類を判定してセットする
+            encInfo.LineBreak = DetectLineBreak(this._buffer);
+
             // BOMチェック
             if (bomJudg.IsBOM(this._buffer))
             {
                 encInfo.CodePage = bomJudg.CodePage;
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                 encInfo.Bom = true;
+                encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+
                 return encInfo;
             }
             else
@@ -530,6 +496,8 @@ namespace SnowStack.EncodingProbe
                 }
 
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+
 
                 return encInfo;
             }
@@ -550,6 +518,8 @@ namespace SnowStack.EncodingProbe
                 }
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
+                encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+
 
                 return encInfo;
             }
@@ -570,6 +540,8 @@ namespace SnowStack.EncodingProbe
                 }
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
+                encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+
 
                 return encInfo;
             }
@@ -582,6 +554,7 @@ namespace SnowStack.EncodingProbe
                 encInfo.CodePage = CodePageUtf8;
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
+                encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
                 return encInfo;
             }
@@ -602,6 +575,8 @@ namespace SnowStack.EncodingProbe
                     encInfo.CodePage = cpxxxCodePage;
                     encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
+                    encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+
                     return encInfo;
                 }
             }
@@ -620,13 +595,9 @@ namespace SnowStack.EncodingProbe
                     {
                         // 両方に該当 → 改行コードで判定、改行コードがなければOSで判定
                         encInfo.Bom = false;
-                        // 改行コードを判定（DetectLineBreakはDetection()呼び出し後に外から呼ばれるが、
-                        // ここではバッファから直接判定する）
-                        EncodingInfomation tempInfo = new EncodingInfomation();
-                        tempInfo.DetectLineBreak(this._buffer);
 
                         bool useShiftJis;
-                        if (tempInfo.LineBreak == LineBreakType.None)
+                        if (encInfo.LineBreak == LineBreakType.None)
                         {
                             // 改行コードなし → OSで判定
                             useShiftJis = OperatingSystem.IsWindows();
@@ -634,17 +605,20 @@ namespace SnowStack.EncodingProbe
                         else
                         {
                             // 改行コードで判定：CR-LF（Windows仕様）ならShift-JIS
-                            useShiftJis = (tempInfo.LineBreak == LineBreakType.CrLf);
+                            useShiftJis = (encInfo.LineBreak == LineBreakType.CrLf);
                         }
 
                         encInfo.CodePage = useShiftJis ? CodePageShiftJis : CodePageEucJp;
                         encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                        encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+
                         return encInfo;
                     }
 
                     encInfo.CodePage = eucCodePage;
                     encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
+                    encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
                     return encInfo;
                 }
@@ -658,6 +632,7 @@ namespace SnowStack.EncodingProbe
                     encInfo.CodePage = cpxxxCodePage;
                     encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
+                    encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                     return encInfo;
                 }
             }

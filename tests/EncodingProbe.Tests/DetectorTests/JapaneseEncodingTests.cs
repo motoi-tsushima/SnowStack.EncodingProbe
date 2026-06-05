@@ -17,12 +17,12 @@ namespace EncodingProbe.Tests.DetectorTests
         // ─── byte[] コンストラクタ経由 ─────────────────────────────────────────
 
         [Theory]
-        [InlineData("sample_utf8.txt",     65001, "utf-8")]
-        [InlineData("sample_utf8_bom.txt", 65001, "utf-8")]
-        [InlineData("sample_shiftjis.txt", 932,   "shift_jis")]
-        [InlineData("sample_eucjp.txt",    20932, "euc-jp")]
-        [InlineData("sample_jis.txt",      50220, "iso-2022-jp")]
-        public void Detection_Japanese_FromByteArray(string fileName, int expectedCodePage, string expectedEncodingName)
+        [InlineData("sample_utf8.txt",     65001, "utf-8",       "utf8NoBOM")]
+        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",       "utf8BOM")]
+        [InlineData("sample_shiftjis.txt", 932,   "shift_jis",   "932")]
+        [InlineData("sample_eucjp.txt",    20932, "euc-jp",      "20932")]
+        [InlineData("sample_jis.txt",      50220, "iso-2022-jp", "50220")]
+        public void Detection_Japanese_FromByteArray(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
         {
             var buffer = TestDataHelper.ReadBytes("Japanese", fileName);
             var detector = new EncodingDetector(buffer);
@@ -31,17 +31,18 @@ namespace EncodingProbe.Tests.DetectorTests
 
             Assert.Equal(expectedCodePage, result.CodePage);
             Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedPSEncodingName, result.PSEncodingName);
         }
 
         // ─── Stream コンストラクタ経由 ─────────────────────────────────────────
 
         [Theory]
-        [InlineData("sample_utf8.txt",     65001, "utf-8")]
-        [InlineData("sample_utf8_bom.txt", 65001, "utf-8")]
-        [InlineData("sample_shiftjis.txt", 932,   "shift_jis")]
-        [InlineData("sample_eucjp.txt",    20932, "euc-jp")]
-        [InlineData("sample_jis.txt",      50220, "iso-2022-jp")]
-        public void Detection_Japanese_FromStream(string fileName, int expectedCodePage, string expectedEncodingName)
+        [InlineData("sample_utf8.txt",     65001, "utf-8",       "utf8NoBOM")]
+        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",       "utf8BOM")]
+        [InlineData("sample_shiftjis.txt", 932,   "shift_jis",   "932")]
+        [InlineData("sample_eucjp.txt",    20932, "euc-jp",      "20932")]
+        [InlineData("sample_jis.txt",      50220, "iso-2022-jp", "50220")]
+        public void Detection_Japanese_FromStream(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
         {
             using var stream = TestDataHelper.OpenStream("Japanese", fileName);
             var detector = new EncodingDetector(stream);
@@ -50,17 +51,18 @@ namespace EncodingProbe.Tests.DetectorTests
 
             Assert.Equal(expectedCodePage, result.CodePage);
             Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedPSEncodingName, result.PSEncodingName);
         }
 
         // ─── filePath コンストラクタ経由 ───────────────────────────────────────
 
         [Theory]
-        [InlineData("sample_utf8.txt",     65001, "utf-8")]
-        [InlineData("sample_utf8_bom.txt", 65001, "utf-8")]
-        [InlineData("sample_shiftjis.txt", 932,   "shift_jis")]
-        [InlineData("sample_eucjp.txt",    20932, "euc-jp")]
-        [InlineData("sample_jis.txt",      50220, "iso-2022-jp")]
-        public void Detection_Japanese_FromFilePath(string fileName, int expectedCodePage, string expectedEncodingName)
+        [InlineData("sample_utf8.txt",     65001, "utf-8",       "utf8NoBOM")]
+        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",       "utf8BOM")]
+        [InlineData("sample_shiftjis.txt", 932,   "shift_jis",   "932")]
+        [InlineData("sample_eucjp.txt",    20932, "euc-jp",      "20932")]
+        [InlineData("sample_jis.txt",      50220, "iso-2022-jp", "50220")]
+        public void Detection_Japanese_FromFilePath(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
         {
             var path = TestDataHelper.GetPath("Japanese", fileName);
             var detector = new EncodingDetector(path);
@@ -69,6 +71,7 @@ namespace EncodingProbe.Tests.DetectorTests
 
             Assert.Equal(expectedCodePage, result.CodePage);
             Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedPSEncodingName, result.PSEncodingName);
         }
 
         // ─── BOM フラグ検証 ────────────────────────────────────────────────────
