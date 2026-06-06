@@ -26,7 +26,7 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
 
     protected override void ProcessRecord()
     {
-        EncodingDetectorControl.EncodingDetectorOptions detectorOptions = null;
+        EncodingProbe.EncodingDetectorOptions detectorOptions = null;
 
         // カルチャーを設定
         if (!string.IsNullOrWhiteSpace(Culture))
@@ -34,7 +34,7 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
             ResolveEncodingOptions.ChangeCurrentCulture(Culture);   
             if(detectorOptions == null)
             {
-                detectorOptions = new EncodingDetectorControl.EncodingDetectorOptions();
+                detectorOptions = new EncodingProbe.EncodingDetectorOptions();
             }
             detectorOptions.Culture = Culture;
         }
@@ -45,7 +45,7 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
             var parsedStrategy = ResolveEncodingOptions.ParseStrategy(Strategy);
             if(detectorOptions == null)
             {
-                detectorOptions = new EncodingDetectorControl.EncodingDetectorOptions();
+                detectorOptions = new EncodingProbe.EncodingDetectorOptions();
             }
             detectorOptions.Strategy = parsedStrategy;
         }
@@ -54,7 +54,7 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
         var resolvedPath = GetUnresolvedProviderPathFromPSPath(Path);
 
         // エンコーディングを判定
-        var encodingInfomation = EncodingDetectorControl.Detect(resolvedPath, detectorOptions);
+        var encodingInfomation = EncodingProbe.Detect(resolvedPath, detectorOptions);
 
         // 結果をパイプラインに出力
         WriteObject(encodingInfomation);

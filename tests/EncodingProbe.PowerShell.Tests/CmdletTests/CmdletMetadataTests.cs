@@ -96,4 +96,42 @@ public class CmdletMetadataTests
         Assert.Contains("FullName", aliases);
         Assert.Contains("FilePath", aliases);
     }
+
+    // ─── Culture パラメーター ────────────────────────────────────────────────
+
+    [Fact]
+    public void Parameter_Culture_Exists()
+    {
+        Assert.NotNull(CmdletType.GetProperty("Culture"));
+    }
+
+    [Fact]
+    public void Parameter_Culture_IsNotMandatory()
+    {
+        var attr = (ParameterAttribute)CmdletType
+            .GetProperty("Culture")!
+            .GetCustomAttributes(typeof(ParameterAttribute), inherit: false)
+            .Single();
+
+        Assert.False(attr.Mandatory);
+    }
+
+    // ─── Strategy パラメーター ───────────────────────────────────────────────
+
+    [Fact]
+    public void Parameter_Strategy_Exists()
+    {
+        Assert.NotNull(CmdletType.GetProperty("Strategy"));
+    }
+
+    [Fact]
+    public void Parameter_Strategy_IsNotMandatory()
+    {
+        var attr = (ParameterAttribute)CmdletType
+            .GetProperty("Strategy")!
+            .GetCustomAttributes(typeof(ParameterAttribute), inherit: false)
+            .Single();
+
+        Assert.False(attr.Mandatory);
+    }
 }

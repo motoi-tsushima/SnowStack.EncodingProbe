@@ -93,4 +93,41 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
             () => _fixture.Invoke(path));
         Assert.IsType<System.IO.FileNotFoundException>(ex.InnerException);
     }
+
+    // ─── Culture パラメーター ────────────────────────────────────────────────
+
+    [Fact]
+    public void Invoke_WithCulture_ReturnsEncodingInfomation()
+    {
+        var path = TestDataHelper.GetPath("Japanese", "sample_utf8.txt");
+        var result = _fixture.Invoke(path, new() { ["Culture"] = "ja-JP" });
+
+        Assert.Single(result);
+        Assert.IsType<EncodingInfomation>(result[0].BaseObject);
+    }
+
+    // ─── Strategy パラメーター ───────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("Combined")]
+    [InlineData("UtfUnknownOnly")]
+    [InlineData("NativeOnly")]
+    public void Invoke_WithStrategy_ReturnsEncodingInfomation(string strategy)
+    {
+        var path = TestDataHelper.GetPath("Japanese", "sample_utf8.txt");
+        var result = _fixture.Invoke(path, new() { ["Strategy"] = strategy });
+
+        Assert.Single(result);
+        Assert.IsType<EncodingInfomation>(result[0].BaseObject);
+    }
+
+    [Fact]
+    public void Invoke_WithInvalidStrategy_ThrowsCmdletInvocationException()
+    {
+        var path = TestDataHelper.GetPath("Japanese", "sample_utf8.txt");
+
+        var ex = Assert.Throws<System.Management.Automation.CmdletInvocationException>(
+            () => _fixture.Invoke(path, new() { ["Strategy"] = "InvalidStrategy" }));
+        Assert.IsType<ArgumentException>(ex.InnerException);
+    }
 }

@@ -107,6 +107,11 @@ namespace SnowStack.EncodingProbe
         public int BufferSize { get; private set; }
 
         /// <summary>
+        /// カルチャー名のキャッシュ（IsChineseSimplifiedCulture 内で一度取得したカルチャー名を保持して、複数回の判定で繰り返し取得するのを防止するため）
+        /// </summary>
+        private string _cultureName = null;
+
+        /// <summary>
         /// ファイルバイナリ配列
         /// </summary>
         private byte[] _buffer = null;
@@ -394,6 +399,11 @@ namespace SnowStack.EncodingProbe
             EncodingInfomation encInfo = new EncodingInfomation();
             ByteOrderMarkDetection bomJudg = new ByteOrderMarkDetection();
 
+            // カルチャー情報の取得（IsChineseSimplifiedCulture 内で一度取得したカルチャー名を保持して、複数回の判定で繰り返し取得するのを防止するため）
+            CultureInfo currentCulture = CultureInfo.CurrentCulture;
+            _cultureName = currentCulture.Name;
+            encInfo.Culture = _cultureName;
+
             //改行コードの種類を判定してセットする
             encInfo.LineBreak = DetectLineBreak(this._buffer);
 
@@ -585,13 +595,16 @@ namespace SnowStack.EncodingProbe
         {
             try
             {
-                CultureInfo currentCulture = CultureInfo.CurrentCulture;
-                string cultureName = currentCulture.Name;
+                if (_cultureName == null)
+                {
+                    CultureInfo currentCulture = CultureInfo.CurrentCulture;
+                    _cultureName = currentCulture.Name;
+                }
 
                 // 中国語（簡体字）のカルチャー
-                if (cultureName.Equals("zh-CN", StringComparison.OrdinalIgnoreCase) ||
-                    cultureName.Equals("zh-Hans", StringComparison.OrdinalIgnoreCase) ||
-                    cultureName.Equals("zh-SG", StringComparison.OrdinalIgnoreCase))
+                if (_cultureName.Equals("zh-CN", StringComparison.OrdinalIgnoreCase) ||
+                    _cultureName.Equals("zh-Hans", StringComparison.OrdinalIgnoreCase) ||
+                    _cultureName.Equals("zh-SG", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

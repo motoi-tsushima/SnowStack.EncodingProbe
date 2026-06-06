@@ -13,20 +13,20 @@ namespace SnowStack.EncodingProbe.PowerShell.Cmdlets
         /// <param name="strategy">判定戦略を表す文字列</param>
         /// <returns>対応するDetectionStrategy列挙値</returns>
         /// <exception cref="ArgumentException">無効な戦略が指定された場合にスローされる</exception>
-        internal static EncodingDetectorControl.DetectionStrategy ParseStrategy(string strategy)
+        internal static EncodingProbe.DetectionStrategy ParseStrategy(string strategy)
         {
             strategy = strategy.Trim().ToLower();
             return strategy switch
             {
-                "combined" => EncodingDetectorControl.DetectionStrategy.Combined,
-                "utfunknownonly" => EncodingDetectorControl.DetectionStrategy.UtfUnknownOnly,
-                "nativeonly" => EncodingDetectorControl.DetectionStrategy.NativeOnly,
-                "0" => EncodingDetectorControl.DetectionStrategy.Combined,
-                "3" => EncodingDetectorControl.DetectionStrategy.UtfUnknownOnly,
-                "1" => EncodingDetectorControl.DetectionStrategy.NativeOnly,
-                "default" => EncodingDetectorControl.DetectionStrategy.Combined,
-                "utfunknown" => EncodingDetectorControl.DetectionStrategy.UtfUnknownOnly,
-                "native" => EncodingDetectorControl.DetectionStrategy.NativeOnly,
+                "combined" => EncodingProbe.DetectionStrategy.Combined,
+                "utfunknownonly" => EncodingProbe.DetectionStrategy.UtfUnknownOnly,
+                "nativeonly" => EncodingProbe.DetectionStrategy.NativeOnly,
+                "0" => EncodingProbe.DetectionStrategy.Combined,
+                "3" => EncodingProbe.DetectionStrategy.UtfUnknownOnly,
+                "1" => EncodingProbe.DetectionStrategy.NativeOnly,
+                "default" => EncodingProbe.DetectionStrategy.Combined,
+                "utfunknown" => EncodingProbe.DetectionStrategy.UtfUnknownOnly,
+                "native" => EncodingProbe.DetectionStrategy.NativeOnly,
                 _ => throw new ArgumentException($"Invalid strategy: {strategy}")
             };
         }

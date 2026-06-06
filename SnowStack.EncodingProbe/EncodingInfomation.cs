@@ -36,4 +36,7 @@ public sealed record EncodingInfomation
 
     /// <summary>実行中のOSがLinuxかどうか</summary>
     public bool IsLinuxOs { get; } = OperatingSystem.IsLinux();
+
+    /// <summary>実行中のカルチャー名</summary>
+    public string Culture { get; set; } = null;
 }

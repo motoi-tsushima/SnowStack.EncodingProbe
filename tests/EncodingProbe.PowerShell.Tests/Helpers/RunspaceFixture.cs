@@ -36,5 +36,22 @@ public sealed class RunspaceFixture : IDisposable
         return ps.Invoke();
     }
 
+    /// <summary>
+    /// ランスペース上でコマンドレットを追加パラメーター付きで実行して結果を返す
+    /// </summary>
+    /// <param name="path">-Path に渡すファイルパス</param>
+    /// <param name="additionalParameters">追加パラメーターのディクショナリ</param>
+    public System.Collections.ObjectModel.Collection<PSObject> Invoke(
+        string path,
+        System.Collections.Generic.Dictionary<string, object?> additionalParameters)
+    {
+        using var ps = System.Management.Automation.PowerShell.Create();
+        ps.Runspace = Runspace;
+        var cmd = ps.AddCommand("Resolve-Encoding").AddParameter("Path", path);
+        foreach (var (key, value) in additionalParameters)
+            cmd.AddParameter(key, value);
+        return ps.Invoke();
+    }
+
     public void Dispose() => Runspace.Dispose();
 }

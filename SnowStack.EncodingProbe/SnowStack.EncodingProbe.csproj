@@ -7,9 +7,9 @@
     <Nullable>enable</Nullable>
 
     <!-- バージョン情報 -->
-    <Version>0.3.0</Version>
-    <AssemblyVersion>0.3.0.0</AssemblyVersion>
-    <FileVersion>0.3.0.0</FileVersion>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
 
     <!-- NuGet パッケージメタデータ -->
     <PackageId>SnowStack.EncodingProbe</PackageId>

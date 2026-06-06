@@ -5,7 +5,10 @@ using UtfUnknown;
 
 namespace SnowStack.EncodingProbe
 {
-    public static class EncodingDetectorControl
+    /// <summary>
+    /// 文字エンコーディング判定のためのクラス
+    /// </summary>
+    public static class EncodingProbe
     {
         /// <summary>
         /// 文字エンコーディング判定のオプション
@@ -26,6 +29,12 @@ namespace SnowStack.EncodingProbe
             NativeOnly      // 独自実装のみ
         }
 
+        /// <summary>
+        /// 文字エンコーディングを判定する
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
         public static EncodingInfomation Detect(byte[] buffer, EncodingDetectorOptions options)
         {
             EncodingInfomation encInfo;
@@ -45,6 +54,12 @@ namespace SnowStack.EncodingProbe
             return encInfo;
         }
 
+        /// <summary>
+        /// 文字エンコーディングを判定する
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
         public static EncodingInfomation Detect(Stream stream, EncodingDetectorOptions options)
         {
             EncodingInfomation encInfo;
@@ -64,6 +79,12 @@ namespace SnowStack.EncodingProbe
             return encInfo;
         }
 
+        /// <summary>
+        /// 文字エンコーディングを判定する
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
         public static EncodingInfomation Detect(string filePath, EncodingDetectorOptions options = null)
         {
             EncodingInfomation encInfo;
@@ -90,7 +111,11 @@ namespace SnowStack.EncodingProbe
             return encInfo;
         }
 
-
+        /// <summary>
+        /// 文字エンコーディングを判定する（独自実装）
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
         public static EncodingInfomation DetectEncoding(byte[] buffer)
         {
             EncodingInfomation encInfo;
@@ -98,7 +123,12 @@ namespace SnowStack.EncodingProbe
             encInfo = encDetec.Detection();
             return encInfo;
         }
-
+        
+        /// <summary>
+        /// 文字エンコーディングを判定する（独自実装）
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
         public static EncodingInfomation DetectEncoding(Stream stream)
         {
             EncodingInfomation encInfo;
@@ -107,6 +137,11 @@ namespace SnowStack.EncodingProbe
             return encInfo;
         }
 
+        /// <summary>
+        /// 文字エンコーディングを判定する（独自実装）
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public static EncodingInfomation DetectEncoding(string filePath)
         {
             EncodingInfomation encInfo;
@@ -115,7 +150,11 @@ namespace SnowStack.EncodingProbe
             return encInfo;
         }
 
-
+        /// <summary>
+        /// 文字エンコーディングを判定する（UTF.Unknown）
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
         public static EncodingInfomation DetectUtfUnknown(byte[] buffer)
         {
             EncodingInfomation encInfo = new EncodingInfomation();
@@ -155,6 +194,11 @@ namespace SnowStack.EncodingProbe
             return encInfo;
         }
 
+        /// <summary>
+        /// 文字エンコーディングを判定する（UTF.Unknown）
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
         public static EncodingInfomation DetectUtfUnknown(Stream stream)
         {
             EncodingInfomation encInfo = new EncodingInfomation();
@@ -194,6 +238,11 @@ namespace SnowStack.EncodingProbe
             return encInfo;
         }
 
+        /// <summary>
+        /// 文字エンコーディングを判定する（UTF.Unknown）
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public static EncodingInfomation DetectUtfUnknown(string filePath)
         {
             EncodingInfomation encInfo = new EncodingInfomation();
@@ -233,7 +282,11 @@ namespace SnowStack.EncodingProbe
             return encInfo;
         }
 
-
+        /// <summary>
+        /// 文字エンコーディングを判定する（両方を統合）
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
         public static EncodingInfomation NormalDetectEncoding(byte[] buffer)
         {
             EncodingInfomation encInfo;
@@ -246,6 +299,11 @@ namespace SnowStack.EncodingProbe
             return encInfo;
         }
 
+        /// <summary>
+        /// 文字エンコーディングを判定する（両方を統合）
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
         public static EncodingInfomation NormalDetectEncoding(Stream stream)
         {
             EncodingInfomation encInfo;
@@ -258,6 +316,11 @@ namespace SnowStack.EncodingProbe
             return encInfo;
         }
 
+        /// <summary>
+        /// 文字エンコーディングを判定する（両方を統合）
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public static EncodingInfomation NormalDetectEncoding(string filePath)
         {
             EncodingInfomation encInfo;
