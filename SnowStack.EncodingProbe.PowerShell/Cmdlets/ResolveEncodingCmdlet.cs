@@ -3,6 +3,9 @@ using SnowStack.EncodingProbe;  // クラスライブラリのnamespace
 
 namespace SnowStack.EncodingProbe.PowerShell.Cmdlets;
 
+/// <summary>
+/// ファイルのエンコーディングを判定するPowerShellコマンドレット
+/// </summary>
 [Cmdlet(VerbsDiagnostic.Resolve, "Encoding")]
 [OutputType(typeof(EncodingInfomation))]
 public sealed class ResolveEncodingCmdlet : PSCmdlet
@@ -15,16 +18,45 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
     [Alias("FullName", "FilePath")]
     public string Path { get; set; } = default!;
 
+    [Parameter(Mandatory = false)]
+    public string? Culture { get; set; }
+
+    [Parameter(Mandatory = false)]
+    public string? Strategy { get; set; }
+
     protected override void ProcessRecord()
     {
+        EncodingDetectorControl.EncodingDetectorOptions detectorOptions = null;
+
+        // カルチャーを設定
+        if (!string.IsNullOrWhiteSpace(Culture))
+        {
+            ResolveEncodingOptions.ChangeCurrentCulture(Culture);   
+            if(detectorOptions == null)
+            {
+                detectorOptions = new EncodingDetectorControl.EncodingDetectorOptions();
+            }
+            detectorOptions.Culture = Culture;
+        }
+
+        //エンコーディング判定の戦略を設定
+        if (!string.IsNullOrWhiteSpace(Strategy))
+        {
+            var parsedStrategy = ResolveEncodingOptions.ParseStrategy(Strategy);
+            if(detectorOptions == null)
+            {
+                detectorOptions = new EncodingDetectorControl.EncodingDetectorOptions();
+            }
+            detectorOptions.Strategy = parsedStrategy;
+        }
+
         // PowerShellのパス（相対パス、~等）を解決
         var resolvedPath = GetUnresolvedProviderPathFromPSPath(Path);
 
-        // クラスライブラリ側の判定処理を呼ぶ
-        var detector = new EncodingDetector(resolvedPath);
-        var result = detector.Detection();
+        // エンコーディングを判定
+        var encodingInfomation = EncodingDetectorControl.Detect(resolvedPath, detectorOptions);
 
         // 結果をパイプラインに出力
-        WriteObject(result);
+        WriteObject(encodingInfomation);
     }
 }

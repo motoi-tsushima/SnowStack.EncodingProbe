@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
-//using UtfUnknown; // 一時退避
+using UtfUnknown;
 
 namespace SnowStack.EncodingProbe
 {
@@ -31,75 +31,11 @@ namespace SnowStack.EncodingProbe
         /// <summary>LF・CR・CR-LF の混在</summary>
         LfAndCrAndCrLf,
     }
-    
-    /*-- 一時退避 bgin ----
-    public static class EncodingDetectorControl
-    {
-        public static EncodingInfomation DetectEncoding(byte[] buffer)
-        {
-            EncodingInfomation encInfo;
-            EncodingDetector encDetec = new EncodingDetector(buffer);
-            encInfo = encDetec.Detection();
-            encInfo.DetectLineBreak(buffer);
-            return encInfo;
-        }
-        public static EncodingInfomation DetectUtfUnknown(byte[] buffer)
-        {
-            EncodingInfomation encInfo = new EncodingInfomation();
 
-            var result = CharsetDetector.DetectFromBytes(buffer);
-            if (result != null && result.Detected != null)
-            {
-                if (result.Detected.Confidence > 0.5)
-                {
-                    try
-                    {
-                        encInfo.EncodingName = result.Detected.EncodingName;
-                        encInfo.CodePage = result.Detected.Encoding.CodePage;
-                    }
-                    catch (ArgumentException)
-                    {
-                        // UtfUnknownが検出したエンコーディングが.NETでサポートされていない場合
-                        // エンコーディング名だけを保存し、CodePageは-1にする
-                        encInfo.EncodingName = result.Detected.EncodingName;
-                        encInfo.CodePage = -1;
-                    }
-                    catch (NotSupportedException)
-                    {
-                        encInfo.EncodingName = result.Detected.EncodingName;
-                        encInfo.CodePage = -1;
-                    }
-                }
-                else
-                {
-                    encInfo.CodePage = -1;
-                }
-            }
-            else
-            {
-                encInfo.CodePage = -1;
-            }
-            return encInfo;
-        }
-
-        public static EncodingInfomation NormalDetectEncoding(byte[] buffer)
-        {
-            EncodingInfomation encInfo;
-
-            encInfo = DetectEncoding(buffer);
-            if (encInfo.CodePage < 0)
-            {
-                encInfo = DetectUtfUnknown(buffer);
-            }
-            return encInfo;
-        }
-    }
-    --- 一時退避 end ----*/
-
-        /// <summary>
-        /// 文字エンコーディング判定
-        /// </summary>
-        public class EncodingDetector
+    /// <summary>
+    /// 文字エンコーディング判定
+    /// </summary>
+    public class EncodingDetector
     {
         /// <summary>コードページ：US-ASCII</summary>
         private const int CodePageAscii = 20127;
