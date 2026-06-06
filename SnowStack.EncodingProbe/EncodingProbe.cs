@@ -10,6 +10,21 @@ namespace SnowStack.EncodingProbe
     /// </summary>
     public static class EncodingProbe
     {
+        public static readonly string License =
+ @"This software includes the following third-party components:
+
+SnowStack.EncodingProbe
+Copyright c 2026 motoi.tsushima
+Licensed under MIT License
+https://github.com/motoi-tsushima/SnowStack.EncodingProbe
+
+UTF.Unknown
+Copyright (c) 2018 Nikolay Pultsin
+Licensed under MIT License
+https://github.com/CharsetDetector/UTF-unknown
+";
+
+
         /// <summary>
         /// 文字エンコーディング判定のオプション
         /// </summary>

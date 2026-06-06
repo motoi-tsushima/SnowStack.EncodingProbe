@@ -6,11 +6,19 @@ namespace SnowStack.EncodingProbe.PowerShell.Cmdlets;
 /// <summary>
 /// ファイルのエンコーディングを判定するPowerShellコマンドレット
 /// </summary>
-[Cmdlet(VerbsDiagnostic.Resolve, "Encoding")]
+[Cmdlet(VerbsDiagnostic.Resolve, "Encoding", DefaultParameterSetName = "Default")]
 [OutputType(typeof(EncodingInfomation))]
 public sealed class ResolveEncodingCmdlet : PSCmdlet
 {
+    [Parameter(ParameterSetName = "License", Mandatory = true)]
+    public SwitchParameter License { get; set; }
+
+    [Parameter(ParameterSetName = "Version", Mandatory = true)]
+    public SwitchParameter Version { get; set; }
+
+
     [Parameter(
+        ParameterSetName = "Default",
         Mandatory = true,
         Position = 0,
         ValueFromPipeline = true,
@@ -18,14 +26,34 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
     [Alias("FullName", "FilePath")]
     public string Path { get; set; } = default!;
 
-    [Parameter(Mandatory = false)]
+    [Parameter(ParameterSetName = "Default", Mandatory = false)]
     public string? Culture { get; set; }
 
-    [Parameter(Mandatory = false)]
+    [Parameter(ParameterSetName = "Default", Mandatory = false)]
     public string? Strategy { get; set; }
 
     protected override void ProcessRecord()
     {
+        // ライセンス情報を表示する
+        if (License.IsPresent)
+        {
+            string licenseText = LicenseAndHelp.License + EncodingProbe.License;
+            WriteObject(licenseText);
+            return;
+        }
+
+        // バージョン情報を表示する
+        if (Version.IsPresent)
+        {
+            var attr = (System.Reflection.AssemblyInformationalVersionAttribute?)
+                Attribute.GetCustomAttribute(
+                    System.Reflection.Assembly.GetExecutingAssembly(),
+                    typeof(System.Reflection.AssemblyInformationalVersionAttribute));
+            var version = attr?.InformationalVersion?.Split('+')[0] ?? "unknown";
+            WriteObject($"SnowStack.EncodingProbe.PowerShell {version}");
+            return;
+        }
+
         EncodingProbe.EncodingDetectorOptions detectorOptions = null;
 
         // カルチャーを設定
