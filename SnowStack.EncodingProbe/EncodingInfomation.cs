@@ -29,13 +29,13 @@ public sealed record EncodingInfomation
     public LineBreakType LineBreak { get; set; } = LineBreakType.None;
 
     /// <summary>実行中のOSがWindowsかどうか</summary>
-    public bool IsWindowsOs { get; } = OperatingSystem.IsWindows();
+    public bool IsWindowsOs { get; } = PlatformInfo.IsWindows;
 
     /// <summary>実行中のOSがmacOSかどうか</summary>
-    public bool IsMacOs { get; } = OperatingSystem.IsMacOS();
+    public bool IsMacOs { get; } = PlatformInfo.IsMacOs;
 
     /// <summary>実行中のOSがLinuxかどうか</summary>
-    public bool IsLinuxOs { get; } = OperatingSystem.IsLinux();
+    public bool IsLinuxOs { get; } = PlatformInfo.IsLinux;
 
     /// <summary>実行中のカルチャー名</summary>
     public string Culture { get; set; } = null;

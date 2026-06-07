@@ -1,19 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>net10.0;net48</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <LangVersion>latest</LangVersion>
 
-    <!-- バージョン情報 -->
-    <Version>1.0.0</Version>
+
+      <!-- バージョン情報 -->
+    <Version>1.0.0-preview.1</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
 
     <!-- NuGet パッケージメタデータ -->
     <PackageId>SnowStack.EncodingProbe.PowerShell</PackageId>
-    <Authors>motoi</Authors>
+    <Authors>motoi.tsushima</Authors>
     <Description>A PowerShell module for detecting the character encoding of text files.&#10;テキストファイルの文字エンコーディングを判定する PowerShell モジュールです。</Description>
     <PackageTags>encoding;chardet;text;powershell</PackageTags>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>

@@ -1,27 +1,61 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PropertyGroup>
+        <!-- TargetFramework(単数) → TargetFrameworks(複数) -->
+        <TargetFrameworks>net10.0;net48</TargetFrameworks>
+        <IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
 
-    <!-- バージョン情報 -->
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+        <!-- バージョン情報 -->
+        <Version>1.0.0-preview.1</Version>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <FileVersion>1.0.0.0</FileVersion>
 
-    <!-- NuGet パッケージメタデータ -->
-    <PackageId>SnowStack.EncodingProbe</PackageId>
-    <Authors>motoi</Authors>
-    <Description>A class library for detecting the character encoding of text files.
-テキストファイルの文字エンコーディングを判定するクラスライブラリです。</Description>
-    <PackageTags>encoding;chardet;text</PackageTags>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-  </PropertyGroup>
+        <!-- NuGet パッケージメタデータ -->
+        <PackageId>SnowStack.EncodingProbe</PackageId>
+        <Authors>motoi.tsushima</Authors>
+        <Company>motoi.tsushima</Company>
+        <Description>
+            A class library for detecting the character encoding of text files.
+            テキストファイルの文字エンコーディングを判定するクラスライブラリです。
+        </Description>
+        <PackageTags>encoding;chardet;charset;text;shift-jis;euc-jp;japanese</PackageTags>
+        <Copyright>Copyright © 2026 motoi.tsushima</Copyright>
 
-  <ItemGroup>
-    <PackageReference Include="UTF.Unknown" Version="2.6.0" />
-  </ItemGroup>
+        <!-- ライセンス / URL（README に表示される） -->
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/motoi-tsushima/SnowStack.EncodingProbe</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/motoi-tsushima/SnowStack.EncodingProbe</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReleaseNotes>初回リリース。文字エンコーディング推測 / BOM / 改行コード判定に対応。</PackageReleaseNotes>
+
+        <!-- パッケージ生成は dotnet pack で明示的に行う -->
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+
+        <!-- デバッグ容易性: シンボル + SourceLink -->
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="UTF.Unknown" Version="2.6.0" />
+        <!-- SourceLink: NuGet.org のシンボルから GitHub のソースへ飛べる -->
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+        <PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <!-- リポジトリ直下の README.md をパッケージに同梱 -->
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\" Visible="false" />
+    </ItemGroup>
 
 </Project>

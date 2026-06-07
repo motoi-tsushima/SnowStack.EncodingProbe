@@ -546,7 +546,7 @@ namespace SnowStack.EncodingProbe
                         if (encInfo.LineBreak == LineBreakType.None)
                         {
                             // 改行コードなし → OSで判定
-                            useShiftJis = OperatingSystem.IsWindows();
+                            useShiftJis = PlatformInfo.IsWindows;
                         }
                         else
                         {
