@@ -75,5 +75,33 @@ namespace EncodingProbe.Tests.DetectorTests
             Assert.Equal(LineBreakType.LfAndCrAndCrLf,
                 Detect(Utf8Bytes("line1\nline2\nline3\rline4\rline5\r\nline6\r\nline7")));
         }
+
+        [Fact]
+        public void DetectLineBreak_Utf16LE_OnlyCrLf_ReturnsCrLf()
+        {
+            var bytes = Encoding.Unicode.GetBytes("line1\r\nline2\r\nline3");
+            Assert.Equal(LineBreakType.CrLf, Detect(bytes));
+        }
+
+        [Fact]
+        public void DetectLineBreak_Utf16BE_OnlyCrLf_ReturnsCrLf()
+        {
+            var bytes = Encoding.BigEndianUnicode.GetBytes("line1\r\nline2\r\nline3");
+            Assert.Equal(LineBreakType.CrLf, Detect(bytes));
+        }
+
+        [Fact]
+        public void DetectLineBreak_Utf32LE_OnlyCrLf_ReturnsCrLf()
+        {
+            var bytes = Encoding.UTF32.GetBytes("line1\r\nline2\r\nline3");
+            Assert.Equal(LineBreakType.CrLf, Detect(bytes));
+        }
+
+        [Fact]
+        public void DetectLineBreak_Utf32BE_OnlyCrLf_ReturnsCrLf()
+        {
+            var bytes = new UTF32Encoding(bigEndian: true, byteOrderMark: false).GetBytes("line1\r\nline2\r\nline3");
+            Assert.Equal(LineBreakType.CrLf, Detect(bytes));
+        }
     }
 }

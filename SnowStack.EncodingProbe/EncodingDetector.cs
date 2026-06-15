@@ -184,8 +184,21 @@ namespace SnowStack.EncodingProbe
                 {
                     if (i + 1 < buffer.Length && buffer[i + 1] == 0x0A)
                     {
+                        // UTF-8 / ASCII の CR-LF: 0x0D 0x0A
                         countCrLf++;
                         i++; // 0x0A をスキップ
+                    }
+                    else if (i + 2 < buffer.Length && buffer[i + 1] == 0x00 && buffer[i + 2] == 0x0A)
+                    {
+                        // UTF-16 (LE/BE) の CR-LF: 0x0D 0x00 0x0A (...)
+                        countCrLf++;
+                        i += 2; // 0x00 0x0A をスキップ
+                    }
+                    else if (i + 4 < buffer.Length && buffer[i + 1] == 0x00 && buffer[i + 2] == 0x00 && buffer[i + 3] == 0x00 && buffer[i + 4] == 0x0A)
+                    {
+                        // UTF-32 (LE/BE) の CR-LF: 0x0D 0x00 0x00 0x00 0x0A (...)
+                        countCrLf++;
+                        i += 4; // 0x00 0x00 0x00 0x0A をスキップ
                     }
                     else
                     {
