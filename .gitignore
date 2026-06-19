@@ -176,8 +176,14 @@ DocProject/Help/*.hhp
 DocProject/Help/Html2
 DocProject/Help/html
 
-# Click-Once directory
-publish/
+# Click-Once directory / Publish output (binaries excluded)
+publish/*
+publish/**/*.dll
+publish/**/*.pdb
+# PowerShell module source files are tracked
+!publish/SnowStack.EncodingProbe.PowerShell/
+!publish/SnowStack.EncodingProbe.PowerShell/*.psd1
+!publish/SnowStack.EncodingProbe.PowerShell/*.psm1
 
 # Publish Web Output
 *.[Pp]ublish.xml
