@@ -371,9 +371,9 @@ namespace SnowStack.EncodingProbe
         /// </summary>
         /// <param name="fileName">ファイル名</param>
         /// <returns>文字エンコーディング判定情報</returns>
-        public EncodingInfomation Detection(string fileName)
+        public EncodingInformation Detection(string fileName)
         {
-            EncodingInfomation encInfo = null;
+            EncodingInformation encInfo = null;
 
             using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
@@ -406,10 +406,10 @@ namespace SnowStack.EncodingProbe
         /// 判定実行
         /// </summary>
         /// <returns>文字エンコーディング判定情報</returns>
-        public EncodingInfomation Detection()
+        public EncodingInformation Detection()
         {
             bool outOfSpecification;
-            EncodingInfomation encInfo = new EncodingInfomation();
+            EncodingInformation encInfo = new EncodingInformation();
             ByteOrderMarkDetection bomJudg = new ByteOrderMarkDetection();
 
             // カルチャー情報の取得（IsChineseSimplifiedCulture 内で一度取得したカルチャー名を保持して、複数回の判定で繰り返し取得するのを防止するため）

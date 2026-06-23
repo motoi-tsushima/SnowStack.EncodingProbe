@@ -41,7 +41,7 @@ public class CmdletMetadataTests
             .GetCustomAttributes(typeof(OutputTypeAttribute), inherit: false)
             .Single();
 
-        Assert.Contains(attr.Type, t => t.Type == typeof(EncodingInfomation));
+        Assert.Contains(attr.Type, t => t.Type == typeof(EncodingInformation));
     }
 
     // ─── Path パラメーター ───────────────────────────────────────────────────

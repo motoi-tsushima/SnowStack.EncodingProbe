@@ -22,7 +22,7 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
         var results = _fixture.Invoke(path);
 
         Assert.Single(results);
-        Assert.IsType<EncodingInfomation>(results[0].BaseObject);
+        Assert.IsType<EncodingInformation>(results[0].BaseObject);
     }
 
     // ─── 英語ファイル ────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
     public void Invoke_English(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
     {
         var path = TestDataHelper.GetPath("English", fileName);
-        var result = (EncodingInfomation)_fixture.Invoke(path)[0].BaseObject;
+        var result = (EncodingInformation)_fixture.Invoke(path)[0].BaseObject;
 
         Assert.Equal(expectedCodePage,       result.CodePage);
         Assert.Equal(expectedEncodingName,   result.EncodingName);
@@ -52,7 +52,7 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
     public void Invoke_Japanese(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
     {
         var path = TestDataHelper.GetPath("Japanese", fileName);
-        var result = (EncodingInfomation)_fixture.Invoke(path)[0].BaseObject;
+        var result = (EncodingInformation)_fixture.Invoke(path)[0].BaseObject;
 
         Assert.Equal(expectedCodePage,       result.CodePage);
         Assert.Equal(expectedEncodingName,   result.EncodingName);
@@ -65,7 +65,7 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
     public void Invoke_Utf8WithBom_BomFlagIsTrue()
     {
         var path = TestDataHelper.GetPath("Japanese", "sample_utf8_bom.txt");
-        var result = (EncodingInfomation)_fixture.Invoke(path)[0].BaseObject;
+        var result = (EncodingInformation)_fixture.Invoke(path)[0].BaseObject;
 
         Assert.True(result.Bom);
     }
@@ -74,7 +74,7 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
     public void Invoke_Utf8WithoutBom_BomFlagIsFalse()
     {
         var path = TestDataHelper.GetPath("Japanese", "sample_utf8.txt");
-        var result = (EncodingInfomation)_fixture.Invoke(path)[0].BaseObject;
+        var result = (EncodingInformation)_fixture.Invoke(path)[0].BaseObject;
 
         Assert.False(result.Bom);
     }
@@ -103,7 +103,7 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
         var result = _fixture.Invoke(path, new() { ["Culture"] = "ja-JP" });
 
         Assert.Single(result);
-        Assert.IsType<EncodingInfomation>(result[0].BaseObject);
+        Assert.IsType<EncodingInformation>(result[0].BaseObject);
     }
 
     // ─── Strategy パラメーター ───────────────────────────────────────────────
@@ -118,7 +118,7 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
         var result = _fixture.Invoke(path, new() { ["Strategy"] = strategy });
 
         Assert.Single(result);
-        Assert.IsType<EncodingInfomation>(result[0].BaseObject);
+        Assert.IsType<EncodingInformation>(result[0].BaseObject);
     }
 
     [Fact]

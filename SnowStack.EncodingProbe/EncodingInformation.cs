@@ -3,7 +3,7 @@ namespace SnowStack.EncodingProbe;
 /// <summary>
 /// 文字エンコーディング判定情報
 /// </summary>
-public sealed record EncodingInfomation
+public sealed record EncodingInformation
 {
     /// <summary>コードページ</summary>
     public int CodePage { get; set; }

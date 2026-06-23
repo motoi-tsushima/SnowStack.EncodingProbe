@@ -7,7 +7,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Cmdlets;
 /// ファイルのエンコーディングを判定するPowerShellコマンドレット
 /// </summary>
 [Cmdlet(VerbsDiagnostic.Resolve, "Encoding", DefaultParameterSetName = "Default")]
-[OutputType(typeof(EncodingInfomation))]
+[OutputType(typeof(EncodingInformation))]
 public sealed class ResolveEncodingCmdlet : PSCmdlet
 {
     [Parameter(ParameterSetName = "License", Mandatory = true)]

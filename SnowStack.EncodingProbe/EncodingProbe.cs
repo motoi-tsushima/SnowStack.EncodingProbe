@@ -50,9 +50,16 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <param name="buffer"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static EncodingInfomation Detect(byte[] buffer, EncodingDetectorOptions options)
+        public static EncodingInformation Detect(byte[] buffer, EncodingDetectorOptions options = null)
         {
-            EncodingInfomation encInfo;
+            EncodingInformation encInfo;
+            if (options == null)
+            {
+                encInfo = NormalDetectEncoding(buffer);
+                return encInfo;
+            }
+
+
             switch (options.Strategy)
             {
                 case DetectionStrategy.UtfUnknownOnly:
@@ -75,9 +82,15 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <param name="stream"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static EncodingInfomation Detect(Stream stream, EncodingDetectorOptions options)
+        public static EncodingInformation Detect(Stream stream, EncodingDetectorOptions options = null)
         {
-            EncodingInfomation encInfo;
+            EncodingInformation encInfo;
+            if (options == null)
+            {
+                encInfo = NormalDetectEncoding(stream);
+                return encInfo;
+            }
+
             switch (options.Strategy)
             {
                 case DetectionStrategy.UtfUnknownOnly:
@@ -100,9 +113,9 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <param name="filePath"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public static EncodingInfomation Detect(string filePath, EncodingDetectorOptions options = null)
+        public static EncodingInformation Detect(string filePath, EncodingDetectorOptions options = null)
         {
-            EncodingInfomation encInfo;
+            EncodingInformation encInfo;
 
             if (options == null)
             {
@@ -131,9 +144,9 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        public static EncodingInfomation DetectEncoding(byte[] buffer)
+        public static EncodingInformation DetectEncoding(byte[] buffer)
         {
-            EncodingInfomation encInfo;
+            EncodingInformation encInfo;
             EncodingDetector encDetec = new EncodingDetector(buffer);
             encInfo = encDetec.Detection();
             return encInfo;
@@ -144,9 +157,9 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public static EncodingInfomation DetectEncoding(Stream stream)
+        public static EncodingInformation DetectEncoding(Stream stream)
         {
-            EncodingInfomation encInfo;
+            EncodingInformation encInfo;
             EncodingDetector encDetec = new EncodingDetector(stream);
             encInfo = encDetec.Detection();
             return encInfo;
@@ -157,9 +170,9 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static EncodingInfomation DetectEncoding(string filePath)
+        public static EncodingInformation DetectEncoding(string filePath)
         {
-            EncodingInfomation encInfo;
+            EncodingInformation encInfo;
             EncodingDetector encDetec = new EncodingDetector(filePath);
             encInfo = encDetec.Detection();
             return encInfo;
@@ -170,9 +183,9 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        public static EncodingInfomation DetectUtfUnknown(byte[] buffer)
+        public static EncodingInformation DetectUtfUnknown(byte[] buffer)
         {
-            EncodingInfomation encInfo = new EncodingInfomation();
+            EncodingInformation encInfo = new EncodingInformation();
 
             var result = CharsetDetector.DetectFromBytes(buffer);
             if (result != null && result.Detected != null)
@@ -214,9 +227,9 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public static EncodingInfomation DetectUtfUnknown(Stream stream)
+        public static EncodingInformation DetectUtfUnknown(Stream stream)
         {
-            EncodingInfomation encInfo = new EncodingInfomation();
+            EncodingInformation encInfo = new EncodingInformation();
 
             var result = CharsetDetector.DetectFromStream(stream);
             if (result != null && result.Detected != null)
@@ -258,9 +271,9 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static EncodingInfomation DetectUtfUnknown(string filePath)
+        public static EncodingInformation DetectUtfUnknown(string filePath)
         {
-            EncodingInfomation encInfo = new EncodingInfomation();
+            EncodingInformation encInfo = new EncodingInformation();
 
             var result = CharsetDetector.DetectFromFile(filePath);
             if (result != null && result.Detected != null)
@@ -302,9 +315,9 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        public static EncodingInfomation NormalDetectEncoding(byte[] buffer)
+        public static EncodingInformation NormalDetectEncoding(byte[] buffer)
         {
-            EncodingInfomation encInfo;
+            EncodingInformation encInfo;
 
             encInfo = DetectEncoding(buffer);
             if (encInfo.CodePage < 0)
@@ -319,9 +332,9 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public static EncodingInfomation NormalDetectEncoding(Stream stream)
+        public static EncodingInformation NormalDetectEncoding(Stream stream)
         {
-            EncodingInfomation encInfo;
+            EncodingInformation encInfo;
 
             encInfo = DetectEncoding(stream);
             if (encInfo.CodePage < 0)
@@ -336,9 +349,9 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static EncodingInfomation NormalDetectEncoding(string filePath)
+        public static EncodingInformation NormalDetectEncoding(string filePath)
         {
-            EncodingInfomation encInfo;
+            EncodingInformation encInfo;
 
             encInfo = DetectEncoding(filePath);
             if (encInfo.CodePage < 0)

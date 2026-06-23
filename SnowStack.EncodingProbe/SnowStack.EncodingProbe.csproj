@@ -9,9 +9,9 @@
         <LangVersion>latest</LangVersion>
 
         <!-- バージョン情報 -->
-        <Version>1.0.0-preview.2</Version>
-        <AssemblyVersion>1.0.0.1</AssemblyVersion>
-        <FileVersion>1.0.0.1</FileVersion>
+        <Version>1.0.0-preview.3</Version>
+        <AssemblyVersion>1.0.0.2</AssemblyVersion>
+        <FileVersion>1.0.0.2</FileVersion>
 
         <!-- NuGet パッケージメタデータ -->
         <PackageId>SnowStack.EncodingProbe</PackageId>
