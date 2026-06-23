@@ -17,7 +17,7 @@
 
     PrivateData = @{
         PSData = @{
-            Prerelease   = 'preview2'
+            Prerelease   = 'preview3'
             Tags         = @('encoding', 'chardet', 'charset', 'text', 'shift-jis', 'euc-jp', 'japanese')
             LicenseUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe/blob/master/LICENSE.txt'
             ProjectUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe'

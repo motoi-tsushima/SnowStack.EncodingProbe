@@ -45,6 +45,50 @@ https://github.com/CharsetDetector/UTF-unknown
         }
 
         /// <summary>
+        /// カルチャーを設定する
+        /// </summary>
+        /// <param name="culture">カルチャー名</param>
+        /// <returns>設定されたカルチャー名</returns>
+        /// <exception cref="ArgumentException"></exception>
+        private static string SettingCulture(string culture)
+        {
+            if(string.IsNullOrEmpty(culture))
+            {
+                //空白設定ならば、何もしない。
+                return string.Empty;
+            }
+            else if(System.Threading.Thread.CurrentThread.CurrentCulture.Name.Equals(culture, StringComparison.OrdinalIgnoreCase) &&
+                    System.Threading.Thread.CurrentThread.CurrentUICulture.Name.Equals(culture, StringComparison.OrdinalIgnoreCase))
+            {
+                // 既に設定されているカルチャーと同じ場合は何もしない
+                return culture;
+            }
+            else
+            {
+                try
+                {
+#if NET
+                    // Native AOT 対応: CurrentCulture と CurrentUICulture の両方を設定
+                    System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(culture);
+                    // アプリケーション全体のデフォルトカルチャーも設定
+                    System.Globalization.CultureInfo.DefaultThreadCurrentCulture = new System.Globalization.CultureInfo(culture);
+                    System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = new System.Globalization.CultureInfo(culture);
+#else
+                    // .NET Framework 4.8: 現在のスレッドのカルチャーを設定
+                    System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(culture);
+#endif
+                }
+                catch (System.Globalization.CultureNotFoundException ex)
+                {
+                    throw new ArgumentException($"The specified culture '{culture}' is not supported.", ex);
+                }
+            }
+            return culture;
+        }
+
+        /// <summary>
         /// 文字エンコーディングを判定する
         /// </summary>
         /// <param name="buffer"></param>
@@ -58,7 +102,11 @@ https://github.com/CharsetDetector/UTF-unknown
                 encInfo = NormalDetectEncoding(buffer);
                 return encInfo;
             }
-
+            
+            if (!string.IsNullOrEmpty(options.Culture))
+            {
+                options.Culture = SettingCulture(options.Culture);
+            }
 
             switch (options.Strategy)
             {
@@ -91,6 +139,11 @@ https://github.com/CharsetDetector/UTF-unknown
                 return encInfo;
             }
 
+            if (!string.IsNullOrEmpty(options.Culture))
+            {
+                options.Culture = SettingCulture(options.Culture);
+            }
+
             switch (options.Strategy)
             {
                 case DetectionStrategy.UtfUnknownOnly:
@@ -121,6 +174,11 @@ https://github.com/CharsetDetector/UTF-unknown
             {
                 encInfo = NormalDetectEncoding(filePath);
                 return encInfo;
+            }
+
+            if (!string.IsNullOrEmpty(options.Culture))
+            {
+                options.Culture = SettingCulture(options.Culture);
             }
 
             switch (options.Strategy)
