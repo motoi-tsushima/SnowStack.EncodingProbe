@@ -1431,9 +1431,11 @@ namespace SnowStack.EncodingProbe
                             }
                         }
                     }
-                    
+
                     // 0x8Eの後に適切なバイトが続かない場合は規格外
-                    if (i + 1 >= this.BufferSize || 
+                    // EUC-KR/CN は SS2 を定義しないため 0x8E 自体が規格外
+                    if (targetEucCodePage == CodePageEucKr || targetEucCodePage == CodePageEucCn ||
+                        i + 1 >= this.BufferSize || 
                         (this._buffer[i + 1] < 0xA1 || this._buffer[i + 1] > 0xFE))
                     {
                         outOfSpecification = true;
