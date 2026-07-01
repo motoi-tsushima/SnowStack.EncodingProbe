@@ -117,15 +117,21 @@ namespace SnowStack.EncodingProbe
         private byte[] _buffer = null;
 
         /// <summary>
+        /// 文字エンコーディング判定の動作モード
+        /// </summary>
+        private DetectionMode _encodingDetectorMode = DetectionMode.Standard;
+
+        /// <summary>
         /// バイト配列を受け取るコンストラクタ
         /// </summary>
         /// <param name="buffer">判定対象のバイト配列</param>
         /// <exception cref="ArgumentNullException"><paramref name="buffer"/> が null の場合</exception>
-        public EncodingDetector(byte[] buffer)
+        public EncodingDetector(byte[] buffer, DetectionMode encodingDetectorMode = DetectionMode.Standard)
         {
             if (buffer == null) throw new ArgumentNullException(nameof(buffer));
             this._buffer = buffer;
             this.BufferSize = buffer.Length;
+            this._encodingDetectorMode = encodingDetectorMode;
         }
 
         /// <summary>
@@ -135,7 +141,7 @@ namespace SnowStack.EncodingProbe
         /// <param name="stream">判定対象のファイルストリーム</param>
         /// <exception cref="ArgumentNullException"><paramref name="stream"/> が null の場合</exception>
         /// <exception cref="ArgumentException"><paramref name="stream"/> が読み取り不可の場合</exception>
-        public EncodingDetector(Stream stream)
+        public EncodingDetector(Stream stream, DetectionMode encodingDetectorMode = DetectionMode.Standard)
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
             if (!stream.CanRead) throw new ArgumentException("読み取り不可能なストリームです。", nameof(stream));
@@ -144,6 +150,7 @@ namespace SnowStack.EncodingProbe
             stream.CopyTo(ms);
             this._buffer = ms.ToArray();
             this.BufferSize = this._buffer.Length;
+            this._encodingDetectorMode = encodingDetectorMode;
         }
 
         /// <summary>
@@ -152,7 +159,7 @@ namespace SnowStack.EncodingProbe
         /// </summary>
         /// <param name="filePath">判定対象のファイルパス</param>
         /// <exception cref="ArgumentNullException"><paramref name="filePath"/> が null または空の場合</exception>
-        public EncodingDetector(string filePath)
+        public EncodingDetector(string filePath, DetectionMode encodingDetectorMode = DetectionMode.Standard)
         {
             if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException(nameof(filePath));
 
@@ -161,6 +168,7 @@ namespace SnowStack.EncodingProbe
             fs.CopyTo(ms);
             this._buffer = ms.ToArray();
             this.BufferSize = this._buffer.Length;
+            this._encodingDetectorMode = encodingDetectorMode;
         }
 
         /// <summary>
@@ -314,7 +322,7 @@ namespace SnowStack.EncodingProbe
         /// <param name="codePage">エンコーディングのコードページ番号(例: 65001, 932)。</param>
         /// <param name="bom">BOM を伴うか。UTF-8 でのみ名前に反映される。</param>
         /// <returns>-Encoding に渡せるフレンドリ名、または数値コードページの文字列。</returns>
-        public string PSEncodingName(int codePage, bool bom)
+        public static string PSEncodingName(int codePage, bool bom)
         {
             if (codePage <= 0)
                 throw new ArgumentOutOfRangeException(nameof(codePage), codePage, "コードページ番号が不正です。");
@@ -426,7 +434,7 @@ namespace SnowStack.EncodingProbe
                 encInfo.CodePage = bomJudg.CodePage;
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                 encInfo.Bom = true;
-                encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
                 return encInfo;
             }
@@ -434,6 +442,12 @@ namespace SnowStack.EncodingProbe
             {
                 encInfo.CodePage = -1;
                 encInfo.Bom = false;
+            }
+
+            if(this._encodingDetectorMode == DetectionMode.Skippable)
+            {
+                // Skippable モードでは、BOM がない場合はここで判定を終了する
+                return encInfo;
             }
 
             // ISO-2022 または ASCII 判定
@@ -455,7 +469,7 @@ namespace SnowStack.EncodingProbe
                 }
 
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
-                encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
 
                 return encInfo;
@@ -477,7 +491,7 @@ namespace SnowStack.EncodingProbe
                 }
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
-                encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
 
                 return encInfo;
@@ -499,7 +513,7 @@ namespace SnowStack.EncodingProbe
                 }
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
-                encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
 
                 return encInfo;
@@ -513,7 +527,7 @@ namespace SnowStack.EncodingProbe
                 encInfo.CodePage = CodePageUtf8;
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
-                encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
                 return encInfo;
             }
@@ -534,7 +548,7 @@ namespace SnowStack.EncodingProbe
                     encInfo.CodePage = cpxxxCodePage;
                     encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
-                    encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                    encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
                     return encInfo;
                 }
@@ -569,7 +583,7 @@ namespace SnowStack.EncodingProbe
 
                         encInfo.CodePage = useShiftJis ? CodePageShiftJis : CodePageEucJp;
                         encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
-                        encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                        encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
                         return encInfo;
                     }
@@ -577,7 +591,7 @@ namespace SnowStack.EncodingProbe
                     encInfo.CodePage = eucCodePage;
                     encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
-                    encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                    encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
                     return encInfo;
                 }
@@ -591,7 +605,7 @@ namespace SnowStack.EncodingProbe
                     encInfo.CodePage = cpxxxCodePage;
                     encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
-                    encInfo.PSEncodingName = this.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                    encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                     return encInfo;
                 }
             }

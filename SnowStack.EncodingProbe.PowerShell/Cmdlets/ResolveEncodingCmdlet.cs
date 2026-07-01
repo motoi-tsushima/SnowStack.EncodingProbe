@@ -54,7 +54,7 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
             return;
         }
 
-        EncodingProbe.EncodingDetectorOptions detectorOptions = null;
+        EncodingDetectorOptions detectorOptions = null;
 
         // カルチャーを設定
         if (!string.IsNullOrWhiteSpace(Culture))
@@ -62,7 +62,7 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
             ResolveEncodingOptions.ChangeCurrentCulture(Culture);   
             if(detectorOptions == null)
             {
-                detectorOptions = new EncodingProbe.EncodingDetectorOptions();
+                detectorOptions = new EncodingDetectorOptions();
             }
             detectorOptions.Culture = Culture;
         }
@@ -73,7 +73,7 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
             var parsedStrategy = ResolveEncodingOptions.ParseStrategy(Strategy);
             if(detectorOptions == null)
             {
-                detectorOptions = new EncodingProbe.EncodingDetectorOptions();
+                detectorOptions = new EncodingDetectorOptions();
             }
             detectorOptions.Strategy = parsedStrategy;
         }

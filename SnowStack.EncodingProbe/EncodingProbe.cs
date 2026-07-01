@@ -26,25 +26,6 @@ https://github.com/CharsetDetector/UTF-unknown
 
 
         /// <summary>
-        /// 文字エンコーディング判定のオプション
-        /// </summary>
-        public sealed class EncodingDetectorOptions
-        {
-            public DetectionStrategy Strategy { get; set; } = DetectionStrategy.Combined;
-            public string? Culture { get; set; } = null;
-        }
-
-        /// <summary>
-        /// 文字エンコーディング判定の戦略
-        /// </summary>
-        public enum DetectionStrategy
-        {
-            Combined,       // デフォルト：両方を統合
-            UtfUnknownOnly, // UTF.Unknownのみ
-            NativeOnly      // 独自実装のみ
-        }
-
-        /// <summary>
         /// カルチャーを設定する
         /// </summary>
         /// <param name="culture">カルチャー名</param>
@@ -201,11 +182,12 @@ https://github.com/CharsetDetector/UTF-unknown
         /// 文字エンコーディングを判定する（独自実装）
         /// </summary>
         /// <param name="buffer"></param>
+        /// <param name="detectionMode"></pa
         /// <returns></returns>
-        public static EncodingInformation DetectEncoding(byte[] buffer)
+        public static EncodingInformation DetectEncoding(byte[] buffer, DetectionMode detectionMode = DetectionMode.Standard)
         {
             EncodingInformation encInfo;
-            EncodingDetector encDetec = new EncodingDetector(buffer);
+            EncodingDetector encDetec = new EncodingDetector(buffer, detectionMode);
             encInfo = encDetec.Detection();
             return encInfo;
         }
@@ -215,10 +197,10 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public static EncodingInformation DetectEncoding(Stream stream)
+        public static EncodingInformation DetectEncoding(Stream stream, DetectionMode detectionMode = DetectionMode.Standard)
         {
             EncodingInformation encInfo;
-            EncodingDetector encDetec = new EncodingDetector(stream);
+            EncodingDetector encDetec = new EncodingDetector(stream, detectionMode);
             encInfo = encDetec.Detection();
             return encInfo;
         }
@@ -227,11 +209,12 @@ https://github.com/CharsetDetector/UTF-unknown
         /// 文字エンコーディングを判定する（独自実装）
         /// </summary>
         /// <param name="filePath"></param>
+        /// <param name="detectionMode"></param>
         /// <returns></returns>
-        public static EncodingInformation DetectEncoding(string filePath)
+        public static EncodingInformation DetectEncoding(string filePath, DetectionMode detectionMode = DetectionMode.Standard)
         {
             EncodingInformation encInfo;
-            EncodingDetector encDetec = new EncodingDetector(filePath);
+            EncodingDetector encDetec = new EncodingDetector(filePath, detectionMode);
             encInfo = encDetec.Detection();
             return encInfo;
         }
@@ -245,6 +228,8 @@ https://github.com/CharsetDetector/UTF-unknown
         {
             EncodingInformation encInfo = new EncodingInformation();
 
+            encInfo = DetectEncoding(buffer, DetectionMode.Skippable);
+
             var result = CharsetDetector.DetectFromBytes(buffer);
             if (result != null && result.Detected != null)
             {
@@ -254,6 +239,7 @@ https://github.com/CharsetDetector/UTF-unknown
                     {
                         encInfo.EncodingName = result.Detected.EncodingName;
                         encInfo.CodePage = result.Detected.Encoding.CodePage;
+                        encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                     }
                     catch (ArgumentException)
                     {
@@ -289,6 +275,8 @@ https://github.com/CharsetDetector/UTF-unknown
         {
             EncodingInformation encInfo = new EncodingInformation();
 
+            encInfo = DetectEncoding(stream, DetectionMode.Skippable);
+
             var result = CharsetDetector.DetectFromStream(stream);
             if (result != null && result.Detected != null)
             {
@@ -298,6 +286,7 @@ https://github.com/CharsetDetector/UTF-unknown
                     {
                         encInfo.EncodingName = result.Detected.EncodingName;
                         encInfo.CodePage = result.Detected.Encoding.CodePage;
+                        encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                     }
                     catch (ArgumentException)
                     {
@@ -333,6 +322,8 @@ https://github.com/CharsetDetector/UTF-unknown
         {
             EncodingInformation encInfo = new EncodingInformation();
 
+            encInfo = DetectEncoding(filePath, DetectionMode.Skippable);
+
             var result = CharsetDetector.DetectFromFile(filePath);
             if (result != null && result.Detected != null)
             {
@@ -342,6 +333,7 @@ https://github.com/CharsetDetector/UTF-unknown
                     {
                         encInfo.EncodingName = result.Detected.EncodingName;
                         encInfo.CodePage = result.Detected.Encoding.CodePage;
+                        encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                     }
                     catch (ArgumentException)
                     {

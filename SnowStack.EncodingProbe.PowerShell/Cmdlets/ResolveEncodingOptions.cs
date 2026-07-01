@@ -13,20 +13,20 @@ namespace SnowStack.EncodingProbe.PowerShell.Cmdlets
         /// <param name="strategy">判定戦略を表す文字列</param>
         /// <returns>対応するDetectionStrategy列挙値</returns>
         /// <exception cref="ArgumentException">無効な戦略が指定された場合にスローされる</exception>
-        internal static EncodingProbe.DetectionStrategy ParseStrategy(string strategy)
+        internal static DetectionStrategy ParseStrategy(string strategy)
         {
             strategy = strategy.Trim().ToLower();
             return strategy switch
             {
-                "combined" => EncodingProbe.DetectionStrategy.Combined,
-                "utfunknownonly" => EncodingProbe.DetectionStrategy.UtfUnknownOnly,
-                "nativeonly" => EncodingProbe.DetectionStrategy.NativeOnly,
-                "0" => EncodingProbe.DetectionStrategy.Combined,
-                "3" => EncodingProbe.DetectionStrategy.UtfUnknownOnly,
-                "1" => EncodingProbe.DetectionStrategy.NativeOnly,
-                "default" => EncodingProbe.DetectionStrategy.Combined,
-                "utfunknown" => EncodingProbe.DetectionStrategy.UtfUnknownOnly,
-                "native" => EncodingProbe.DetectionStrategy.NativeOnly,
+                "combined" => DetectionStrategy.Combined,
+                "utfunknownonly" => DetectionStrategy.UtfUnknownOnly,
+                "nativeonly" => DetectionStrategy.NativeOnly,
+                "0" => DetectionStrategy.Combined,
+                "3" => DetectionStrategy.UtfUnknownOnly,
+                "1" => DetectionStrategy.NativeOnly,
+                "default" => DetectionStrategy.Combined,
+                "utfunknown" => DetectionStrategy.UtfUnknownOnly,
+                "native" => DetectionStrategy.NativeOnly,
                 _ => throw new ArgumentException($"Invalid strategy: {strategy}")
             };
         }
