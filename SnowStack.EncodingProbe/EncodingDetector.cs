@@ -474,30 +474,13 @@ namespace SnowStack.EncodingProbe
 
             if (isChineseSimplified)
             {
-                // 中国（簡体字）の場合：EUC-CN を先に判定し、失敗なら CP936/GB18030 を判定
-                // （EUC-CN と CP936 のクロスチェックは後で対応予定）
-
-                // EUC-CN 判定
-                int eucCnCodePage;
-                outOfSpecification = EUCxx_Detection(out eucCnCodePage);
+                // 中国（簡体字）の場合：GB2312 / GBK / GB18030 の3段階アルゴリズムで判定
+                int gbCodePage;
+                outOfSpecification = GB_Detection(out gbCodePage);
 
                 if (outOfSpecification == false)
                 {
-                    encInfo.CodePage = eucCnCodePage;
-                    encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
-                    encInfo.Bom = false;
-                    encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
-
-                    return encInfo;
-                }
-
-                // CP936/GB18030 判定
-                int cpxxxCodePage;
-                outOfSpecification = CPxxx_Detection(out cpxxxCodePage);
-
-                if (outOfSpecification == false)
-                {
-                    encInfo.CodePage = cpxxxCodePage;
+                    encInfo.CodePage = gbCodePage;
                     encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
                     encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
@@ -1702,13 +1685,8 @@ namespace SnowStack.EncodingProbe
                          cultureName.Equals("zh-Hans", StringComparison.OrdinalIgnoreCase) ||
                          cultureName.Equals("zh-SG", StringComparison.OrdinalIgnoreCase))
                 {
-                    // 中国（簡体字） -> CP936 / GB18030
-                    int cp936CodePage;
-                    outOfSpecification = CP936_Detection(out cp936CodePage);
-                    if (!outOfSpecification)
-                    {
-                        codePage = cp936CodePage;
-                    }
+                    // 中国（簡体字） -> GB2312 / GB18030
+                    outOfSpecification = GB_Detection(out codePage);
                 }
                 else if (cultureName.Equals("zh-TW", StringComparison.OrdinalIgnoreCase) ||
                          cultureName.Equals("zh-Hant", StringComparison.OrdinalIgnoreCase))
@@ -1940,6 +1918,93 @@ namespace SnowStack.EncodingProbe
             }
 
             return outOfSpecification;
+        }
+
+        /// <summary>
+        /// GB2312 / GBK / GB18030 (中国簡体字) であるか判定する（3段階アルゴリズム）
+        /// </summary>
+        /// <remarks>
+        /// Step 1: GB18030 の4バイトシーケンスを検出したら即座に GB18030 と確定する。
+        /// Step 2: GB2312 範囲外バイト（1バイト目 0x81–0xA0 または 2バイト目 0x40–0xA0）が
+        ///         1つでも存在する場合、GB2312 を候補から除外する。
+        /// Step 3: GB2312 除外なし → GB2312（EUC-CN形式, CP51936）確定。
+        ///         GB2312 除外あり → 包摂的に GB18030（CP54936）確定。
+        ///         GBK と GB18030（2バイト部）はバイト構造上区別不能なため、常に GB18030 を採用する。
+        /// </remarks>
+        /// <param name="codePage">GB2312=51936 / GB18030=54936（判別できない場合は-1）</param>
+        /// <returns>true=GB系ではない（規格外）</returns>
+        public bool GB_Detection(out int codePage)
+        {
+            codePage = -1;
+
+            if (this.BufferSize == 0)
+                return true;
+
+            bool gb2312Excluded = false;
+            int i = 0;
+
+            while (i < this.BufferSize)
+            {
+                byte b = this._buffer[i];
+
+                // 1バイト文字（ASCII: 0x00–0x7F）
+                if (b <= 0x7F)
+                {
+                    i++;
+                    continue;
+                }
+
+                // 0x80 および 0xFF は GBK/GB18030 の有効な1バイト目ではない
+                if (b == 0x80 || b > 0xFE)
+                    return true;
+
+                // 1バイト目: 0x81–0xFE。次のバイトが必要
+                if (i + 1 >= this.BufferSize)
+                    return true;
+
+                byte b2 = this._buffer[i + 1];
+
+                // Step 1: GB18030 4バイトシーケンス検出（最優先・決定的）
+                // パターン: [0x81–0xFE][0x30–0x39][0x81–0xFE][0x30–0x39]
+                if (b2 >= 0x30 && b2 <= 0x39)
+                {
+                    if (i + 3 >= this.BufferSize)
+                        return true;
+
+                    byte b3 = this._buffer[i + 2];
+                    byte b4 = this._buffer[i + 3];
+
+                    if (b3 >= 0x81 && b3 <= 0xFE && b4 >= 0x30 && b4 <= 0x39)
+                    {
+                        // GB18030 の4バイトシーケンスを確定
+                        codePage = CodePageGb18030;
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                // 2バイト文字: [0x81–0xFE][0x40–0xFE（0x7F除く）]
+                if ((b2 >= 0x40 && b2 <= 0x7E) || (b2 >= 0x80 && b2 <= 0xFE))
+                {
+                    // Step 2: GB2312 範囲外バイトの検出（除外判定・決定的）
+                    // 1バイト目が 0xA1 未満、または 2バイト目が 0xA1 未満なら GB2312 を除外
+                    if (b < 0xA1 || b2 < 0xA1)
+                        gb2312Excluded = true;
+
+                    i += 2;
+                    continue;
+                }
+
+                // 上記以外は規格外
+                return true;
+            }
+
+            // Step 3: 残存候補の解決
+            // gb2312Excluded == false → 全バイトが GB2312 範囲内（GBK との両方に該当）→ GBK を規定値として採用
+            // gb2312Excluded == true  → GB2312 範囲外バイト検出 → 包摂的に GB18030 確定
+            codePage = gb2312Excluded ? CodePageGb18030 : CodePageCp936;
+            return false;
         }
 
         /// <summary>
