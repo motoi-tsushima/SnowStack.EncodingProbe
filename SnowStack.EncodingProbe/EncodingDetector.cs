@@ -474,8 +474,23 @@ namespace SnowStack.EncodingProbe
 
             if (isChineseSimplified)
             {
-                // 中国（簡体字）の場合：CP936/GB18030のみ判定（EUC-CNはスキップ）
-                
+                // 中国（簡体字）の場合：EUC-CN を先に判定し、失敗なら CP936/GB18030 を判定
+                // （EUC-CN と CP936 のクロスチェックは後で対応予定）
+
+                // EUC-CN 判定
+                int eucCnCodePage;
+                outOfSpecification = EUCxx_Detection(out eucCnCodePage);
+
+                if (outOfSpecification == false)
+                {
+                    encInfo.CodePage = eucCnCodePage;
+                    encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                    encInfo.Bom = false;
+                    encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+
+                    return encInfo;
+                }
+
                 // CP936/GB18030 判定
                 int cpxxxCodePage;
                 outOfSpecification = CPxxx_Detection(out cpxxxCodePage);
@@ -492,7 +507,7 @@ namespace SnowStack.EncodingProbe
             }
             else
             {
-                // 中国以外の場合：EUC → CPxxx の順で判定（従来通り）
+                // 中国簡体字以外の場合：EUC → CPxxx の順で判定
 
                 // EUC 判定 (EUC-JP/KR/TW)
                 int eucCodePage;
@@ -520,6 +535,30 @@ namespace SnowStack.EncodingProbe
 
                         encInfo.CodePage = useShiftJis ? CodePageShiftJis : CodePageEucJp;
                         encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                        encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+
+                        return encInfo;
+                    }
+
+                    // 韓国語カルチャーの場合、EUC-KR と CP949 の両方に該当するか確認する
+                    if (eucCodePage == CodePageEucKr && !CP949_Detection())
+                    {
+                        // 両方に該当 → CP949 を優先
+                        encInfo.CodePage = CodePageCp949;
+                        encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                        encInfo.Bom = false;
+                        encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+
+                        return encInfo;
+                    }
+
+                    // 台湾・香港カルチャーの場合、EUC-TW と CP950 の両方に該当するか確認する
+                    if (eucCodePage == CodePageEucTw && !CP950_Detection())
+                    {
+                        // 両方に該当 → CP950 を優先
+                        encInfo.CodePage = CodePageCp950;
+                        encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                        encInfo.Bom = false;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
                         return encInfo;
