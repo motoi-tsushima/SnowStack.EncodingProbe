@@ -59,7 +59,6 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
         // カルチャーを設定
         if (!string.IsNullOrWhiteSpace(Culture))
         {
-            ResolveEncodingOptions.ChangeCurrentCulture(Culture);   
             if(detectorOptions == null)
             {
                 detectorOptions = new EncodingDetectorOptions();

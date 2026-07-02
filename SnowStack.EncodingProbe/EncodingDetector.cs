@@ -261,30 +261,6 @@ namespace SnowStack.EncodingProbe
             }
         }
 
-        /*--- 一時退避 begin ---
-        /// <summary>
-        /// 改行コードの種類を文字列で返す（表示用）
-        /// </summary>
-        public string LineBreakDisplayString
-        {
-            get
-            {
-                return LineBreak switch
-                {
-                    LineBreakType.None => "No",
-                    LineBreakType.CrLf => "CR-LF",
-                    LineBreakType.Lf => "LF",
-                    LineBreakType.Cr => "CR",
-                    LineBreakType.LfAndCrLf => "LF & CR-LF",
-                    LineBreakType.CrAndCrLf => "CR & CR-LF",
-                    LineBreakType.LfAndCr => "LF & CR",
-                    LineBreakType.LfAndCrAndCrLf => "LF & CR & CR-LF",
-                    _ => "Unknown",
-                };
-            }
-        }
-        --- 一時退避 end ---*/
-
         /// <summary>
         /// コードページからエンコーディング名を取得する
         /// </summary>
@@ -375,54 +351,18 @@ namespace SnowStack.EncodingProbe
         }
 
         /// <summary>
-        /// ファイルを読んで判定実行
-        /// </summary>
-        /// <param name="fileName">ファイル名</param>
-        /// <returns>文字エンコーディング判定情報</returns>
-        public EncodingInformation Detection(string fileName)
-        {
-            EncodingInformation encInfo = null;
-
-            using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
-            {
-                long fileLength = fs.Length;
-                
-                // ファイルサイズ検証：2GB以上のファイルはエラー
-                if (fileLength > int.MaxValue)
-                {
-                    throw new EncodingDetectorException($"ファイル {fileName} が大きすぎます（最大 2GB）。");
-                }
-                
-                this.BufferSize = (int)fileLength;
-                this._buffer = new byte[this.BufferSize];
-                
-                // ゼロサイズのUTF-16 LE/BE 対応
-                this._buffer[BufferIndex2] = DefaultBufferValue;
-                this._buffer[BufferIndex3] = DefaultBufferValue;
-
-                int readCount = fs.Read(this._buffer, 0, this.BufferSize);
-
-                encInfo = Detection();
-
-                //Console.WriteLine("EncodingDetector : Encoding = {0} , Codepage = {1} , BOM = {2}", encInfo.encodingName, encInfo.codePage, encInfo.bom);
-            }
-
-            return encInfo;
-        }
-
-        /// <summary>
         /// 判定実行
         /// </summary>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns>文字エンコーディング判定情報</returns>
-        public EncodingInformation Detection()
+        public EncodingInformation Detection(string culture = null)
         {
             bool outOfSpecification;
             EncodingInformation encInfo = new EncodingInformation();
             ByteOrderMarkDetection bomJudg = new ByteOrderMarkDetection();
 
-            // カルチャー情報の取得（IsChineseSimplifiedCulture 内で一度取得したカルチャー名を保持して、複数回の判定で繰り返し取得するのを防止するため）
-            CultureInfo currentCulture = CultureInfo.CurrentCulture;
-            _cultureName = currentCulture.Name;
+            // パラメータで与えられたカルチャー名を使用する（未指定の場合は現在のカルチャーにフォールバック）
+            _cultureName = !string.IsNullOrEmpty(culture) ? culture : CultureInfo.CurrentCulture.Name;
             encInfo.Culture = _cultureName;
 
             //改行コードの種類を判定してセットする
@@ -514,7 +454,6 @@ namespace SnowStack.EncodingProbe
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
-
 
                 return encInfo;
             }
@@ -1534,8 +1473,7 @@ namespace SnowStack.EncodingProbe
         {
             try
             {
-                CultureInfo currentCulture = CultureInfo.CurrentCulture;
-                string cultureName = currentCulture.Name;
+                string cultureName = _cultureName ?? CultureInfo.CurrentCulture.Name;
 
                 // カルチャー名から判定
                 // 日本語 -> EUC-JP
@@ -1694,8 +1632,7 @@ namespace SnowStack.EncodingProbe
             
             try
             {
-                CultureInfo currentCulture = CultureInfo.CurrentCulture;
-                string cultureName = currentCulture.Name;
+                string cultureName = _cultureName ?? CultureInfo.CurrentCulture.Name;
 
                 // カルチャー別に対応するCPxxxを判定
                 if (cultureName.StartsWith("ja", StringComparison.OrdinalIgnoreCase))

@@ -26,45 +26,25 @@ https://github.com/CharsetDetector/UTF-unknown
 
 
         /// <summary>
-        /// カルチャーを設定する
+        /// カルチャー名の妥当性を検証する
         /// </summary>
         /// <param name="culture">カルチャー名</param>
-        /// <returns>設定されたカルチャー名</returns>
+        /// <returns>検証済みのカルチャー名</returns>
         /// <exception cref="ArgumentException"></exception>
-        private static string SettingCulture(string culture)
+        private static string ValidateCulture(string culture)
         {
             if(string.IsNullOrEmpty(culture))
             {
                 //空白設定ならば、何もしない。
                 return string.Empty;
             }
-            else if(System.Threading.Thread.CurrentThread.CurrentCulture.Name.Equals(culture, StringComparison.OrdinalIgnoreCase) &&
-                    System.Threading.Thread.CurrentThread.CurrentUICulture.Name.Equals(culture, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                // 既に設定されているカルチャーと同じ場合は何もしない
-                return culture;
+                _ = new System.Globalization.CultureInfo(culture);
             }
-            else
+            catch (System.Globalization.CultureNotFoundException ex)
             {
-                try
-                {
-#if NET
-                    // Native AOT 対応: CurrentCulture と CurrentUICulture の両方を設定
-                    System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
-                    System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(culture);
-                    // アプリケーション全体のデフォルトカルチャーも設定
-                    System.Globalization.CultureInfo.DefaultThreadCurrentCulture = new System.Globalization.CultureInfo(culture);
-                    System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = new System.Globalization.CultureInfo(culture);
-#else
-                    // .NET Framework 4.8: 現在のスレッドのカルチャーを設定
-                    System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
-                    System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(culture);
-#endif
-                }
-                catch (System.Globalization.CultureNotFoundException ex)
-                {
-                    throw new ArgumentException($"The specified culture '{culture}' is not supported.", ex);
-                }
+                throw new ArgumentException($"The specified culture '{culture}' is not supported.", ex);
             }
             return culture;
         }
@@ -86,20 +66,20 @@ https://github.com/CharsetDetector/UTF-unknown
             
             if (!string.IsNullOrEmpty(options.Culture))
             {
-                options.Culture = SettingCulture(options.Culture);
+                options.Culture = ValidateCulture(options.Culture);
             }
 
             switch (options.Strategy)
             {
                 case DetectionStrategy.UtfUnknownOnly:
-                    encInfo = DetectUtfUnknown(buffer);
+                    encInfo = DetectUtfUnknown(buffer, options.Culture);
                     break;
                 case DetectionStrategy.NativeOnly:
-                    encInfo = DetectEncoding(buffer);
+                    encInfo = DetectEncoding(buffer, culture: options.Culture);
                     break;
                 case DetectionStrategy.Combined:
                 default:
-                    encInfo = NormalDetectEncoding(buffer);
+                    encInfo = NormalDetectEncoding(buffer, options.Culture);
                     break;
             }
             return encInfo;
@@ -122,20 +102,20 @@ https://github.com/CharsetDetector/UTF-unknown
 
             if (!string.IsNullOrEmpty(options.Culture))
             {
-                options.Culture = SettingCulture(options.Culture);
+                options.Culture = ValidateCulture(options.Culture);
             }
 
             switch (options.Strategy)
             {
                 case DetectionStrategy.UtfUnknownOnly:
-                    encInfo = DetectUtfUnknown(stream);
+                    encInfo = DetectUtfUnknown(stream, options.Culture);
                     break;
                 case DetectionStrategy.NativeOnly:
-                    encInfo = DetectEncoding(stream);
+                    encInfo = DetectEncoding(stream, culture: options.Culture);
                     break;
                 case DetectionStrategy.Combined:
                 default:
-                    encInfo = NormalDetectEncoding(stream);
+                    encInfo = NormalDetectEncoding(stream, options.Culture);
                     break;
             }
             return encInfo;
@@ -159,20 +139,20 @@ https://github.com/CharsetDetector/UTF-unknown
 
             if (!string.IsNullOrEmpty(options.Culture))
             {
-                options.Culture = SettingCulture(options.Culture);
+                options.Culture = ValidateCulture(options.Culture);
             }
 
             switch (options.Strategy)
             {
                 case DetectionStrategy.UtfUnknownOnly:
-                    encInfo = DetectUtfUnknown(filePath);
+                    encInfo = DetectUtfUnknown(filePath, options.Culture);
                     break;
                 case DetectionStrategy.NativeOnly:
-                    encInfo = DetectEncoding(filePath);
+                    encInfo = DetectEncoding(filePath, culture: options.Culture);
                     break;
                 case DetectionStrategy.Combined:
                 default:
-                    encInfo = NormalDetectEncoding(filePath);
+                    encInfo = NormalDetectEncoding(filePath, options.Culture);
                     break;
             }
             return encInfo;
@@ -184,11 +164,11 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <param name="buffer"></param>
         /// <param name="detectionMode"></pa
         /// <returns></returns>
-        public static EncodingInformation DetectEncoding(byte[] buffer, DetectionMode detectionMode = DetectionMode.Standard)
+        public static EncodingInformation DetectEncoding(byte[] buffer, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
         {
             EncodingInformation encInfo;
             EncodingDetector encDetec = new EncodingDetector(buffer, detectionMode);
-            encInfo = encDetec.Detection();
+            encInfo = encDetec.Detection(culture);
             return encInfo;
         }
         
@@ -196,12 +176,14 @@ https://github.com/CharsetDetector/UTF-unknown
         /// 文字エンコーディングを判定する（独自実装）
         /// </summary>
         /// <param name="stream"></param>
+        /// <param name="detectionMode"></param>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
-        public static EncodingInformation DetectEncoding(Stream stream, DetectionMode detectionMode = DetectionMode.Standard)
+        public static EncodingInformation DetectEncoding(Stream stream, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
         {
             EncodingInformation encInfo;
             EncodingDetector encDetec = new EncodingDetector(stream, detectionMode);
-            encInfo = encDetec.Detection();
+            encInfo = encDetec.Detection(culture);
             return encInfo;
         }
 
@@ -210,12 +192,13 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="detectionMode"></param>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
-        public static EncodingInformation DetectEncoding(string filePath, DetectionMode detectionMode = DetectionMode.Standard)
+        public static EncodingInformation DetectEncoding(string filePath, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
         {
             EncodingInformation encInfo;
             EncodingDetector encDetec = new EncodingDetector(filePath, detectionMode);
-            encInfo = encDetec.Detection();
+            encInfo = encDetec.Detection(culture);
             return encInfo;
         }
 
@@ -224,11 +207,11 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        public static EncodingInformation DetectUtfUnknown(byte[] buffer)
+        public static EncodingInformation DetectUtfUnknown(byte[] buffer, string culture = null)
         {
             EncodingInformation encInfo = new EncodingInformation();
 
-            encInfo = DetectEncoding(buffer, DetectionMode.Skippable);
+            encInfo = DetectEncoding(buffer, DetectionMode.Skippable, culture);
 
             var result = CharsetDetector.DetectFromBytes(buffer);
             if (result != null && result.Detected != null)
@@ -271,11 +254,11 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public static EncodingInformation DetectUtfUnknown(Stream stream)
+        public static EncodingInformation DetectUtfUnknown(Stream stream, string culture = null)
         {
             EncodingInformation encInfo = new EncodingInformation();
 
-            encInfo = DetectEncoding(stream, DetectionMode.Skippable);
+            encInfo = DetectEncoding(stream, DetectionMode.Skippable, culture);
 
             var result = CharsetDetector.DetectFromStream(stream);
             if (result != null && result.Detected != null)
@@ -318,11 +301,11 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static EncodingInformation DetectUtfUnknown(string filePath)
+        public static EncodingInformation DetectUtfUnknown(string filePath, string culture = null)
         {
             EncodingInformation encInfo = new EncodingInformation();
 
-            encInfo = DetectEncoding(filePath, DetectionMode.Skippable);
+            encInfo = DetectEncoding(filePath, DetectionMode.Skippable, culture);
 
             var result = CharsetDetector.DetectFromFile(filePath);
             if (result != null && result.Detected != null)
@@ -365,14 +348,14 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        public static EncodingInformation NormalDetectEncoding(byte[] buffer)
+        public static EncodingInformation NormalDetectEncoding(byte[] buffer, string culture = null)
         {
             EncodingInformation encInfo;
 
-            encInfo = DetectEncoding(buffer);
+            encInfo = DetectEncoding(buffer, culture: culture);
             if (encInfo.CodePage < 0)
             {
-                encInfo = DetectUtfUnknown(buffer);
+                encInfo = DetectUtfUnknown(buffer, culture);
             }
             return encInfo;
         }
@@ -382,14 +365,14 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public static EncodingInformation NormalDetectEncoding(Stream stream)
+        public static EncodingInformation NormalDetectEncoding(Stream stream, string culture = null)
         {
             EncodingInformation encInfo;
 
-            encInfo = DetectEncoding(stream);
+            encInfo = DetectEncoding(stream, culture: culture);
             if (encInfo.CodePage < 0)
             {
-                encInfo = DetectUtfUnknown(stream);
+                encInfo = DetectUtfUnknown(stream, culture);
             }
             return encInfo;
         }
@@ -399,14 +382,14 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static EncodingInformation NormalDetectEncoding(string filePath)
+        public static EncodingInformation NormalDetectEncoding(string filePath, string culture = null)
         {
             EncodingInformation encInfo;
 
-            encInfo = DetectEncoding(filePath);
+            encInfo = DetectEncoding(filePath, culture: culture);
             if (encInfo.CodePage < 0)
             {
-                encInfo = DetectUtfUnknown(filePath);
+                encInfo = DetectUtfUnknown(filePath, culture);
             }
             return encInfo;
         }

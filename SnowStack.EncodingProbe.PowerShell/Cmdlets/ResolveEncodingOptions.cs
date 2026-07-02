@@ -30,39 +30,5 @@ namespace SnowStack.EncodingProbe.PowerShell.Cmdlets
                 _ => throw new ArgumentException($"Invalid strategy: {strategy}")
             };
         }
-
-        /// <summary>
-        /// 指定されたカルチャーを現在のスレッドのカルチャーに設定する
-        /// </summary>
-        /// <param name="culture">設定するカルチャーの名前</param>
-        /// <returns>設定されたカルチャーの名前</returns>
-        /// <exception cref="Exception">無効なカルチャーが指定された場合にスローされる</exception>
-        internal static string ChangeCurrentCulture(string? culture)
-        {
-            if (!string.IsNullOrWhiteSpace(culture))
-            {
-                culture = culture.Trim();
-                try
-                {
-                    var cultureInfo = new System.Globalization.CultureInfo(culture);
-                    // Native AOT 対応: CurrentCulture と CurrentUICulture の両方を設定
-                    System.Threading.Thread.CurrentThread.CurrentCulture = cultureInfo;
-                    System.Threading.Thread.CurrentThread.CurrentUICulture = cultureInfo;
-                    // アプリケーション全体のデフォルトカルチャーも設定
-                    System.Globalization.CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-                    System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
-                    return culture;
-                }
-                catch (System.Globalization.CultureNotFoundException ex)
-                {
-                    throw new Exception(string.Format(ValidationMessages.InvalidCultureInfo, culture) + "\n" + ex.Message, ex);
-                }
-                catch (ArgumentException ex)
-                {
-                    throw new Exception(string.Format(ValidationMessages.InvalidCultureInfo, culture) + "\n" + ex.Message, ex);
-                }
-            }
-            return string.Empty;
-        }
     }
 }
