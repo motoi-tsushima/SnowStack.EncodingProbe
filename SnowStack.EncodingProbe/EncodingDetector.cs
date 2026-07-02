@@ -411,7 +411,6 @@ namespace SnowStack.EncodingProbe
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
 
-
                 return encInfo;
             }
 
@@ -432,7 +431,6 @@ namespace SnowStack.EncodingProbe
                 encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
-
 
                 return encInfo;
             }
@@ -1371,10 +1369,10 @@ namespace SnowStack.EncodingProbe
                         }
                     }
 
-                    // 0x8Eの後に適切なバイトが続かない場合は規格外
-                    // EUC-KR/CN は SS2 を定義しないため 0x8E 自体が規格外
-                    if (targetEucCodePage == CodePageEucKr || targetEucCodePage == CodePageEucCn ||
-                        i + 1 >= this.BufferSize || 
+                    // 例：EUC-TW 用の追加チェック
+                    if (targetEucCodePage == CodePageEucTw ||  // ← EUC-TW も無効な SS2 は規格外
+                        targetEucCodePage == CodePageEucKr || targetEucCodePage == CodePageEucCn ||
+                        i + 1 >= this.BufferSize ||
                         (this._buffer[i + 1] < 0xA1 || this._buffer[i + 1] > 0xFE))
                     {
                         outOfSpecification = true;
@@ -1430,6 +1428,14 @@ namespace SnowStack.EncodingProbe
                     else
                     {
                         byteCharCount = 1;
+                    }
+
+                    // EUC-CN (GB2312): 第1バイトの有効範囲は 0xA1～0xF7
+                    // byteCharCount == 1 のとき、現在のバイトが2バイト文字の第1バイト
+                    if (byteCharCount == 1 && targetEucCodePage == CodePageEucCn && currentByte > 0xF7)
+                    {
+                        outOfSpecification = true;
+                        break;
                     }
 
                     beforeCode = BYTECODE.TwoByteCode;
