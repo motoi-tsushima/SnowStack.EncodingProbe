@@ -164,7 +164,7 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <param name="buffer"></param>
         /// <param name="detectionMode"></pa
         /// <returns></returns>
-        public static EncodingInformation DetectEncoding(byte[] buffer, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
+        internal static EncodingInformation DetectEncoding(byte[] buffer, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
         {
             EncodingInformation encInfo;
             EncodingDetector encDetec = new EncodingDetector(buffer, detectionMode);
@@ -179,7 +179,7 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <param name="detectionMode"></param>
         /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
-        public static EncodingInformation DetectEncoding(Stream stream, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
+        internal static EncodingInformation DetectEncoding(Stream stream, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
         {
             EncodingInformation encInfo;
             EncodingDetector encDetec = new EncodingDetector(stream, detectionMode);
@@ -194,7 +194,7 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <param name="detectionMode"></param>
         /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
-        public static EncodingInformation DetectEncoding(string filePath, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
+        internal static EncodingInformation DetectEncoding(string filePath, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
         {
             EncodingInformation encInfo;
             EncodingDetector encDetec = new EncodingDetector(filePath, detectionMode);
@@ -207,7 +207,7 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        public static EncodingInformation DetectUtfUnknown(byte[] buffer, string culture = null)
+        internal static EncodingInformation DetectUtfUnknown(byte[] buffer, string culture = null)
         {
             EncodingInformation encInfo = new EncodingInformation();
 
@@ -254,7 +254,7 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public static EncodingInformation DetectUtfUnknown(Stream stream, string culture = null)
+        internal static EncodingInformation DetectUtfUnknown(Stream stream, string culture = null)
         {
             EncodingInformation encInfo = new EncodingInformation();
 
@@ -301,7 +301,7 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static EncodingInformation DetectUtfUnknown(string filePath, string culture = null)
+        internal static EncodingInformation DetectUtfUnknown(string filePath, string culture = null)
         {
             EncodingInformation encInfo = new EncodingInformation();
 
@@ -348,7 +348,7 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        public static EncodingInformation NormalDetectEncoding(byte[] buffer, string culture = null)
+        internal static EncodingInformation NormalDetectEncoding(byte[] buffer, string culture = null)
         {
             EncodingInformation encInfo;
 
@@ -365,7 +365,7 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        public static EncodingInformation NormalDetectEncoding(Stream stream, string culture = null)
+        internal static EncodingInformation NormalDetectEncoding(Stream stream, string culture = null)
         {
             EncodingInformation encInfo;
 
@@ -382,7 +382,7 @@ https://github.com/CharsetDetector/UTF-unknown
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static EncodingInformation NormalDetectEncoding(string filePath, string culture = null)
+        internal static EncodingInformation NormalDetectEncoding(string filePath, string culture = null)
         {
             EncodingInformation encInfo;
 
@@ -396,3 +396,4 @@ https://github.com/CharsetDetector/UTF-unknown
 
     }
 }
+

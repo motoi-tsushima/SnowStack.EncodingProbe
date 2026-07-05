@@ -174,10 +174,9 @@ namespace SnowStack.EncodingProbe
         /// <summary>
         /// バイト配列から改行コードの種類を判定してセットする
         /// </summary>
-        /// <param name="buffer">判定対象のバイト配列</param>
-        public LineBreakType DetectLineBreak(byte[] buffer)
+        public LineBreakType DetectLineBreak()
         {
-            if (buffer == null || buffer.Length == 0)
+            if (this.BufferSize == 0)
             {
                 return  LineBreakType.None;
             }
@@ -186,23 +185,23 @@ namespace SnowStack.EncodingProbe
             int countLf = 0;
             int countCr = 0;
 
-            for (int i = 0; i < buffer.Length; i++)
+            for (int i = 0; i < this.BufferSize; i++)
             {
-                if (buffer[i] == 0x0D)
+                if (this._buffer[i] == 0x0D)
                 {
-                    if (i + 1 < buffer.Length && buffer[i + 1] == 0x0A)
+                    if (i + 1 < this.BufferSize && this._buffer[i + 1] == 0x0A)
                     {
                         // UTF-8 / ASCII の CR-LF: 0x0D 0x0A
                         countCrLf++;
                         i++; // 0x0A をスキップ
                     }
-                    else if (i + 2 < buffer.Length && buffer[i + 1] == 0x00 && buffer[i + 2] == 0x0A)
+                    else if (i + 2 < this.BufferSize && this._buffer[i + 1] == 0x00 && this._buffer[i + 2] == 0x0A)
                     {
                         // UTF-16 (LE/BE) の CR-LF: 0x0D 0x00 0x0A (...)
                         countCrLf++;
                         i += 2; // 0x00 0x0A をスキップ
                     }
-                    else if (i + 4 < buffer.Length && buffer[i + 1] == 0x00 && buffer[i + 2] == 0x00 && buffer[i + 3] == 0x00 && buffer[i + 4] == 0x0A)
+                    else if (i + 4 < this.BufferSize && this._buffer[i + 1] == 0x00 && this._buffer[i + 2] == 0x00 && this._buffer[i + 3] == 0x00 && this._buffer[i + 4] == 0x0A)
                     {
                         // UTF-32 (LE/BE) の CR-LF: 0x0D 0x00 0x00 0x00 0x0A (...)
                         countCrLf++;
@@ -213,7 +212,7 @@ namespace SnowStack.EncodingProbe
                         countCr++;
                     }
                 }
-                else if (buffer[i] == 0x0A)
+                else if (this._buffer[i] == 0x0A)
                 {
                     countLf++;
                 }
@@ -266,7 +265,7 @@ namespace SnowStack.EncodingProbe
         /// </summary>
         /// <param name="codePage">コードページ</param>
         /// <returns>エンコーディング名</returns>
-        public string EncodingName(int codePage) =>
+        private static string EncodingName(int codePage) =>
             codePage switch
             {
                 20127 => "us-ascii",
@@ -298,12 +297,13 @@ namespace SnowStack.EncodingProbe
         /// <param name="codePage">エンコーディングのコードページ番号(例: 65001, 932)。</param>
         /// <param name="bom">BOM を伴うか。UTF-8 でのみ名前に反映される。</param>
         /// <returns>-Encoding に渡せるフレンドリ名、または数値コードページの文字列。</returns>
-        public static string PSEncodingName(int codePage, bool bom)
+        internal static string PSEncodingName(int codePage, bool bom)
         {
             if (codePage <= 0)
                 throw new ArgumentOutOfRangeException(nameof(codePage), codePage, "コードページ番号が不正です。");
 
-            return codePage switch
+            string psEncodingName = string.Empty;
+            psEncodingName = codePage switch
             {
                 // UTF-8: PowerShell が名前で BOM 有無を区別する唯一のケース
                 65001 => bom ? "utf8BOM" : "utf8NoBOM",
@@ -323,6 +323,29 @@ namespace SnowStack.EncodingProbe
                 // 数値指定なので WebName 衝突(51932/20932, 50220/50222)の影響を受けない。
                 _ => codePage.ToString(CultureInfo.InvariantCulture),
             };
+            return psEncodingName;
+        }
+
+        /// <summary>
+        /// PSEncodingName が有効な場合のみ UsePSName を true にする
+        /// </summary>
+        /// <param name="psEncodingName">PowerShell 6.2+ の -Encoding に渡せる値</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        private static bool SetUsePSName(string psEncodingName)
+        {
+            // PowerShell 6.2+ では、-Encoding に渡せる値は PSEncodingName のみ。
+            // それ以外のエンコーディング名は無効。
+            // そのため、PSEncodingName が有効な場合のみ UsePSName を true にする。
+            bool isNumber = false;
+            int codePagej = 0;
+            if (int.TryParse(psEncodingName, out int codePage))
+                isNumber = true;
+            else
+                isNumber = false;
+            //PSEncodingNameに数値コードページが入っている場合は、UsePSNameをfalseにする
+            bool usePSName = !string.IsNullOrEmpty(psEncodingName) && isNumber == false;
+            return usePSName;
         }
 
         /// <summary>
@@ -366,15 +389,16 @@ namespace SnowStack.EncodingProbe
             encInfo.Culture = _cultureName;
 
             //改行コードの種類を判定してセットする
-            encInfo.LineBreak = DetectLineBreak(this._buffer);
+            encInfo.LineBreak = DetectLineBreak();
 
             // BOMチェック
             if (bomJudg.IsBOM(this._buffer))
             {
                 encInfo.CodePage = bomJudg.CodePage;
-                encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                encInfo.EncodingName = EncodingName(encInfo.CodePage);
                 encInfo.Bom = true;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
                 return encInfo;
             }
@@ -408,8 +432,9 @@ namespace SnowStack.EncodingProbe
                     encInfo.Bom = false;
                 }
 
-                encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                encInfo.EncodingName = EncodingName(encInfo.CodePage);
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
                 return encInfo;
             }
@@ -428,9 +453,10 @@ namespace SnowStack.EncodingProbe
                 {
                     encInfo.CodePage = CodePageUtf32Be;
                 }
-                encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                encInfo.EncodingName = EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
                 return encInfo;
             }
@@ -449,9 +475,10 @@ namespace SnowStack.EncodingProbe
                 {
                     encInfo.CodePage = CodePageUtf16Be;
                 }
-                encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                encInfo.EncodingName = EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
                 return encInfo;
             }
@@ -462,9 +489,10 @@ namespace SnowStack.EncodingProbe
             if (outOfSpecification == false)
             {
                 encInfo.CodePage = CodePageUtf8;
-                encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                encInfo.EncodingName = EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
                 return encInfo;
             }
@@ -481,9 +509,10 @@ namespace SnowStack.EncodingProbe
                 if (outOfSpecification == false)
                 {
                     encInfo.CodePage = gbCodePage;
-                    encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                    encInfo.EncodingName = EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
                     encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                    encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
                     return encInfo;
                 }
@@ -517,8 +546,9 @@ namespace SnowStack.EncodingProbe
                         }
 
                         encInfo.CodePage = useShiftJis ? CodePageShiftJis : CodePageEucJp;
-                        encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                        encInfo.EncodingName = EncodingName(encInfo.CodePage);
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                        encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
                         return encInfo;
                     }
@@ -528,9 +558,10 @@ namespace SnowStack.EncodingProbe
                     {
                         // 両方に該当 → CP949 を優先
                         encInfo.CodePage = CodePageCp949;
-                        encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                        encInfo.EncodingName = EncodingName(encInfo.CodePage);
                         encInfo.Bom = false;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                        encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
                         return encInfo;
                     }
@@ -540,17 +571,19 @@ namespace SnowStack.EncodingProbe
                     {
                         // 両方に該当 → CP950 を優先
                         encInfo.CodePage = CodePageCp950;
-                        encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                        encInfo.EncodingName = EncodingName(encInfo.CodePage);
                         encInfo.Bom = false;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                        encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
                         return encInfo;
                     }
 
                     encInfo.CodePage = eucCodePage;
-                    encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                    encInfo.EncodingName = EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
                     encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                    encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
                     return encInfo;
                 }
@@ -562,9 +595,10 @@ namespace SnowStack.EncodingProbe
                 if (outOfSpecification == false)
                 {
                     encInfo.CodePage = cpxxxCodePage;
-                    encInfo.EncodingName = this.EncodingName(encInfo.CodePage);
+                    encInfo.EncodingName = EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
                     encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+                    encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
                     return encInfo;
                 }
             }
@@ -610,7 +644,7 @@ namespace SnowStack.EncodingProbe
         /// <param name="isISO2022">true=ISO-2022である(出力引数)</param>
         /// <param name="codePage">判別した文字エンコーディングのコードページ（判別できない場合は-1）</param>
         /// <returns>true=ISO-2022又はASCIIでは無い</returns>
-        public bool ISO2022_Detection(out bool isISO2022, out int codePage)
+        private bool ISO2022_Detection(out bool isISO2022, out int codePage)
         {
             codePage = -1;
             isISO2022 = false;
@@ -794,7 +828,7 @@ namespace SnowStack.EncodingProbe
         /// </summary>
         /// <param name="isLittleEndian">true=Little Endian、false=Big Endian(出力引数)</param>
         /// <returns>true=UTF-16では無い</returns>
-        public bool Utf16_Detection(out bool isLittleEndian)
+        private bool Utf16_Detection(out bool isLittleEndian)
         {
             isLittleEndian = true;
             bool outOfSpecification = false;
@@ -984,7 +1018,7 @@ namespace SnowStack.EncodingProbe
         /// </summary>
         /// <param name="isLittleEndian">true=Little Endian、false=Big Endian(出力引数)</param>
         /// <returns>true=UTF-32では無い</returns>
-        public bool Utf32_Detection(out bool isLittleEndian)
+        private bool Utf32_Detection(out bool isLittleEndian)
         {
             isLittleEndian = true;
             bool outOfSpecification = false;
@@ -1160,7 +1194,7 @@ namespace SnowStack.EncodingProbe
         /// UTF8であるか判定する
         /// </summary>
         /// <returns>true=UTF8では無い</returns>
-        public bool Utf8_Detection()
+        private bool Utf8_Detection()
         {
             bool outOfSpecification;
 
@@ -1324,14 +1358,14 @@ namespace SnowStack.EncodingProbe
         /// <summary>
         /// EUCバイト種別
         /// </summary>
-        public enum BYTECODE : byte { OneByteCode, TwoByteCode, CodeSet2, CodeSet3 }
+        private enum BYTECODE : byte { OneByteCode, TwoByteCode, CodeSet2, CodeSet3 }
 
         /// <summary>
         /// EUC-JP/KR/CN/TWであるか判定する（カルチャー別）
         /// </summary>
         /// <param name="codePage">判別した文字エンコーディングのコードページ（判別できない場合は-1）</param>
         /// <returns>true=EUCでは無い</returns>
-        public bool EUCxx_Detection(out int codePage)
+        private bool EUCxx_Detection(out int codePage)
         {
             // カルチャー情報から判定対象のEUCを決定
             int targetEucCodePage = GetEucCodePageFromCulture();
@@ -1543,13 +1577,13 @@ namespace SnowStack.EncodingProbe
         /// <summary>
         /// Shift-JISバイト種別
         /// </summary>
-        public enum SJIS_BYTECODE : byte { OneByteCode, TwoByteBefore, TwoByteAfter, KanaOneByte, OutOfSpec, Unknown }
+        private enum SJIS_BYTECODE : byte { OneByteCode, TwoByteBefore, TwoByteAfter, KanaOneByte, OutOfSpec, Unknown }
 
         /// <summary>
         /// Shift-JIS であるか判定する
         /// </summary>
         /// <returns>true=Shift-JISでは無い</returns>
-        public bool SJIS_Detection()
+        private bool SJIS_Detection()
         {
             bool outOfSpecification = false; ;
             SJIS_BYTECODE beforeSjisByte = SJIS_BYTECODE.OneByteCode;
@@ -1653,7 +1687,7 @@ namespace SnowStack.EncodingProbe
         /// </summary>
         /// <param name="codePage">判別した文字エンコーディングのコードページ（判別できない場合は-1）</param>
         /// <returns>true=CPxxxでは無い</returns>
-        public bool CPxxx_Detection(out int codePage)
+        private bool CPxxx_Detection(out int codePage)
         {
             codePage = -1;
             bool outOfSpecification = true;
@@ -1725,13 +1759,13 @@ namespace SnowStack.EncodingProbe
         /// <summary>
         /// CP949 (韓国) バイト種別
         /// </summary>
-        public enum CP949_BYTECODE : byte { OneByteCode, TwoByteBefore, TwoByteAfter, OutOfSpec, Unknown }
+        private enum CP949_BYTECODE : byte { OneByteCode, TwoByteBefore, TwoByteAfter, OutOfSpec, Unknown }
 
         /// <summary>
         /// CP949 (韓国) であるか判定する
         /// </summary>
         /// <returns>true=CP949では無い</returns>
-        public bool CP949_Detection()
+        private bool CP949_Detection()
         {
             bool outOfSpecification = false;
             CP949_BYTECODE beforeByte = CP949_BYTECODE.OneByteCode;
@@ -1805,14 +1839,14 @@ namespace SnowStack.EncodingProbe
         /// <summary>
         /// CP936/GB18030 (中国簡体字) バイト種別
         /// </summary>
-        public enum CP936_BYTECODE : byte { OneByteCode, TwoByteBefore, TwoByteAfter, FourByte1, FourByte2, FourByte3, FourByte4, OutOfSpec, Unknown }
+        private enum CP936_BYTECODE : byte { OneByteCode, TwoByteBefore, TwoByteAfter, FourByte1, FourByte2, FourByte3, FourByte4, OutOfSpec, Unknown }
 
         /// <summary>
         /// CP936 (GBK) / GB18030 (中国) であるか判定する
         /// </summary>
         /// <param name="codePage">CP936 or GB18030</param>
         /// <returns>true=CP936/GB18030では無い</returns>
-        public bool CP936_Detection(out int codePage)
+        private bool CP936_Detection(out int codePage)
         {
             codePage = -1;
             bool outOfSpecification = false;
@@ -1933,7 +1967,7 @@ namespace SnowStack.EncodingProbe
         /// </remarks>
         /// <param name="codePage">GB2312=51936 / GB18030=54936（判別できない場合は-1）</param>
         /// <returns>true=GB系ではない（規格外）</returns>
-        public bool GB_Detection(out int codePage)
+        private bool GB_Detection(out int codePage)
         {
             codePage = -1;
 
@@ -2010,13 +2044,13 @@ namespace SnowStack.EncodingProbe
         /// <summary>
         /// CP950 (Big5, 台湾・香港繁体字) バイト種別
         /// </summary>
-        public enum CP950_BYTECODE : byte { OneByteCode, TwoByteBefore, TwoByteAfter, OutOfSpec, Unknown }
+        private enum CP950_BYTECODE : byte { OneByteCode, TwoByteBefore, TwoByteAfter, OutOfSpec, Unknown }
 
         /// <summary>
         /// CP950 (Big5, 台湾・香港) であるか判定する
         /// </summary>
         /// <returns>true=CP950では無い</returns>
-        public bool CP950_Detection()
+        private bool CP950_Detection()
         {
             bool outOfSpecification = false;
             CP950_BYTECODE beforeByte = CP950_BYTECODE.OneByteCode;
@@ -2089,3 +2123,5 @@ namespace SnowStack.EncodingProbe
 
     }
 }
+
+

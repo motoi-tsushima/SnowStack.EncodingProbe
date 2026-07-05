@@ -16,19 +16,18 @@ namespace EncodingProbe.Tests.DetectorTests
             => Encoding.UTF8.GetBytes(text);
 
         private static LineBreakType Detect(byte[] buffer)
-            => new EncodingDetector(buffer).DetectLineBreak(buffer);
+            => new EncodingDetector(buffer).DetectLineBreak();
 
         [Fact]
-        public void DetectLineBreak_NullBuffer_ReturnsNone()
+        public void DetectLineBreak_NullBuffer_ThrowsArgumentNullException()
         {
-            var result = new EncodingDetector(Utf8Bytes("x")).DetectLineBreak(null);
-            Assert.Equal(LineBreakType.None, result);
+            Assert.Throws<ArgumentNullException>(() => new EncodingDetector((byte[])null));
         }
 
         [Fact]
         public void DetectLineBreak_EmptyBuffer_ReturnsNone()
         {
-            var result = new EncodingDetector(Utf8Bytes("x")).DetectLineBreak(Array.Empty<byte>());
+            var result = new EncodingDetector(Array.Empty<byte>()).DetectLineBreak();
             Assert.Equal(LineBreakType.None, result);
         }
 

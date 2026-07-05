@@ -8,7 +8,7 @@ namespace SnowStack.EncodingProbe
     /// <summary>
     /// BOM（Byte Order Mark）の判定を行うクラス
     /// </summary>
-    public class ByteOrderMarkDetection
+    internal class ByteOrderMarkDetection
     {
         /// <summary>UTF-8のBOM</summary>
         private static readonly byte[] _bomUtf8 = { 0xEF, 0xBB, 0xBF };
