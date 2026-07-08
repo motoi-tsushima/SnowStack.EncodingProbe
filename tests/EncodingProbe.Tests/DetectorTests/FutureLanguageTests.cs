@@ -1,4 +1,3 @@
-using System.Globalization;
 using EncodingProbe.Tests.Helpers;
 using SnowStack.EncodingProbe;
 using Xunit;
@@ -9,22 +8,19 @@ namespace EncodingProbe.Tests.DetectorTests
     /// 韓国語テキストのエンコーディング判定テスト
     /// </summary>
     /// <remarks>
-    /// 現在は精度が不十分なため Skip しています。
-    /// 対応が完了したら Skip 属性を外してください。
-    /// テストデータは TestData/Korean/ に配置してください。
+    /// テストデータは TestData/Korean/ に配置されています。
+    /// EUC-KR と CP949 の両方に該当する場合は CP949 と判定します。
     /// </remarks>
     public class KoreanEncodingTests
     {
-        private const string SkipReason = "未対応：韓国語エンコーディング判定は将来実装予定";
-
-        [Theory(Skip = SkipReason)]
+        [Theory]
         [InlineData("sample_utf8.txt",  65001, "utf-8")]
-        [InlineData("sample_euckr.txt", 51949, "euc-kr")]
+        [InlineData("sample_euckr.txt", 949,   "cp949")]
         [InlineData("sample_cp949.txt", 949,   "cp949")]
         public void Detection_Korean_FromByteArray(string fileName, int expectedCodePage, string expectedEncodingName)
         {
             var buffer = TestDataHelper.ReadBytes("Korean", fileName);
-            var result = new EncodingDetector(buffer).Detection();
+            var result = new EncodingDetector(buffer).Detection("ko-KR");
 
             Assert.Equal(expectedCodePage, result.CodePage);
             Assert.Equal(expectedEncodingName, result.EncodingWebName);
@@ -35,22 +31,19 @@ namespace EncodingProbe.Tests.DetectorTests
     /// 繁体字中国語テキストのエンコーディング判定テスト（台湾・香港）
     /// </summary>
     /// <remarks>
-    /// 現在は精度が不十分なため Skip しています。
-    /// 対応が完了したら Skip 属性を外してください。
-    /// テストデータは TestData/Chinese_Traditional/ に配置してください。
+    /// テストデータは TestData/Chinese_Traditional/ に配置されています。
+    /// EUC-TW と CP950(Big5) の両方に該当する場合は CP950(Big5) と判定します。
     /// </remarks>
     public class ChineseTraditionalEncodingTests
     {
-        private const string SkipReason = "未対応：繁体字中国語エンコーディング判定は将来実装予定";
-
-        [Theory(Skip = SkipReason)]
+        [Theory]
         [InlineData("sample_utf8.txt",  65001, "utf-8")]
         [InlineData("sample_big5.txt",  950,   "big5")]
-        [InlineData("sample_euctw.txt", 51950, "euc-tw")]
+        [InlineData("sample_euctw.txt", 950,   "big5")]
         public void Detection_ChineseTraditional_FromByteArray(string fileName, int expectedCodePage, string expectedEncodingName)
         {
             var buffer = TestDataHelper.ReadBytes("Chinese_Traditional", fileName);
-            var result = new EncodingDetector(buffer).Detection();
+            var result = new EncodingDetector(buffer).Detection("zh-TW");
 
             Assert.Equal(expectedCodePage, result.CodePage);
             Assert.Equal(expectedEncodingName, result.EncodingWebName);
