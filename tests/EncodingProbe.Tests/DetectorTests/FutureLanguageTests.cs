@@ -27,7 +27,7 @@ namespace EncodingProbe.Tests.DetectorTests
             var result = new EncodingDetector(buffer).Detection();
 
             Assert.Equal(expectedCodePage, result.CodePage);
-            Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedEncodingName, result.EncodingWebName);
         }
     }
 
@@ -53,7 +53,7 @@ namespace EncodingProbe.Tests.DetectorTests
             var result = new EncodingDetector(buffer).Detection();
 
             Assert.Equal(expectedCodePage, result.CodePage);
-            Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedEncodingName, result.EncodingWebName);
         }
     }
 
@@ -76,7 +76,7 @@ namespace EncodingProbe.Tests.DetectorTests
             var result = new EncodingDetector(buffer).Detection("zh-CN");
 
             Assert.Equal(expectedCodePage, result.CodePage);
-            Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedEncodingName, result.EncodingWebName);
         }
     }
 }

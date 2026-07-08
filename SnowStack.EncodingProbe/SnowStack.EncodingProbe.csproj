@@ -49,6 +49,11 @@
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>
 
+    <!-- PlatformInfoResolver 等の internal 実装を PowerShell 層からのみ参照可能にする -->
+    <ItemGroup>
+        <InternalsVisibleTo Include="SnowStack.EncodingProbe.PowerShell" />
+    </ItemGroup>
+
     <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
         <PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="all" />
     </ItemGroup>

@@ -28,7 +28,7 @@ namespace EncodingProbe.Tests.DetectorTests
             var result = detector.Detection();
 
             Assert.Equal(expectedCodePage, result.CodePage);
-            Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedEncodingName, result.EncodingWebName);
             Assert.Equal(expectedPSEncodingName, result.PSEncodingName);
         }
 
@@ -46,7 +46,7 @@ namespace EncodingProbe.Tests.DetectorTests
             var result = detector.Detection();
 
             Assert.Equal(expectedCodePage, result.CodePage);
-            Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedEncodingName, result.EncodingWebName);
             Assert.Equal(expectedPSEncodingName, result.PSEncodingName);
         }
 
@@ -64,7 +64,7 @@ namespace EncodingProbe.Tests.DetectorTests
             var result = detector.Detection();
 
             Assert.Equal(expectedCodePage, result.CodePage);
-            Assert.Equal(expectedEncodingName, result.EncodingName);
+            Assert.Equal(expectedEncodingName, result.EncodingWebName);
             Assert.Equal(expectedPSEncodingName, result.PSEncodingName);
         }
 

@@ -37,7 +37,7 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
         var result = (EncodingInformation)_fixture.Invoke(path)[0].BaseObject;
 
         Assert.Equal(expectedCodePage,       result.CodePage);
-        Assert.Equal(expectedEncodingName,   result.EncodingName);
+        Assert.Equal(expectedEncodingName,   result.EncodingWebName);
         Assert.Equal(expectedPSEncodingName, result.PSEncodingName);
     }
 
@@ -55,7 +55,7 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
         var result = (EncodingInformation)_fixture.Invoke(path)[0].BaseObject;
 
         Assert.Equal(expectedCodePage,       result.CodePage);
-        Assert.Equal(expectedEncodingName,   result.EncodingName);
+        Assert.Equal(expectedEncodingName,   result.EncodingWebName);
         Assert.Equal(expectedPSEncodingName, result.PSEncodingName);
     }
 

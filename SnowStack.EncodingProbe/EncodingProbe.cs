@@ -220,7 +220,7 @@ https://github.com/CharsetDetector/UTF-unknown
                 {
                     try
                     {
-                        encInfo.EncodingName = result.Detected.EncodingName;
+                        encInfo.EncodingWebName = result.Detected.EncodingName;
                         encInfo.CodePage = result.Detected.Encoding.CodePage;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                     }
@@ -228,12 +228,12 @@ https://github.com/CharsetDetector/UTF-unknown
                     {
                         // UtfUnknownが検出したエンコーディングが.NETでサポートされていない場合
                         // エンコーディング名だけを保存し、CodePageは-1にする
-                        encInfo.EncodingName = result.Detected.EncodingName;
+                        encInfo.EncodingWebName = result.Detected.EncodingName;
                         encInfo.CodePage = -1;
                     }
                     catch (NotSupportedException)
                     {
-                        encInfo.EncodingName = result.Detected.EncodingName;
+                        encInfo.EncodingWebName = result.Detected.EncodingName;
                         encInfo.CodePage = -1;
                     }
                 }
@@ -267,7 +267,7 @@ https://github.com/CharsetDetector/UTF-unknown
                 {
                     try
                     {
-                        encInfo.EncodingName = result.Detected.EncodingName;
+                        encInfo.EncodingWebName = result.Detected.EncodingName;
                         encInfo.CodePage = result.Detected.Encoding.CodePage;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                     }
@@ -275,12 +275,12 @@ https://github.com/CharsetDetector/UTF-unknown
                     {
                         // UtfUnknownが検出したエンコーディングが.NETでサポートされていない場合
                         // エンコーディング名だけを保存し、CodePageは-1にする
-                        encInfo.EncodingName = result.Detected.EncodingName;
+                        encInfo.EncodingWebName = result.Detected.EncodingName;
                         encInfo.CodePage = -1;
                     }
                     catch (NotSupportedException)
                     {
-                        encInfo.EncodingName = result.Detected.EncodingName;
+                        encInfo.EncodingWebName = result.Detected.EncodingName;
                         encInfo.CodePage = -1;
                     }
                 }
@@ -314,7 +314,7 @@ https://github.com/CharsetDetector/UTF-unknown
                 {
                     try
                     {
-                        encInfo.EncodingName = result.Detected.EncodingName;
+                        encInfo.EncodingWebName = result.Detected.EncodingName;
                         encInfo.CodePage = result.Detected.Encoding.CodePage;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                     }
@@ -322,12 +322,12 @@ https://github.com/CharsetDetector/UTF-unknown
                     {
                         // UtfUnknownが検出したエンコーディングが.NETでサポートされていない場合
                         // エンコーディング名だけを保存し、CodePageは-1にする
-                        encInfo.EncodingName = result.Detected.EncodingName;
+                        encInfo.EncodingWebName = result.Detected.EncodingName;
                         encInfo.CodePage = -1;
                     }
                     catch (NotSupportedException)
                     {
-                        encInfo.EncodingName = result.Detected.EncodingName;
+                        encInfo.EncodingWebName = result.Detected.EncodingName;
                         encInfo.CodePage = -1;
                     }
                 }

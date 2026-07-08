@@ -395,7 +395,7 @@ namespace SnowStack.EncodingProbe
             if (bomJudg.IsBOM(this._buffer))
             {
                 encInfo.CodePage = bomJudg.CodePage;
-                encInfo.EncodingName = EncodingName(encInfo.CodePage);
+                encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                 encInfo.Bom = true;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
@@ -432,7 +432,7 @@ namespace SnowStack.EncodingProbe
                     encInfo.Bom = false;
                 }
 
-                encInfo.EncodingName = EncodingName(encInfo.CodePage);
+                encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
@@ -453,7 +453,7 @@ namespace SnowStack.EncodingProbe
                 {
                     encInfo.CodePage = CodePageUtf32Be;
                 }
-                encInfo.EncodingName = EncodingName(encInfo.CodePage);
+                encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
@@ -475,7 +475,7 @@ namespace SnowStack.EncodingProbe
                 {
                     encInfo.CodePage = CodePageUtf16Be;
                 }
-                encInfo.EncodingName = EncodingName(encInfo.CodePage);
+                encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
@@ -489,7 +489,7 @@ namespace SnowStack.EncodingProbe
             if (outOfSpecification == false)
             {
                 encInfo.CodePage = CodePageUtf8;
-                encInfo.EncodingName = EncodingName(encInfo.CodePage);
+                encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
@@ -509,7 +509,7 @@ namespace SnowStack.EncodingProbe
                 if (outOfSpecification == false)
                 {
                     encInfo.CodePage = gbCodePage;
-                    encInfo.EncodingName = EncodingName(encInfo.CodePage);
+                    encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
                     encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                     encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
@@ -546,7 +546,7 @@ namespace SnowStack.EncodingProbe
                         }
 
                         encInfo.CodePage = useShiftJis ? CodePageShiftJis : CodePageEucJp;
-                        encInfo.EncodingName = EncodingName(encInfo.CodePage);
+                        encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                         encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
 
@@ -558,7 +558,7 @@ namespace SnowStack.EncodingProbe
                     {
                         // 両方に該当 → CP949 を優先
                         encInfo.CodePage = CodePageCp949;
-                        encInfo.EncodingName = EncodingName(encInfo.CodePage);
+                        encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                         encInfo.Bom = false;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                         encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
@@ -571,7 +571,7 @@ namespace SnowStack.EncodingProbe
                     {
                         // 両方に該当 → CP950 を優先
                         encInfo.CodePage = CodePageCp950;
-                        encInfo.EncodingName = EncodingName(encInfo.CodePage);
+                        encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                         encInfo.Bom = false;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                         encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
@@ -580,7 +580,7 @@ namespace SnowStack.EncodingProbe
                     }
 
                     encInfo.CodePage = eucCodePage;
-                    encInfo.EncodingName = EncodingName(encInfo.CodePage);
+                    encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
                     encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                     encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
@@ -595,7 +595,7 @@ namespace SnowStack.EncodingProbe
                 if (outOfSpecification == false)
                 {
                     encInfo.CodePage = cpxxxCodePage;
-                    encInfo.EncodingName = EncodingName(encInfo.CodePage);
+                    encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                     encInfo.Bom = false;
                     encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                     encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);

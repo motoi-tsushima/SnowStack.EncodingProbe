@@ -9,13 +9,16 @@ public sealed record EncodingInformation
     public int CodePage { get; internal set; }
 
     /// <summary>エンコーディング名</summary>
-    public string EncodingName { get; internal set; }
+    public string EncodingWebName { get; internal set; }
 
     /// <summary>PowerShell -Encoding用のエンコーディング名</summary>
     public string PSEncodingName { get; internal set; }
 
     /// <summary>
-    /// PSEncodingName が有効ならば true、無効ならば false
+    /// PSEncodingName をそのまま PowerShell の -Encoding パラメータに渡してよいかどうか。
+    /// PSEncodingName が PowerShell 6.2+ の登録済みフレンドリ名（"utf8BOM" 等）である場合は true。
+    /// PSEncodingName が数値コードページの文字列（例: "932"）の場合は false となり、
+    /// -Encoding に渡すには PowerShell 6.2 以降の数値コードページ対応が必要。
     /// </summary>
     public bool UsePSName { get; internal set; }
 
@@ -25,16 +28,7 @@ public sealed record EncodingInformation
     /// <summary>改行コードの種類</summary>
     public LineBreakType LineBreak { get; internal set; } = LineBreakType.None;
 
-    /// <summary>実行中のOSがWindowsかどうか</summary>
-    public bool IsWindowsOs { get; } = PlatformInfo.IsWindows;
-
-    /// <summary>実行中のOSがmacOSかどうか</summary>
-    public bool IsMacOs { get; } = PlatformInfo.IsMacOs;
-
-    /// <summary>実行中のOSがLinuxかどうか</summary>
-    public bool IsLinuxOs { get; } = PlatformInfo.IsLinux;
-
     /// <summary>実行中のカルチャー名</summary>
-    public string Culture { get; internal set; } = null;
+    public string? Culture { get; internal set; } = null;
 }
 
