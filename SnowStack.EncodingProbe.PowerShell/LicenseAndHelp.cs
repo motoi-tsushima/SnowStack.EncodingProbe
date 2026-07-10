@@ -10,7 +10,7 @@ namespace SnowStack.EncodingProbe.PowerShell
  @"SnowStack.EncodingProbe.PowerShell is licensed under MIT License.
 Copyright c 2026 motoi.tsushima
 https://github.com/motoi-tsushima/SnowStack.EncodingProbe
-https://snow-stack.net/
+https://snow-stack.net/encodingprobe_powershell_guide/
 
 ";
     }
