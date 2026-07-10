@@ -46,9 +46,9 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
     [Theory]
     [InlineData("sample_utf8.txt",     65001, "utf-8",       "utf8NoBOM")]
     [InlineData("sample_utf8_bom.txt", 65001, "utf-8",       "utf8BOM")]
-    [InlineData("sample_shiftjis.txt", 932,   "shift_jis",   "932")]
-    [InlineData("sample_eucjp.txt",    20932, "euc-jp",      "20932")]
-    [InlineData("sample_jis.txt",      50220, "iso-2022-jp", "50220")]
+    [InlineData("sample_shiftjis.txt", 932,   "shift_jis",   "shift_jis")]
+    [InlineData("sample_eucjp.txt",    20932, "euc-jp",      "euc-jp")]
+    [InlineData("sample_jis.txt",      50220, "iso-2022-jp", "iso-2022-jp")]
     public void Invoke_Japanese(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
     {
         var path = TestDataHelper.GetPath("Japanese", fileName);

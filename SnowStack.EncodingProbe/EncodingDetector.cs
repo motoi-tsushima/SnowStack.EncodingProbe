@@ -291,12 +291,25 @@ namespace SnowStack.EncodingProbe
             };
 
         /// <summary>
+        /// PowerShell 6.2+/7.x の -Encoding にフレンドリ名として直接渡せる値の一覧
+        /// (<see cref="PSEncodingName(int, bool)"/> が返しうるフレンドリ名と一致させること)
+        /// </summary>
+        private static readonly HashSet<string> KnownPSFriendlyNames = new(StringComparer.Ordinal)
+        {
+            "utf8BOM", "utf8NoBOM",
+            "unicode", "bigendianunicode",
+            "utf32", "bigendianutf32",
+            "ascii", "utf7",
+        };
+
+        /// <summary>
         /// コードページ番号と BOM の有無から、PowerShell 6.2+/7.x の
-        /// -Encoding に渡せる値を返す。
+        /// -Encoding に渡せるフレンドリ名を返す。フレンドリ名が存在しない場合は
+        /// .NET の WebName(<see cref="EncodingInformation.EncodingWebName"/> と同じ値)を返す。
         /// </summary>
         /// <param name="codePage">エンコーディングのコードページ番号(例: 65001, 932)。</param>
         /// <param name="bom">BOM を伴うか。UTF-8 でのみ名前に反映される。</param>
-        /// <returns>-Encoding に渡せるフレンドリ名、または数値コードページの文字列。</returns>
+        /// <returns>-Encoding に渡せるフレンドリ名、またはフレンドリ名が存在しない場合は WebName。</returns>
         internal static string PSEncodingName(int codePage, bool bom)
         {
             if (codePage <= 0)
@@ -319,33 +332,24 @@ namespace SnowStack.EncodingProbe
                 65000 => "utf7",             // 非推奨(.NET 側の生成は net48 のみ可)
 
                 // フレンドリ名なし: Shift-JIS, EUC-JP, ISO-2022-JP, GB2312, Big5, EUC-KR,
-                // ISO-8859-x など。PowerShell 6.2+ は数値コードページを -Encoding に直接受け付ける。
-                // 数値指定なので WebName 衝突(51932/20932, 50220/50222)の影響を受けない。
-                _ => codePage.ToString(CultureInfo.InvariantCulture),
+                // ISO-8859-x など。PowerShell の -Encoding フレンドリ名としては渡せないため、
+                // 代わりに .NET の WebName を返す(数値コードページは EncodingInformation.CodePage 側で取得可能)。
+                _ => EncodingName(codePage),
             };
             return psEncodingName;
         }
 
         /// <summary>
-        /// PSEncodingName が有効な場合のみ UsePSName を true にする
+        /// PSEncodingName が PowerShell 6.2+ の登録済みフレンドリ名である場合のみ UsePSName を true にする
         /// </summary>
-        /// <param name="psEncodingName">PowerShell 6.2+ の -Encoding に渡せる値</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <param name="psEncodingName">PSEncodingName で算出した値</param>
+        /// <returns>true=PSEncodingName がフレンドリ名としてそのまま -Encoding に渡せる、false=WebName（コードページ経由での指定が必要）</returns>
         private static bool SetUsePSName(string psEncodingName)
         {
-            // PowerShell 6.2+ では、-Encoding に渡せる値は PSEncodingName のみ。
-            // それ以外のエンコーディング名は無効。
-            // そのため、PSEncodingName が有効な場合のみ UsePSName を true にする。
-            bool isNumber = false;
-            int codePagej = 0;
-            if (int.TryParse(psEncodingName, out int codePage))
-                isNumber = true;
-            else
-                isNumber = false;
-            //PSEncodingNameに数値コードページが入っている場合は、UsePSNameをfalseにする
-            bool usePSName = !string.IsNullOrEmpty(psEncodingName) && isNumber == false;
-            return usePSName;
+            // PSEncodingName がフレンドリ名一覧に含まれる場合のみ、そのまま -Encoding に渡せる。
+            // フレンドリ名が存在しない場合、PSEncodingName には WebName が入っており、
+            // これは -Encoding に直接渡せないため UsePSName は false とする。
+            return !string.IsNullOrEmpty(psEncodingName) && KnownPSFriendlyNames.Contains(psEncodingName);
         }
 
         /// <summary>
