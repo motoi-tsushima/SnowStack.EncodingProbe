@@ -10,14 +10,14 @@
     PowerShellVersion    = '5.1'
     CompatiblePSEditions = @('Desktop', 'Core')
 
-    CmdletsToExport      = @('Resolve-Encoding')
+    CmdletsToExport      = @('Resolve-Encoding', 'Get-EncodingProbePlatformInfo')
     FunctionsToExport    = @()
     VariablesToExport    = @()
     AliasesToExport      = @()
 
     PrivateData = @{
         PSData = @{
-            Prerelease   = 'preview5'
+            Prerelease   = 'preview6'
             Tags         = @('encoding', 'chardet', 'charset', 'text', 'shift-jis', 'euc-jp', 'japanese')
             LicenseUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe/blob/master/LICENSE.txt'
             ProjectUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe'

@@ -9,9 +9,9 @@
 
 
       <!-- バージョン情報 -->
-    <Version>1.0.0-preview.5</Version>
-    <AssemblyVersion>1.0.0.4</AssemblyVersion>
-    <FileVersion>1.0.0.4</FileVersion>
+    <Version>1.0.0-preview.6</Version>
+    <AssemblyVersion>1.0.0.5</AssemblyVersion>
+    <FileVersion>1.0.0.5</FileVersion>
 
     <!-- NuGet パッケージメタデータ -->
     <PackageId>SnowStack.EncodingProbe.PowerShell</PackageId>
