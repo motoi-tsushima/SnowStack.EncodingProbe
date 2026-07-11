@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
+    <Configurations>Debug;Release;PS5.1_Debug;PS7.x_Debug</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

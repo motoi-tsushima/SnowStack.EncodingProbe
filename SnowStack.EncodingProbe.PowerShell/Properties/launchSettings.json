@@ -1,9 +1,16 @@
 {
   "profiles": {
-    "SnowStack.EncodingProbe.PowerShell": {
+    ".NET 4.8 テスト": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "commandLineArgs": "-NoExit -ExecutionPolicy Bypass -Command \"Import-Module '$(TargetPath)'\"",
+      "workingDirectory": "\\_test"
+    },
+    ".NET 10 テスト": {
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
-      "commandLineArgs": "-NoExit -Command \"Import-Module '$(TargetPath)'\""
+      "commandLineArgs": "-NoExit -Command \"Import-Module '$(TargetPath)'\"",
+      "workingDirectory": "\\_test"
     }
   }
 }

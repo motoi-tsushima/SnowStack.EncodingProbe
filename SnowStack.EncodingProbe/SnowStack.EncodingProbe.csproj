@@ -41,6 +41,7 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+        <Configurations>Debug;Release;PS5.1_Debug;PS7.x_Debug</Configurations>
     </PropertyGroup>
 
     <ItemGroup>

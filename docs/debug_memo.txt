@@ -1,9 +1,18 @@
 ﻿# デバッグ設定のメモ
 
-## 実行可能ファイル
+## .NET 10
+
+### 実行可能ファイル
 C:\Program Files\PowerShell\7\pwsh.exe
+
+### コマンドライン引数
+-NoExit -Command "Import-Module '$(TargetPath)'"
+
+## .NET Framework 4.8
+
+### 実行可能ファイル
 C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
 
-## コマンドライン引数
--NoExit -Command "Import-Module '$(TargetPath)'"
+### コマンドライン引数
+-NoExit -ExecutionPolicy Bypass -Command "Import-Module '$(TargetPath)'"
 

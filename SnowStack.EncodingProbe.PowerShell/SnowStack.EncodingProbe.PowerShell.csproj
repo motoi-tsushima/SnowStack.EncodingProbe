@@ -16,9 +16,11 @@
     <!-- NuGet パッケージメタデータ -->
     <PackageId>SnowStack.EncodingProbe.PowerShell</PackageId>
     <Authors>motoi.tsushima</Authors>
-    <Description>A PowerShell module for detecting the character encoding of text files.&#10;テキストファイルの文字エンコーディングを判定する PowerShell モジュールです。</Description>
+    <Description>A PowerShell module for detecting the character encoding of text files.
+テキストファイルの文字エンコーディングを判定する PowerShell モジュールです。</Description>
     <PackageTags>encoding;chardet;text;powershell</PackageTags>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Configurations>Debug;Release;PS5.1_Debug;PS7.x_Debug</Configurations>
   </PropertyGroup>
     
   <ItemGroup>

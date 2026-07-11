@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <Configurations>Debug;Release;PS5.1_Debug;PS7.x_Debug</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,8 +23,7 @@
 
   <!-- 既存テストプロジェクトの TestData を共有する -->
   <ItemGroup>
-    <None Include="..\EncodingProbe.Tests\TestData\**\*"
-          Link="TestData\%(RecursiveDir)%(Filename)%(Extension)">
+    <None Include="..\EncodingProbe.Tests\TestData\**\*" Link="TestData\%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
