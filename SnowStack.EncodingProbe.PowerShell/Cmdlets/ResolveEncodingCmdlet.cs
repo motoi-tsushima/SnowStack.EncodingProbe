@@ -80,6 +80,17 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
         // PowerShellのパス（相対パス、~等）を解決
         var resolvedPath = GetUnresolvedProviderPathFromPSPath(Path);
 
+        // ファイルの存在を確認
+        if (!System.IO.File.Exists(resolvedPath))
+        {
+            ThrowTerminatingError(new ErrorRecord(
+                new System.IO.FileNotFoundException($"File not found: '{resolvedPath}'"),
+                "FileNotFound",
+                ErrorCategory.ObjectNotFound,
+                resolvedPath));
+            return;
+        }
+
         // エンコーディングを判定
         var encodingInfomation = EncodingProbe.Detect(resolvedPath, detectorOptions);
 

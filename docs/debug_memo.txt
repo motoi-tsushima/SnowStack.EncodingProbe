@@ -1,0 +1,9 @@
+﻿# デバッグ設定のメモ
+
+## 実行可能ファイル
+C:\Program Files\PowerShell\7\pwsh.exe
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+
+## コマンドライン引数
+-NoExit -Command "Import-Module '$(TargetPath)'"
+

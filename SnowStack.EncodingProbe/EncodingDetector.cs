@@ -290,6 +290,7 @@ namespace SnowStack.EncodingProbe
                     _ => "I do not know.",
             };
 
+#if !NETFRAMEWORK
         /// <summary>
         /// PowerShell 6.2+/7.x の -Encoding にフレンドリ名として直接渡せる値の一覧
         /// (<see cref="PSEncodingName(int, bool)"/> が返しうるフレンドリ名と一致させること)
@@ -301,11 +302,46 @@ namespace SnowStack.EncodingProbe
             "utf32", "bigendianutf32",
             "ascii", "utf7",
         };
+#endif
 
+#if NETFRAMEWORK
+        /// <summary>
+        /// コードページ番号と BOM の有無から、Windows PowerShell 5.1 の固定 -Encoding 列挙値
+        /// (net48 ビルド、PS5.1 向け)に一致する場合のみその値を返す。一致しない場合は null。
+        /// </summary>
+        /// <param name="codePage">エンコーディングのコードページ番号(例: 65001, 932)。</param>
+        /// <param name="bom">BOM を伴うか。Unicode 系および UTF-8 の判定に使用する。</param>
+        /// <returns>PS5.1 の -Encoding にそのまま渡せる固定名、一致しない場合は null。</returns>
+        internal static string PSEncodingName(int codePage, bool bom)
+        {
+            if (codePage <= 0)
+                throw new ArgumentOutOfRangeException(nameof(codePage), codePage, "コードページ番号が不正です。");
+
+            // PS5.1 の -Encoding は固定列挙値(Ascii/BigEndianUnicode/BigEndianUTF32/
+            // Byte/Default/Oem/String/Unicode/UTF32/UTF7/UTF8/Unknown)のみを受け付ける。
+            // - Default/Oem はロケール依存のため対象外。
+            // - String/Unknown は Unicode のエイリアスのため独立した分岐を持たない。
+            // - UTF7 は検出未実装のため対象外。
+            // - Unicode系(Unicode/BigEndianUnicode/UTF32/BigEndianUTF32/UTF8)は PS5.1 では
+            //   書き込み時に必ず BOM を生成するため、BOM なしの検出結果をこれらの名前で返すと
+            //   ラウンドトリップ時に BOM が不正に付与される。よって bom == true の場合のみ一致とみなす。
+            return codePage switch
+            {
+                20127 => "Ascii",
+                1200 when bom => "Unicode",
+                1201 when bom => "BigEndianUnicode",
+                12000 when bom => "UTF32",
+                12001 when bom => "BigEndianUTF32",
+                65001 when bom => "UTF8",
+                _ => null,
+            };
+        }
+#else
         /// <summary>
         /// コードページ番号と BOM の有無から、PowerShell 6.2+/7.x の
-        /// -Encoding に渡せるフレンドリ名を返す。フレンドリ名が存在しない場合は
-        /// .NET の WebName(<see cref="EncodingInformation.EncodingWebName"/> と同じ値)を返す。
+        /// -Encoding に渡せるフレンドリ名を返す(net10.0 ビルド、PS6.2+ 向け)。
+        /// フレンドリ名が存在しない場合は .NET の WebName
+        /// (<see cref="EncodingInformation.EncodingWebName"/> と同じ値)を返す。
         /// </summary>
         /// <param name="codePage">エンコーディングのコードページ番号(例: 65001, 932)。</param>
         /// <param name="bom">BOM を伴うか。UTF-8 でのみ名前に反映される。</param>
@@ -338,7 +374,20 @@ namespace SnowStack.EncodingProbe
             };
             return psEncodingName;
         }
+#endif
 
+#if NETFRAMEWORK
+        /// <summary>
+        /// net48 ビルド(PS5.1 向け)では、PSEncodingName が非 null であれば
+        /// PS5.1 の固定 -Encoding 列挙値との一致が保証されているため true を返す。
+        /// </summary>
+        /// <param name="psEncodingName">PSEncodingName で算出した値</param>
+        /// <returns>true=PSEncodingName がそのまま -Encoding に渡せる、false=一致する固定名が無い</returns>
+        private static bool SetUsePSName(string psEncodingName)
+        {
+            return !string.IsNullOrEmpty(psEncodingName);
+        }
+#else
         /// <summary>
         /// PSEncodingName が PowerShell 6.2+ の登録済みフレンドリ名である場合のみ UsePSName を true にする
         /// </summary>
@@ -351,6 +400,7 @@ namespace SnowStack.EncodingProbe
             // これは -Encoding に直接渡せないため UsePSName は false とする。
             return !string.IsNullOrEmpty(psEncodingName) && KnownPSFriendlyNames.Contains(psEncodingName);
         }
+#endif
 
         /// <summary>
         /// バイト配列の先頭が指定したBOMと一致するかどうかを判定する

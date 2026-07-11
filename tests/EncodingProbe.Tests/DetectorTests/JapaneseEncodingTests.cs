@@ -14,14 +14,28 @@ namespace EncodingProbe.Tests.DetectorTests
     /// </remarks>
     public class JapaneseEncodingTests
     {
+#if NETFRAMEWORK
+        private const string ExpectedUtf8NoBomPSName = null;
+        private const string ExpectedUtf8BomPSName = "UTF8";
+        private const string ExpectedShiftJisPSName = null;
+        private const string ExpectedEucJpPSName = null;
+        private const string ExpectedJisPSName = null;
+#else
+        private const string ExpectedUtf8NoBomPSName = "utf8NoBOM";
+        private const string ExpectedUtf8BomPSName = "utf8BOM";
+        private const string ExpectedShiftJisPSName = "shift_jis";
+        private const string ExpectedEucJpPSName = "euc-jp";
+        private const string ExpectedJisPSName = "iso-2022-jp";
+#endif
+
         // ─── byte[] コンストラクタ経由 ─────────────────────────────────────────
 
         [Theory]
-        [InlineData("sample_utf8.txt",     65001, "utf-8",       "utf8NoBOM")]
-        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",       "utf8BOM")]
-        [InlineData("sample_shiftjis.txt", 932,   "shift_jis",   "shift_jis")]
-        [InlineData("sample_eucjp.txt",    20932, "euc-jp",      "euc-jp")]
-        [InlineData("sample_jis.txt",      50220, "iso-2022-jp", "iso-2022-jp")]
+        [InlineData("sample_utf8.txt",     65001, "utf-8",       ExpectedUtf8NoBomPSName)]
+        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",       ExpectedUtf8BomPSName)]
+        [InlineData("sample_shiftjis.txt", 932,   "shift_jis",   ExpectedShiftJisPSName)]
+        [InlineData("sample_eucjp.txt",    20932, "euc-jp",      ExpectedEucJpPSName)]
+        [InlineData("sample_jis.txt",      50220, "iso-2022-jp", ExpectedJisPSName)]
         public void Detection_Japanese_FromByteArray(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
         {
             var buffer = TestDataHelper.ReadBytes("Japanese", fileName);
@@ -37,11 +51,11 @@ namespace EncodingProbe.Tests.DetectorTests
         // ─── Stream コンストラクタ経由 ─────────────────────────────────────────
 
         [Theory]
-        [InlineData("sample_utf8.txt",     65001, "utf-8",       "utf8NoBOM")]
-        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",       "utf8BOM")]
-        [InlineData("sample_shiftjis.txt", 932,   "shift_jis",   "shift_jis")]
-        [InlineData("sample_eucjp.txt",    20932, "euc-jp",      "euc-jp")]
-        [InlineData("sample_jis.txt",      50220, "iso-2022-jp", "iso-2022-jp")]
+        [InlineData("sample_utf8.txt",     65001, "utf-8",       ExpectedUtf8NoBomPSName)]
+        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",       ExpectedUtf8BomPSName)]
+        [InlineData("sample_shiftjis.txt", 932,   "shift_jis",   ExpectedShiftJisPSName)]
+        [InlineData("sample_eucjp.txt",    20932, "euc-jp",      ExpectedEucJpPSName)]
+        [InlineData("sample_jis.txt",      50220, "iso-2022-jp", ExpectedJisPSName)]
         public void Detection_Japanese_FromStream(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
         {
             using var stream = TestDataHelper.OpenStream("Japanese", fileName);
@@ -57,11 +71,11 @@ namespace EncodingProbe.Tests.DetectorTests
         // ─── filePath コンストラクタ経由 ───────────────────────────────────────
 
         [Theory]
-        [InlineData("sample_utf8.txt",     65001, "utf-8",       "utf8NoBOM")]
-        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",       "utf8BOM")]
-        [InlineData("sample_shiftjis.txt", 932,   "shift_jis",   "shift_jis")]
-        [InlineData("sample_eucjp.txt",    20932, "euc-jp",      "euc-jp")]
-        [InlineData("sample_jis.txt",      50220, "iso-2022-jp", "iso-2022-jp")]
+        [InlineData("sample_utf8.txt",     65001, "utf-8",       ExpectedUtf8NoBomPSName)]
+        [InlineData("sample_utf8_bom.txt", 65001, "utf-8",       ExpectedUtf8BomPSName)]
+        [InlineData("sample_shiftjis.txt", 932,   "shift_jis",   ExpectedShiftJisPSName)]
+        [InlineData("sample_eucjp.txt",    20932, "euc-jp",      ExpectedEucJpPSName)]
+        [InlineData("sample_jis.txt",      50220, "iso-2022-jp", ExpectedJisPSName)]
         public void Detection_Japanese_FromFilePath(string fileName, int expectedCodePage, string expectedEncodingName, string expectedPSEncodingName)
         {
             var path = TestDataHelper.GetPath("Japanese", fileName);
