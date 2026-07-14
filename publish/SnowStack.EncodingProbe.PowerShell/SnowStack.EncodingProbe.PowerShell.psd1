@@ -17,11 +17,11 @@
 
     PrivateData = @{
         PSData = @{
-            Prerelease   = 'preview6'
+            # Prerelease   = 'preview6'
             Tags         = @('encoding', 'chardet', 'charset', 'text', 'shift-jis', 'euc-jp', 'japanese')
             LicenseUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe/blob/master/LICENSE.txt'
             ProjectUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe'
-            ReleaseNotes = '初回プレビュー。Resolve-Encoding コマンドレットを提供。'
+            ReleaseNotes = '1.0.0 初回正式リリース。Resolve-Encoding,Get-EncodingProbePlatformInfo コマンドレットを提供。'
         }
     }
 }
