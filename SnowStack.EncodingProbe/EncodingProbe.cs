@@ -52,8 +52,8 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="options"></param>
+        /// <param name="buffer">テキストのバイト配列</param>
+        /// <param name="options"><see cref="EncodingDetectorOptions"/> オブジェクト</param>
         /// <returns></returns>
         public static EncodingInformation Detect(byte[] buffer, EncodingDetectorOptions options = null)
         {
@@ -88,8 +88,8 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="options"></param>
+        /// <param name="stream">テキストのストリーム</param>
+        /// <param name="options"><see cref="EncodingDetectorOptions"/> オブジェクト</param>
         /// <returns></returns>
         public static EncodingInformation Detect(Stream stream, EncodingDetectorOptions options = null)
         {
@@ -124,8 +124,8 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する
         /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="options"></param>
+        /// <param name="filePath">テキストファイルのパス</param>
+        /// <param name="options"><see cref="EncodingDetectorOptions"/> オブジェクト</param>
         /// <returns></returns>
         public static EncodingInformation Detect(string filePath, EncodingDetectorOptions options = null)
         {
@@ -161,8 +161,9 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する（独自実装）
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="detectionMode"></pa
+        /// <param name="buffer">テキストのバイト配列</param>
+        /// <param name="detectionMode">検出モード</param>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
         internal static EncodingInformation DetectEncoding(byte[] buffer, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
         {
@@ -175,8 +176,8 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する（独自実装）
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="detectionMode"></param>
+        /// <param name="stream">テキストのストリーム</param>
+        /// <param name="detectionMode">検出モード</param>
         /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
         internal static EncodingInformation DetectEncoding(Stream stream, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
@@ -190,8 +191,8 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する（独自実装）
         /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="detectionMode"></param>
+        /// <param name="filePath">テキストファイルのパス</param>
+        /// <param name="detectionMode">検出モード</param>
         /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
         internal static EncodingInformation DetectEncoding(string filePath, DetectionMode detectionMode = DetectionMode.Standard, string culture = null)
@@ -205,7 +206,8 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する（UTF.Unknown）
         /// </summary>
-        /// <param name="buffer"></param>
+        /// <param name="buffer">テキストのバイト配列</param>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
         internal static EncodingInformation DetectUtfUnknown(byte[] buffer, string culture = null)
         {
@@ -252,7 +254,8 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する（UTF.Unknown）
         /// </summary>
-        /// <param name="stream"></param>
+        /// <param name="stream">テキストのストリーム</param>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
         internal static EncodingInformation DetectUtfUnknown(Stream stream, string culture = null)
         {
@@ -299,7 +302,8 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する（UTF.Unknown）
         /// </summary>
-        /// <param name="filePath"></param>
+        /// <param name="filePath">テキストファイルのパス</param>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
         internal static EncodingInformation DetectUtfUnknown(string filePath, string culture = null)
         {
@@ -346,7 +350,8 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する（両方を統合）
         /// </summary>
-        /// <param name="buffer"></param>
+        /// <param name="buffer">テキストのバイト配列</param>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
         internal static EncodingInformation NormalDetectEncoding(byte[] buffer, string culture = null)
         {
@@ -363,7 +368,8 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する（両方を統合）
         /// </summary>
-        /// <param name="stream"></param>
+        /// <param name="stream">テキストのストリーム</param>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
         internal static EncodingInformation NormalDetectEncoding(Stream stream, string culture = null)
         {
@@ -380,7 +386,8 @@ https://github.com/CharsetDetector/UTF-unknown
         /// <summary>
         /// 文字エンコーディングを判定する（両方を統合）
         /// </summary>
-        /// <param name="filePath"></param>
+        /// <param name="filePath">テキストファイルのパス</param>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
         /// <returns></returns>
         internal static EncodingInformation NormalDetectEncoding(string filePath, string culture = null)
         {
