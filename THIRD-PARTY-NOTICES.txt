@@ -1,0 +1,29 @@
+SnowStack.EncodingProbe includes the following third-party component.
+
+
+UTF.Unknown
+-----------
+
+Homepage:    https://github.com/CharsetDetector/UTF-unknown
+Package:     https://www.nuget.org/packages/UTF.Unknown/
+Version:     2.6.0
+Source code: https://github.com/CharsetDetector/UTF-unknown
+
+UTF.Unknown is subject to the Mozilla Public License Version 1.1
+(the "License"). Alternatively, it may be used under the terms of
+either the GNU General Public License Version 2 or later (the "GPL"),
+or the GNU Lesser General Public License Version 2.1 or later
+(the "LGPL").
+
+You may obtain a copy of the Mozilla Public License Version 1.1 at
+https://www.mozilla.org/MPL/1.1/
+
+SnowStack.EncodingProbe uses UTF.Unknown under the terms of the
+Mozilla Public License Version 1.1. UTF.Unknown is referenced as an
+unmodified binary NuGet package; no modifications have been made to
+its source code. The complete source code of UTF.Unknown is publicly
+available at the URL listed above.
+
+Copyright notices contained in the UTF.Unknown source files are
+retained by their respective holders and are not reproduced or
+altered here.
