@@ -1,6 +1,6 @@
 ﻿@{
     RootModule           = 'SnowStack.EncodingProbe.PowerShell.psm1'
-    ModuleVersion        = '1.0.0'
+    ModuleVersion        = '1.0.2'
     GUID                 = 'c807b12c-ca2a-4964-a3fe-b5f8823f78e8'
     Author               = 'motoi.tsushima'
     CompanyName          = 'motoi.tsushima'
@@ -21,7 +21,7 @@
             Tags         = @('encoding', 'chardet', 'charset', 'text', 'shift-jis', 'euc-jp', 'japanese')
             LicenseUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe/blob/master/LICENSE.txt'
             ProjectUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe'
-            ReleaseNotes = '1.0.0 初回正式リリース。Resolve-Encoding,Get-EncodingProbePlatformInfo コマンドレットを提供。'
+            ReleaseNotes = '1.0.2 ライセンスリリース。Resolve-Encoding,Get-EncodingProbePlatformInfo コマンドレットを提供。'
         }
     }
 }

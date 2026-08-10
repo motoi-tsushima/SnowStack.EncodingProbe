@@ -6,10 +6,10 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v10.0": {
-      "SnowStack.EncodingProbe.PowerShell/1.0.0": {
+      "SnowStack.EncodingProbe.PowerShell/1.0.1": {
         "dependencies": {
           "PowerShellStandard.Library": "5.1.1",
-          "SnowStack.EncodingProbe": "1.0.0",
+          "SnowStack.EncodingProbe": "1.0.1",
           "UTF.Unknown": "2.6.0"
         },
         "runtime": {
@@ -32,21 +32,21 @@
           }
         }
       },
-      "SnowStack.EncodingProbe/1.0.0": {
+      "SnowStack.EncodingProbe/1.0.1": {
         "dependencies": {
           "UTF.Unknown": "2.6.0"
         },
         "runtime": {
           "SnowStack.EncodingProbe.dll": {
-            "assemblyVersion": "1.0.0.6",
-            "fileVersion": "1.0.0.6"
+            "assemblyVersion": "1.0.1.0",
+            "fileVersion": "1.0.1.0"
           }
         }
       }
     }
   },
   "libraries": {
-    "SnowStack.EncodingProbe.PowerShell/1.0.0": {
+    "SnowStack.EncodingProbe.PowerShell/1.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -65,7 +65,7 @@
       "path": "utf.unknown/2.6.0",
       "hashPath": "utf.unknown.2.6.0.nupkg.sha512"
     },
-    "SnowStack.EncodingProbe/1.0.0": {
+    "SnowStack.EncodingProbe/1.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
