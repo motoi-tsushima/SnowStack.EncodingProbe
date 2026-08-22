@@ -144,10 +144,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             if (information.CodePage < 0)
             {
-                throw Error(string.Format(
-                    CultureInfo.CurrentCulture,
-                    ValidationMessages.UndetectedEncodingInformation,
-                    information.CodePage));
+                throw Error(ValidationMessages.UndetectedEncodingInformation(information.CodePage));
             }
 
             Encoding encoding = BuildEncoding(information.CodePage, information.Bom);
@@ -214,7 +211,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         {
             if (value == null)
             {
-                throw Error(ValidationMessages.NullEncoding);
+                throw Error(ValidationMessages.NullEncoding());
             }
 
             // 経路6: 型で分岐する
@@ -245,8 +242,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             if (text.Length == 0)
             {
-                throw Error(string.Format(
-                    CultureInfo.CurrentCulture, ValidationMessages.UnknownEncoding, Describe(value)));
+                throw Error(ValidationMessages.UnknownEncoding(Describe(value)));
             }
 
             // 経路1: Auto
@@ -254,7 +250,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             {
                 if (!allowAuto)
                 {
-                    throw Error(ValidationMessages.AutoNotAllowedForConvert);
+                    throw Error(ValidationMessages.AutoNotAllowedForConvert());
                 }
 
                 return EncodingSpec.Auto;
@@ -276,8 +272,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             // 経路4・5で語幹だけが解決されてしまう前に判定する必要がある（例: 932BOM の 932 部分）。
             if (TryGetBomSuffixStem(text, out string stem) && CanResolveWithoutSuffix(stem))
             {
-                throw Error(string.Format(
-                    CultureInfo.CurrentCulture, ValidationMessages.BomSuffixNotAllowed, stem));
+                throw Error(ValidationMessages.BomSuffixNotAllowed(stem));
             }
 
             // 経路4: 数値文字列
@@ -351,8 +346,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             }
             catch (Exception exception) when (exception is ArgumentException || exception is NotSupportedException)
             {
-                throw Error(string.Format(
-                    CultureInfo.CurrentCulture, ValidationMessages.UnknownEncoding, original));
+                throw Error(ValidationMessages.UnknownEncoding(original));
             }
         }
 
@@ -378,8 +372,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             }
             catch (ArgumentException)
             {
-                throw Error(string.Format(
-                    CultureInfo.CurrentCulture, ValidationMessages.UnknownEncoding, text));
+                throw Error(ValidationMessages.UnknownEncoding(text));
             }
 
             if (IsUnicodeCodePage(resolved.CodePage))
@@ -399,8 +392,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         {
             if (codePage <= 0)
             {
-                throw Error(string.Format(
-                    CultureInfo.CurrentCulture, ValidationMessages.CodePageNotAvailable, vocabulary));
+                throw Error(ValidationMessages.CodePageNotAvailable(vocabulary));
             }
 
             try
@@ -409,8 +401,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             }
             catch (Exception exception) when (exception is ArgumentException || exception is NotSupportedException)
             {
-                throw Error(string.Format(
-                    CultureInfo.CurrentCulture, ValidationMessages.CodePageNotAvailable, vocabulary));
+                throw Error(ValidationMessages.CodePageNotAvailable(vocabulary));
             }
         }
 
@@ -454,7 +445,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             if (spec.Encoding!.CodePage == CodePageUtf7)
             {
-                throw Error(ValidationMessages.Utf7NotAllowedForWrite);
+                throw Error(ValidationMessages.Utf7NotAllowedForWrite());
             }
 
             if (!spec.IsBomPolicyUnspecified)
@@ -464,17 +455,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             if (spec.Encoding.CodePage == CodePageUtf8)
             {
-                throw Error(string.Format(
-                    CultureInfo.CurrentCulture, ValidationMessages.BareUtf8NotAllowedForWrite, original));
+                throw Error(ValidationMessages.BareUtf8NotAllowedForWrite(original));
             }
 
             KeyValuePair<string, string> suggestion = BomSuffixSuggestions[spec.Encoding.CodePage];
-            throw Error(string.Format(
-                CultureInfo.CurrentCulture,
-                ValidationMessages.BomPolicyUnspecifiedForWrite,
-                original,
-                suggestion.Key,
-                suggestion.Value));
+            throw Error(ValidationMessages.BomPolicyUnspecifiedForWrite(
+                original, suggestion.Key, suggestion.Value));
         }
 
         /// <summary>

@@ -1,8 +1,14 @@
+using SnowStack.EncodingProbe.PowerShell.Internal;
+
 namespace SnowStack.EncodingProbe.PowerShell
 {
     /// <summary>
-    /// 入力の検証に関連する定数メッセージを定義するクラス
+    /// 入力の検証に関連するメッセージを定義するクラス
     /// </summary>
+    /// <remarks>
+    /// 1.1.0 で追加したコマンドのメッセージは <see cref="MessageCatalog"/> によって
+    /// 実行環境の UI カルチャーに応じた言語で返される。
+    /// </remarks>
     internal static class ValidationMessages
     {
         /// <summary>
@@ -13,61 +19,56 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// <summary>
         /// 語彙として解決できない文字エンコーディングが指定された場合のエラーメッセージ
         /// </summary>
-        public const string UnknownEncoding =
-            "文字エンコーディング '{0}' を解決できませんでした。統一語彙名（utf8NoBOM 等）、"
-            + "WebName（shift_jis 等）、コードページ数値（932 等）のいずれかを指定してください。";
+        public static string UnknownEncoding(string name)
+            => MessageCatalog.Format(MessageKey.UnknownEncoding, name);
 
         /// <summary>
-        /// -Encoding に null が指定された場合のエラーメッセージ
+        /// 文字エンコーディングに null が指定された場合のエラーメッセージ
         /// </summary>
-        public const string NullEncoding = "文字エンコーディングに null は指定できません。";
+        public static string NullEncoding()
+            => MessageCatalog.Get(MessageKey.NullEncoding);
 
         /// <summary>
         /// 書き込み系コマンドで、BOM方針が定まらないUTF-8が指定された場合のエラーメッセージ。
         /// 裸の utf8 のほか、WebName の "utf-8" や数値コードページの 65001 もこれに該当する。
         /// </summary>
-        public const string BareUtf8NotAllowedForWrite =
-            "書き込みでは '{0}' を指定できません。UTF-8 は PowerShell 5.1 と 7.x で BOM の解釈が異なるため、"
-            + "'utf8NoBOM' または 'utf8BOM' のいずれかを明示してください。";
+        public static string BareUtf8NotAllowedForWrite(string specified)
+            => MessageCatalog.Format(MessageKey.BareUtf8NotAllowedForWrite, specified);
 
         /// <summary>
-        /// 書き込み系コマンドで、BOM方針が定まらない指定がされた場合のエラーメッセージ
+        /// 書き込み系コマンドで、BOM方針が定まらないUnicode系が指定された場合のエラーメッセージ
         /// </summary>
-        public const string BomPolicyUnspecifiedForWrite =
-            "'{0}' は BOM の有無が定まらないため、書き込みでは指定できません。"
-            + "'{1}' または '{2}' のように BOM の有無を明示した名前を指定してください。";
+        public static string BomPolicyUnspecifiedForWrite(string specified, string noBomName, string bomName)
+            => MessageCatalog.Format(MessageKey.BomPolicyUnspecifiedForWrite, specified, noBomName, bomName);
 
         /// <summary>
         /// 書き込み系コマンドで utf7 が指定された場合のエラーメッセージ
         /// </summary>
-        public const string Utf7NotAllowedForWrite =
-            "書き込みでは UTF-7 を指定できません。UTF-7 は読み取りのみ対応しています。";
+        public static string Utf7NotAllowedForWrite()
+            => MessageCatalog.Get(MessageKey.Utf7NotAllowedForWrite);
 
         /// <summary>
         /// BOM接尾辞を許さない語彙に接尾辞が付けられた場合のエラーメッセージ
         /// </summary>
-        public const string BomSuffixNotAllowed =
-            "'{0}' に BOM 接尾辞は指定できません。BOM 接尾辞を指定できるのは "
-            + "utf8 / unicode / bigendianunicode / utf32 / bigendianutf32 の 5 系統のみです。";
+        public static string BomSuffixNotAllowed(string vocabulary)
+            => MessageCatalog.Format(MessageKey.BomSuffixNotAllowed, vocabulary);
 
         /// <summary>
         /// ConvertTo-DotNetEncoding に Auto が指定された場合のエラーメッセージ
         /// </summary>
-        public const string AutoNotAllowedForConvert =
-            "Auto はファイルからの検出を指す語彙のため、ConvertTo-DotNetEncoding では指定できません。"
-            + "ファイルから解決するには Resolve-Encoding <path> | ConvertTo-DotNetEncoding を使用してください。";
+        public static string AutoNotAllowedForConvert()
+            => MessageCatalog.Get(MessageKey.AutoNotAllowedForConvert);
 
         /// <summary>
         /// ANSI / OEM コードページを取得できない環境で ansi / oem が指定された場合のエラーメッセージ
         /// </summary>
-        public const string CodePageNotAvailable =
-            "この実行環境では '{0}' に対応するコードページを取得できません。"
-            + "コードページ数値または WebName で明示的に指定してください。";
+        public static string CodePageNotAvailable(string vocabulary)
+            => MessageCatalog.Format(MessageKey.CodePageNotAvailable, vocabulary);
 
         /// <summary>
         /// 判定に失敗した EncodingInformation が渡された場合のエラーメッセージ
         /// </summary>
-        public const string UndetectedEncodingInformation =
-            "渡された EncodingInformation は文字エンコーディングの判定に失敗しています（CodePage = {0}）。";
+        public static string UndetectedEncodingInformation(int codePage)
+            => MessageCatalog.Format(MessageKey.UndetectedEncodingInformation, codePage);
     }
 }

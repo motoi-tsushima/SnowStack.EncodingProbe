@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Management.Automation;
 using System.Text;
 using SnowStack.EncodingProbe;
+using SnowStack.EncodingProbe.PowerShell;
 using SnowStack.EncodingProbe.PowerShell.Internal;
 using Xunit;
 
@@ -443,27 +444,30 @@ public class EncodingVocabularyTests
     /// BOM接尾辞を許さない語彙への接尾辞付き指定がエラーになること。
     /// </summary>
     [Theory]
-    [InlineData("ansiBOM")]
-    [InlineData("ansiNoBOM")]
-    [InlineData("oemBOM")]
-    [InlineData("oemNoBOM")]
-    [InlineData("asciiBOM")]
-    [InlineData("asciiNoBOM")]
-    [InlineData("utf7BOM")]
-    [InlineData("utf7NoBOM")]
-    [InlineData("shift_jisBOM")]
-    [InlineData("shift_jisNoBOM")]
-    [InlineData("932BOM")]
-    [InlineData("932NoBOM")]
-    [InlineData("euc-jpBOM")]
-    [InlineData("utf-7BOM")]
-    [InlineData("65000BOM")]
-    public void Resolve_BomSuffixOnDisallowedVocabulary_Throws(string name)
+    [InlineData("ansiBOM", "ansi")]
+    [InlineData("ansiNoBOM", "ansi")]
+    [InlineData("oemBOM", "oem")]
+    [InlineData("oemNoBOM", "oem")]
+    [InlineData("asciiBOM", "ascii")]
+    [InlineData("asciiNoBOM", "ascii")]
+    [InlineData("utf7BOM", "utf7")]
+    [InlineData("utf7NoBOM", "utf7")]
+    [InlineData("shift_jisBOM", "shift_jis")]
+    [InlineData("shift_jisNoBOM", "shift_jis")]
+    [InlineData("932BOM", "932")]
+    [InlineData("932NoBOM", "932")]
+    [InlineData("euc-jpBOM", "euc-jp")]
+    [InlineData("utf-7BOM", "utf-7")]
+    [InlineData("65000BOM", "65000")]
+    public void Resolve_BomSuffixOnDisallowedVocabulary_Throws(string name, string expectedStem)
     {
         var exception = Assert.Throws<ArgumentTransformationMetadataException>(
             () => EncodingVocabulary.Resolve(name, EncodingUsage.Read));
 
-        Assert.Contains("BOM 接尾辞", exception.Message);
+        // メッセージは実行環境の言語に応じて変わるため、カタログと照合して検証する。
+        // これにより、正しいメッセージが選ばれていることと、語幹の切り出しが正しいことを
+        // 同時に検証できる。
+        Assert.Equal(ValidationMessages.BomSuffixNotAllowed(expectedStem), exception.Message);
     }
 
     /// <summary>
@@ -476,7 +480,7 @@ public class EncodingVocabularyTests
         var exception = Assert.Throws<ArgumentTransformationMetadataException>(
             () => EncodingVocabulary.Resolve("nonexistentBOM", EncodingUsage.Read));
 
-        Assert.Contains("解決できませんでした", exception.Message);
+        Assert.Equal(ValidationMessages.UnknownEncoding("nonexistentBOM"), exception.Message);
     }
 
     #endregion
