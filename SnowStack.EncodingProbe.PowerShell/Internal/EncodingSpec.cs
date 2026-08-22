@@ -1,3 +1,5 @@
+using System;
+using System.Management.Automation;
 using System.Text;
 using SnowStack.EncodingProbe;  // クラスライブラリのnamespace
 
@@ -66,5 +68,38 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// </summary>
         public EncodingSpec WithLineBreak(LineBreakType? lineBreak)
             => new EncodingSpec(this.Encoding, this.EmitBom, lineBreak, this.IsAuto);
+
+        /// <summary>
+        /// パラメータに束縛された値から <see cref="EncodingSpec"/> を取り出す。
+        /// </summary>
+        /// <remarks>
+        /// コマンドレットの -Encoding は多形の入力を受けるため object 型で宣言し、
+        /// <see cref="EncodingSpecTransformationAttribute"/> がこの型へ変換している。
+        /// 束縛の過程で PSObject に包まれる場合があるため、ここで取り出す。
+        /// </remarks>
+        public static EncodingSpec FromBoundParameter(object? value)
+        {
+            while (value is PSObject psObject)
+            {
+                object baseObject = psObject.BaseObject;
+
+                if (ReferenceEquals(baseObject, value))
+                {
+                    break;
+                }
+
+                value = baseObject;
+            }
+
+            if (value is EncodingSpec spec)
+            {
+                return spec;
+            }
+
+            // 引数変換属性が適用されていれば到達しない。付け忘れを早期に検出するための保険。
+            throw new InvalidOperationException(
+                $"パラメータが {nameof(EncodingSpec)} に変換されていません。"
+                + $"{nameof(EncodingSpecTransformationAttribute)} の指定漏れの可能性があります。");
+        }
     }
 }
