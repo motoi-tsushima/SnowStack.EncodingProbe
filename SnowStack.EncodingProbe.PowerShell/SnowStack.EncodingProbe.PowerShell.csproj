@@ -32,4 +32,9 @@
     <ProjectReference Include="..\SnowStack.EncodingProbe\SnowStack.EncodingProbe.csproj" />
   </ItemGroup>
 
+  <!-- EncodingSpec 等の internal 実装をテストプロジェクトからのみ参照可能にする -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="EncodingProbe.PowerShell.Tests" />
+  </ItemGroup>
+
 </Project>
