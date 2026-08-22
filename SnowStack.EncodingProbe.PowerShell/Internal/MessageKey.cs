@@ -31,5 +31,20 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         /// <summary>判定に失敗した EncodingInformation が渡された</summary>
         UndetectedEncodingInformation,
+
+        /// <summary>対象ファイルの文字エンコーディングを判定できなかった</summary>
+        DetectionFailed,
+
+        /// <summary>-Raw と -TotalCount が同時に指定された</summary>
+        RawAndTotalCountAreExclusive,
+
+        /// <summary>指定されたファイルが存在しない</summary>
+        FileNotFound,
+
+        /// <summary>指定されたパスがファイルではない</summary>
+        PathIsNotFile,
+
+        /// <summary>読み取り中のファイルが書き込み先に指定された</summary>
+        SamePathRoundTrip,
     }
 }

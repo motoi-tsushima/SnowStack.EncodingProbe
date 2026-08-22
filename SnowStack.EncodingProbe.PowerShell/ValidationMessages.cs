@@ -70,5 +70,35 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string UndetectedEncodingInformation(int codePage)
             => MessageCatalog.Format(MessageKey.UndetectedEncodingInformation, codePage);
+
+        /// <summary>
+        /// 対象ファイルの文字エンコーディングを判定できなかった場合のエラーメッセージ
+        /// </summary>
+        public static string DetectionFailed(string path)
+            => MessageCatalog.Format(MessageKey.DetectionFailed, path);
+
+        /// <summary>
+        /// -Raw と -TotalCount が同時に指定された場合のエラーメッセージ
+        /// </summary>
+        public static string RawAndTotalCountAreExclusive()
+            => MessageCatalog.Get(MessageKey.RawAndTotalCountAreExclusive);
+
+        /// <summary>
+        /// 指定されたファイルが存在しない場合のエラーメッセージ
+        /// </summary>
+        public static string FileNotFound(string path)
+            => MessageCatalog.Format(MessageKey.FileNotFound, path);
+
+        /// <summary>
+        /// 指定されたパスがファイルではない場合のエラーメッセージ
+        /// </summary>
+        public static string PathIsNotFile(string path)
+            => MessageCatalog.Format(MessageKey.PathIsNotFile, path);
+
+        /// <summary>
+        /// 読み取り中のファイルが書き込み先に指定された場合のエラーメッセージ
+        /// </summary>
+        public static string SamePathRoundTrip(string path)
+            => MessageCatalog.Format(MessageKey.SamePathRoundTrip, path);
     }
 }

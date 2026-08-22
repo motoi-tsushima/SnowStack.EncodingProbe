@@ -80,6 +80,23 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.UndetectedEncodingInformation] =
                     "The supplied EncodingInformation does not carry a successful detection result (CodePage = {0}).",
+                [MessageKey.DetectionFailed] =
+                    "Cannot detect the character encoding of '{0}'. Specify it explicitly with -Encoding.",
+
+                [MessageKey.RawAndTotalCountAreExclusive] =
+                    "The -Raw and -TotalCount parameters cannot be specified in the same command.",
+
+                [MessageKey.FileNotFound] =
+                    "Cannot find the file '{0}'.",
+
+                [MessageKey.PathIsNotFile] =
+                    "'{0}' is not a file.",
+
+                [MessageKey.SamePathRoundTrip] =
+                    "'{0}' is currently being read, so it cannot be used as the write target. "
+                    + "Reading and writing the same file within one pipeline truncates it before it has been read. "
+                    + "Receive the content into a variable first, for example: "
+                    + "$text = Get-ProbedContent <path> -Raw",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -117,6 +134,22 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.UndetectedEncodingInformation] =
                     "渡された EncodingInformation は文字エンコーディングの判定に失敗しています（CodePage = {0}）。",
+                [MessageKey.DetectionFailed] =
+                    "'{0}' の文字エンコーディングを判定できませんでした。-Encoding で明示的に指定してください。",
+
+                [MessageKey.RawAndTotalCountAreExclusive] =
+                    "-Raw と -TotalCount は同時に指定できません。",
+
+                [MessageKey.FileNotFound] =
+                    "ファイル '{0}' が見つかりません。",
+
+                [MessageKey.PathIsNotFile] =
+                    "'{0}' はファイルではありません。",
+
+                [MessageKey.SamePathRoundTrip] =
+                    "'{0}' は読み取り中のため、書き込み先に指定できません。"
+                    + "同一のファイルを1つのパイプラインで読み書きすると、読み終える前にファイルが切り詰められます。"
+                    + "$text = Get-ProbedContent <path> -Raw のように、いったん変数に受けてください。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -154,6 +187,22 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.UndetectedEncodingInformation] =
                     "전달된 EncodingInformation은 문자 인코딩 판별에 실패했습니다(CodePage = {0}).",
+                [MessageKey.DetectionFailed] =
+                    "'{0}'의 문자 인코딩을 판별할 수 없습니다. -Encoding으로 명시적으로 지정하십시오.",
+
+                [MessageKey.RawAndTotalCountAreExclusive] =
+                    "-Raw와 -TotalCount는 동시에 지정할 수 없습니다.",
+
+                [MessageKey.FileNotFound] =
+                    "파일 '{0}'을(를) 찾을 수 없습니다.",
+
+                [MessageKey.PathIsNotFile] =
+                    "'{0}'은(는) 파일이 아닙니다.",
+
+                [MessageKey.SamePathRoundTrip] =
+                    "'{0}'은(는) 읽는 중이므로 쓰기 대상으로 지정할 수 없습니다. "
+                    + "같은 파일을 하나의 파이프라인에서 읽고 쓰면 다 읽기 전에 파일이 잘립니다. "
+                    + "$text = Get-ProbedContent <path> -Raw 처럼 먼저 변수에 받으십시오.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -190,6 +239,22 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.UndetectedEncodingInformation] =
                     "傳入的 EncodingInformation 並未成功判斷字元編碼（CodePage = {0}）。",
+                [MessageKey.DetectionFailed] =
+                    "無法判斷 '{0}' 的字元編碼。請以 -Encoding 明確指定。",
+
+                [MessageKey.RawAndTotalCountAreExclusive] =
+                    "-Raw 與 -TotalCount 不可同時指定。",
+
+                [MessageKey.FileNotFound] =
+                    "找不到檔案 '{0}'。",
+
+                [MessageKey.PathIsNotFile] =
+                    "'{0}' 不是檔案。",
+
+                [MessageKey.SamePathRoundTrip] =
+                    "'{0}' 正在讀取中，因此無法指定為寫入目標。"
+                    + "在同一個管線中讀寫同一個檔案，會在讀取完成前就將檔案截斷。"
+                    + "請先接收到變數中，例如：$text = Get-ProbedContent <path> -Raw",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -226,6 +291,22 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.UndetectedEncodingInformation] =
                     "传入的 EncodingInformation 未能成功判断字符编码（CodePage = {0}）。",
+                [MessageKey.DetectionFailed] =
+                    "无法判断 '{0}' 的字符编码。请使用 -Encoding 明确指定。",
+
+                [MessageKey.RawAndTotalCountAreExclusive] =
+                    "-Raw 与 -TotalCount 不能同时指定。",
+
+                [MessageKey.FileNotFound] =
+                    "找不到文件 '{0}'。",
+
+                [MessageKey.PathIsNotFile] =
+                    "'{0}' 不是文件。",
+
+                [MessageKey.SamePathRoundTrip] =
+                    "'{0}' 正在读取中，因此无法指定为写入目标。"
+                    + "在同一个管道中读写同一个文件，会在读取完成前就将文件截断。"
+                    + "请先接收到变量中，例如：$text = Get-ProbedContent <path> -Raw",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =
