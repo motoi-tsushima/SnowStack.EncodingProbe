@@ -78,6 +78,12 @@ namespace SnowStack.EncodingProbe.PowerShell
             => MessageCatalog.Format(MessageKey.DetectionFailed, path);
 
         /// <summary>
+        /// 判定できるサイズを超えるファイルが指定された場合のエラーメッセージ
+        /// </summary>
+        public static string FileTooLargeToDetect(string path)
+            => MessageCatalog.Format(MessageKey.FileTooLargeToDetect, path);
+
+        /// <summary>
         /// -Raw と -TotalCount が同時に指定された場合のエラーメッセージ
         /// </summary>
         public static string RawAndTotalCountAreExclusive()

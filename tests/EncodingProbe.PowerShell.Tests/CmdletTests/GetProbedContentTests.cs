@@ -155,6 +155,44 @@ public class GetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
     }
 
     /// <summary>
+    /// 先頭が英数字だけで、後方にマルチバイト文字が現れるファイルを正しく判定すること。
+    /// </summary>
+    /// <remarks>
+    /// 判定をファイル先頭の一定量に限ると、このようなファイル
+    /// （例: 大きなソースファイルの末尾にだけ日本語のコメントがある）を US-ASCII と誤判定し、
+    /// 後続のマルチバイト文字をすべて壊して復号してしまう。
+    /// 判定はファイル全体を対象としなければならない。
+    /// </remarks>
+    [Theory]
+    [InlineData(932)]
+    [InlineData(65001)]
+    public void Read_MultiByteOnlyNearEndOfLargeFile_IsStillDetectedCorrectly(int codePage)
+    {
+        Encoding encoding = Encoding.GetEncoding(codePage);
+        const string JapaneseLine = "日本語のコメントです";
+
+        // 先頭に十分な量の英数字を置き、最終行にだけマルチバイト文字を置く
+        var builder = new StringBuilder();
+
+        for (int i = 0; i < 60000; i++)
+        {
+            builder.Append("// ASCII only source line for padding\r\n");
+        }
+
+        builder.Append(JapaneseLine).Append("\r\n");
+
+        using var file = ByteExactFile.Create(encoding.GetBytes(builder.ToString()));
+
+        Assert.True(new FileInfo(file.Path).Length > 2 * 1024 * 1024, "テスト前提: 十分に大きいこと");
+
+        InvocationResult result = Invoke(file.Path);
+        string[] lines = result.AsStrings();
+
+        Assert.Empty(result.Errors);
+        Assert.Equal(JapaneseLine, lines[lines.Length - 1]);
+    }
+
+    /// <summary>
     /// 判定に失敗した場合はエラーになり、他のファイルの処理は継続されること。
     /// </summary>
     /// <remarks>

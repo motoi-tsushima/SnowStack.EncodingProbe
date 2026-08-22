@@ -9,8 +9,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// 文字エンコーディングを判定しながらテキストファイルを読み込む。
     /// </summary>
     /// <remarks>
-    /// 1本の FileStream で先頭を判定に使い、Seek(0) してから復号する。
-    /// 判定用と読み込み用でファイルを2回開くことはしない。
+    /// 1本の FileStream で判定と復号の両方を行う。判定用と読み込み用でファイルを2回開くことはしない。
+    /// 判定はファイル全体を対象とし、判定後に Seek(0) してから復号する。
+    /// 判定に使ったバイト列は返却するオブジェクトが保持しないため、復号の間は解放されている。
     /// <br/>
     /// BOM は、指定された語彙にかかわらず常に読み飛ばす（原則A）。
     /// StreamReader に detectEncodingFromByteOrderMarks: false を渡すと BOM が
@@ -20,18 +21,23 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     internal sealed class ProbedFileReader : IDisposable
     {
         /// <summary>
-        /// 判定のために読み込むファイル先頭の最大バイト数。
+        /// 判定できるファイルサイズの上限。
         /// </summary>
         /// <remarks>
-        /// 大容量ファイルでも標準の Get-Content と同様のメモリ挙動を保つため、
-        /// 判定に使う範囲を先頭の一定量に限る。
-        /// この上限以下のファイルは全体が判定対象になるため、
-        /// Resolve-Encoding と完全に同じ判定結果になる。
+        /// 判定はファイル全体を対象とする必要がある。先頭の一定量だけで判定すると、
+        /// 「1MB 分の英数字のあとに日本語のコメントが続くソースファイル」のような内容を
+        /// US-ASCII と誤判定し、後続の日本語をすべて壊して復号してしまう。
+        /// <br/>
+        /// 上限は byte 配列の最大長に由来する。クラスライブラリの判定処理は
+        /// バイト配列を前提としており、これを超えるファイルは判定できない。
         /// </remarks>
-        public const int DetectionBufferSize = 1024 * 1024;
+        private const long MaxDetectableLength = 0x7FFFFFC7;
 
         /// <summary>StreamReader に与えるバッファサイズ</summary>
         private const int ReadBufferSize = 4096;
+
+        /// <summary>BOM の判定に必要な先頭バイト数</summary>
+        private const int BomHeadSize = 4;
 
         private readonly FileStream _stream;
         private readonly StreamReader _reader;
@@ -70,9 +76,25 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             try
             {
-                byte[] head = ReadHead(stream);
-                int bomLength = GetBomLength(head);
-                Encoding encoding = ResolveEncoding(path, spec, head);
+                Encoding encoding;
+                int bomLength;
+
+                if (spec.IsAuto)
+                {
+                    // 判定はファイル全体を対象とする。先頭の一定量だけで判定すると、
+                    // 英数字が続いたあとにマルチバイト文字が現れるファイルを誤判定し、
+                    // 後続の文字をすべて壊して復号してしまうため。
+                    byte[] content = ReadAll(stream, path);
+                    bomLength = GetBomLength(content);
+                    encoding = Detect(path, content);
+                }
+                else
+                {
+                    // 明示指定された場合は判定を行わないため、BOM の確認に必要な分だけ読む
+                    byte[] head = ReadHead(stream, BomHeadSize);
+                    bomLength = GetBomLength(head);
+                    encoding = spec.Encoding!;
+                }
 
                 // BOM の直後から復号を始めることで、U+FEFF が本文に混入するのを防ぐ
                 stream.Seek(bomLength, SeekOrigin.Begin);
@@ -110,24 +132,37 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         }
 
         /// <summary>
-        /// 判定に使うファイル先頭のバイト列を読み込む
+        /// 判定のためにファイル全体を読み込む
         /// </summary>
-        private static byte[] ReadHead(FileStream stream)
+        /// <exception cref="EncodingDetectionException">判定できないサイズの場合</exception>
+        private static byte[] ReadAll(FileStream stream, string path)
         {
             long length = stream.Length;
-            int size = length < DetectionBufferSize ? (int)length : DetectionBufferSize;
 
-            if (size == 0)
+            if (length > MaxDetectableLength)
+            {
+                throw new EncodingDetectionException(ValidationMessages.FileTooLargeToDetect(path), path);
+            }
+
+            return ReadHead(stream, (int)length);
+        }
+
+        /// <summary>
+        /// ファイル先頭から指定バイト数を読み込む。ファイルが短い場合は読めた分だけを返す。
+        /// </summary>
+        private static byte[] ReadHead(FileStream stream, int size)
+        {
+            if (size <= 0)
             {
                 return Array.Empty<byte>();
             }
 
-            var head = new byte[size];
+            var buffer = new byte[size];
             int read = 0;
 
             while (read < size)
             {
-                int count = stream.Read(head, read, size - read);
+                int count = stream.Read(buffer, read, size - read);
 
                 if (count == 0)
                 {
@@ -139,26 +174,21 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             if (read == size)
             {
-                return head;
+                return buffer;
             }
 
             var trimmed = new byte[read];
-            Array.Copy(head, trimmed, read);
+            Array.Copy(buffer, trimmed, read);
             return trimmed;
         }
 
         /// <summary>
-        /// 復号に使う文字エンコーディングを決める
+        /// 復号に使う文字エンコーディングを判定する
         /// </summary>
-        private static Encoding ResolveEncoding(string path, EncodingSpec spec, byte[] head)
+        /// <exception cref="EncodingDetectionException">判定に失敗した場合</exception>
+        private static Encoding Detect(string path, byte[] content)
         {
-            if (!spec.IsAuto)
-            {
-                // 明示指定された場合は判定を行わない（誤判定を回避する手段として機能する）
-                return spec.Encoding!;
-            }
-
-            EncodingInformation information = EncodingProbe.Detect(head);
+            EncodingInformation information = EncodingProbe.Detect(content);
 
             if (information.CodePage < 0)
             {

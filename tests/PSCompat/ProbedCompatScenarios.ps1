@@ -243,6 +243,18 @@ foreach ($case in @(@('crlf', "a`r`nb`r`n"), @('lf', "a`nb`n"), @('末尾改行�
     Add-Scenario ("Get/Raw/" + $case[0]) ([scriptblock]::Create("Format-Text (Get-ProbedContent '$path' -Raw)")).GetNewClosure()
 }
 
+# 判定はファイル全体を対象とする。
+# 先頭が英数字だけで、後方にだけマルチバイト文字が現れるファイルを誤判定しないこと。
+foreach ($cp in @(932, 65001)) {
+    $enc = [System.Text.Encoding]::GetEncoding($cp)
+    $builder = New-Object System.Text.StringBuilder
+    for ($i = 0; $i -lt 60000; $i++) { $null = $builder.Append("// ASCII only source line for padding`r`n") }
+    $null = $builder.Append("日本語のコメントです`r`n")
+    $path = New-ByteFile ("tail_$cp.txt") ($enc.GetBytes($builder.ToString()))
+    Add-Scenario "Get/末尾のみ多バイト/$cp" ([scriptblock]::Create(
+        "Format-Text (@(Get-ProbedContent '$path')[-1])")).GetNewClosure()
+}
+
 # -TotalCount / 複数ファイル / 境界条件
 $three = New-ByteFile 'three.txt' ([System.Text.Encoding]::ASCII.GetBytes("1`r`n2`r`n3`r`n"))
 $two = New-ByteFile 'two.txt' ([System.Text.Encoding]::ASCII.GetBytes("x`r`ny`r`n"))

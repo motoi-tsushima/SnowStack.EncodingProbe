@@ -35,6 +35,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <summary>対象ファイルの文字エンコーディングを判定できなかった</summary>
         DetectionFailed,
 
+        /// <summary>判定できるサイズを超えるファイルが指定された</summary>
+        FileTooLargeToDetect,
+
         /// <summary>-Raw と -TotalCount が同時に指定された</summary>
         RawAndTotalCountAreExclusive,
 

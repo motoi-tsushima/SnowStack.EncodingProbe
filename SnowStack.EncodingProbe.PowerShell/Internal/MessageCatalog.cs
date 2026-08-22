@@ -82,6 +82,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "The supplied EncodingInformation does not carry a successful detection result (CodePage = {0}).",
                 [MessageKey.DetectionFailed] =
                     "Cannot detect the character encoding of '{0}'. Specify it explicitly with -Encoding.",
+                [MessageKey.FileTooLargeToDetect] =
+                    "'{0}' is too large for character encoding detection, which reads the whole file "
+                    + "(the file must be smaller than 2 GB). Specify the encoding explicitly with -Encoding.",
 
                 [MessageKey.RawAndTotalCountAreExclusive] =
                     "The -Raw and -TotalCount parameters cannot be specified in the same command.",
@@ -136,6 +139,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "渡された EncodingInformation は文字エンコーディングの判定に失敗しています（CodePage = {0}）。",
                 [MessageKey.DetectionFailed] =
                     "'{0}' の文字エンコーディングを判定できませんでした。-Encoding で明示的に指定してください。",
+                [MessageKey.FileTooLargeToDetect] =
+                    "'{0}' は、文字エンコーディングの判定に対して大きすぎます。"
+                    + "判定はファイル全体を読み込むため、2GB 未満である必要があります。"
+                    + "-Encoding で明示的に指定してください。",
 
                 [MessageKey.RawAndTotalCountAreExclusive] =
                     "-Raw と -TotalCount は同時に指定できません。",
@@ -189,6 +196,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "전달된 EncodingInformation은 문자 인코딩 판별에 실패했습니다(CodePage = {0}).",
                 [MessageKey.DetectionFailed] =
                     "'{0}'의 문자 인코딩을 판별할 수 없습니다. -Encoding으로 명시적으로 지정하십시오.",
+                [MessageKey.FileTooLargeToDetect] =
+                    "'{0}'은(는) 문자 인코딩 판별에 비해 너무 큽니다. "
+                    + "판별은 파일 전체를 읽으므로 2GB 미만이어야 합니다. "
+                    + "-Encoding으로 명시적으로 지정하십시오.",
 
                 [MessageKey.RawAndTotalCountAreExclusive] =
                     "-Raw와 -TotalCount는 동시에 지정할 수 없습니다.",
@@ -241,6 +252,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "傳入的 EncodingInformation 並未成功判斷字元編碼（CodePage = {0}）。",
                 [MessageKey.DetectionFailed] =
                     "無法判斷 '{0}' 的字元編碼。請以 -Encoding 明確指定。",
+                [MessageKey.FileTooLargeToDetect] =
+                    "'{0}' 對於字元編碼判斷而言太大。"
+                    + "判斷會讀取整個檔案，因此檔案必須小於 2 GB。"
+                    + "請以 -Encoding 明確指定。",
 
                 [MessageKey.RawAndTotalCountAreExclusive] =
                     "-Raw 與 -TotalCount 不可同時指定。",
@@ -293,6 +308,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "传入的 EncodingInformation 未能成功判断字符编码（CodePage = {0}）。",
                 [MessageKey.DetectionFailed] =
                     "无法判断 '{0}' 的字符编码。请使用 -Encoding 明确指定。",
+                [MessageKey.FileTooLargeToDetect] =
+                    "'{0}' 对于字符编码判断而言太大。"
+                    + "判断会读取整个文件，因此文件必须小于 2 GB。"
+                    + "请使用 -Encoding 明确指定。",
 
                 [MessageKey.RawAndTotalCountAreExclusive] =
                     "-Raw 与 -TotalCount 不能同时指定。",
