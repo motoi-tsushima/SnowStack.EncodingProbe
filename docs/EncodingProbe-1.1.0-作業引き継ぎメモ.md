@@ -1,7 +1,7 @@
 # SnowStack.EncodingProbe.PowerShell 1.1.0 作業引き継ぎメモ
 
 - 最終更新: 2026-08-23（1.1.0 の作業は完了）
-- 作業ブランチ: `feature/1.1.0-probed-content`（ローカルのみ。未 push）
+- 作業ブランチ: `feature/1.1.0-probed-content`（push 済み）
 - **1.1.0 の作業はすべて完了しました。** 以降は、仕様書に無い挙動を足す前に
   `docs/EncodingProbe-1.1.0-仕様書.md` と本メモの「2. 確定した決定事項」を確認してください。
 
@@ -27,13 +27,15 @@
 
 | 項目 | 状態 |
 |---|---|
-| 作業ブランチ | `feature/1.1.0-probed-content` … **ローカルのみ。追跡ブランチなし** |
-| `master` | `2981455` = `origin/master`。**1.1.0 の作業は 1 つも入っていない** |
+| 作業ブランチ | `feature/1.1.0-probed-content` … `origin/feature/1.1.0-probed-content` を追跡 |
 | リモート | `origin` = `https://github.com/motoi-tsushima/SnowStack.EncodingProbe.git` |
-| push | **11 コミットすべて未 push。** GitHub 上に `feature/1.1.0-probed-content` は存在しない |
+| push | **2026-08-23 に push 済み。** GitHub 上にブランチがあり、ローカルと一致している |
+| `master` | `2981455` = `origin/master`。**1.1.0 の作業はまだ 1 つも入っていない** |
+| PR | **未作成。** GitHub の PR 作成 URL は `.../pull/new/feature/1.1.0-probed-content` |
 | タグ | `v1.0.0` のみ。1.0.1 / 1.0.2 のタグは無く、`v1.1.0` も未作成 |
 
-外向きの操作（push / PR / タグ）は利用者の指示待ちで、いずれも未実施。
+**1.1.0 は「ブランチを push しただけ」の状態。** master へのマージ、`v1.1.0` タグ、
+NuGet / PowerShell Gallery への公開はいずれも未実施で、利用者の指示待ち。
 
 #### コミット履歴（master からの差分。新しい順）
 
@@ -51,12 +53,14 @@ c1fae6d 1.1.0 第3段階: Get-ProbedContent を追加
 2255f3c 1.1.0 第1段階: 統一語彙の解決基盤を追加
 ```
 
-コミットハッシュは rebase / amend を行うと変わる。現在の状態は次で確認できる。
+このメモの更新自体もコミットしているため、履歴は上の一覧より先に進んでいることがある。
+コミットハッシュは rebase / amend でも変わる。現在の状態は次で確認できる。
 
 ```bash
-git branch -vv                      # ブランチと追跡先
-git status -sb                      # 追跡状態と未コミットの変更
-git log --oneline master..HEAD      # master に入っていないコミット
+git branch -vv                                              # ブランチと追跡先
+git status -sb                                              # 追跡状態と未コミットの変更
+git log --oneline master..HEAD                              # master に入っていないコミット
+git log --oneline origin/feature/1.1.0-probed-content..HEAD # 未 push のコミット（空なら一致）
 ```
 
 #### 未コミットの変更
