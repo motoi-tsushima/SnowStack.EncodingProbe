@@ -248,6 +248,10 @@ PSCompat (PS 5.1 vs 7.x)                 195 シナリオ 完全一致
 
 ## 5. 検証コマンド
 
+手元の PC で動作を確認する手順は `docs/EncodingProbe-1.1.0-動作確認手順書.md` にまとめてある。
+クリーンな clone から通ることを実機で確認済み。以下はその要約。
+
+
 ```bash
 # ビルド
 dotnet build SnowStack.EncodingProbe.slnx -c Debug
@@ -305,7 +309,20 @@ pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1
 - UTF-7 は .NET 5 以降 `Encoding.GetEncoding` から取得できない。
   `EncodingVocabulary` がコンストラクタ経由で生成している
 
-### 6.4 その他
+### 6.4 クリーンな clone で判明したこと
+
+`git clone` した状態から手順を通したところ、作業リポジトリでは起きない問題が 2 つ出た。
+
+| 症状 | 原因 | 対処 |
+|---|---|---|
+| `sample_eucjp.txt` 関連のテストが 8 件失敗する | `.gitattributes` の `* text=auto` により、**checkout で TestData の改行が LF → CRLF に変換される**。EUC-JP と Shift-JIS は改行コードで区別しているため、EUC-JP のサンプルが Shift-JIS と判定される | `.gitattributes` に `tests/EncodingProbe.Tests/TestData/** -text` を追加した。blob 自体は正しいバイト列なので、属性を付けるだけで直る |
+| テストプロジェクトのビルドが `MSB3021` で失敗する | `Microsoft.PowerShell.SDK` が深い階層のファイルをコピーするため、clone 先が深いと 260 文字を超える | clone 先を浅いパスに置く。手順書 0 節に記載 |
+
+前者は **1.1.0 の作業とは無関係に以前から存在していた問題**で、
+リポジトリを clone した人が最初に踏む。作業リポジトリでは TestData を checkout し直していないため
+表面化していなかった。
+
+### 6.5 その他
 
 - `EncodingSpec` は internal のまま公開しない（指示書 9 節）
 - internal な `ArgumentTransformationAttribute` は PS 5.1 / 7.x の両方で正しく機能することを確認済み
