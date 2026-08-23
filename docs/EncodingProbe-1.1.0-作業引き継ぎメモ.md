@@ -200,7 +200,9 @@ pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1
 
 ### 6.1 ソースファイルの文字コード
 
-- `.cs` は **UTF-8 (BOM 無し) / CRLF / 末尾改行なし**（`.editorconfig` と既存ファイルに合わせる）
+- `.cs` は **UTF-8 (BOM 無し) / 末尾改行なし**。
+  改行は `.gitattributes` の `* text=auto` によりコミット時に LF へ正規化されるため、
+  作業ツリー上の改行は気にしなくてよい（既存ファイルも LF になっている）
 - `.ps1` は **UTF-8 (BOM 付き) / CRLF**。
   **PowerShell 5.1 は BOM 無しの `.ps1` を ANSI コードページとして読む**ため、
   BOM が無いと日本語を含む行がパースエラーになる（実際に発生した）
