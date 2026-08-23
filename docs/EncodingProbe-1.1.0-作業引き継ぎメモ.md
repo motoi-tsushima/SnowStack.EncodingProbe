@@ -26,7 +26,8 @@
 ### コミット履歴（master からの差分）
 
 ```
-（最新） 1.1.0 仕上げ: ヘルプ・バージョン・ドキュメントを整備
+（最新） 1.1.0 判定できないコードページの扱いを修正
+7a4721d 1.1.0 仕上げ: ヘルプ・バージョン・ドキュメントを整備
 7b11068 1.1.0 第5段階: Add-ProbedContent を追加
 5321be8 1.1.0 引き継ぎメモ: .cs の改行に関する記述を修正
 f637e0f 1.1.0 第4段階: Set-ProbedContent を追加
@@ -47,9 +48,9 @@ c1fae6d 1.1.0 第3段階: Get-ProbedContent を追加
 
 ```
 EncodingProbe.Tests (net10.0)            合格 64  / 失敗 0
-EncodingProbe.PowerShell.Tests (net10.0) 合格 373 / 失敗 0
+EncodingProbe.PowerShell.Tests (net10.0) 合格 380 / 失敗 0
 EncodingProbe.Tests (net48)              合格 74  / 失敗 0
-PSCompat (PS 5.1 vs 7.x)                 184 シナリオ 完全一致
+PSCompat (PS 5.1 vs 7.x)                 195 シナリオ 完全一致
 ```
 
 ---
@@ -109,6 +110,26 @@ PSCompat (PS 5.1 vs 7.x)                 184 シナリオ 完全一致
 | `publish/` のヘルプ | `.gitignore` で除外し、リポジトリでは管理しない | DLL と同じ扱い。原本はプロジェクト側にあり、二重管理を避ける |
 | コアライブラリのバージョン | **1.1.0 に揃える**（コード変更は無い） | `CLAUDE.md` の「バージョン番号は 3 か所。上げるときはすべて揃える」に従った。配布物の DLL バージョンが食い違わないようにするため |
 | `CHANGELOG.md` | 新規作成。1.1.0 を詳細に、1.0.2 / 1.0.0 はリポジトリに記録が残っている範囲で記載 | 1.0.1 の内容は記録が無いため、推測で書かず省いた |
+
+### 2.6 リリース前に見つけた不具合の修正
+
+利用者から「ISO-2022-JP のコードページが間違っている」という指摘を受けて調査した結果、
+**50220 は正しい**ことを実測で確認した（`Encoding.GetEncoding("iso-2022-jp")` は 50220 を返し、
+半角カタカナ `ESC ( I` を含むファイルも 50220 のデコーダで正しく復号できる）。
+指摘は EUC-JP の 51932 / 20932 との取り違えだった。
+
+ただし調査の過程で、1.1.0 側に実在の不具合が見つかったため修正した。
+
+| 項目 | 内容 |
+|---|---|
+| 現象 | 判定処理が返したコードページを .NET が提供していない場合（ISO-2022-TW の 50229）、`Encoding.GetEncoding` の `NotSupportedException` が素通りし、対象ファイルごとの非終了エラーであるべきものが終了エラーになっていた |
+| 修正 | `EncodingVocabulary.TryBuildEncoding` を追加し、`ProbedFileReader` / `EncodingInheritance` / `FromEncodingInformation` の 3 経路で戻り値として扱う |
+| エラーID | `CodePageNotAvailable`（判定そのものの失敗は従来どおり `EncodingDetectionFailed`）。`EncodingDetectionException.ErrorId` で区別する |
+| メッセージ | `DetectedCodePageNotAvailable` を 5 言語で追加。`-Encoding` での明示指定を案内する |
+| 回帰テスト | `CmdletTests/UnavailableCodePageTests.cs`（7 件）と PSCompat の「実行環境が提供していないコードページ」の節 |
+
+コア側に残る ISO-2022 の問題（TW が CN と誤判定される・SO/SI 形式を検出できない）は
+`docs/EncodingProbe-1.2.0-課題-ISO2022判定.md` に起票済み。**1.1.0 では対応しない。**
 
 ---
 

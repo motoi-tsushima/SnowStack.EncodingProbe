@@ -182,8 +182,19 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 throw new EncodingDetectionException(ValidationMessages.DetectionFailed(path), path);
             }
 
-            // 読み取りでは BOM 方針は意味を持たないため、BOM 無しの実体で組み立てる
-            return EncodingVocabulary.BuildEncoding(information.CodePage, emitBom: false);
+            // 読み取りでは BOM 方針は意味を持たないため、BOM 無しの実体で組み立てる。
+            // 判定処理は .NET が提供していないコードページを返すことがあるため、
+            // 例外を素通りさせず、対象ファイルごとの非終了エラーになるようにする。
+            if (!EncodingVocabulary.TryBuildEncoding(information.CodePage, emitBom: false, out Encoding? encoding))
+            {
+                throw new EncodingDetectionException(
+                    ValidationMessages.DetectedCodePageNotAvailable(
+                        information.CodePage, information.EncodingWebName),
+                    path,
+                    EncodingDetectionException.CodePageNotAvailableId);
+            }
+
+            return encoding!;
         }
 
         /// <summary>

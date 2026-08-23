@@ -660,6 +660,60 @@ Add-Scenario 'Add/error/EncodingとEncodingFrom' {
 }
 
 # ---------------------------------------------------------------------------
+# 実行環境が提供していないコードページ
+# ---------------------------------------------------------------------------
+
+# 判定処理は .NET が提供していないコードページを返すことがある。
+# ESC $ + I (CNS 11643 Plane 3) は ISO-2022-TW にしか現れないため、確実に 50229 と判定される。
+# Encoding.GetEncoding(50229) は net10.0 / net48 のどちらでも NotSupportedException を投げる。
+$script:twBytes = [byte[]](0x1B, 0x24, 0x2B, 0x49, 0x1B, 0x4E, 0x21, 0x21, 0x1B, 0x28, 0x42, 0x41, 0x0D, 0x0A)
+
+Add-Scenario '扱えないCP/判定結果' {
+    $path = New-ByteFile 'cp_tw.txt' $script:twBytes
+    $info = Resolve-Encoding $path
+    return ('cp={0} web={1}' -f $info.CodePage, $info.EncodingWebName)
+}
+
+Add-Scenario '扱えないCP/.NETから取得できるか' {
+    try { $null = [System.Text.Encoding]::GetEncoding(50229); return '取得できた' }
+    catch { return ('取得できない: ' + $_.Exception.InnerException.GetType().FullName) }
+}
+
+Add-Scenario '扱えないCP/error/読み取り' {
+    $path = New-ByteFile 'cp_read.txt' $script:twBytes
+    Get-ProbedContent -LiteralPath $path -ErrorAction Stop
+}
+
+Add-Scenario '扱えないCP/明示指定なら読める' {
+    $path = New-ByteFile 'cp_read2.txt' $script:twBytes
+    return (Format-Lines (Get-ProbedContent -LiteralPath $path -Encoding ascii -ErrorAction Stop))
+}
+
+Add-Scenario '扱えないCP/error/上書きで継承' {
+    $path = New-ByteFile 'cp_set.txt' $script:twBytes
+    try { Set-ProbedContent -LiteralPath $path -Value 'A' -ErrorAction Stop }
+    finally { $script:Report.Add(("扱えないCP/上書き後のファイル`tOK`t{0}" -f (Format-FileBytes $path))) }
+}
+
+Add-Scenario '扱えないCP/error/追記' {
+    $path = New-ByteFile 'cp_add.txt' $script:twBytes
+    try { Add-ProbedContent -LiteralPath $path -Value 'A' -Encoding ascii -ErrorAction Stop }
+    finally { $script:Report.Add(("扱えないCP/追記後のファイル`tOK`t{0}" -f (Format-FileBytes $path))) }
+}
+
+Add-Scenario '扱えないCP/error/EncodingFrom' {
+    $reference = New-ByteFile 'cp_ref.txt' $script:twBytes
+    $path = Join-Path $script:WorkRoot 'cp_from.txt'
+    try { Set-ProbedContent -LiteralPath $path -Value 'A' -EncodingFrom $reference -ErrorAction Stop }
+    finally { $script:Report.Add(("扱えないCP/EncodingFrom後のファイル`tOK`t{0}" -f (Format-FileBytes $path))) }
+}
+
+Add-Scenario '扱えないCP/error/ConvertTo' {
+    $path = New-ByteFile 'cp_conv.txt' $script:twBytes
+    Format-Encoding (Resolve-Encoding $path | ConvertTo-DotNetEncoding)
+}
+
+# ---------------------------------------------------------------------------
 # レポート出力
 # ---------------------------------------------------------------------------
 

@@ -118,7 +118,7 @@ public sealed class GetProbedContentCommand : ProbedContentCommandBase
         }
         catch (EncodingDetectionException exception)
         {
-            WriteError(CreateError(exception, "EncodingDetectionFailed", ErrorCategory.InvalidData, file));
+            WriteError(CreateError(exception, exception.ErrorId, ErrorCategory.InvalidData, file));
         }
         catch (IOException exception)
         {

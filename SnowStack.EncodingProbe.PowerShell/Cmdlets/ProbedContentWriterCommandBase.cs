@@ -218,8 +218,11 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         }
         catch (EncodingDetectionException exception)
         {
-            ThrowTerminatingError(CreateError(
-                exception, "EncodingFromDetectionFailed", ErrorCategory.InvalidData, reference));
+            string errorId = exception.ErrorId == EncodingDetectionException.CodePageNotAvailableId
+                ? "EncodingFromCodePageNotAvailable"
+                : "EncodingFromDetectionFailed";
+
+            ThrowTerminatingError(CreateError(exception, errorId, ErrorCategory.InvalidData, reference));
 
             throw;  // ThrowTerminatingError は戻らないが、コンパイラには分からない
         }
@@ -283,7 +286,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         }
         catch (EncodingDetectionException exception)
         {
-            WriteError(CreateError(exception, "EncodingDetectionFailed", ErrorCategory.InvalidData, file));
+            WriteError(CreateError(exception, exception.ErrorId, ErrorCategory.InvalidData, file));
 
             return null;
         }

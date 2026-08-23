@@ -119,6 +119,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     + "differ from those produced by the current encoding of the file, '{2}', so appending "
                     + "would leave the file inconsistent. Specify -AllowEncodingChange if changing the "
                     + "character encoding of the file is intended.",
+
+                [MessageKey.DetectedCodePageNotAvailable] =
+                    "The character encoding was detected as code page {0} ('{1}'), but this .NET runtime "
+                    + "does not provide that code page, so the file cannot be handled with it. "
+                    + "Specify the character encoding explicitly with -Encoding.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -195,6 +200,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     + "このファイルの現在の文字エンコーディング '{2}' で符号化したバイト列と異なるため、"
                     + "追記するとファイル全体の一貫性が失われます。"
                     + "文字エンコーディングを変えることが意図どおりであれば -AllowEncodingChange を指定してください。",
+
+                [MessageKey.DetectedCodePageNotAvailable] =
+                    "文字エンコーディングをコードページ {0}（'{1}'）と判定しましたが、"
+                    + "この .NET ランタイムはそのコードページを提供していないため、このファイルを扱えません。"
+                    + "-Encoding で文字エンコーディングを明示的に指定してください。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -271,6 +281,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     + "이 파일의 현재 문자 인코딩 '{2}'(으)로 인코딩한 바이트열과 다르므로, "
                     + "추가하면 파일 전체의 일관성이 사라집니다. "
                     + "문자 인코딩을 바꾸는 것이 의도한 대로라면 -AllowEncodingChange를 지정하십시오.",
+
+                [MessageKey.DetectedCodePageNotAvailable] =
+                    "문자 인코딩을 코드 페이지 {0}('{1}')(으)로 판단했지만, "
+                    + "이 .NET 런타임은 해당 코드 페이지를 제공하지 않으므로 이 파일을 처리할 수 없습니다. "
+                    + "-Encoding으로 문자 인코딩을 명시적으로 지정하십시오.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -346,6 +361,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     + "與這個檔案目前的字元編碼 '{2}' 編碼的位元組序列不同，"
                     + "附加後整個檔案將失去一致性。"
                     + "若變更字元編碼確實是您的本意，請指定 -AllowEncodingChange。",
+
+                [MessageKey.DetectedCodePageNotAvailable] =
+                    "已將字元編碼判斷為字碼頁 {0}（'{1}'），但這個 .NET 執行階段並未提供該字碼頁，"
+                    + "因此無法處理這個檔案。請以 -Encoding 明確指定字元編碼。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -421,6 +440,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     + "与该文件当前的字符编码 '{2}' 编码的字节序列不同，"
                     + "追加后整个文件将失去一致性。"
                     + "若变更字符编码确实是您的本意，请指定 -AllowEncodingChange。",
+
+                [MessageKey.DetectedCodePageNotAvailable] =
+                    "已将字符编码判断为代码页 {0}（'{1}'），但该 .NET 运行时并未提供该代码页，"
+                    + "因此无法处理该文件。请用 -Encoding 明确指定字符编码。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

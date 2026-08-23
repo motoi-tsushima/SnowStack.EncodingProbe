@@ -65,7 +65,16 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 throw new EncodingDetectionException(ValidationMessages.DetectionFailed(path), path);
             }
 
-            return EncodingVocabulary.FromEncodingInformation(information);
+            if (!EncodingVocabulary.TryBuildEncoding(information.CodePage, information.Bom, out Encoding? encoding))
+            {
+                throw new EncodingDetectionException(
+                    ValidationMessages.DetectedCodePageNotAvailable(
+                        information.CodePage, information.EncodingWebName),
+                    path,
+                    EncodingDetectionException.CodePageNotAvailableId);
+            }
+
+            return EncodingSpec.Create(encoding!, information.Bom, information.LineBreak);
         }
 
         /// <summary>

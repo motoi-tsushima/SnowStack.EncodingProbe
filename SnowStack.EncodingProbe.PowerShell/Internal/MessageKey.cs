@@ -61,5 +61,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         /// <summary>追記により既存ファイルの文字エンコーディングが変わってしまう</summary>
         EncodingChangeOnAppend,
+
+        /// <summary>判定はできたが、実行環境がそのコードページを提供していない</summary>
+        DetectedCodePageNotAvailable,
     }
 }

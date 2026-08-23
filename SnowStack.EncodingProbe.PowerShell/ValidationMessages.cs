@@ -130,5 +130,11 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string EncodingChangeOnAppend(string path, string specified, string existing)
             => MessageCatalog.Format(MessageKey.EncodingChangeOnAppend, path, specified, existing);
+
+        /// <summary>
+        /// 判定はできたが、実行環境がそのコードページを提供していない場合のエラーメッセージ
+        /// </summary>
+        public static string DetectedCodePageNotAvailable(int codePage, string webName)
+            => MessageCatalog.Format(MessageKey.DetectedCodePageNotAvailable, codePage, webName);
     }
 }

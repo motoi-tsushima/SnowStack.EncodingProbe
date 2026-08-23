@@ -147,8 +147,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 throw Error(ValidationMessages.UndetectedEncodingInformation(information.CodePage));
             }
 
-            Encoding encoding = BuildEncoding(information.CodePage, information.Bom);
-            return EncodingSpec.Create(encoding, information.Bom, information.LineBreak);
+            if (!TryBuildEncoding(information.CodePage, information.Bom, out Encoding? encoding))
+            {
+                throw Error(ValidationMessages.DetectedCodePageNotAvailable(
+                    information.CodePage, information.EncodingWebName));
+            }
+
+            return EncodingSpec.Create(encoding!, information.Bom, information.LineBreak);
         }
 
         /// <summary>
@@ -159,6 +164,28 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// Unicode系は必ずコンストラクタで組み立ててBOM方針を確定させる。
         /// UTF-7 も .NET 5 以降では GetEncoding から取得できないためコンストラクタで組み立てる。
         /// </remarks>
+        /// <summary>
+        /// コードページとBOM方針から <see cref="Encoding"/> を組み立てる。
+        /// 実行環境がそのコードページを提供していない場合は false を返す。
+        /// </summary>
+        /// <remarks>
+        /// 判定処理は .NET が提供していないコードページ（ISO-2022-TW の 50229 など）を返すことがある。
+        /// 判定結果をそのまま組み立てる経路では、例外ではなく戻り値で扱えるようにしておく。
+        /// </remarks>
+        public static bool TryBuildEncoding(int codePage, bool emitBom, out Encoding? encoding)
+        {
+            try
+            {
+                encoding = BuildEncoding(codePage, emitBom);
+                return true;
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is NotSupportedException)
+            {
+                encoding = null;
+                return false;
+            }
+        }
+
         public static Encoding BuildEncoding(int codePage, bool emitBom)
         {
             switch (codePage)
