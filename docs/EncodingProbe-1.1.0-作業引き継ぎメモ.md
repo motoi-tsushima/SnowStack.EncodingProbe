@@ -1,7 +1,7 @@
 # SnowStack.EncodingProbe.PowerShell 1.1.0 作業引き継ぎメモ
 
 - 最終更新: 2026-08-23（1.1.0 の作業は完了）
-- 作業ブランチ: `feature/1.1.0-probed-content`
+- 作業ブランチ: `feature/1.1.0-probed-content`（ローカルのみ。未 push）
 - **1.1.0 の作業はすべて完了しました。** 以降は、仕様書に無い挙動を足す前に
   `docs/EncodingProbe-1.1.0-仕様書.md` と本メモの「2. 確定した決定事項」を確認してください。
 
@@ -23,14 +23,27 @@
 | 第 5 段階 | `Add-ProbedContent` | 完了 |
 | 仕上げ | MAML ヘルプ / `.psd1` 更新 / バージョン更新 / README / CHANGELOG | 完了 |
 
-### コミット履歴（master からの差分）
+### Git の状態（2026-08-23 時点）
+
+| 項目 | 状態 |
+|---|---|
+| 作業ブランチ | `feature/1.1.0-probed-content` … **ローカルのみ。追跡ブランチなし** |
+| `master` | `2981455` = `origin/master`。**1.1.0 の作業は 1 つも入っていない** |
+| リモート | `origin` = `https://github.com/motoi-tsushima/SnowStack.EncodingProbe.git` |
+| push | **11 コミットすべて未 push。** GitHub 上に `feature/1.1.0-probed-content` は存在しない |
+| タグ | `v1.0.0` のみ。1.0.1 / 1.0.2 のタグは無く、`v1.1.0` も未作成 |
+
+外向きの操作（push / PR / タグ）は利用者の指示待ちで、いずれも未実施。
+
+#### コミット履歴（master からの差分。新しい順）
 
 ```
-（最新） 1.1.0 判定できないコードページの扱いを修正
+706dbc5 1.1.0 判定できないコードページが終了エラーになる不具合を修正
 7a4721d 1.1.0 仕上げ: ヘルプ・バージョン・ドキュメントを整備
 7b11068 1.1.0 第5段階: Add-ProbedContent を追加
 5321be8 1.1.0 引き継ぎメモ: .cs の改行に関する記述を修正
 f637e0f 1.1.0 第4段階: Set-ProbedContent を追加
+1ebea01 1.1.0 作業引き継ぎメモを追加
 7912447 1.1.0 第3段階の修正: 文字エンコーディングの判定をファイル全体で行う
 c1fae6d 1.1.0 第3段階: Get-ProbedContent を追加
 6e5cc46 1.1.0 第2段階: ConvertTo-DotNetEncoding を追加
@@ -38,11 +51,27 @@ c1fae6d 1.1.0 第3段階: Get-ProbedContent を追加
 2255f3c 1.1.0 第1段階: 統一語彙の解決基盤を追加
 ```
 
-作業ツリーに残っている未コミットの変更:
+コミットハッシュは rebase / amend を行うと変わる。現在の状態は次で確認できる。
 
-- `docs/debug_memo.txt` の削除 … 作業開始前から存在。扱いは未決
-- `docs/EncodingProbe-1.1.0-仕様書.md` / `-ClaudeCode指示書.md` … 未追跡のまま。
-  コミットするかは利用者の判断待ち（本メモは追跡済み）
+```bash
+git branch -vv                      # ブランチと追跡先
+git status -sb                      # 追跡状態と未コミットの変更
+git log --oneline master..HEAD      # master に入っていないコミット
+```
+
+#### 未コミットの変更
+
+| 状態 | ファイル | 扱い |
+|---|---|---|
+| 削除（未ステージ） | `docs/debug_memo.txt` | **1.1.0 の作業開始前からこの状態**。意図的な削除か判断できないため触っていない |
+| 未追跡 | `docs/EncodingProbe-1.1.0-仕様書.md` | 利用者の判断待ち |
+| 未追跡 | `docs/EncodingProbe-1.1.0-ClaudeCode指示書.md` | 利用者の判断待ち |
+
+本メモと `docs/EncodingProbe-1.2.0-課題-ISO2022判定.md` は追跡済み（コミット済み）。
+
+`publish/` の DLL と MAML ヘルプは `.gitignore` で除外されているため Git の管理外。
+ディスク上は 1.1.0 の Release ビルドに更新済みだが、**別の環境で clone しても入っていない**。
+配布する際は Release ビルドの出力と `<culture>` フォルダーを手動で配置し直すこと。
 
 ### 現在のテスト結果
 
