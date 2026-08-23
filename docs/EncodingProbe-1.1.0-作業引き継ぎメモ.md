@@ -1,12 +1,13 @@
 # SnowStack.EncodingProbe.PowerShell 1.1.0 作業引き継ぎメモ
 
-- 最終更新: 2026-08-23（第 5 段階まで完了）
+- 最終更新: 2026-08-23（1.1.0 の作業は完了）
 - 作業ブランチ: `feature/1.1.0-probed-content`
-- **次回の再開地点: 仕上げ（MAML ヘルプ / `.psd1` / バージョン / README・CHANGELOG）から**
+- **1.1.0 の作業はすべて完了しました。** 以降は、仕様書に無い挙動を足す前に
+  `docs/EncodingProbe-1.1.0-仕様書.md` と本メモの「2. 確定した決定事項」を確認してください。
 
-このメモは作業を中断した時点の状態を記録したものです。再開時は、まず
-`docs/EncodingProbe-1.1.0-仕様書.md` と `docs/EncodingProbe-1.1.0-ClaudeCode指示書.md`
-を通読したうえで、本メモの「4. 第 4 段階以降の作業」に進んでください。
+このメモは 1.1.0 の作業中に下した判断とその根拠を記録したものです。
+**仕様書に書かれていない挙動の理由は、ほぼすべてここにあります。**
+1.1.0 の挙動を変えようとする場合は、先に「2. 確定した決定事項」を読んでください。
 
 ---
 
@@ -20,12 +21,13 @@
 | 第 3 段階 | `Get-ProbedContent` | 完了 |
 | 第 4 段階 | `Set-ProbedContent` | 完了 |
 | 第 5 段階 | `Add-ProbedContent` | 完了 |
-| **仕上げ** | **MAML ヘルプ / `.psd1` 更新 / バージョン更新 / README / CHANGELOG** | **未着手（ここから再開）** |
+| 仕上げ | MAML ヘルプ / `.psd1` 更新 / バージョン更新 / README / CHANGELOG | 完了 |
 
 ### コミット履歴（master からの差分）
 
 ```
-（最新） 1.1.0 第5段階: Add-ProbedContent を追加
+（最新） 1.1.0 仕上げ: ヘルプ・バージョン・ドキュメントを整備
+7b11068 1.1.0 第5段階: Add-ProbedContent を追加
 5321be8 1.1.0 引き継ぎメモ: .cs の改行に関する記述を修正
 f637e0f 1.1.0 第4段階: Set-ProbedContent を追加
 7912447 1.1.0 第3段階の修正: 文字エンコーディングの判定をファイル全体で行う
@@ -35,11 +37,11 @@ c1fae6d 1.1.0 第3段階: Get-ProbedContent を追加
 2255f3c 1.1.0 第1段階: 統一語彙の解決基盤を追加
 ```
 
-作業ツリーに残っている未コミットの変更（いずれも今回の作業とは無関係）:
+作業ツリーに残っている未コミットの変更:
 
-- `docs/debug_memo.txt` の削除、`publish/.../deps.json` の変更 … 作業開始前から存在
-- `CLAUDE.md` … `/init` で生成したもの。コミットするかは未定
-- `docs/EncodingProbe-1.1.0-*.md` … 仕様書・指示書。未追跡のまま
+- `docs/debug_memo.txt` の削除 … 作業開始前から存在。扱いは未決
+- `docs/EncodingProbe-1.1.0-仕様書.md` / `-ClaudeCode指示書.md` … 未追跡のまま。
+  コミットするかは利用者の判断待ち（本メモは追跡済み）
 
 ### 現在のテスト結果
 
@@ -97,6 +99,16 @@ PSCompat (PS 5.1 vs 7.x)                 184 シナリオ 完全一致
 | 書き込み系での裸の `utf8` | 追記でも**束縛段階で拒否する** | 仕様書 8 節。追記では BOM 自体は無視されるが、語彙の意味は上書きと共通に保つ |
 | `-AllowEncodingChange` 指定時の判定 | 既存ファイルの**判定自体を行わない**。判定できないファイルへも追記できる | 判定は突き合わせのためだけに行っている。ファイル全体を読むため、不要な読み込みも避ける |
 | ISO-2022-JP への追記 | 追記部分の先頭にエスケープシーケンスが出て、末尾で ASCII に戻る。追記部分だけで完結する | `StreamWriter` が最初の書き込みでエスケープシーケンスを出力するため。テストで固定済み |
+
+### 2.5 仕上げで決めたこと
+
+| 項目 | 決定内容 | 根拠 |
+|---|---|---|
+| MAML ヘルプの言語 | **en-US と ja-JP の 2 言語**。原本は `SnowStack.EncodingProbe.PowerShell/<culture>/` | 利用者の指示。PowerShell は該当カルチャーが無ければ en-US にフォールバックする |
+| ヘルプの配置 | `publish/` では `core\<culture>\` と `desktop\<culture>\` の 4 か所へコピーする | `Get-Help` はアセンブリと同じ場所のカルチャー別フォルダーを探すため。両ホストで実際に表示されることを確認済み |
+| `publish/` のヘルプ | `.gitignore` で除外し、リポジトリでは管理しない | DLL と同じ扱い。原本はプロジェクト側にあり、二重管理を避ける |
+| コアライブラリのバージョン | **1.1.0 に揃える**（コード変更は無い） | `CLAUDE.md` の「バージョン番号は 3 か所。上げるときはすべて揃える」に従った。配布物の DLL バージョンが食い違わないようにするため |
+| `CHANGELOG.md` | 新規作成。1.1.0 を詳細に、1.0.2 / 1.0.0 はリポジトリに記録が残っている範囲で記載 | 1.0.1 の内容は記録が無いため、推測で書かず省いた |
 
 ---
 
@@ -167,24 +179,18 @@ PSCompat (PS 5.1 vs 7.x)                 184 シナリオ 完全一致
 
 `-AllowEncodingChange` は `-Force` に相乗りさせていない。
 
-### 4.3 仕上げ
+### 4.3 仕上げ（完了）
 
-1. **MAML ヘルプ** — バイナリモジュールのためコメントベースヘルプは使えない。
-   `en-US/SnowStack.EncodingProbe.PowerShell.dll-Help.xml` を新規作成し、
-   csproj に出力コピー設定を追加する。現在ヘルプファイルは 1 つも存在しない。
-   指示書 6.1 が「ヘルプに明記が必要」としている 7 項目を必ず書く。
-   第 4・5 段階で確定した次の 3 点も明記が必要（仕様書 5.4 / 6.3）:
-   「`-Encoding` の入力形式によって改行の決まり方が変わる」
-   「追記では BOM 指定は無視される（新規作成の場合も含む）」
-   「`Add-ProbedContent` の整合性検査は `-Force` では回避できない。`-AllowEncodingChange` を使う」
-2. **`.psd1`** — `publish/SnowStack.EncodingProbe.PowerShell/SnowStack.EncodingProbe.PowerShell.psd1` の
-   `ModuleVersion` を 1.1.0 に、`CmdletsToExport` に 4 コマンド
-   （`Get-ProbedContent` / `Set-ProbedContent` / `Add-ProbedContent` / `ConvertTo-DotNetEncoding`）
-   を追加、`ReleaseNotes` を更新
-3. **バージョン** — 両 csproj の `Version` / `AssemblyVersion` / `FileVersion` を 1.1.0 に
-4. **README / CHANGELOG** — 指示書 6.2
-
----
+- **MAML ヘルプ** … `SnowStack.EncodingProbe.PowerShell/en-US/` と `ja-JP/` に
+  `SnowStack.EncodingProbe.PowerShell.dll-Help.xml` を作成した。6 コマンドすべてを収録している。
+  csproj の `Content` で出力へコピーされる。指示書 6.1 の 7 項目はすべて記載済み。
+  **2 言語の内容がずれないよう、片方だけ直さないこと**
+- **`.psd1`** … `ModuleVersion` を 1.1.0 に、`CmdletsToExport` を 6 コマンドに、
+  `ReleaseNotes` を更新した
+- **バージョン** … 両 csproj の `Version` / `AssemblyVersion` / `FileVersion` を 1.1.0 に
+- **`publish/`** … Release ビルドの出力とヘルプを配置した。両ホストで
+  `Import-Module` → `Get-Help` → 実際の読み書きまで確認済み
+- **README / CHANGELOG** … 1.1.0 の節を追加し、`CHANGELOG.md` を新規作成した
 
 ## 5. 検証コマンド
 

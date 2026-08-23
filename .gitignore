@@ -180,6 +180,8 @@ DocProject/Help/html
 publish/*
 publish/**/*.dll
 publish/**/*.pdb
+# MAML ヘルプはプロジェクト側 (SnowStack.EncodingProbe.PowerShell/<culture>/) が原本
+publish/**/*.dll-Help.xml
 # PowerShell module source files are tracked
 !publish/SnowStack.EncodingProbe.PowerShell/
 !publish/SnowStack.EncodingProbe.PowerShell/*.psd1
