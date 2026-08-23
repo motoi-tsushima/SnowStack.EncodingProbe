@@ -20,12 +20,6 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// </remarks>
     internal static class ActiveReadRegistry
     {
-        /// <summary>
-        /// パスの比較方法。Windows では大文字小文字を区別しない。
-        /// </summary>
-        private static readonly StringComparer PathComparer =
-            PlatformInfo.IsWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-
         [ThreadStatic]
         private static Dictionary<string, int>? _activePaths;
 
@@ -35,7 +29,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <param name="fullPath">正規化済みの絶対パス</param>
         public static IDisposable Register(string fullPath)
         {
-            Dictionary<string, int> active = _activePaths ??= new Dictionary<string, int>(PathComparer);
+            Dictionary<string, int> active = _activePaths ??= new Dictionary<string, int>(PathComparison.Comparer);
 
             // ワイルドカードで同じファイルが複数回解決される場合に備えて参照数で数える
             active[fullPath] = active.TryGetValue(fullPath, out int count) ? count + 1 : 1;

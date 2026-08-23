@@ -59,6 +59,38 @@ public abstract class ProbedContentCommandBase : PSCmdlet
     }
 
     /// <summary>
+    /// 入力されたパスを解決し、書き込み先として使える絶対パスを列挙する。
+    /// 実在しないパスも「これから作るファイル」として列挙する。
+    /// </summary>
+    /// <param name="paths">-Path または -LiteralPath に与えられた値</param>
+    /// <param name="literal">-LiteralPath として扱う場合は true（ワイルドカードを展開しない）</param>
+    protected IEnumerable<string> ResolveWritablePaths(IEnumerable<string>? paths, bool literal)
+    {
+        if (paths == null)
+        {
+            yield break;
+        }
+
+        foreach (string path in paths)
+        {
+            foreach (string resolved in ResolveOne(path, literal))
+            {
+                if (Directory.Exists(resolved))
+                {
+                    WriteError(CreateError(
+                        new IOException(ValidationMessages.PathIsNotFile(resolved)),
+                        "PathIsNotFile",
+                        ErrorCategory.InvalidArgument,
+                        resolved));
+                    continue;
+                }
+
+                yield return System.IO.Path.GetFullPath(resolved);
+            }
+        }
+    }
+
+    /// <summary>
     /// 1つのパス指定を解決する。ワイルドカードは複数のパスに展開されうる。
     /// </summary>
     private IEnumerable<string> ResolveOne(string path, bool literal)

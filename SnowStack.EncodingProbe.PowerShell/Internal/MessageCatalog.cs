@@ -100,6 +100,19 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     + "Reading and writing the same file within one pipeline truncates it before it has been read. "
                     + "Receive the content into a variable first, for example: "
                     + "$text = Get-ProbedContent <path> -Raw",
+
+                [MessageKey.EncodingAndEncodingFromAreExclusive] =
+                    "The -Encoding and -EncodingFrom parameters cannot be specified in the same command, "
+                    + "because both of them determine the character encoding and the BOM.",
+
+                [MessageKey.AutoEncodingRequiresExistingFile] =
+                    "Cannot inherit the character encoding because the file '{0}' does not exist. "
+                    + "Specify the encoding with -Encoding, or inherit it from another file with -EncodingFrom.",
+
+                [MessageKey.NoNewlineIgnoresLineBreak] =
+                    "-NoNewline is specified, so the value of -LineBreak is not used. "
+                    + "-LineBreak selects which characters are written as a line break, "
+                    + "while -NoNewline suppresses writing the line break itself.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -157,6 +170,19 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "'{0}' は読み取り中のため、書き込み先に指定できません。"
                     + "同一のファイルを1つのパイプラインで読み書きすると、読み終える前にファイルが切り詰められます。"
                     + "$text = Get-ProbedContent <path> -Raw のように、いったん変数に受けてください。",
+
+                [MessageKey.EncodingAndEncodingFromAreExclusive] =
+                    "-Encoding と -EncodingFrom は同時に指定できません。"
+                    + "どちらも文字エンコーディングと BOM を決めるためです。",
+
+                [MessageKey.AutoEncodingRequiresExistingFile] =
+                    "ファイル '{0}' が存在しないため、文字エンコーディングを継承できません。"
+                    + "-Encoding で明示的に指定するか、-EncodingFrom で別のファイルから継承してください。",
+
+                [MessageKey.NoNewlineIgnoresLineBreak] =
+                    "-NoNewline が指定されているため、-LineBreak の指定は使用されません。"
+                    + "-LineBreak は改行として出力する文字を選ぶもので、"
+                    + "-NoNewline は改行を出力すること自体を抑止します。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -214,6 +240,19 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "'{0}'은(는) 읽는 중이므로 쓰기 대상으로 지정할 수 없습니다. "
                     + "같은 파일을 하나의 파이프라인에서 읽고 쓰면 다 읽기 전에 파일이 잘립니다. "
                     + "$text = Get-ProbedContent <path> -Raw 처럼 먼저 변수에 받으십시오.",
+
+                [MessageKey.EncodingAndEncodingFromAreExclusive] =
+                    "-Encoding과 -EncodingFrom은 동시에 지정할 수 없습니다. "
+                    + "둘 다 문자 인코딩과 BOM을 결정하기 때문입니다.",
+
+                [MessageKey.AutoEncodingRequiresExistingFile] =
+                    "파일 '{0}'이(가) 존재하지 않으므로 문자 인코딩을 상속할 수 없습니다. "
+                    + "-Encoding으로 명시적으로 지정하거나 -EncodingFrom으로 다른 파일에서 상속하십시오.",
+
+                [MessageKey.NoNewlineIgnoresLineBreak] =
+                    "-NoNewline이 지정되어 있으므로 -LineBreak의 지정은 사용되지 않습니다. "
+                    + "-LineBreak는 줄 바꿈으로 출력할 문자를 선택하며, "
+                    + "-NoNewline은 줄 바꿈을 출력하는 것 자체를 억제합니다.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -270,6 +309,19 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "'{0}' 正在讀取中，因此無法指定為寫入目標。"
                     + "在同一個管線中讀寫同一個檔案，會在讀取完成前就將檔案截斷。"
                     + "請先接收到變數中，例如：$text = Get-ProbedContent <path> -Raw",
+
+                [MessageKey.EncodingAndEncodingFromAreExclusive] =
+                    "-Encoding 與 -EncodingFrom 不可同時指定，"
+                    + "因為兩者都會決定字元編碼與 BOM。",
+
+                [MessageKey.AutoEncodingRequiresExistingFile] =
+                    "檔案 '{0}' 不存在，因此無法繼承字元編碼。"
+                    + "請以 -Encoding 明確指定，或以 -EncodingFrom 從其他檔案繼承。",
+
+                [MessageKey.NoNewlineIgnoresLineBreak] =
+                    "已指定 -NoNewline，因此不會使用 -LineBreak 的指定。"
+                    + "-LineBreak 用於選擇作為換行輸出的字元，"
+                    + "而 -NoNewline 則抑制輸出換行本身。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -326,6 +378,19 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "'{0}' 正在读取中，因此无法指定为写入目标。"
                     + "在同一个管道中读写同一个文件，会在读取完成前就将文件截断。"
                     + "请先接收到变量中，例如：$text = Get-ProbedContent <path> -Raw",
+
+                [MessageKey.EncodingAndEncodingFromAreExclusive] =
+                    "-Encoding 与 -EncodingFrom 不能同时指定，"
+                    + "因为两者都会决定字符编码与 BOM。",
+
+                [MessageKey.AutoEncodingRequiresExistingFile] =
+                    "文件 '{0}' 不存在，因此无法继承字符编码。"
+                    + "请用 -Encoding 明确指定，或用 -EncodingFrom 从其他文件继承。",
+
+                [MessageKey.NoNewlineIgnoresLineBreak] =
+                    "已指定 -NoNewline，因此不会使用 -LineBreak 的指定。"
+                    + "-LineBreak 用于选择作为换行输出的字符，"
+                    + "而 -NoNewline 则抑制换行本身的输出。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

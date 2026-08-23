@@ -9,10 +9,14 @@ namespace EncodingProbe.PowerShell.Tests.Helpers;
 /// </summary>
 public sealed class InvocationResult
 {
-    public InvocationResult(Collection<PSObject> output, IReadOnlyList<ErrorRecord> errors)
+    public InvocationResult(
+        Collection<PSObject> output,
+        IReadOnlyList<ErrorRecord> errors,
+        IReadOnlyList<WarningRecord> warnings)
     {
         this.Output = output;
         this.Errors = errors;
+        this.Warnings = warnings;
     }
 
     /// <summary>パイプラインへの出力</summary>
@@ -20,6 +24,9 @@ public sealed class InvocationResult
 
     /// <summary>報告された非終了エラー</summary>
     public IReadOnlyList<ErrorRecord> Errors { get; }
+
+    /// <summary>報告された警告</summary>
+    public IReadOnlyList<WarningRecord> Warnings { get; }
 
     /// <summary>出力を文字列の配列として取り出す</summary>
     public string[] AsStrings()

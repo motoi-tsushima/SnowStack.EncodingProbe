@@ -279,6 +279,202 @@ Add-Scenario 'Get/error/存在しないファイル' {
 }
 
 # ---------------------------------------------------------------------------
+# Set-ProbedContent (仕様書 5 節)
+# ---------------------------------------------------------------------------
+
+<#
+.SYNOPSIS
+    書き込み先を用意し、Set-ProbedContent を実行して結果のバイト列を返す。
+.DESCRIPTION
+    書き込み結果は Get-ProbedContent で読み返さずバイト列で記録する。
+    読み書き両方に同じ誤りがある場合、読み返すと辻褄が合って検出できないためである。
+#>
+function Invoke-Set {
+    param([string]$Name, [hashtable]$Parameters, [object]$Value = 'A', [byte[]]$Initial = $null)
+
+    $path = Join-Path $script:WorkRoot $Name
+    if ($null -ne $Initial) { [IO.File]::WriteAllBytes($path, $Initial) }
+
+    Set-ProbedContent -LiteralPath $path -Value $Value @Parameters -ErrorAction Stop
+    return (Format-FileBytes $path)
+}
+
+# 語彙ごとの書き出しバイト列。BOM 接尾辞のとおりになること
+$script:setVocabularies = @(
+    'utf8NoBOM', 'utf8BOM',
+    'unicodeNoBOM', 'unicodeBOM',
+    'bigendianunicodeNoBOM', 'bigendianunicodeBOM',
+    'utf32NoBOM', 'utf32BOM',
+    'bigendianutf32NoBOM', 'bigendianutf32BOM',
+    'ascii', 'shift_jis', '932', 'euc-jp', 'iso-2022-jp', 'big5')
+
+$script:setVocabularyIndex = 0
+foreach ($name in $script:setVocabularies) {
+    $script:setVocabularyIndex++
+    Add-Scenario "Set/語彙/$name" ([scriptblock]::Create(
+        "Invoke-Set 'w$($script:setVocabularyIndex).txt' @{ Encoding = '$name'; LineBreak = 'Lf' } '日'"))
+}
+
+# System.Text.Encoding インスタンスは、そのインスタンスの BOM 方針に従う
+Add-Scenario 'Set/インスタンス/UTF8既定' {
+    Invoke-Set 'inst1.txt' @{ Encoding = [System.Text.Encoding]::UTF8; LineBreak = 'Lf' }
+}
+Add-Scenario 'Set/インスタンス/UTF8BOM無し' {
+    Invoke-Set 'inst2.txt' @{ Encoding = (New-Object System.Text.UTF8Encoding($false)); LineBreak = 'Lf' }
+}
+
+# 改行コード
+Add-Scenario 'Set/改行/CrLf' { Invoke-Set 'lb1.txt' @{ Encoding = 'utf8NoBOM'; LineBreak = 'CrLf' } }
+Add-Scenario 'Set/改行/Lf' { Invoke-Set 'lb2.txt' @{ Encoding = 'utf8NoBOM'; LineBreak = 'Lf' } }
+Add-Scenario 'Set/改行/Cr' { Invoke-Set 'lb3.txt' @{ Encoding = 'utf8NoBOM'; LineBreak = 'Cr' } }
+Add-Scenario 'Set/改行/省略' { Invoke-Set 'lb4.txt' @{ Encoding = 'utf8NoBOM' } }
+Add-Scenario 'Set/改行/NoNewline' {
+    Invoke-Set 'lb5.txt' @{ Encoding = 'utf8NoBOM'; NoNewline = $true } @('A', 'B')
+}
+
+# -NoNewline と -LineBreak の同時指定は Warning（Error にはしない）
+Add-Scenario 'Set/警告/NoNewlineとLineBreak' {
+    $path = Join-Path $script:WorkRoot 'warn.txt'
+    Set-ProbedContent -LiteralPath $path -Value 'A' -Encoding utf8NoBOM -NoNewline -LineBreak Lf -WarningVariable wv -WarningAction SilentlyContinue
+    return ("{0} / {1}" -f (Format-FileBytes $path), (ConvertTo-StableText $wv[0].Message))
+}
+
+# -Encoding Auto（省略時）は書き込み先から継承する
+$script:autoUtf8Bom = [byte[]](0xEF, 0xBB, 0xBF, 0x41, 0x0A)
+$script:autoUtf8NoBom = [byte[]](0x41, 0x0D, 0x0A)
+$script:autoUtf16Le = [byte[]](0xFF, 0xFE, 0x21, 0xFF, 0x0A, 0x00)
+$script:autoSjis = [System.Text.Encoding]::GetEncoding(932).GetBytes("日本語`r`n")
+
+Add-Scenario 'Set/Auto継承/utf8BOM_LF' { Invoke-Set 'auto1.txt' @{} '日' $script:autoUtf8Bom }
+Add-Scenario 'Set/Auto継承/utf8NoBOM_CRLF' { Invoke-Set 'auto2.txt' @{} '日' $script:autoUtf8NoBom }
+Add-Scenario 'Set/Auto継承/utf16LeBOM_LF' { Invoke-Set 'auto3.txt' @{} '日' $script:autoUtf16Le }
+Add-Scenario 'Set/Auto継承/sjis_CRLF' { Invoke-Set 'auto4.txt' @{} '日' $script:autoSjis }
+
+# 継承元が無い場合は Error。ファイルも作らない
+Add-Scenario 'Set/error/Auto継承元なし' {
+    $path = Join-Path $script:WorkRoot 'auto_missing.txt'
+    try { Set-ProbedContent -LiteralPath $path -Value 'A' -ErrorAction Stop }
+    finally { $script:Report.Add(("Set/Auto継承元なし/ファイル`tOK`t{0}" -f (Format-FileBytes $path))) }
+}
+
+# 0 バイトのファイルからは判定できないため、ランタイム既定（BOM 無し）を使う。
+# 既定は net48 なら ANSI、net10.0 なら UTF-8 とホストごとに異なるため、
+# バイト列そのものではなく「ランタイム既定と一致すること」を記録して比較する。
+Add-Scenario 'Set/Auto継承/空ファイル' {
+    $path = Join-Path $script:WorkRoot 'auto_empty.txt'
+    [IO.File]::WriteAllBytes($path, [byte[]]@())
+    Set-ProbedContent -LiteralPath $path -Value 'A' -ErrorAction Stop
+    $expected = [System.Text.Encoding]::Default.GetBytes('A' + [Environment]::NewLine)
+    $actual = [IO.File]::ReadAllBytes($path)
+    return ("ランタイム既定と一致: {0}" -f (@(Compare-Object $expected $actual -SyncWindow 0).Count -eq 0))
+}
+
+# -EncodingFrom はエンコーディング・BOM・改行の3点を継承する
+$script:refUtf16 = New-ByteFile 'ref_utf16le_bom_lf.txt' ([byte[]](0xFF, 0xFE, 0x21, 0xFF, 0x0A, 0x00))
+$script:refSjis = New-ByteFile 'ref_sjis_crlf.txt' ([System.Text.Encoding]::GetEncoding(932).GetBytes("日本語`r`n"))
+$script:refMixedCrLf = New-ByteFile 'ref_mixed1.txt' ([byte[]](0x41, 0x0A, 0x42, 0x0D, 0x0A, 0x43))
+$script:refMixedNoCrLf = New-ByteFile 'ref_mixed2.txt' ([byte[]](0x41, 0x0A, 0x42, 0x0D, 0x43))
+
+Add-Scenario 'Set/EncodingFrom/utf16leBOM' { Invoke-Set 'from1.txt' @{ EncodingFrom = $script:refUtf16 } }
+Add-Scenario 'Set/EncodingFrom/sjis' { Invoke-Set 'from2.txt' @{ EncodingFrom = $script:refSjis } '日' }
+Add-Scenario 'Set/EncodingFrom/改行上書き' {
+    Invoke-Set 'from3.txt' @{ EncodingFrom = $script:refUtf16; LineBreak = 'CrLf' }
+}
+Add-Scenario 'Set/EncodingFrom/混在改行CrLfあり' { Invoke-Set 'from4.txt' @{ EncodingFrom = $script:refMixedCrLf } }
+Add-Scenario 'Set/EncodingFrom/混在改行CrLfなし' { Invoke-Set 'from5.txt' @{ EncodingFrom = $script:refMixedNoCrLf } }
+
+# EncodingInformation を渡した場合は改行も継承する（仕様書 5.4）
+Add-Scenario 'Set/EncodingInformation/改行も継承' {
+    $info = Resolve-Encoding $script:refUtf16
+    Invoke-Set 'info1.txt' @{ Encoding = $info }
+}
+
+# 同一パスの往復
+Add-Scenario 'Set/往復/ストリーミングは拒否' {
+    $path = New-ByteFile 'rt1.txt' ([byte[]](0x41, 0x0D, 0x0A, 0x42, 0x0D, 0x0A))
+    try { Get-ProbedContent -LiteralPath $path | Set-ProbedContent -LiteralPath $path -ErrorAction Stop }
+    finally { $script:Report.Add(("Set/往復/拒否後のファイル`tOK`t{0}" -f (Format-FileBytes $path))) }
+}
+Add-Scenario 'Set/往復/Rawなら書き戻せる' {
+    $path = New-ByteFile 'rt2.txt' ([byte[]](0x41, 0x0A, 0x42, 0x0A))
+    Get-ProbedContent -LiteralPath $path -Raw | Set-ProbedContent -LiteralPath $path -NoNewline -ErrorAction Stop
+    return (Format-FileBytes $path)
+}
+Add-Scenario 'Set/往復/変数経由の無損失' {
+    $source = New-ByteFile 'rt3.txt' ([System.Text.Encoding]::GetEncoding(932).GetBytes("日本語`r`nABC`r`n"))
+    $destination = Join-Path $script:WorkRoot 'rt3_out.txt'
+    $text = Get-ProbedContent -LiteralPath $source -Raw
+    Set-ProbedContent -LiteralPath $destination -Value $text -EncodingFrom $source -NoNewline -ErrorAction Stop
+    return (Format-FileBytes $destination)
+}
+
+# -Value とパイプライン
+Add-Scenario 'Set/Value/複数要素' {
+    Invoke-Set 'v1.txt' @{ Encoding = 'utf8NoBOM'; LineBreak = 'Lf' } @('A', 'B')
+}
+Add-Scenario 'Set/Value/null要素' {
+    Invoke-Set 'v2.txt' @{ Encoding = 'utf8NoBOM'; LineBreak = 'Lf' } @('A', $null, 'B')
+}
+Add-Scenario 'Set/Value/文字列以外' {
+    Invoke-Set 'v3.txt' @{ Encoding = 'utf8NoBOM'; LineBreak = 'Lf' } @(1.5, 42)
+}
+Add-Scenario 'Set/Value/空コレクション' {
+    Invoke-Set 'v4.txt' @{ Encoding = 'utf8NoBOM' } @()
+}
+Add-Scenario 'Set/Value/空コレクションBOM付き' {
+    Invoke-Set 'v5.txt' @{ Encoding = 'utf8BOM' } @()
+}
+Add-Scenario 'Set/パイプライン入力' {
+    $path = Join-Path $script:WorkRoot 'v6.txt'
+    'A', 'B', 'C' | Set-ProbedContent -LiteralPath $path -Encoding utf8NoBOM -LineBreak Lf -ErrorAction Stop
+    return (Format-FileBytes $path)
+}
+
+# -WhatIf ではファイルに触れない
+Add-Scenario 'Set/WhatIf/ファイルを作らない' {
+    $path = Join-Path $script:WorkRoot 'whatif.txt'
+    Set-ProbedContent -LiteralPath $path -Value 'A' -Encoding utf8NoBOM -WhatIf
+    return (Format-FileBytes $path)
+}
+
+# -Force と読み取り専用属性
+Add-Scenario 'Set/error/読み取り専用' {
+    $path = New-ByteFile 'ro1.txt' ([byte[]](0x41, 0x0A))
+    Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $true
+    try { Set-ProbedContent -LiteralPath $path -Value 'X' -Encoding utf8NoBOM -ErrorAction Stop }
+    finally {
+        $script:Report.Add(("Set/読み取り専用/内容`tOK`t{0}" -f (Format-FileBytes $path)))
+        Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $false
+    }
+}
+Add-Scenario 'Set/Force/読み取り専用へ書き込む' {
+    $path = New-ByteFile 'ro2.txt' ([byte[]](0x41, 0x0A))
+    Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $true
+    try {
+        Set-ProbedContent -LiteralPath $path -Value 'X' -Encoding utf8NoBOM -LineBreak Lf -Force -ErrorAction Stop
+        return (Format-FileBytes $path)
+    }
+    finally { Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $false }
+}
+
+# エラー系 (仕様書 8 節)
+$script:setErrorIndex = 0
+foreach ($name in @('utf8', 'utf-8', '65001', 'utf-16', 'utf7', 'utf-7', 'ansiBOM')) {
+    $script:setErrorIndex++
+    Add-Scenario "Set/error/語彙/$name" ([scriptblock]::Create(
+        "Invoke-Set 'err$($script:setErrorIndex).txt' @{ Encoding = '$name' }"))
+}
+Add-Scenario 'Set/error/EncodingとEncodingFrom' {
+    Invoke-Set 'err_both.txt' @{ Encoding = 'utf8NoBOM'; EncodingFrom = $script:refUtf16 }
+}
+Add-Scenario 'Set/error/EncodingFrom参照先なし' {
+    Invoke-Set 'err_from.txt' @{ EncodingFrom = (Join-Path $script:WorkRoot 'no_such_reference.txt') }
+}
+Add-Scenario 'Set/error/ディレクトリ' {
+    Set-ProbedContent -LiteralPath $script:WorkRoot -Value 'A' -Encoding utf8NoBOM -ErrorAction Stop
+}
+
+# ---------------------------------------------------------------------------
 # レポート出力
 # ---------------------------------------------------------------------------
 

@@ -106,5 +106,23 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string SamePathRoundTrip(string path)
             => MessageCatalog.Format(MessageKey.SamePathRoundTrip, path);
+
+        /// <summary>
+        /// -Encoding と -EncodingFrom が同時に指定された場合のエラーメッセージ
+        /// </summary>
+        public static string EncodingAndEncodingFromAreExclusive()
+            => MessageCatalog.Get(MessageKey.EncodingAndEncodingFromAreExclusive);
+
+        /// <summary>
+        /// -Encoding Auto の継承元となるファイルが存在しない場合のエラーメッセージ
+        /// </summary>
+        public static string AutoEncodingRequiresExistingFile(string path)
+            => MessageCatalog.Format(MessageKey.AutoEncodingRequiresExistingFile, path);
+
+        /// <summary>
+        /// -NoNewline と -LineBreak が同時に指定された場合の警告メッセージ
+        /// </summary>
+        public static string NoNewlineIgnoresLineBreak()
+            => MessageCatalog.Get(MessageKey.NoNewlineIgnoresLineBreak);
     }
 }

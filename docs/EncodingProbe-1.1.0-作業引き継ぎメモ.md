@@ -1,8 +1,8 @@
 # SnowStack.EncodingProbe.PowerShell 1.1.0 作業引き継ぎメモ
 
-- 最終更新: 2026-08-22
+- 最終更新: 2026-08-23
 - 作業ブランチ: `feature/1.1.0-probed-content`
-- **次回の再開地点: 第 4 段階（`Set-ProbedContent`）から**
+- **次回の再開地点: 第 5 段階（`Add-ProbedContent`）から**
 
 このメモは作業を中断した時点の状態を記録したものです。再開時は、まず
 `docs/EncodingProbe-1.1.0-仕様書.md` と `docs/EncodingProbe-1.1.0-ClaudeCode指示書.md`
@@ -18,13 +18,14 @@
 | （追加） | メッセージの 5 言語ローカライズ | 完了 |
 | 第 2 段階 | `ConvertTo-DotNetEncoding` | 完了 |
 | 第 3 段階 | `Get-ProbedContent` | 完了 |
-| **第 4 段階** | **`Set-ProbedContent`** | **未着手（ここから再開）** |
-| 第 5 段階 | `Add-ProbedContent` | 未着手 |
+| 第 4 段階 | `Set-ProbedContent` | 完了 |
+| **第 5 段階** | **`Add-ProbedContent`** | **未着手（ここから再開）** |
 | 仕上げ | MAML ヘルプ / `.psd1` 更新 / バージョン更新 / README / CHANGELOG | 未着手 |
 
 ### コミット履歴（master からの差分）
 
 ```
+（最新） 1.1.0 第4段階: Set-ProbedContent を追加
 7912447 1.1.0 第3段階の修正: 文字エンコーディングの判定をファイル全体で行う
 c1fae6d 1.1.0 第3段階: Get-ProbedContent を追加
 6e5cc46 1.1.0 第2段階: ConvertTo-DotNetEncoding を追加
@@ -42,9 +43,9 @@ c1fae6d 1.1.0 第3段階: Get-ProbedContent を追加
 
 ```
 EncodingProbe.Tests (net10.0)            合格 64  / 失敗 0
-EncodingProbe.PowerShell.Tests (net10.0) 合格 284 / 失敗 0
+EncodingProbe.PowerShell.Tests (net10.0) 合格 335 / 失敗 0
 EncodingProbe.Tests (net48)              合格 74  / 失敗 0
-PSCompat (PS 5.1 vs 7.x)                 84 シナリオ 完全一致
+PSCompat (PS 5.1 vs 7.x)                 145 シナリオ 完全一致
 ```
 
 ---
@@ -71,6 +72,18 @@ PSCompat (PS 5.1 vs 7.x)                 84 シナリオ 完全一致
 | 検出失敗・存在しないファイル | **非終了エラー**（`-ErrorAction Stop` で終了エラーにできる） | 標準 `Get-Content` の実測に合わせた。**利用者への報告済み・異議なし** |
 | 文字エンコーディングの判定範囲 | **ファイル全体**。先頭の一定量に制限しない | 利用者の指示（1MiB 制限は誤判定を招くため撤廃） |
 
+### 2.3 第 4 段階で決めたこと
+
+| 項目 | 決定内容 | 根拠 |
+|---|---|---|
+| 終了エラーと非終了エラーの区別 | **パラメータの組み合わせの誤り**（`-Encoding` と `-EncodingFrom` の同時指定、`-EncodingFrom` の参照先なし）は終了エラー。**対象ファイルごとの失敗**（`-Encoding Auto` で書き込み先なし、判定失敗、読み取り専用、同一パス往復）は非終了エラー | 前者は 1 ファイルも処理できないため。後者は `-ErrorAction Stop` で終了エラーにできる |
+| `-EncodingFrom` の参照先が 0 バイト | `-Encoding Auto` と同じくランタイム既定（2.1 参照） | 判定材料が無い点で同じ状況のため |
+| `-EncodingFrom` のワイルドカード | **展開しない**（リテラルパスとして扱う） | 継承元は 1 つに定まる必要がある |
+| `-Value` の文字列化 | `LanguagePrimitives.ConvertTo<string>` | 不変カルチャーで変換されるため PS 5.1 / 7.x で同じ結果になる |
+| BOM の書き出し | `EncodingSpec.EmitBom` を見て**自分で書き出す**。StreamWriter には BOM を持たないインスタンスを渡す | `GetPreamble()` 任せにすると、解決経路によって出力が変わりうる |
+| 書き込み先を開く順序 | 「同一パス検出 → エンコーディング決定 → `ShouldProcess` → ファイルを開く」 | 継承のための判定を、切り詰めの前に済ませる必要がある |
+| 複数要素の書き込み | 最終要素の後ろにも改行を出力する（`-NoNewline` 指定時を除く） | 標準の `Set-Content` と同じ |
+
 ---
 
 ## 3. 実装済みの構成
@@ -91,10 +104,14 @@ PSCompat (PS 5.1 vs 7.x)                 84 シナリオ 完全一致
 | `Internal/CodePagesProviderRegistration.cs` | `CodePagesEncodingProvider` 登録の共通化 |
 | `Internal/ProbedFileReader.cs` | 判定 + BOM スキップ + ストリーミング復号 |
 | `Internal/EncodingDetectionException.cs` | 判定失敗を表す内部例外 |
-| `Internal/ActiveReadRegistry.cs` | 読み取り中パスの記録（同一パス往復の検出用）。**第 4 段階で参照する** |
+| `Internal/ActiveReadRegistry.cs` | 読み取り中パスの記録（同一パス往復の検出用） |
+| `Internal/PathComparison.cs` | パスの比較方法（Windows では大文字小文字を区別しない） |
+| `Internal/EncodingInheritance.cs` | 既存ファイルからの継承（`-EncodingFrom` / `-Encoding Auto`）。空ファイル時の既定もここ |
+| `Internal/ProbedFileWriter.cs` | BOM 方針を明示した書き込み |
 | `Cmdlets/ProbedContentCommandBase.cs` | パス解決の共通基底。`ResolveExistingFiles` を持つ |
 | `Cmdlets/ConvertToDotNetEncodingCommand.cs` | 第 2 段階 |
 | `Cmdlets/GetProbedContentCommand.cs` | 第 3 段階 |
+| `Cmdlets/SetProbedContentCommand.cs` | 第 4 段階。**第 5 段階はこれを下敷きにする** |
 
 ### 3.2 テストコード（`tests/`）
 
@@ -112,52 +129,45 @@ PSCompat (PS 5.1 vs 7.x)                 84 シナリオ 完全一致
 
 ## 4. 第 4 段階以降の作業
 
-### 4.1 第 4 段階 — `Set-ProbedContent`（仕様書 5 節）
+### 4.1 第 4 段階 — `Set-ProbedContent`（完了）
 
-作成するファイル:
+仕様書 5 節のすべてを実装済み。第 5 段階で下敷きにするため、要点だけ記す。
 
-- `Cmdlets/SetProbedContentCommand.cs`
-- `Internal/ProbedFileWriter.cs`（BOM 方針を明示して書き込む）
-- `tests/EncodingProbe.PowerShell.Tests/CmdletTests/SetProbedContentTests.cs`
-
-実装する内容:
-
-1. パラメータ（仕様書 5.1）: `-Path` / `-LiteralPath` / `-Value` / `-Encoding` / `-EncodingFrom` /
-   `-NoNewline` / `-LineBreak` / `-Force` / `SupportsShouldProcess`
-   - `-Encoding` には `[EncodingSpecTransformation(EncodingUsage.Write)]` を付ける
-     （裸の `utf8` と `utf7` が束縛段階で拒否される）
-   - `-NoClobber` は採用しない
-2. `-EncodingFrom`（仕様書 5.2）: 参照ファイルからエンコーディング・BOM・改行を継承。
-   個別の明示指定が優先。`-Encoding` との同時指定は Error
-3. `-Encoding Auto`（仕様書 5.3）: 書き込み先の既存ファイルから継承。
-   存在しない場合は Error。**0 バイトの場合は `Encoding.Default` + OS 既定改行**（2.1 参照）
-4. `EncodingInformation` を渡された場合は改行も継承（仕様書 5.4）
-5. `-LineBreak` 省略時の決定順序（仕様書 5.5）は `LineBreakResolver.Resolve` に実装済み
-6. `-NoNewline` と `-LineBreak` の同時指定は **Warning**（仕様書 5.6）
-7. **同一パスの往復検出**: 書き込み先が `ActiveReadRegistry.IsBeingRead(fullPath)` なら
-   `ValidationMessages.SamePathRoundTrip(path)` で Error。メッセージは 5 言語とも作成済み
-8. `ProbedContentCommandBase` に「存在しなくてもよいパス」を解決するメソッドを追加する
-   （現在は `ResolveExistingFiles` のみ）
-
-注意点（指示書 4 節）:
-
-- Unicode 系は必ずコンストラクタで組み立てる → `EncodingVocabulary.BuildEncoding` を使う
-- BOM を書き出すかどうかは `EncodingSpec.EmitBom` に従う。`GetPreamble()` に依存しない
-- パラメータ束縛段階で失敗させることで、書きかけの破損ファイルを残さない
+- パラメータ: `-Path` / `-LiteralPath` / `-Value` / `-Encoding` / `-EncodingFrom` /
+  `-NoNewline` / `-LineBreak` / `-Force` / `SupportsShouldProcess`（`-NoClobber` は不採用）
+- `-Encoding` には `[EncodingSpecTransformation(EncodingUsage.Write)]` を付けており、
+  裸の `utf8` と `utf7` は束縛段階で拒否される（ファイルを開く前に失敗する）
+- 書き込み先ごとに `ProbedFileWriter` を開き、`EndProcessing` / `StopProcessing` /
+  `IDisposable.Dispose` で閉じる。パイプラインの要素が流れてくるたびに開き直さない
+- 開けなかったパスも辞書に記録し、同じエラーを繰り返し報告しない
 
 ### 4.2 第 5 段階 — `Add-ProbedContent`（仕様書 6 節）
 
-- 第 4 段階の派生。`-AllowEncodingChange` を追加
-- 整合性検査はバイト列比較（仕様書 6.1）。`-Force` では回避できないこと
-- BOM 指定は無視される（仕様書 6.3）
-- ISO-2022-JP への追記でエスケープシーケンスが正しく出ることを検証する
+`SetProbedContentCommand` の派生として作る。差分は次のとおり。
+
+1. `-AllowEncodingChange` を追加する。**`-Force` に相乗りさせない**（仕様書 6.2）
+2. 整合性検査は**バイト列比較**で行う（仕様書 6.1）。
+   「指定されたエンコーディング X で符号化した結果 == 既存のエンコーディング Y で符号化した結果」
+   が成立すれば許可、しなければ Error。名前の組み合わせ表では判定しない
+   - `-Encoding` を明示した場合でも、この比較のために**既存ファイルの判定は必ず走る**（仕様書 6.3）
+   - `-AllowEncodingChange` でのみ回避できる
+3. BOM 指定は**常に無視**する。追記でファイル途中に BOM を書くことは正しくない。
+   警告も出さない（`-EncodingFrom` で BOM 付きから継承した場合に毎回鳴るため）
+4. 改行の不一致は**許可**する（混在改行になるだけで読めなくなることはない）
+5. `-Encoding Auto`（省略時）は追記先から継承する。追記先が無ければ Error
+6. `ProbedFileWriter` に追記用のファクトリを追加する（`FileMode.Append`、BOM は書かない）
+7. ISO-2022-JP への追記でエスケープシーケンスが正しく出ることを検証する。
+   .NET のエンコーダは `GetBytes` ごとに状態をリセットするため壊れない
 
 ### 4.3 仕上げ
 
 1. **MAML ヘルプ** — バイナリモジュールのためコメントベースヘルプは使えない。
    `en-US/SnowStack.EncodingProbe.PowerShell.dll-Help.xml` を新規作成し、
    csproj に出力コピー設定を追加する。現在ヘルプファイルは 1 つも存在しない。
-   指示書 6.1 が「ヘルプに明記が必要」としている 7 項目を必ず書く
+   指示書 6.1 が「ヘルプに明記が必要」としている 7 項目を必ず書く。
+   第 4 段階で確定した次の 2 点も明記が必要（仕様書 5.4 / 6.3）:
+   「`-Encoding` の入力形式によって改行の決まり方が変わる」
+   「追記では BOM 指定は無視される」
 2. **`.psd1`** — `publish/SnowStack.EncodingProbe.PowerShell/SnowStack.EncodingProbe.PowerShell.psd1` の
    `ModuleVersion` を 1.1.0 に、`CmdletsToExport` に 4 コマンドを追加、`ReleaseNotes` を更新
 3. **バージョン** — 両 csproj の `Version` / `AssemblyVersion` / `FileVersion` を 1.1.0 に
@@ -203,6 +213,13 @@ pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1
   実行環境の言語に依存せず、かつメッセージキーと引数の埋め込みまで検証できる
 - PowerShell スクリプトで検証する際、`(Get-ProbedContent $p)[0]` は
   出力が 1 行のとき**文字列の 1 文字目**を返す。`@(...)` で配列化すること（一度誤読した）
+- **終了エラーは `shell.Streams.Error` に入らない**。`PowerShell.Invoke()` が
+  `CmdletInvocationException` を投げるので、`Assert.Throws` で受けて
+  `ErrorRecord` を検証する（非終了エラーとは受け取り方が違う）
+- PSCompat のシナリオで `-Encoding ([System.Text.Encoding]::UTF8)` のような式を渡すときは
+  **括弧が必須**。括弧が無いとパラメータの値が文字列リテラルとして解釈される
+- ランタイム既定（`Encoding.Default`）はホストごとに異なる（net48 は ANSI、net10.0 は UTF-8）。
+  PSCompat ではバイト列をそのまま記録せず、「ランタイム既定と一致すること」を記録して比較する
 
 ### 6.3 クラスライブラリ側の既知の挙動（変更しないこと）
 

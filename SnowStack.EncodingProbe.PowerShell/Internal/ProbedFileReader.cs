@@ -20,19 +20,6 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// </remarks>
     internal sealed class ProbedFileReader : IDisposable
     {
-        /// <summary>
-        /// 判定できるファイルサイズの上限。
-        /// </summary>
-        /// <remarks>
-        /// 判定はファイル全体を対象とする必要がある。先頭の一定量だけで判定すると、
-        /// 「1MB 分の英数字のあとに日本語のコメントが続くソースファイル」のような内容を
-        /// US-ASCII と誤判定し、後続の日本語をすべて壊して復号してしまう。
-        /// <br/>
-        /// 上限は byte 配列の最大長に由来する。クラスライブラリの判定処理は
-        /// バイト配列を前提としており、これを超えるファイルは判定できない。
-        /// </remarks>
-        private const long MaxDetectableLength = 0x7FFFFFC7;
-
         /// <summary>StreamReader に与えるバッファサイズ</summary>
         private const int ReadBufferSize = 4096;
 
@@ -139,7 +126,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         {
             long length = stream.Length;
 
-            if (length > MaxDetectableLength)
+            if (length > EncodingInheritance.MaxDetectableLength)
             {
                 throw new EncodingDetectionException(ValidationMessages.FileTooLargeToDetect(path), path);
             }

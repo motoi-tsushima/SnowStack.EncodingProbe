@@ -49,5 +49,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         /// <summary>読み取り中のファイルが書き込み先に指定された</summary>
         SamePathRoundTrip,
+
+        /// <summary>-Encoding と -EncodingFrom が同時に指定された</summary>
+        EncodingAndEncodingFromAreExclusive,
+
+        /// <summary>-Encoding Auto の継承元となるファイルが存在しない</summary>
+        AutoEncodingRequiresExistingFile,
+
+        /// <summary>-NoNewline と -LineBreak が同時に指定された（警告）</summary>
+        NoNewlineIgnoresLineBreak,
     }
 }

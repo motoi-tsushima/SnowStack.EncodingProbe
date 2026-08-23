@@ -24,6 +24,7 @@ public sealed class ProbedCommandRunspaceFixture : IDisposable
         Register(sessionState, "Resolve-Encoding", typeof(ResolveEncodingCmdlet));
         Register(sessionState, "ConvertTo-DotNetEncoding", typeof(ConvertToDotNetEncodingCommand));
         Register(sessionState, "Get-ProbedContent", typeof(GetProbedContentCommand));
+        Register(sessionState, "Set-ProbedContent", typeof(SetProbedContentCommand));
 
         this.Runspace = RunspaceFactory.CreateRunspace(sessionState);
         this.Runspace.Open();
@@ -96,7 +97,27 @@ public sealed class ProbedCommandRunspaceFixture : IDisposable
 
         Collection<PSObject> output = shell.Invoke();
 
-        return new InvocationResult(output, new List<ErrorRecord>(shell.Streams.Error));
+        return new InvocationResult(
+            output,
+            new List<ErrorRecord>(shell.Streams.Error),
+            new List<WarningRecord>(shell.Streams.Warning));
+    }
+
+    /// <summary>
+    /// スクリプトを実行し、出力と非終了エラー・警告をまとめて返す
+    /// </summary>
+    public InvocationResult InvokeScriptCapturingErrors(string script)
+    {
+        using var shell = System.Management.Automation.PowerShell.Create();
+        shell.Runspace = this.Runspace;
+        shell.AddScript(script);
+
+        Collection<PSObject> output = shell.Invoke();
+
+        return new InvocationResult(
+            output,
+            new List<ErrorRecord>(shell.Streams.Error),
+            new List<WarningRecord>(shell.Streams.Warning));
     }
 
     public void Dispose() => this.Runspace.Dispose();
