@@ -113,6 +113,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "-NoNewline is specified, so the value of -LineBreak is not used. "
                     + "-LineBreak selects which characters are written as a line break, "
                     + "while -NoNewline suppresses writing the line break itself.",
+
+                [MessageKey.EncodingChangeOnAppend] =
+                    "Cannot append to '{0}' with the character encoding '{1}'. The bytes produced by '{1}' "
+                    + "differ from those produced by the current encoding of the file, '{2}', so appending "
+                    + "would leave the file inconsistent. Specify -AllowEncodingChange if changing the "
+                    + "character encoding of the file is intended.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -183,6 +189,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "-NoNewline が指定されているため、-LineBreak の指定は使用されません。"
                     + "-LineBreak は改行として出力する文字を選ぶもので、"
                     + "-NoNewline は改行を出力すること自体を抑止します。",
+
+                [MessageKey.EncodingChangeOnAppend] =
+                    "'{0}' に文字エンコーディング '{1}' で追記できません。'{1}' で符号化したバイト列が、"
+                    + "このファイルの現在の文字エンコーディング '{2}' で符号化したバイト列と異なるため、"
+                    + "追記するとファイル全体の一貫性が失われます。"
+                    + "文字エンコーディングを変えることが意図どおりであれば -AllowEncodingChange を指定してください。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -253,6 +265,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "-NoNewline이 지정되어 있으므로 -LineBreak의 지정은 사용되지 않습니다. "
                     + "-LineBreak는 줄 바꿈으로 출력할 문자를 선택하며, "
                     + "-NoNewline은 줄 바꿈을 출력하는 것 자체를 억제합니다.",
+
+                [MessageKey.EncodingChangeOnAppend] =
+                    "'{0}'에 문자 인코딩 '{1}'(으)로 추가할 수 없습니다. '{1}'(으)로 인코딩한 바이트열이 "
+                    + "이 파일의 현재 문자 인코딩 '{2}'(으)로 인코딩한 바이트열과 다르므로, "
+                    + "추가하면 파일 전체의 일관성이 사라집니다. "
+                    + "문자 인코딩을 바꾸는 것이 의도한 대로라면 -AllowEncodingChange를 지정하십시오.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -322,6 +340,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "已指定 -NoNewline，因此不會使用 -LineBreak 的指定。"
                     + "-LineBreak 用於選擇作為換行輸出的字元，"
                     + "而 -NoNewline 則抑制輸出換行本身。",
+
+                [MessageKey.EncodingChangeOnAppend] =
+                    "無法以字元編碼 '{1}' 附加至 '{0}'。以 '{1}' 編碼的位元組序列，"
+                    + "與這個檔案目前的字元編碼 '{2}' 編碼的位元組序列不同，"
+                    + "附加後整個檔案將失去一致性。"
+                    + "若變更字元編碼確實是您的本意，請指定 -AllowEncodingChange。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -391,6 +415,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "已指定 -NoNewline，因此不会使用 -LineBreak 的指定。"
                     + "-LineBreak 用于选择作为换行输出的字符，"
                     + "而 -NoNewline 则抑制换行本身的输出。",
+
+                [MessageKey.EncodingChangeOnAppend] =
+                    "无法以字符编码 '{1}' 追加至 '{0}'。以 '{1}' 编码的字节序列，"
+                    + "与该文件当前的字符编码 '{2}' 编码的字节序列不同，"
+                    + "追加后整个文件将失去一致性。"
+                    + "若变更字符编码确实是您的本意，请指定 -AllowEncodingChange。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

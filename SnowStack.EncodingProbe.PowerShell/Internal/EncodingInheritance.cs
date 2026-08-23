@@ -26,6 +26,16 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         public const long MaxDetectableLength = 0x7FFFFFC7;
 
         /// <summary>
+        /// 判定材料が無いかどうか（存在しないか、0バイトか）を返す。
+        /// </summary>
+        public static bool IsEmpty(string path)
+        {
+            var info = new FileInfo(path);
+
+            return !info.Exists || info.Length == 0;
+        }
+
+        /// <summary>
         /// 参照元のファイルから継承する情報を求める。
         /// </summary>
         /// <param name="path">参照元ファイルの絶対パス。存在することを前提とする。</param>

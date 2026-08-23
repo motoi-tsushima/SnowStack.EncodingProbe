@@ -58,5 +58,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         /// <summary>-NoNewline と -LineBreak が同時に指定された（警告）</summary>
         NoNewlineIgnoresLineBreak,
+
+        /// <summary>追記により既存ファイルの文字エンコーディングが変わってしまう</summary>
+        EncodingChangeOnAppend,
     }
 }

@@ -25,6 +25,7 @@ public sealed class ProbedCommandRunspaceFixture : IDisposable
         Register(sessionState, "ConvertTo-DotNetEncoding", typeof(ConvertToDotNetEncodingCommand));
         Register(sessionState, "Get-ProbedContent", typeof(GetProbedContentCommand));
         Register(sessionState, "Set-ProbedContent", typeof(SetProbedContentCommand));
+        Register(sessionState, "Add-ProbedContent", typeof(AddProbedContentCommand));
 
         this.Runspace = RunspaceFactory.CreateRunspace(sessionState);
         this.Runspace.Open();

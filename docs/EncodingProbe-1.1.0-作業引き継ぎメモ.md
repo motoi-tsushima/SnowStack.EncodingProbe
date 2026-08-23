@@ -1,8 +1,8 @@
 # SnowStack.EncodingProbe.PowerShell 1.1.0 作業引き継ぎメモ
 
-- 最終更新: 2026-08-23
+- 最終更新: 2026-08-23（第 5 段階まで完了）
 - 作業ブランチ: `feature/1.1.0-probed-content`
-- **次回の再開地点: 第 5 段階（`Add-ProbedContent`）から**
+- **次回の再開地点: 仕上げ（MAML ヘルプ / `.psd1` / バージョン / README・CHANGELOG）から**
 
 このメモは作業を中断した時点の状態を記録したものです。再開時は、まず
 `docs/EncodingProbe-1.1.0-仕様書.md` と `docs/EncodingProbe-1.1.0-ClaudeCode指示書.md`
@@ -19,13 +19,15 @@
 | 第 2 段階 | `ConvertTo-DotNetEncoding` | 完了 |
 | 第 3 段階 | `Get-ProbedContent` | 完了 |
 | 第 4 段階 | `Set-ProbedContent` | 完了 |
-| **第 5 段階** | **`Add-ProbedContent`** | **未着手（ここから再開）** |
-| 仕上げ | MAML ヘルプ / `.psd1` 更新 / バージョン更新 / README / CHANGELOG | 未着手 |
+| 第 5 段階 | `Add-ProbedContent` | 完了 |
+| **仕上げ** | **MAML ヘルプ / `.psd1` 更新 / バージョン更新 / README / CHANGELOG** | **未着手（ここから再開）** |
 
 ### コミット履歴（master からの差分）
 
 ```
-（最新） 1.1.0 第4段階: Set-ProbedContent を追加
+（最新） 1.1.0 第5段階: Add-ProbedContent を追加
+5321be8 1.1.0 引き継ぎメモ: .cs の改行に関する記述を修正
+f637e0f 1.1.0 第4段階: Set-ProbedContent を追加
 7912447 1.1.0 第3段階の修正: 文字エンコーディングの判定をファイル全体で行う
 c1fae6d 1.1.0 第3段階: Get-ProbedContent を追加
 6e5cc46 1.1.0 第2段階: ConvertTo-DotNetEncoding を追加
@@ -43,9 +45,9 @@ c1fae6d 1.1.0 第3段階: Get-ProbedContent を追加
 
 ```
 EncodingProbe.Tests (net10.0)            合格 64  / 失敗 0
-EncodingProbe.PowerShell.Tests (net10.0) 合格 335 / 失敗 0
+EncodingProbe.PowerShell.Tests (net10.0) 合格 373 / 失敗 0
 EncodingProbe.Tests (net48)              合格 74  / 失敗 0
-PSCompat (PS 5.1 vs 7.x)                 145 シナリオ 完全一致
+PSCompat (PS 5.1 vs 7.x)                 184 シナリオ 完全一致
 ```
 
 ---
@@ -84,6 +86,18 @@ PSCompat (PS 5.1 vs 7.x)                 145 シナリオ 完全一致
 | 書き込み先を開く順序 | 「同一パス検出 → エンコーディング決定 → `ShouldProcess` → ファイルを開く」 | 継承のための判定を、切り詰めの前に済ませる必要がある |
 | 複数要素の書き込み | 最終要素の後ろにも改行を出力する（`-NoNewline` 指定時を除く） | 標準の `Set-Content` と同じ |
 
+### 2.4 第 5 段階で決めたこと
+
+| 項目 | 決定内容 | 根拠 |
+|---|---|---|
+| 整合性検査の単位 | **1 要素分（本文 + 改行）ごと**に比較する | 改行だけが一致しない場合（UTF-8 の LF は 1 バイト、UTF-16LE は 2 バイト）を取りこぼさないため |
+| 拒否されたときの粒度 | **1 レコード分をまとめて検査してから書き込む**。途中の要素が拒否されたら、そのレコードは 1 要素も書かない | 手前の要素だけ書き込まれた中途半端な状態を残さないため |
+| 拒否後の扱い | そのパスへは以後書き込まない（ライターを閉じる）。エラーは 1 回だけ報告する | パイプラインで要素が流れてくるたびに同じエラーを繰り返さないため |
+| 新規作成時の BOM | **書かない**。`-Encoding utf8BOM` で新規作成しても BOM は付かない | 仕様書 6.3 が「追記では BOM 指定は無視される」と例外なく定めているため。ヘルプに明記する |
+| 書き込み系での裸の `utf8` | 追記でも**束縛段階で拒否する** | 仕様書 8 節。追記では BOM 自体は無視されるが、語彙の意味は上書きと共通に保つ |
+| `-AllowEncodingChange` 指定時の判定 | 既存ファイルの**判定自体を行わない**。判定できないファイルへも追記できる | 判定は突き合わせのためだけに行っている。ファイル全体を読むため、不要な読み込みも避ける |
+| ISO-2022-JP への追記 | 追記部分の先頭にエスケープシーケンスが出て、末尾で ASCII に戻る。追記部分だけで完結する | `StreamWriter` が最初の書き込みでエスケープシーケンスを出力するため。テストで固定済み |
+
 ---
 
 ## 3. 実装済みの構成
@@ -111,7 +125,9 @@ PSCompat (PS 5.1 vs 7.x)                 145 シナリオ 完全一致
 | `Cmdlets/ProbedContentCommandBase.cs` | パス解決の共通基底。`ResolveExistingFiles` を持つ |
 | `Cmdlets/ConvertToDotNetEncodingCommand.cs` | 第 2 段階 |
 | `Cmdlets/GetProbedContentCommand.cs` | 第 3 段階 |
-| `Cmdlets/SetProbedContentCommand.cs` | 第 4 段階。**第 5 段階はこれを下敷きにする** |
+| `Cmdlets/ProbedContentWriterCommandBase.cs` | 書き込み系に共通するパラメータ・継承・改行決定・後始末 |
+| `Cmdlets/SetProbedContentCommand.cs` | 第 4 段階。上書き（差分は開き方だけ） |
+| `Cmdlets/AddProbedContentCommand.cs` | 第 5 段階。追記（差分は開き方と整合性検査） |
 
 ### 3.2 テストコード（`tests/`）
 
@@ -141,23 +157,15 @@ PSCompat (PS 5.1 vs 7.x)                 145 シナリオ 完全一致
   `IDisposable.Dispose` で閉じる。パイプラインの要素が流れてくるたびに開き直さない
 - 開けなかったパスも辞書に記録し、同じエラーを繰り返し報告しない
 
-### 4.2 第 5 段階 — `Add-ProbedContent`（仕様書 6 節）
+### 4.2 第 5 段階 — `Add-ProbedContent`（完了）
 
-`SetProbedContentCommand` の派生として作る。差分は次のとおり。
+仕様書 6 節のすべてを実装済み。上書きとの差は次の 2 点だけで、
+残りは `ProbedContentWriterCommandBase` に集約されている。
 
-1. `-AllowEncodingChange` を追加する。**`-Force` に相乗りさせない**（仕様書 6.2）
-2. 整合性検査は**バイト列比較**で行う（仕様書 6.1）。
-   「指定されたエンコーディング X で符号化した結果 == 既存のエンコーディング Y で符号化した結果」
-   が成立すれば許可、しなければ Error。名前の組み合わせ表では判定しない
-   - `-Encoding` を明示した場合でも、この比較のために**既存ファイルの判定は必ず走る**（仕様書 6.3）
-   - `-AllowEncodingChange` でのみ回避できる
-3. BOM 指定は**常に無視**する。追記でファイル途中に BOM を書くことは正しくない。
-   警告も出さない（`-EncodingFrom` で BOM 付きから継承した場合に毎回鳴るため）
-4. 改行の不一致は**許可**する（混在改行になるだけで読めなくなることはない）
-5. `-Encoding Auto`（省略時）は追記先から継承する。追記先が無ければ Error
-6. `ProbedFileWriter` に追記用のファクトリを追加する（`FileMode.Append`、BOM は書かない）
-7. ISO-2022-JP への追記でエスケープシーケンスが正しく出ることを検証する。
-   .NET のエンコーダは `GetBytes` ごとに状態をリセットするため壊れない
+- ファイルの開き方 … `ProbedFileWriter.Append`（`FileMode.Append`、BOM は書かない）
+- 書き込む内容の検査 … `RejectChunk` のオーバーライド（バイト列比較）
+
+`-AllowEncodingChange` は `-Force` に相乗りさせていない。
 
 ### 4.3 仕上げ
 
@@ -165,11 +173,14 @@ PSCompat (PS 5.1 vs 7.x)                 145 シナリオ 完全一致
    `en-US/SnowStack.EncodingProbe.PowerShell.dll-Help.xml` を新規作成し、
    csproj に出力コピー設定を追加する。現在ヘルプファイルは 1 つも存在しない。
    指示書 6.1 が「ヘルプに明記が必要」としている 7 項目を必ず書く。
-   第 4 段階で確定した次の 2 点も明記が必要（仕様書 5.4 / 6.3）:
+   第 4・5 段階で確定した次の 3 点も明記が必要（仕様書 5.4 / 6.3）:
    「`-Encoding` の入力形式によって改行の決まり方が変わる」
-   「追記では BOM 指定は無視される」
+   「追記では BOM 指定は無視される（新規作成の場合も含む）」
+   「`Add-ProbedContent` の整合性検査は `-Force` では回避できない。`-AllowEncodingChange` を使う」
 2. **`.psd1`** — `publish/SnowStack.EncodingProbe.PowerShell/SnowStack.EncodingProbe.PowerShell.psd1` の
-   `ModuleVersion` を 1.1.0 に、`CmdletsToExport` に 4 コマンドを追加、`ReleaseNotes` を更新
+   `ModuleVersion` を 1.1.0 に、`CmdletsToExport` に 4 コマンド
+   （`Get-ProbedContent` / `Set-ProbedContent` / `Add-ProbedContent` / `ConvertTo-DotNetEncoding`）
+   を追加、`ReleaseNotes` を更新
 3. **バージョン** — 両 csproj の `Version` / `AssemblyVersion` / `FileVersion` を 1.1.0 に
 4. **README / CHANGELOG** — 指示書 6.2
 
@@ -186,7 +197,7 @@ dotnet test SnowStack.EncodingProbe.slnx
 
 # 単一テストクラス
 dotnet test tests/EncodingProbe.PowerShell.Tests/EncodingProbe.PowerShell.Tests.csproj \
-  --filter "FullyQualifiedName~SetProbedContentTests"
+  --filter "FullyQualifiedName~AddProbedContentTests"
 
 # PowerShell 5.1 と 7.x の一致検証（最重要。指示書 5.2）
 pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1
@@ -240,3 +251,9 @@ pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1
 - internal な `ArgumentTransformationAttribute` は PS 5.1 / 7.x の両方で正しく機能することを確認済み
 - 内部型をテストから参照するため、PowerShell 側 csproj に
   `InternalsVisibleTo("EncodingProbe.PowerShell.Tests")` を追加済み
+- 公開クラスの `protected` メンバーに internal 型（`EncodingSpec` 等）は書けない。
+  `private protected` にすれば書ける（派生クラスは同一アセンブリ内にあるため）
+- PSCompat のシナリオで `[scriptblock]::Create` に文字列を組み立てて渡すと、
+  内容によっては **AMSI にブロックされて実行されない**ことがある
+  （実際に `([byte[]](0x41, 0x0A))` を含む生成コードで発生した）。
+  ループ変数を束縛したいだけなら、通常のスクリプトブロックに `.GetNewClosure()` を使う

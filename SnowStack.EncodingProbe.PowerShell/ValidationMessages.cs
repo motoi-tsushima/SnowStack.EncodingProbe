@@ -124,5 +124,11 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string NoNewlineIgnoresLineBreak()
             => MessageCatalog.Get(MessageKey.NoNewlineIgnoresLineBreak);
+
+        /// <summary>
+        /// 追記により既存ファイルの文字エンコーディングが変わってしまう場合のエラーメッセージ
+        /// </summary>
+        public static string EncodingChangeOnAppend(string path, string specified, string existing)
+            => MessageCatalog.Format(MessageKey.EncodingChangeOnAppend, path, specified, existing);
     }
 }

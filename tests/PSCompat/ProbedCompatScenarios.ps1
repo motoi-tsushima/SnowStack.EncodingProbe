@@ -475,6 +475,191 @@ Add-Scenario 'Set/error/ディレクトリ' {
 }
 
 # ---------------------------------------------------------------------------
+# Add-ProbedContent (仕様書 6 節)
+# ---------------------------------------------------------------------------
+
+<#
+.SYNOPSIS
+    追記先を用意し、Add-ProbedContent を実行して結果のバイト列を返す。
+#>
+function Invoke-Add {
+    param([string]$Name, [hashtable]$Parameters, [object]$Value = 'A', [byte[]]$Initial = $null)
+
+    $path = Join-Path $script:WorkRoot $Name
+    if ($null -ne $Initial) { [IO.File]::WriteAllBytes($path, $Initial) }
+
+    Add-ProbedContent -LiteralPath $path -Value $Value @Parameters -ErrorAction Stop
+    return (Format-FileBytes $path)
+}
+
+$script:sjis = [System.Text.Encoding]::GetEncoding(932)
+$script:utf8 = New-Object System.Text.UTF8Encoding($false)
+$script:ascii = [System.Text.Encoding]::ASCII
+$script:iso2022 = [System.Text.Encoding]::GetEncoding(50220)
+
+# 整合性検査（仕様書 6.1 の判定表）
+$script:ruleCases = @(
+    @('ascii_utf8_日本語', $script:ascii.GetBytes("ABC`r`n"), 'utf8NoBOM', '日本語'),
+    @('utf8_ascii_ASCII', $script:utf8.GetBytes("日本語`r`n"), 'ascii', 'ABC'),
+    @('utf8_sjis_日本語', $script:utf8.GetBytes("日本語`r`n"), 'shift_jis', '日本語'),
+    @('utf8_sjis_ASCII', $script:utf8.GetBytes("日本語`r`n"), 'shift_jis', 'ABC'),
+    @('sjis_utf8_日本語', $script:sjis.GetBytes("日本語`r`n"), 'utf8NoBOM', '日本語'),
+    @('utf8_utf16_ASCII', $script:utf8.GetBytes("日本語`r`n"), 'unicodeNoBOM', 'ABC')
+)
+
+$script:ruleIndex = 0
+foreach ($case in $script:ruleCases) {
+    $script:ruleIndex++
+
+    # GetNewClosure でループ変数を束縛する。
+    # [scriptblock]::Create で組み立てると、生成した文字列が AMSI に引っかかることがある。
+    $fileName = 'rule' + $script:ruleIndex + '.txt'
+    $initialBytes = $case[1]
+    $encodingName = $case[2]
+    $appendValue = $case[3]
+
+    Add-Scenario ("Add/判定表/" + $case[0]) {
+        Invoke-Add $fileName @{ Encoding = $encodingName; LineBreak = 'Lf' } $appendValue $initialBytes
+    }.GetNewClosure()
+}
+
+# -AllowEncodingChange で許可される。-Force では回避できない
+Add-Scenario 'Add/AllowEncodingChange/許可' {
+    Invoke-Add 'ace1.txt' @{ Encoding = 'shift_jis'; LineBreak = 'Lf'; AllowEncodingChange = $true } 'あ' $script:utf8.GetBytes("日`n")
+}
+Add-Scenario 'Add/error/Forceでは回避できない' {
+    Invoke-Add 'ace2.txt' @{ Encoding = 'shift_jis'; LineBreak = 'Lf'; Force = $true } 'あ' $script:utf8.GetBytes("日`n")
+}
+
+# 1レコード内で拒否された場合、手前の要素も書き込まれないこと
+Add-Scenario 'Add/error/レコード単位で中止' {
+    $path = Join-Path $script:WorkRoot 'atomic.txt'
+    [IO.File]::WriteAllBytes($path, $script:utf8.GetBytes("日`n"))
+    try { Add-ProbedContent -LiteralPath $path -Value @('OK', 'あ') -Encoding shift_jis -LineBreak Lf -ErrorAction Stop }
+    finally { $script:Report.Add(("Add/中止後のファイル`tOK`t{0}" -f (Format-FileBytes $path))) }
+}
+
+# BOM は常に無視する（仕様書 6.3）
+Add-Scenario 'Add/BOM/途中に書かない' {
+    Invoke-Add 'bom1.txt' @{ Encoding = 'utf8BOM'; LineBreak = 'Lf' } 'B' ([byte[]](0x41, 0x0A))
+}
+Add-Scenario 'Add/BOM/BOM付きへ追記しても増えない' {
+    Invoke-Add 'bom2.txt' @{ LineBreak = 'Lf' } 'B' ([byte[]](0xEF, 0xBB, 0xBF, 0x41, 0x0A))
+}
+Add-Scenario 'Add/BOM/新規作成でも書かない' {
+    Invoke-Add 'bom3.txt' @{ Encoding = 'utf8BOM'; LineBreak = 'Lf' }
+}
+Add-Scenario 'Add/BOM/警告は出さない' {
+    $path = Join-Path $script:WorkRoot 'bom4.txt'
+    [IO.File]::WriteAllBytes($path, [byte[]](0x41, 0x0A))
+    Add-ProbedContent -LiteralPath $path -Value 'B' -Encoding utf8BOM -LineBreak Lf `
+        -WarningVariable wv -WarningAction SilentlyContinue -ErrorAction Stop
+    return ("警告数: {0}" -f @($wv).Count)
+}
+
+# 改行（仕様書 6.3）
+Add-Scenario 'Add/改行/不一致は許可' {
+    Invoke-Add 'lb1.txt' @{ Encoding = 'utf8NoBOM'; LineBreak = 'Lf' } 'B' ([byte[]](0x41, 0x0D, 0x0A))
+}
+Add-Scenario 'Add/改行/末尾改行なしへの追記' {
+    Invoke-Add 'lb2.txt' @{ Encoding = 'utf8NoBOM'; LineBreak = 'Lf' } 'B' ([byte[]](0x41))
+}
+Add-Scenario 'Add/改行/追記先から継承CR' {
+    Invoke-Add 'lb3.txt' @{} 'B' ([byte[]](0x41, 0x0D))
+}
+Add-Scenario 'Add/改行/NoNewline' {
+    Invoke-Add 'lb4.txt' @{ Encoding = 'utf8NoBOM'; NoNewline = $true } 'B' ([byte[]](0x41, 0x0A))
+}
+
+# ISO-2022-JP への追記（状態を持つエンコーディング）
+Add-Scenario 'Add/ISO2022JP/エスケープシーケンス' {
+    Invoke-Add 'iso.txt' @{} '本' $script:iso2022.GetBytes("日`r`n")
+}
+Add-Scenario 'Add/ISO2022JP/読み返し' {
+    $path = Join-Path $script:WorkRoot 'iso2.txt'
+    [IO.File]::WriteAllBytes($path, $script:iso2022.GetBytes("日`r`n"))
+    Add-ProbedContent -LiteralPath $path -Value '本' -ErrorAction Stop
+    return (Format-Lines (Get-ProbedContent -LiteralPath $path))
+}
+
+# -Encoding Auto と -EncodingFrom
+Add-Scenario 'Add/Auto継承/sjis' { Invoke-Add 'auto1.txt' @{} 'あ' $script:sjis.GetBytes("日本語`r`n") }
+Add-Scenario 'Add/Auto継承/utf8BOM' {
+    Invoke-Add 'auto2.txt' @{} '日' ([byte[]](0xEF, 0xBB, 0xBF, 0x41, 0x0A))
+}
+Add-Scenario 'Add/error/Auto継承元なし' {
+    $path = Join-Path $script:WorkRoot 'auto_missing_add.txt'
+    try { Add-ProbedContent -LiteralPath $path -Value 'A' -ErrorAction Stop }
+    finally { $script:Report.Add(("Add/Auto継承元なし/ファイル`tOK`t{0}" -f (Format-FileBytes $path))) }
+}
+Add-Scenario 'Add/新規作成/明示指定なら作る' {
+    Invoke-Add 'new1.txt' @{ Encoding = 'shift_jis'; LineBreak = 'CrLf' } '日'
+}
+Add-Scenario 'Add/Auto継承/空ファイル' {
+    $path = Join-Path $script:WorkRoot 'add_empty.txt'
+    [IO.File]::WriteAllBytes($path, [byte[]]@())
+    Add-ProbedContent -LiteralPath $path -Value 'A' -ErrorAction Stop
+    $expected = [System.Text.Encoding]::Default.GetBytes('A' + [Environment]::NewLine)
+    $actual = [IO.File]::ReadAllBytes($path)
+    return ("ランタイム既定と一致: {0}" -f (@(Compare-Object $expected $actual -SyncWindow 0).Count -eq 0))
+}
+Add-Scenario 'Add/EncodingFrom/参照元から継承' {
+    $reference = New-ByteFile 'add_ref.txt' ($script:sjis.GetBytes("日本語`r`n"))
+    Invoke-Add 'from_add.txt' @{ EncodingFrom = $reference } 'い' ($script:sjis.GetBytes("あ`n"))
+}
+
+# パイプラインと複数要素
+Add-Scenario 'Add/Value/複数要素' {
+    Invoke-Add 'av1.txt' @{ Encoding = 'utf8NoBOM'; LineBreak = 'Lf' } @('B', 'C') ([byte[]](0x41, 0x0A))
+}
+Add-Scenario 'Add/パイプライン入力' {
+    $path = Join-Path $script:WorkRoot 'av2.txt'
+    [IO.File]::WriteAllBytes($path, [byte[]](0x41, 0x0A))
+    'B', 'C' | Add-ProbedContent -LiteralPath $path -Encoding utf8NoBOM -LineBreak Lf -ErrorAction Stop
+    return (Format-FileBytes $path)
+}
+
+# 往復・-WhatIf・読み取り専用
+Add-Scenario 'Add/error/読み取り中への追記' {
+    $path = New-ByteFile 'add_rt.txt' ([byte[]](0x41, 0x0A, 0x42, 0x0A))
+    try { Get-ProbedContent -LiteralPath $path | Add-ProbedContent -LiteralPath $path -ErrorAction Stop }
+    finally { $script:Report.Add(("Add/往復拒否後のファイル`tOK`t{0}" -f (Format-FileBytes $path))) }
+}
+Add-Scenario 'Add/WhatIf/ファイルに触れない' {
+    $path = New-ByteFile 'add_whatif.txt' ([byte[]](0x41, 0x0A))
+    Add-ProbedContent -LiteralPath $path -Value 'B' -Encoding utf8NoBOM -WhatIf
+    return (Format-FileBytes $path)
+}
+Add-Scenario 'Add/error/読み取り専用' {
+    $path = New-ByteFile 'add_ro.txt' ([byte[]](0x41, 0x0A))
+    Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $true
+    try { Add-ProbedContent -LiteralPath $path -Value 'B' -Encoding utf8NoBOM -ErrorAction Stop }
+    finally {
+        $script:Report.Add(("Add/読み取り専用/内容`tOK`t{0}" -f (Format-FileBytes $path)))
+        Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $false
+    }
+}
+
+# エラー系（仕様書 8 節）
+$script:addErrorIndex = 0
+foreach ($name in @('utf8', '65001', 'utf7')) {
+    $script:addErrorIndex++
+
+    $fileName = 'adderr' + $script:addErrorIndex + '.txt'
+    $encodingName = $name
+
+    Add-Scenario "Add/error/語彙/$name" {
+        Invoke-Add $fileName @{ Encoding = $encodingName } 'B' ([byte[]](0x41, 0x0A))
+    }.GetNewClosure()
+}
+Add-Scenario 'Add/error/判定失敗' {
+    Invoke-Add 'add_binary.txt' @{ Encoding = 'utf8NoBOM' } 'B' ([byte[]](0x81, 0xFF, 0x00, 0xFE, 0x93, 0x40, 0xC0, 0x80, 0xED, 0xA0, 0x80))
+}
+Add-Scenario 'Add/error/EncodingとEncodingFrom' {
+    Invoke-Add 'add_both.txt' @{ Encoding = 'utf8NoBOM'; EncodingFrom = $script:refUtf16 } 'B' ([byte[]](0x41, 0x0A))
+}
+
+# ---------------------------------------------------------------------------
 # レポート出力
 # ---------------------------------------------------------------------------
 

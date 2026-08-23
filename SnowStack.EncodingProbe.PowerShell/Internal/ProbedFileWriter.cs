@@ -5,7 +5,7 @@ using System.Text;
 namespace SnowStack.EncodingProbe.PowerShell.Internal
 {
     /// <summary>
-    /// 文字エンコーディング・BOM・改行コードを明示してテキストファイルへ書き込む。
+    /// 文字エンコーディングと BOM 方針を明示してテキストファイルへ書き込む。
     /// </summary>
     /// <remarks>
     /// BOM を出力するかどうかは <see cref="EncodingSpec.EmitBom"/> だけで決める。
@@ -20,14 +20,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         private readonly FileStream _stream;
         private readonly StreamWriter _writer;
-        private readonly string _lineBreak;
 
-        private ProbedFileWriter(FileStream stream, StreamWriter writer, Encoding encoding, string lineBreak)
+        private ProbedFileWriter(FileStream stream, StreamWriter writer, Encoding encoding)
         {
             this._stream = stream;
             this._writer = writer;
             this.Encoding = encoding;
-            this._lineBreak = lineBreak;
         }
 
         /// <summary>符号化に使用している文字エンコーディング（BOM を持たないインスタンス）</summary>
@@ -38,9 +36,39 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// </summary>
         /// <param name="path">書き込み先の絶対パス</param>
         /// <param name="spec">使用する文字エンコーディングと BOM 方針</param>
-        /// <param name="lineBreak">改行として出力する文字列</param>
         /// <param name="force">読み取り専用属性を外してから書き込む場合は true</param>
-        public static ProbedFileWriter Create(string path, EncodingSpec spec, string lineBreak, bool force)
+        public static ProbedFileWriter Create(string path, EncodingSpec spec, bool force)
+            => Open(path, spec, force, FileMode.Create, emitBom: spec.EmitBom == true);
+
+        /// <summary>
+        /// ファイルを追記用に開く。存在しない場合は新規作成する。
+        /// </summary>
+        /// <remarks>
+        /// BOM は書き出さない。ファイルの途中に BOM を書き込むことは、いかなる場合も正しくない。
+        /// 追記では <c>utf8BOM</c> と <c>utf8NoBOM</c> が同じ結果になる。
+        /// </remarks>
+        /// <param name="path">追記先の絶対パス</param>
+        /// <param name="spec">使用する文字エンコーディング（BOM 方針は使用しない）</param>
+        /// <param name="force">読み取り専用属性を外してから書き込む場合は true</param>
+        public static ProbedFileWriter Append(string path, EncodingSpec spec, bool force)
+            => Open(path, spec, force, FileMode.Append, emitBom: false);
+
+        /// <summary>
+        /// 文字列を書き込む
+        /// </summary>
+        public void Write(string text) => this._writer.Write(text);
+
+        public void Dispose()
+        {
+            this._writer.Dispose();
+            this._stream.Dispose();
+        }
+
+        /// <summary>
+        /// ファイルを開き、必要なら BOM を書き出してから StreamWriter を用意する
+        /// </summary>
+        private static ProbedFileWriter Open(
+            string path, EncodingSpec spec, bool force, FileMode mode, bool emitBom)
         {
             CodePagesProviderRegistration.EnsureRegistered();
 
@@ -51,7 +79,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             var stream = new FileStream(
                 path,
-                FileMode.Create,
+                mode,
                 FileAccess.Write,
                 FileShare.Read,
                 WriteBufferSize,
@@ -61,7 +89,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             {
                 int codePage = spec.Encoding!.CodePage;
 
-                if (spec.EmitBom == true)
+                if (emitBom)
                 {
                     byte[] preamble = EncodingVocabulary.BuildEncoding(codePage, emitBom: true).GetPreamble();
                     stream.Write(preamble, 0, preamble.Length);
@@ -71,29 +99,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 var writer = new StreamWriter(stream, body, WriteBufferSize, leaveOpen: true);
 
-                return new ProbedFileWriter(stream, writer, body, lineBreak);
+                return new ProbedFileWriter(stream, writer, body);
             }
             catch
             {
                 stream.Dispose();
                 throw;
             }
-        }
-
-        /// <summary>
-        /// 文字列を書き込む（改行は付けない）
-        /// </summary>
-        public void Write(string text) => this._writer.Write(text);
-
-        /// <summary>
-        /// 改行を書き込む
-        /// </summary>
-        public void WriteLineBreak() => this._writer.Write(this._lineBreak);
-
-        public void Dispose()
-        {
-            this._writer.Dispose();
-            this._stream.Dispose();
         }
 
         /// <summary>
