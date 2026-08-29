@@ -126,6 +126,10 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// </summary>
     protected override void BeginProcessing()
     {
+        // -Culture / -Strategy の検証を先に済ませる。
+        // 直後の -EncodingFrom の判定がその結果を使うためである。
+        base.BeginProcessing();
+
         bool encodingBound = this.MyInvocation.BoundParameters.ContainsKey(nameof(this.Encoding));
         bool encodingFromBound = this.MyInvocation.BoundParameters.ContainsKey(nameof(this.EncodingFrom));
 
@@ -214,7 +218,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
 
         try
         {
-            return EncodingInheritance.FromFile(reference);
+            return EncodingInheritance.FromFile(reference, this.DetectorOptions);
         }
         catch (EncodingDetectionException exception)
         {
@@ -339,7 +343,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
             return null;
         }
 
-        return EncodingInheritance.FromFile(file);
+        return EncodingInheritance.FromFile(file, this.DetectorOptions);
     }
 
     /// <summary>

@@ -40,8 +40,14 @@
 これらの -Encoding は統一語彙を受け付けます。同じ名前が PowerShell 5.1 と 7.x で同じ結果になり、
 PowerShell 5.1 でも utf8NoBOM（BOM 無しの UTF-8）や shift_jis を名前で指定できます。
 書き込みでは BOM 方針の定まらない裸の utf8 を受け付けません。utf8NoBOM または utf8BOM を指定してください。
+
+Get-ProbedContent / Set-ProbedContent / Add-ProbedContent は、Resolve-Encoding と同じ
+-Culture と -Strategy を受け取ります。日本語環境で韓国語や中国語のファイルを読むときは
+-Culture ko-KR のように対象言語のカルチャーを指定してください。
+欧米のテキストは -Strategy UtfUnknownOnly で読めます。
+
 エラーメッセージは英語・日本語・韓国語・繁体字中国語・簡体字中国語に対応しています。
-ヘルプ（Get-Help）は英語と日本語を同梱しています。
+ヘルプ（Get-Help）も同じ 5 言語を同梱しています。
 
 1.0.2
 ライセンスリリース。Resolve-Encoding, Get-EncodingProbePlatformInfo コマンドレットを提供。

@@ -124,14 +124,49 @@ net48 では `PolySharp` により新しい言語機能（record 等）を使え
   名前の組み合わせ表では判定しない（仕様書 6.1）
 - メッセージは `Internal/MessageCatalog` が英語・日本語・韓国語・繁体字中国語・簡体字中国語で持つ。
   サテライトアセンブリではなく単一アセンブリ内の表。`Resolve-Encoding` の既存メッセージは英語のまま
+- `-Culture` / `-Strategy` は共通の基底クラス `Cmdlets/ProbedContentCommandBase` にある。
+  `Resolve-Encoding` と**同じ名前・同じ値**であり、判定方式の語彙表は
+  `Cmdlets/ResolveEncodingOptions.TryParseStrategy` に集約している（表を二重に持たない）。
+  基底クラスが `BeginProcessing` を持つため、派生側では**必ず `base.BeginProcessing()` を先に呼ぶ**
+  （書き込み系は `-EncodingFrom` の判定を `BeginProcessing` で行うため）。
+  判定オプションが届く先は `Internal/ProbedFileReader.Open` と
+  `Internal/EncodingInheritance.FromFile` の 2 か所だけ。
+  `ConvertTo-DotNetEncoding` は判定処理を呼ばないため対象外
+- 実行環境依存の例外を利用者に見せない。不正なカルチャー名の検証では
+  `CultureNotFoundException` を内部例外として持たせていない。
+  この例外のメッセージは .NET Framework と .NET Core で文言が異なり、
+  PS 5.1 と 7.x で見えるメッセージが変わってしまうため（PSCompat が検出した）
 
 ### MAML ヘルプ
 
-`SnowStack.EncodingProbe.PowerShell/en-US/` と `ja-JP/` に
+`SnowStack.EncodingProbe.PowerShell/` の下の `en-US/` `ja-JP/` `ko-KR/` `zh-TW/` `zh-CN/` に
 `SnowStack.EncodingProbe.PowerShell.dll-Help.xml` を置いている（csproj で出力へコピーする）。
-`Get-Help` はアセンブリと同じ場所のカルチャー別フォルダーを探すため、`publish/` へ配置する際は
-`core\en-US\` `core\ja-JP\` `desktop\en-US\` `desktop\ja-JP\` の 4 か所へコピーする。
-**2 言語の内容がずれないよう、片方だけ直さないこと。**
+対応言語はメッセージ（`MessageCatalog`）と同じ 5 言語。
+
+`Get-Help` はアセンブリと同じ場所のカルチャー別フォルダーを、UI カルチャーの親を
+たどりながら探す。フォルダー名は **Windows が報告する UI カルチャー名そのもの**にしてある。
+`zh-Hant` / `zh-Hans` のような親カルチャー名を置くと `zh-HK`（香港）まで拾ってしまい、
+「香港は後のバージョンで対応する」という方針に反するため、置いていない。
+`zh-HK` `zh-SG` `ko` などは en-US にフォールバックする（これが期待どおりの挙動）。
+
+`publish/` へ配置する際は `core\` と `desktop\` の下に 5 言語ぶん、計 10 か所へコピーする
+（`Copy-Item -Recurse` でビルド出力ごと配ればよい）。
+
+**5 言語の内容がずれないよう、1 つだけ直さないこと。**
+`tests/EncodingProbe.PowerShell.Tests/CmdletTests/MamlHelpTests.cs` が、
+本文（`maml:para` / `maml:title`）を伏せた骨格が 5 言語で完全に一致することを検証している。
+要素の構成・属性・出現順・コード例まで一致を要求するため、
+1 言語にだけパラメーターを足すとテストが落ちる。
+5 言語ぶんを生成し直す場合は en-US を雛形にして本文だけ差し替えるとよい。
+
+他言語のヘルプを手元で確認するときは、**`Import-Module` の前に** UI カルチャーを変える。
+読み込んだ後に変えても切り替わらない。
+
+```powershell
+[System.Threading.Thread]::CurrentThread.CurrentUICulture =
+    [System.Globalization.CultureInfo]::GetCultureInfo('ko-KR')
+Import-Module <dll>
+```
 
 ### テストデータ
 
@@ -189,6 +224,7 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 - `docs/EncodingProbe-1.1.0-ClaudeCode指示書.md` … 実装時の制約
 - `docs/EncodingProbe-1.1.0-作業引き継ぎメモ.md` … 決定事項とその根拠、踏んだ落とし穴。
   **仕様書に書かれていない判断の理由はここにある**
+- `docs/EncodingProbe-1.1.0-課題_人間記述用.md`… Claude Code 実装後に、人間が確認して発見した課題を記述している。Claude Code 再起動時はこの課題を解消すること。
 
 1.1.0 では次を変更していない（指示書 1 節の制約。今後も維持すること）:
 

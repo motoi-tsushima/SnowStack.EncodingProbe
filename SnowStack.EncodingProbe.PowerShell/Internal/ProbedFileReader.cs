@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
 using SnowStack.EncodingProbe;  // クラスライブラリのnamespace
@@ -48,8 +48,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// </summary>
         /// <param name="path">対象ファイルの絶対パス</param>
         /// <param name="spec">-Encoding の指定。Auto の場合は判定する。</param>
+        /// <param name="detectorOptions">
+        /// -Culture / -Strategy から組み立てた判定オプション。未指定の場合は null。
+        /// </param>
         /// <exception cref="EncodingDetectionException">判定に失敗した場合</exception>
-        public static ProbedFileReader Open(string path, EncodingSpec spec)
+        public static ProbedFileReader Open(
+            string path, EncodingSpec spec, EncodingDetectorOptions? detectorOptions = null)
         {
             CodePagesProviderRegistration.EnsureRegistered();
 
@@ -73,7 +77,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     // 後続の文字をすべて壊して復号してしまうため。
                     byte[] content = ReadAll(stream, path);
                     bomLength = GetBomLength(content);
-                    encoding = Detect(path, content);
+                    encoding = Detect(path, content, detectorOptions);
                 }
                 else
                 {
@@ -173,9 +177,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// 復号に使う文字エンコーディングを判定する
         /// </summary>
         /// <exception cref="EncodingDetectionException">判定に失敗した場合</exception>
-        private static Encoding Detect(string path, byte[] content)
+        private static Encoding Detect(string path, byte[] content, EncodingDetectorOptions? detectorOptions)
         {
-            EncodingInformation information = EncodingProbe.Detect(content);
+            EncodingInformation information = EncodingProbe.Detect(content, detectorOptions);
 
             if (information.CodePage < 0)
             {

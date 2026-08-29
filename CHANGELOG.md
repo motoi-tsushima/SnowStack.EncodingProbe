@@ -59,11 +59,31 @@ PowerShell モジュールにテキストの読み書きコマンドを追加し
   （ISO-2022-TW の 50229 など。`.NET` は net10.0 / net48 のどちらでも提供していません）は、
   エラーID `CodePageNotAvailable` の非終了エラーとして報告し、`-Encoding` による明示指定を案内します
 
+### 判定オプション
+
+`Get-ProbedContent` / `Set-ProbedContent` / `Add-ProbedContent` に、
+`Resolve-Encoding` と同じ `-Culture` と `-Strategy` を追加しました。
+
+- `-Culture` … 判定に用いるカルチャー名。バイト列だけでは区別できない組み合わせ
+  （EUC-KR と CP949、EUC-JP と Shift-JIS など）をカルチャーで曖昧解消します。
+  日本語環境で韓国語や中国語のファイルを読むときは、対象言語のカルチャーを指定してください
+- `-Strategy` … `Combined`（既定）/ `NativeOnly` / `UtfUnknownOnly`。
+  独自判定は東アジアのマルチバイト、UTF.Unknown は欧米のシングルバイトを担当するため、
+  独自判定が誤る欧米のテキストは `UtfUnknownOnly` で読めます
+
+`-EncodingFrom` の参照ファイルと、`-Encoding` 省略時の継承（書き込み先・追記先の判定）にも効きます。
+解釈できない値を指定した場合は、ファイルを開く前にエラーになります。
+
+`ConvertTo-DotNetEncoding` にはこれらのパラメーターはありません。
+ファイルを引数に取らず、判定処理を呼び出さないためです。
+
 ### その他
 
 - 追加したコマンドのエラーメッセージを、英語・日本語・韓国語・繁体字中国語・簡体字中国語に
   対応させました。`CurrentUICulture` で選択され、未対応の言語は英語になります
-- `Get-Help` 用のヘルプ（MAML）を英語（en-US）と日本語（ja-JP）で同梱しました
+- `Get-Help` 用のヘルプ（MAML）を英語（en-US）・日本語（ja-JP）・韓国語（ko-KR）・
+  繁体字中国語（zh-TW）・簡体字中国語（zh-CN）の 5 言語で同梱しました。
+  未対応のカルチャー（`zh-HK` など）は英語になります
 - `-LineBreak` には `Cr`（旧 Macintosh 形式）も指定できます。
   `Resolve-Encoding` が `Cr` を返しうるため、判定しうる状態はすべて書き戻せるようにしています
 

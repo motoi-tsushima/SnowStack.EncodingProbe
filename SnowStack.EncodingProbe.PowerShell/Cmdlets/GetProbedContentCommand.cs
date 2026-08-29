@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Management.Automation;
 using SnowStack.EncodingProbe.PowerShell.Internal;
@@ -73,6 +73,8 @@ public sealed class GetProbedContentCommand : ProbedContentCommandBase
     /// </summary>
     protected override void BeginProcessing()
     {
+        base.BeginProcessing();
+
         if (this.Raw.IsPresent && this.MyInvocation.BoundParameters.ContainsKey(nameof(this.TotalCount)))
         {
             // -Raw はファイル全体を1個の文字列として返すため、行数の指定と両立しない。
@@ -142,7 +144,7 @@ public sealed class GetProbedContentCommand : ProbedContentCommandBase
         string content;
 
         using (ActiveReadRegistry.Register(file))
-        using (ProbedFileReader reader = ProbedFileReader.Open(file, spec))
+        using (ProbedFileReader reader = ProbedFileReader.Open(file, spec, this.DetectorOptions))
         {
             content = reader.ReadToEnd();
         }
@@ -162,7 +164,7 @@ public sealed class GetProbedContentCommand : ProbedContentCommandBase
         // 読み取り中である間は、同じファイルへの書き込みを検出できるようにしておく。
         // 行単位で出力する経路では、下流が書き込みを始めると読み終える前に切り詰められる。
         using (ActiveReadRegistry.Register(file))
-        using (ProbedFileReader reader = ProbedFileReader.Open(file, spec))
+        using (ProbedFileReader reader = ProbedFileReader.Open(file, spec, this.DetectorOptions))
         {
             long written = 0;
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <helpItems schema="maml" xmlns="http://msh">
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
     <command:details>
@@ -45,6 +45,20 @@
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Get-ProbedContent</maml:name>
@@ -75,9 +89,34 @@
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>      </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
@@ -125,6 +164,17 @@
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>TotalCount</maml:name>
         <maml:description>
@@ -302,6 +352,20 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
             <maml:para>コマンドを実行する前に確認を求めます。</maml:para>
           </maml:description>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Set-ProbedContent</maml:name>
@@ -364,6 +428,20 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
             <maml:para>コマンドを実行する前に確認を求めます。</maml:para>
           </maml:description>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
@@ -378,6 +456,17 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>      </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
@@ -460,6 +549,17 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>
@@ -663,6 +763,20 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
             <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。このスイッチを指定すると既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Force にこの効果はありません。</maml:para>
           </maml:description>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Add-ProbedContent</maml:name>
@@ -731,6 +845,20 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
             <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。このスイッチを指定すると既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Force にこの効果はありません。</maml:para>
           </maml:description>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
     </command:syntax>
     <command:parameters>
@@ -756,6 +884,17 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>      </command:parameter>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
@@ -838,6 +977,17 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>

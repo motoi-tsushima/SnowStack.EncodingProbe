@@ -64,6 +64,12 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
 
 # 文字エンコーディングを保ったまま追記する
 Add-ProbedContent .\log.txt -Value $line
+
+# 日本語環境から韓国語のファイルを読む（カルチャーを指定しないと EUC-JP と誤判定される）
+Get-ProbedContent .\korean.txt -Culture ko-KR
+
+# 欧米のテキストは UTF.Unknown の判定に任せる
+Get-ProbedContent .\german.txt -Strategy UtfUnknownOnly
 ```
 
 `-Encoding` には、統一語彙名のほかに WebName（`shift_jis` など）、数値コードページ（`932` など）、`System.Text.Encoding` インスタンス、`Resolve-Encoding` の戻り値をそのまま渡せます。
@@ -74,7 +80,9 @@ Add-ProbedContent .\log.txt -Value $line
 - `Add-ProbedContent` では BOM の指定が常に無視されます。また、追記できるかどうかは実際に書き出されるバイト列で判定します
 - `-Encoding` の入力形式によって改行コードの決まり方が変わります
 
-いずれも各コマンドの `Get-Help <コマンド名> -Full` に記載しています。ヘルプは英語と日本語を同梱しています。詳細は [CHANGELOG.md](CHANGELOG.md) を参照してください。
+`Get-ProbedContent` / `Set-ProbedContent` / `Add-ProbedContent` は、`Resolve-Encoding` と同じ `-Culture` と `-Strategy` を受け取ります。バイト列だけでは区別できない組み合わせ（EUC-KR と CP949、EUC-JP と Shift-JIS など）はカルチャーで曖昧解消するため、**日本語環境で韓国語や中国語のファイルを扱うときは `-Culture` に対象言語のカルチャーを指定してください**。`-EncodingFrom` の参照ファイルや、`-Encoding` を省略したときの継承にも効きます。
+
+いずれも各コマンドの `Get-Help <コマンド名> -Full` に記載しています。ヘルプは英語・日本語・韓国語・繁体字中国語・簡体字中国語の 5 言語を同梱しています。詳細は [CHANGELOG.md](CHANGELOG.md) を参照してください。
 
 2026年7月14日に正式版 1.0.0 をリリースしました。
 

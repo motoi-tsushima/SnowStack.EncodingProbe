@@ -1,4 +1,4 @@
-namespace SnowStack.EncodingProbe.PowerShell.Internal
+﻿namespace SnowStack.EncodingProbe.PowerShell.Internal
 {
     /// <summary>
     /// ローカライズ対象メッセージの識別子
@@ -64,5 +64,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         /// <summary>判定はできたが、実行環境がそのコードページを提供していない</summary>
         DetectedCodePageNotAvailable,
+
+        /// <summary>-Culture に解釈できないカルチャー名が指定された</summary>
+        InvalidCulture,
+
+        /// <summary>-Strategy に解釈できない判定方式が指定された</summary>
+        InvalidStrategy,
     }
 }

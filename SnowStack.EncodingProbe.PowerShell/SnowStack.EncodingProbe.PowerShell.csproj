@@ -32,12 +32,27 @@
     <ProjectReference Include="..\SnowStack.EncodingProbe\SnowStack.EncodingProbe.csproj" />
   </ItemGroup>
 
-  <!-- MAML ヘルプ。Get-Help はアセンブリと同じ場所のカルチャー別フォルダーを探す -->
+  <!--
+    MAML ヘルプ。Get-Help はアセンブリと同じ場所のカルチャー別フォルダーを探す。
+    対応言語は、判定処理が対象としている言語圏に合わせた 5 言語。
+    フォルダー名は Windows が報告する UI カルチャー名そのものにする
+    （zh-Hant / zh-Hans のような親カルチャー名は使わない）。
+    zh-HK（香港）は今回未対応であり、en-US へフォールバックさせる。
+  -->
   <ItemGroup>
     <Content Include="en-US\SnowStack.EncodingProbe.PowerShell.dll-Help.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ja-JP\SnowStack.EncodingProbe.PowerShell.dll-Help.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ko-KR\SnowStack.EncodingProbe.PowerShell.dll-Help.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="zh-TW\SnowStack.EncodingProbe.PowerShell.dll-Help.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="zh-CN\SnowStack.EncodingProbe.PowerShell.dll-Help.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

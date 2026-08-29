@@ -1,6 +1,6 @@
 # SnowStack.EncodingProbe.PowerShell 1.1.0 作業引き継ぎメモ
 
-- 最終更新: 2026-08-23（1.1.0 の作業は完了）
+- 最終更新: 2026-08-29（課題文書の 3 件に対応）
 - 作業ブランチ: `feature/1.1.0-probed-content`（push 済み）
 - **1.1.0 の作業はすべて完了しました。** 以降は、仕様書に無い挙動を足す前に
   `docs/EncodingProbe-1.1.0-仕様書.md` と本メモの「2. 確定した決定事項」を確認してください。
@@ -22,6 +22,7 @@
 | 第 4 段階 | `Set-ProbedContent` | 完了 |
 | 第 5 段階 | `Add-ProbedContent` | 完了 |
 | 仕上げ | MAML ヘルプ / `.psd1` 更新 / バージョン更新 / README / CHANGELOG | 完了 |
+| 課題対応 | `-Culture` / `-Strategy` の追加、ヘルプの 5 言語化（課題文書の 3 件） | 完了 |
 
 ### Git の状態（2026-08-23 時点）
 
@@ -80,10 +81,10 @@ git log --oneline origin/feature/1.1.0-probed-content..HEAD # 未 push のコミ
 ### 現在のテスト結果
 
 ```
-EncodingProbe.Tests (net10.0)            合格 64  / 失敗 0
-EncodingProbe.PowerShell.Tests (net10.0) 合格 380 / 失敗 0
-EncodingProbe.Tests (net48)              合格 74  / 失敗 0
-PSCompat (PS 5.1 vs 7.x)                 195 シナリオ 完全一致
+EncodingProbe.Tests (net10.0)            合格  64 / 失敗 0
+EncodingProbe.PowerShell.Tests (net10.0) 合格 432 / 失敗 0
+EncodingProbe.Tests (net48)              合格  74 / 失敗 0
+PSCompat (PS 5.1 vs 7.x)                 223 シナリオ 完全一致
 ```
 
 ---
@@ -163,6 +164,85 @@ PSCompat (PS 5.1 vs 7.x)                 195 シナリオ 完全一致
 
 コア側に残る ISO-2022 の問題（TW が CN と誤判定される・SO/SI 形式を検出できない）は
 `docs/EncodingProbe-1.2.0-課題-ISO2022判定.md` に起票済み。**1.1.0 では対応しない。**
+
+### 2.7 課題文書への対応で決めたこと（2026-08-29）
+
+`docs/EncodingProbe-1.1.0-課題_人間記述用.md` の 3 件に対応した際の判断。
+
+**`-Culture` / `-Strategy` を基底クラスに置いた**
+
+`Cmdlets/ProbedContentCommandBase` は Get / Set / Add の 3 つに共通する基底クラスであり、
+ここへパラメータと検証を置けば実装が 1 か所で済む。
+`BeginProcessing` を基底で上書きしたため、派生側では必ず `base.BeginProcessing()` を呼ぶ。
+特に書き込み系では、`-EncodingFrom` の参照ファイル判定が `BeginProcessing` で走るため、
+**`base` の呼び出しを先頭に置く**必要がある（判定オプションが未設定のまま使われるため）。
+
+**判定処理へ渡す経路は 2 つだけ**
+
+| 経路 | 使う場面 |
+|---|---|
+| `Internal/ProbedFileReader.Open` | `Get-ProbedContent` の判定 |
+| `Internal/EncodingInheritance.FromFile` | `-EncodingFrom`、および書き込み系の `-Encoding` 省略時の継承 |
+
+どちらも省略可能な引数として `EncodingDetectorOptions?` を受け取る。
+`-Culture` も `-Strategy` も未指定なら `null` を渡す。
+すべて既定値のオプションを渡しても判定結果は変わらないが、
+既存の呼び出し経路と同一であることを明確にするため `null` のままにしている。
+
+**`ConvertTo-DotNetEncoding` には追加しない**
+
+ファイルを引数に取らず、判定処理（`Detect`）を呼び出さないため、渡す先が無い。
+
+**判定方式の語彙表は 1 か所に集約した**
+
+`Cmdlets/ResolveEncodingOptions.TryParseStrategy` に集約し、`ParseStrategy` はそれを呼ぶだけにした。
+`Resolve-Encoding` と Probed 系で表を二重に持つと、片方にだけ別名が増えて挙動がずれる。
+このとき `ToLower()` を `ToLowerInvariant()` に直している。
+トルコ語環境では `'I'` が `'ı'` になり、`Combined` や `NativeOnly` を解析できなくなるため。
+
+**不正なカルチャー名の内部例外を捨てた（PSCompat が検出した）**
+
+当初は捕捉した `CultureNotFoundException` を `PSArgumentException` の内部例外として持たせていた。
+ところが**この例外のメッセージは .NET Framework と .NET Core で文言が異なる**。
+
+```
+5.1 : Culture is not supported. Parameter name: name ...
+7.x : Culture is not supported. (Parameter 'name') ...
+```
+
+PSCompat のシナリオがこの差を検出した。本モジュールの存在意義は
+「PowerShell のバージョンによらず同一の結果を得られること」であり、
+ランタイム固有の文言が利用者に見えてはならない。内部例外は持たせず、
+`ValidationMessages.InvalidCulture` だけを見せるようにした。
+
+**ヘルプのフォルダー名は地域まで含む名前にした**
+
+`Get-Help` は UI カルチャー名のフォルダーを親カルチャーへさかのぼりながら探す。
+`ko-KR` / `zh-TW` / `zh-CN` のように Windows が報告する名前そのものを置けば最初に見つかる。
+`zh-Hant` / `zh-Hans` のような親カルチャー名を置くと `zh-HK`（香港）まで拾ってしまい、
+「香港は後のバージョンで対応する」という課題文書の方針に反するため、置いていない。
+
+実機（PS 5.1 / 7.x の両方）で確認済み。`zh-HK` `zh-SG` `ko` `fr-FR` は英語になる。
+
+なお、`Get-Help` の言語は**セッション開始時のホストの UI カルチャー**ではなく、
+`Import-Module` の時点の `CurrentUICulture` で決まる。次のように
+**モジュールを読み込む前に**設定すれば、他言語のヘルプを確認できる。
+
+```powershell
+[System.Threading.Thread]::CurrentThread.CurrentUICulture =
+    [System.Globalization.CultureInfo]::GetCultureInfo('ko-KR')
+Import-Module <dll>
+```
+
+読み込んだ後に変えても切り替わらない。
+
+**5 言語のヘルプがずれないよう機械的に固定した**
+
+`tests/.../CmdletTests/MamlHelpTests.cs` で、本文（`maml:para` / `maml:title`）を伏せた
+**骨格が 5 言語で完全に一致する**ことを検証する。要素の構成・属性・出現順・コード例まで
+一致を要求するため、片方の言語にだけパラメータを足すと必ず落ちる。
+あわせて「英語の原文がそのまま残っていないこと」と
+「公開しているコマンドレットとパラメータが 5 言語すべてに記載されていること」も見ている。
 
 ---
 

@@ -345,13 +345,33 @@ Get-Help Get-ProbedContent -Examples
 - 日本語環境なら日本語、それ以外なら英語のヘルプが出ること
 - `Add-ProbedContent` の NOTES に「BOM 指定は無視される」「`-Force` では整合性検査を回避できない」が載っていること
 - 構文にスイッチが `[-Force]` の形（`[-Force <SwitchParameter>]` ではない）で出ること
+- `Get-ProbedContent` / `Set-ProbedContent` / `Add-ProbedContent` の構文に
+  `[-Culture <String>] [-Strategy <String>]` が出ること
 
-英語のヘルプを見たい場合は、新しいセッションで次を実行してから読み込んでください。
+ヘルプは英語・日本語・韓国語・繁体字中国語・簡体字中国語の 5 言語を同梱しています。
+他の言語のヘルプを見たい場合は、**新しいセッションで、モジュールを読み込む前に**
+UI カルチャーを変えてください。読み込んだ後に変えても切り替わりません。
 
 ```powershell
 [System.Threading.Thread]::CurrentThread.CurrentUICulture =
-    [System.Globalization.CultureInfo]::GetCultureInfo('en-US')
+    [System.Globalization.CultureInfo]::GetCultureInfo('ko-KR')
+Import-Module (Resolve-Path .\publish\SnowStack.EncodingProbe.PowerShell\SnowStack.EncodingProbe.PowerShell.psd1)
+(Get-Help Get-ProbedContent).Synopsis
 ```
+
+| UI カルチャー | 表示されるヘルプ |
+|---|---|
+| `en-US` | 英語 |
+| `ja-JP` | 日本語 |
+| `ko-KR` | 韓国語 |
+| `zh-TW` | 繁体字中国語 |
+| `zh-CN` | 簡体字中国語 |
+| `zh-HK`（香港）/ `fr-FR` など | 英語（香港は後のバージョンで対応予定） |
+
+> 日本語環境のコンソールでは、韓国語や中国語が `????` のように表示されることがあります。
+> これはコンソールのコードページの問題です。文字列として確認したい場合は
+> `(Get-Help Get-ProbedContent).Synopsis | Set-ProbedContent .\help.txt -Encoding utf8BOM`
+> のようにファイルへ書き出し、エディターで開いてください。
 
 ---
 
@@ -381,6 +401,96 @@ foreach ($culture in 'en-US','ja-JP','ko-KR','zh-TW','zh-CN') {
 
 ---
 
+### 5.10 `-Culture` / `-Strategy`
+
+`Get-ProbedContent` / `Set-ProbedContent` / `Add-ProbedContent` は、
+`Resolve-Encoding` と同じ `-Culture` と `-Strategy` を受け取ります。
+
+> **この節のコードを `.ps1` に保存して実行する場合は、UTF-8 (BOM 付き) で保存してください。**
+> PowerShell 5.1 は BOM 無しの `.ps1` を ANSI として読むため、韓国語やドイツ語の
+> 文字列リテラルが壊れ、判定結果が本来のものと変わってしまいます。
+> コンソールに貼り付けて実行する場合はこの問題は起きません。
+
+**カルチャーで判定が変わること**
+
+EUC-KR のバイト列は EUC-JP としても成立するため、日本語環境で `-Culture` を
+指定せずに読むと文字化けします。
+
+```powershell
+$ko = Join-Path $work 'korean.txt'
+[IO.File]::WriteAllBytes($ko,
+    [Text.Encoding]::GetEncoding(51949).GetBytes("안녕하세요`n"))
+
+Get-ProbedContent $ko -Culture ko-KR | Set-ProbedContent (Join-Path $work 'ko_ok.txt')  -Encoding utf8BOM
+Get-ProbedContent $ko -Culture ja-JP | Set-ProbedContent (Join-Path $work 'ko_bad.txt') -Encoding utf8BOM
+```
+
+**確認点:** `ko_ok.txt` をエディターで開くと「안녕하세요」と読めること。
+`ko_bad.txt` は別の文字（日本語の漢字）になっていること。
+コンソールでは表示できないため、**ファイルへ書き出して確認**します。
+
+繁体字中国語（`-Culture zh-TW`、Big5）と簡体字中国語（`-Culture zh-CN`）でも同様に確認できます。
+
+**判定方式で結果が変わること**
+
+独自判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当します。
+
+```powershell
+$de = Join-Path $work 'german.txt'
+[IO.File]::WriteAllBytes($de, [Text.Encoding]::GetEncoding(1252).GetBytes(
+    "Rundfunk und Fernsehen. Grüße aus München und Köln. Straße, Fuß, Maß, schön.`n"))
+
+Resolve-Encoding $de -Strategy UtfUnknownOnly | Select-Object CodePage, EncodingWebName
+Resolve-Encoding $de -Strategy NativeOnly     | Select-Object CodePage, EncodingWebName
+
+Get-ProbedContent $de -Strategy UtfUnknownOnly
+```
+
+**確認点:** `UtfUnknownOnly` では `iso-8859-1`（28591）と判定され、
+`Get-ProbedContent` の出力で「Grüße」「München」が正しく読めること。
+`NativeOnly` では実行環境のカルチャー既定のマルチバイト（日本語環境なら Shift-JIS）
+と判定され、文字化けすること。
+
+**`-EncodingFrom` にも効くこと**
+
+```powershell
+Set-ProbedContent (Join-Path $work 'from_ko.txt') -Value '안녕하세요' `
+    -EncodingFrom $ko -Culture ko-KR -LineBreak Lf
+Show-Bytes (Join-Path $work 'from_ko.txt')
+```
+
+**確認点:** `BE C8 B3 E7 C7 CF BC BC BF E4 0A`（CP949）になること。
+`-Culture ja-JP` にすると、韓国語を EUC-JP で符号化できないため
+`3F 3F 3F 3F 3F 0A`（`?????`）になります。
+
+**不正な値でファイルが作られないこと**
+
+```powershell
+$bad = Join-Path $work 'never_created.txt'
+try { Set-ProbedContent $bad -Value 'x' -Encoding utf8NoBOM -Strategy Nonexistent -ErrorAction Stop }
+catch { $_.FullyQualifiedErrorId }
+Test-Path $bad
+```
+
+**確認点:** エラー ID が `InvalidStrategy` で始まり、`Test-Path` が `False` を返すこと。
+`-Culture 'not a culture!'` でも同様に `InvalidCulture` になり、ファイルは作られません。
+
+**5.1 と 7.x で一致すること**
+
+この節の手順は PowerShell 5.1 と 7.x の両方で実行し、**バイト列が完全に一致する**ことを
+確認してください。確認済みの値は次のとおりです。
+
+| 項目 | 5.1 / 7.x 共通の結果 |
+|---|---|
+| `ko_ok.txt` | `EF BB BF EC 95 88 EB 85 95 ED 95 98 EC 84 B8 EC 9A 94 0D 0A` |
+| `ko_bad.txt` | `EF BB BF E7 85 A7 E6 8B AC E9 A6 AC E5 AE A4 E6 8E A8 0D 0A` |
+| `-Strategy UtfUnknownOnly` | `28591 iso-8859-1` |
+| `-Strategy NativeOnly`（日本語環境） | `932 shift_jis` |
+| `from_ko.txt`（`-Culture ko-KR`） | `BE C8 B3 E7 C7 CF BC BC BF E4 0A` |
+| `from_ko.txt`（`-Culture ja-JP`） | `3F 3F 3F 3F 3F 0A` |
+
+---
+
 ### 後片付け
 
 ```powershell
@@ -397,7 +507,8 @@ Remove-Item -Recurse -Force $work
 | テストのビルドが `MSB3021` で失敗する | クローン先のパスが深すぎます。`C:\src\...` のような浅いパスに置き直してください（0 節） |
 | `Import-Module` で「モジュールが見つかりません」 | 相対パスは PowerShell がモジュール検索パスとして解釈します。`Resolve-Path` で絶対パスにしてください |
 | `publish\...` の `Import-Module` が DLL 不明で失敗する | `publish/` の DLL は Git 管理外です。4 節の方法 B のコピーを実行してください |
-| `Get-Help` に説明が出ない | ヘルプは DLL と同じ場所の `en-US\` `ja-JP\` を見ます。`bin\<TFM>\` からコピーされているか確認してください |
+| `Get-Help` に説明が出ない | ヘルプは DLL と同じ場所の `en-US\` `ja-JP\` `ko-KR\` `zh-TW\` `zh-CN\` を見ます。`bin\<TFM>\` からコピーされているか確認してください |
+| `Get-Help` が英語のままで切り替わらない | UI カルチャーは `Import-Module` の**前に**設定してください。読み込んだ後に変えても切り替わりません |
 | 5.1 で日本語が化ける | ファイルの中身ではなくコンソールの表示の問題である場合があります。`Show-Bytes` で**バイト列を確認**してください |
 | `sample_eucjp.txt` 関連のテストが落ちる | TestData の改行が CRLF に変換されています。`.gitattributes` の `tests/EncodingProbe.Tests/TestData/** -text` が効いているか（`git check-attr text -- <ファイル>` が `unset`）を確認し、`git checkout` し直してください |
 

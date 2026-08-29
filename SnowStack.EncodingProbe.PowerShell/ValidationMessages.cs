@@ -1,4 +1,4 @@
-using SnowStack.EncodingProbe.PowerShell.Internal;
+﻿using SnowStack.EncodingProbe.PowerShell.Internal;
 
 namespace SnowStack.EncodingProbe.PowerShell
 {
@@ -136,5 +136,17 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string DetectedCodePageNotAvailable(int codePage, string webName)
             => MessageCatalog.Format(MessageKey.DetectedCodePageNotAvailable, codePage, webName);
+
+        /// <summary>
+        /// -Culture に解釈できないカルチャー名が指定された場合のエラーメッセージ
+        /// </summary>
+        public static string InvalidCulture(string culture)
+            => MessageCatalog.Format(MessageKey.InvalidCulture, culture);
+
+        /// <summary>
+        /// -Strategy に解釈できない判定方式が指定された場合のエラーメッセージ
+        /// </summary>
+        public static string InvalidStrategy(string strategy)
+            => MessageCatalog.Format(MessageKey.InvalidStrategy, strategy);
     }
 }

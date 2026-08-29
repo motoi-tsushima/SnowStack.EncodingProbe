@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -124,6 +124,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "The character encoding was detected as code page {0} ('{1}'), but this .NET runtime "
                     + "does not provide that code page, so the file cannot be handled with it. "
                     + "Specify the character encoding explicitly with -Encoding.",
+
+                [MessageKey.InvalidCulture] =
+                    "'{0}' cannot be interpreted as a culture name. Specify a culture name such as "
+                    + "'ja-JP' or 'ko-KR', or omit -Culture to use the culture of the current environment.",
+
+                [MessageKey.InvalidStrategy] =
+                    "'{0}' cannot be interpreted as a detection strategy. "
+                    + "Specify 'Combined', 'NativeOnly' or 'UtfUnknownOnly'.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -205,6 +213,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "文字エンコーディングをコードページ {0}（'{1}'）と判定しましたが、"
                     + "この .NET ランタイムはそのコードページを提供していないため、このファイルを扱えません。"
                     + "-Encoding で文字エンコーディングを明示的に指定してください。",
+
+                [MessageKey.InvalidCulture] =
+                    "'{0}' はカルチャー名として解釈できません。'ja-JP' や 'ko-KR' のようなカルチャー名を"
+                    + "指定するか、-Culture を省略して実行環境のカルチャーを使用してください。",
+
+                [MessageKey.InvalidStrategy] =
+                    "'{0}' は判定方式として解釈できません。"
+                    + "'Combined'、'NativeOnly'、'UtfUnknownOnly' のいずれかを指定してください。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -286,6 +302,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "문자 인코딩을 코드 페이지 {0}('{1}')(으)로 판단했지만, "
                     + "이 .NET 런타임은 해당 코드 페이지를 제공하지 않으므로 이 파일을 처리할 수 없습니다. "
                     + "-Encoding으로 문자 인코딩을 명시적으로 지정하십시오.",
+
+                [MessageKey.InvalidCulture] =
+                    "'{0}'은(는) 문화권 이름으로 해석할 수 없습니다. 'ja-JP'나 'ko-KR' 같은 문화권 이름을 "
+                    + "지정하거나, -Culture를 생략하여 현재 환경의 문화권을 사용하십시오.",
+
+                [MessageKey.InvalidStrategy] =
+                    "'{0}'은(는) 판정 방식으로 해석할 수 없습니다. "
+                    + "'Combined', 'NativeOnly', 'UtfUnknownOnly' 중 하나를 지정하십시오.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -365,6 +389,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.DetectedCodePageNotAvailable] =
                     "已將字元編碼判斷為字碼頁 {0}（'{1}'），但這個 .NET 執行階段並未提供該字碼頁，"
                     + "因此無法處理這個檔案。請以 -Encoding 明確指定字元編碼。",
+
+                [MessageKey.InvalidCulture] =
+                    "無法將 '{0}' 解譯為文化特性名稱。請指定像 'ja-JP' 或 'ko-KR' 這樣的文化特性名稱，"
+                    + "或省略 -Culture 以使用目前環境的文化特性。",
+
+                [MessageKey.InvalidStrategy] =
+                    "無法將 '{0}' 解譯為判斷方式。"
+                    + "請指定 'Combined'、'NativeOnly' 或 'UtfUnknownOnly'。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -444,6 +476,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.DetectedCodePageNotAvailable] =
                     "已将字符编码判断为代码页 {0}（'{1}'），但该 .NET 运行时并未提供该代码页，"
                     + "因此无法处理该文件。请用 -Encoding 明确指定字符编码。",
+
+                [MessageKey.InvalidCulture] =
+                    "无法将 '{0}' 解释为区域性名称。请指定像 'ja-JP' 或 'ko-KR' 这样的区域性名称，"
+                    + "或省略 -Culture 以使用当前环境的区域性。",
+
+                [MessageKey.InvalidStrategy] =
+                    "无法将 '{0}' 解释为判定方式。"
+                    + "请指定 'Combined'、'NativeOnly' 或 'UtfUnknownOnly'。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

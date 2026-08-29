@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using SnowStack.EncodingProbe;  // クラスライブラリのnamespace
 
@@ -39,8 +39,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// 参照元のファイルから継承する情報を求める。
         /// </summary>
         /// <param name="path">参照元ファイルの絶対パス。存在することを前提とする。</param>
+        /// <param name="detectorOptions">
+        /// -Culture / -Strategy から組み立てた判定オプション。未指定の場合は null。
+        /// </param>
         /// <exception cref="EncodingDetectionException">判定に失敗した場合</exception>
-        public static EncodingSpec FromFile(string path)
+        public static EncodingSpec FromFile(string path, EncodingDetectorOptions? detectorOptions = null)
         {
             CodePagesProviderRegistration.EnsureRegistered();
 
@@ -58,7 +61,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 throw new EncodingDetectionException(ValidationMessages.FileTooLargeToDetect(path), path);
             }
 
-            EncodingInformation information = EncodingProbe.Detect(File.ReadAllBytes(path));
+            EncodingInformation information = EncodingProbe.Detect(File.ReadAllBytes(path), detectorOptions);
 
             if (information.CodePage < 0)
             {

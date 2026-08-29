@@ -714,6 +714,120 @@ Add-Scenario '扱えないCP/error/ConvertTo' {
 }
 
 # ---------------------------------------------------------------------------
+# -Culture / -Strategy (課題1・課題2)
+# ---------------------------------------------------------------------------
+#
+# 判定を伴う経路はすべて -Culture / -Strategy を受け取る。
+# ホストのカルチャーに依存しないことを示すため、比較する2通りはどちらも値を明示する。
+
+# EUC-KR のバイト列は EUC-JP としても成立する。カルチャーだけが両者を分ける。
+$script:koBytes = [System.Text.Encoding]::GetEncoding(51949).GetBytes("안녕하세요" + "`n")
+$script:koCp949 = [System.Text.Encoding]::GetEncoding(949).GetBytes("안녕하세요" + "`n")
+$script:twBig5  = [System.Text.Encoding]::GetEncoding(950).GetBytes("你好世界" + "`n")
+
+Add-Scenario 'Culture/読み取り/ko-KR' {
+    $path = New-ByteFile 'cul_ko.txt' $script:koBytes
+    Format-Lines (Get-ProbedContent -LiteralPath $path -Culture ko-KR)
+}
+
+Add-Scenario 'Culture/読み取り/ja-JP' {
+    $path = New-ByteFile 'cul_ja.txt' $script:koBytes
+    Format-Lines (Get-ProbedContent -LiteralPath $path -Culture ja-JP)
+}
+
+Add-Scenario 'Culture/読み取り/zh-TW' {
+    $path = New-ByteFile 'cul_tw.txt' $script:twBig5
+    Format-Lines (Get-ProbedContent -LiteralPath $path -Culture zh-TW)
+}
+
+Add-Scenario 'Culture/Raw/ko-KR' {
+    $path = New-ByteFile 'cul_ko_raw.txt' $script:koBytes
+    Format-Text (Get-ProbedContent -LiteralPath $path -Culture ko-KR -Raw)
+}
+
+# windows-1252 のテキスト。独自判定は東アジアのマルチバイトを、
+# UTF.Unknown は欧米のシングルバイトを担当するため、判定方式で結果が分かれる。
+$script:latin1Bytes = [System.Text.Encoding]::GetEncoding(1252).GetBytes(
+    'Rundfunk und Fernsehen. Grüße aus München und Köln. Straße, Fuß, Maß, schön.' + "`n")
+
+Add-Scenario 'Strategy/UtfUnknownOnly' {
+    $path = New-ByteFile 'str_uu.txt' $script:latin1Bytes
+    Format-Lines (Get-ProbedContent -LiteralPath $path -Strategy UtfUnknownOnly)
+}
+
+Add-Scenario 'Strategy/NativeOnly' {
+    $path = New-ByteFile 'str_na.txt' $script:latin1Bytes
+    Format-Lines (Get-ProbedContent -LiteralPath $path -Culture ja-JP -Strategy NativeOnly)
+}
+
+Add-Scenario 'Strategy/Combined' {
+    $path = New-ByteFile 'str_co.txt' $script:latin1Bytes
+    Format-Lines (Get-ProbedContent -LiteralPath $path -Culture ja-JP -Strategy Combined)
+}
+
+# 判定方式の語彙は Resolve-Encoding と共通である
+foreach ($alias in @('Combined', 'combined', 'default', '0',
+                     'NativeOnly', 'native', '1',
+                     'UtfUnknownOnly', 'utfunknown', '3')) {
+    $aliasPath = New-ByteFile ("str_alias_" + $alias + '.txt') ([byte[]](0x41,0x42,0x0A))
+    Add-Scenario "Strategy/語彙/$alias" {
+        Format-Lines (Get-ProbedContent -LiteralPath $aliasPath -Strategy $alias)
+    }.GetNewClosure()
+}
+
+# 不正な値はファイルを開く前に弾く。書き込み先が作られていないことも記録する。
+Add-Scenario 'Culture/error/不正なカルチャー' {
+    $path = New-ByteFile 'cul_bad.txt' ([byte[]](0x41,0x0A))
+    Get-ProbedContent -LiteralPath $path -Culture 'not a culture!' -ErrorAction Stop
+}
+
+Add-Scenario 'Strategy/error/不正な判定方式' {
+    $path = New-ByteFile 'str_bad.txt' ([byte[]](0x41,0x0A))
+    Get-ProbedContent -LiteralPath $path -Strategy 'Nonexistent' -ErrorAction Stop
+}
+
+Add-Scenario 'Culture/error/書き込み前に失敗' {
+    $path = Join-Path $script:WorkRoot 'cul_write_bad.txt'
+    try { Set-ProbedContent -LiteralPath $path -Value 'X' -Encoding utf8NoBOM -Culture 'not a culture!' -ErrorAction Stop }
+    finally { $script:Report.Add(("Culture/error/書き込み先の状態`tOK`t{0}" -f (Format-FileBytes $path))) }
+}
+
+Add-Scenario 'Strategy/error/書き込み前に失敗' {
+    $path = Join-Path $script:WorkRoot 'str_write_bad.txt'
+    try { Set-ProbedContent -LiteralPath $path -Value 'X' -Encoding utf8NoBOM -Strategy 'Nonexistent' -ErrorAction Stop }
+    finally { $script:Report.Add(("Strategy/error/書き込み先の状態`tOK`t{0}" -f (Format-FileBytes $path))) }
+}
+
+# 書き込み系: -EncodingFrom と、書き込み先・追記先からの継承にも -Culture が効く
+Add-Scenario 'Culture/EncodingFrom/ko-KR' {
+    $reference = New-ByteFile 'cul_ref_ko.txt' $script:koBytes
+    $path = Join-Path $script:WorkRoot 'cul_from_ko.txt'
+    Set-ProbedContent -LiteralPath $path -Value '안녕하세요' -EncodingFrom $reference -Culture ko-KR -LineBreak Lf
+    Format-FileBytes $path
+}
+
+Add-Scenario 'Culture/EncodingFrom/ja-JP' {
+    $reference = New-ByteFile 'cul_ref_ja.txt' $script:koBytes
+    $path = Join-Path $script:WorkRoot 'cul_from_ja.txt'
+    Set-ProbedContent -LiteralPath $path -Value '안녕하세요' -EncodingFrom $reference -Culture ja-JP -LineBreak Lf
+    Format-FileBytes $path
+}
+
+Add-Scenario 'Culture/上書き継承/ko-KR' {
+    $path = New-ByteFile 'cul_set_ko.txt' $script:koBytes
+    Set-ProbedContent -LiteralPath $path -Value '안녕하세요' -Culture ko-KR -LineBreak Lf
+    Format-FileBytes $path
+}
+
+Add-Scenario 'Culture/追記継承/ko-KR' {
+    $path = New-ByteFile 'cul_add_ko.txt' $script:koBytes
+    Add-ProbedContent -LiteralPath $path -Value '안녕하세요' -Culture ko-KR -LineBreak Lf
+    Format-FileBytes $path
+}
+
+Add-Scenario 'Culture/CP949期待値' { ($script:koCp949 | ForEach-Object { $_.ToString('X2') }) -join ' ' }
+
+# ---------------------------------------------------------------------------
 # レポート出力
 # ---------------------------------------------------------------------------
 
