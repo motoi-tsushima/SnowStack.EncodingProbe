@@ -43,7 +43,7 @@ UTF.Unknown
 
 Homepage:    https://github.com/CharsetDetector/UTF-unknown
 Package:     https://www.nuget.org/packages/UTF.Unknown/
-Version:     2.6.0
+Version:     2.7.0
 Source code: https://github.com/CharsetDetector/UTF-unknown
 
 UTF.Unknown is subject to the Mozilla Public License Version 1.1

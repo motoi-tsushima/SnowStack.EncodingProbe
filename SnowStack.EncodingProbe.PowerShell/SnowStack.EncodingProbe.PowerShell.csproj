@@ -25,7 +25,6 @@
     
   <ItemGroup>
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.1" PrivateAssets="all" />
-    <PackageReference Include="UTF.Unknown" Version="2.6.0" />
   </ItemGroup>
 
   <ItemGroup>
