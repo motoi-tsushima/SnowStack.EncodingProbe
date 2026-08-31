@@ -3,6 +3,12 @@
 - 対象バージョン: 1.1.0（現行 1.0.2 からの機能追加）
 - 位置づけ: 追加のみ。既存機能に対する破壊的変更は行わない
 - 作成日: 2026-08-22
+- 最終更新: 2026-08-31
+- 状態: **実装完了。本書の内容と実装が一致していることを確認済み**
+
+10 節「未決事項」は 3 件とも決定済みで、決定内容を本文に反映してある。
+決定に至った理由は `docs/EncodingProbe-1.1.0-作業引き継ぎメモ.md` の
+「2. 確定した決定事項」にある。
 
 ---
 
@@ -169,7 +175,7 @@ Get-ChildItem *.txt | Get-ProbedContent
 
 ### 4.3 挙動
 
-- `-Encoding` 省略時は対象ファイルを検出する。**検出に失敗した場合は Error 終了**とする
+- `-Encoding` 省略時は対象ファイルを検出する。**検出に失敗した場合は非終了エラー**とする（8 節）
 - `-Encoding` を明示した場合は検出を行わない。検出の誤判定を回避する手段として機能する
 - BOM は、指定された語彙にかかわらず常に読み飛ばす（原則 A）
 - 複数ファイルを指定した場合、標準の `Get-Content` と同様に内容が連結される。各ファイルのエンコーディングが異なっていても、文字列に変換された時点で元のエンコーディングは意味を失うため、連結結果は正しい
@@ -221,8 +227,9 @@ Get-ChildItem *.txt | Get-ProbedContent
 | `-Encoding` | 多形 | 省略時は `Auto` |
 | `-EncodingFrom` | `string` | 参照ファイルから継承 |
 | `-NoNewline` | switch | 要素間・末尾に改行を出力しない |
-| `-LineBreak` | `Auto` / `CrLf` / `Lf` | 省略可 |
+| `-LineBreak` | `Auto` / `CrLf` / `Lf` / `Cr` | 省略可。`Cr` は 10 節の決定で追加した |
 | `-Force` | switch | 読み取り専用ファイルへも書き込む |
+| `-AllowEncodingChange` | switch | **`Add-ProbedContent` のみ。** 整合性検査（6 節）を意図的に飛ばす |
 | `-Culture` | `string` | 判定に用いるカルチャー名。省略時は実行環境のカルチャー |
 | `-Strategy` | `string` | 判定方式。`Combined`（既定）/ `NativeOnly` / `UtfUnknownOnly` |
 | `-WhatIf` / `-Confirm` | — | `SupportsShouldProcess` を有効にする |
@@ -433,20 +440,35 @@ $encobj = Resolve-Encoding file.txt | ConvertTo-DotNetEncoding
 
 ## 8. エラー方針まとめ
 
+終了エラーと非終了エラーを次の基準で分けている。
+
+- **終了エラー** … その指定では 1 ファイルも処理できないもの（パラメータの組み合わせの誤り、
+  パラメータ束縛段階での失敗）。ファイルを開く前に失敗させ、書きかけの破損ファイルを残さない
+- **非終了エラー** … 対象ファイルごとの失敗。他のファイルの処理は続行する。
+  `-ErrorAction Stop` を付ければ終了エラーにできる
+
 | 事象 | 扱い |
 |---|---|
-| エンコーディング検出の失敗 | Error 終了 |
-| `Set-ProbedContent -Encoding Auto` で書き込み先が存在しない | Error 終了 |
-| `Add-ProbedContent -Encoding Auto` で追記先が存在しない | Error 終了 |
-| 書き込み系での裸の `utf8` 指定 | Error（パラメータ束縛段階） |
-| 書き込み系での `utf7` 指定 | Error |
-| BOM 接尾辞を許さない語彙への接尾辞付き指定 | Error |
-| `-Encoding` と `-EncodingFrom` の同時指定 | Error |
-| `Add-ProbedContent` でのバイト列不一致 | Error（`-AllowEncodingChange` で回避可） |
-| `ConvertTo-DotNetEncoding` への `Auto` 指定 | Error（誘導メッセージ付き） |
-| 解釈できない `-Culture` の指定 | Error（ファイルを開く前） |
-| 解釈できない `-Strategy` の指定 | Error（ファイルを開く前） |
+| 書き込み系での裸の `utf8` 指定 | 終了エラー（パラメータ束縛段階） |
+| 書き込み系での `utf7` 指定 | 終了エラー（パラメータ束縛段階） |
+| BOM 接尾辞を許さない語彙への接尾辞付き指定 | 終了エラー（パラメータ束縛段階） |
+| `-Encoding` と `-EncodingFrom` の同時指定 | 終了エラー |
+| `-EncodingFrom` の参照先が存在しない | 終了エラー |
+| 解釈できない `-Culture` の指定 | 終了エラー（ファイルを開く前） |
+| 解釈できない `-Strategy` の指定 | 終了エラー（ファイルを開く前） |
+| `ConvertTo-DotNetEncoding` への `Auto` 指定 | 終了エラー（誘導メッセージ付き） |
+| 読み取り対象のファイルが存在しない | 非終了エラー |
+| エンコーディング検出の失敗 | 非終了エラー |
+| 判定できても実行環境がそのコードページを提供していない | 非終了エラー（`CodePageNotAvailable`） |
+| `Set-ProbedContent -Encoding Auto` で書き込み先が存在しない | 非終了エラー |
+| `Add-ProbedContent -Encoding Auto` で追記先が存在しない | 非終了エラー |
+| `Add-ProbedContent` でのバイト列不一致 | 非終了エラー（`-AllowEncodingChange` で回避可） |
+| 同一パスの読み書きを 1 つのパイプラインで行った | 非終了エラー |
+| 書き込み先が読み取り専用・書き込み権限なし | 非終了エラー |
 | `-LineBreak` と `-NoNewline` の同時指定 | Warning |
+
+読み取り側の「存在しない」「検出失敗」を非終了エラーにしたのは、
+標準の `Get-Content` の実測に合わせたためである。
 
 ---
 
@@ -458,18 +480,35 @@ $encobj = Resolve-Encoding file.txt | ConvertTo-DotNetEncoding
 - **CodePagesEncodingProvider**: PS 7.x / .NET で CP932 等を扱うには登録が必要。ホスト側の登録に依存せず、モジュール内で登録する
 - **大容量ファイル**: 標準の `Get-Content` と同様のメモリ挙動を保つため、行単位でストリーミング出力する（`-Raw` を除く）
 - **`-TotalCount` と検出**: 先頭 N 行のみ読む場合でも、検出のためにファイル先頭の一定量を読む必要がある
-- **同一ファイルの往復**: `Get-ProbedContent a.txt | Set-ProbedContent a.txt` は、遅延読み込みの場合に書き込み側が先にファイルを切り詰めて破壊する。標準の `Get-Content` も同様だが、本コマンド群は「エンコーディングを保って書き戻す」用途でこの罠を踏みやすい。同一パス検出でのエラー化を検討する
+- **同一ファイルの往復**: `Get-ProbedContent a.txt | Set-ProbedContent a.txt` は、遅延読み込みの場合に書き込み側が先にファイルを切り詰めて破壊する。標準の `Get-Content` も同様だが、本コマンド群は「エンコーディングを保って書き戻す」用途でこの罠を踏みやすい。**同一パスを検出して非終了エラーとした**（`Internal/ActiveReadRegistry`）。ただし `-Raw` は出力前にファイルを閉じるため対象外で、読んで加工して書き戻せる
 - **`EncodingSpec`（内部型）**: 入力を `{ Encoding, EmitBom, LineBreak }` の 3 項に正規化する内部表現。`ArgumentTransformationAttribute` で全コマンド共通に解決する。**公開型としない**
 
 ---
 
-## 10. 未決事項
+## 10. 未決事項（すべて決定済み）
 
-| 項目 | 内容 |
-|---|---|
-| 混在改行の継承 | `-EncodingFrom` の参照元が CRLF と LF の混在ファイルだった場合に何を継承とするか。`Resolve-Encoding` の `LineBreak` がそのケースで返す値の確認が先 |
-| 空ファイルからの継承 | `Set-` / `Add-` の `-Encoding Auto` で、対象が 0 バイトの場合。検出のしようがないため「存在しない」と同じ Error 扱いとするのが一貫すると考えられる |
-| 同一パスの往復 | 9 節の最後の項目。エラー化するか、標準どおりの挙動とするか |
+起票時の 3 件は、いずれも利用者の確認を経て決定し、実装済みである。
+本節は経緯として残す。決定の根拠は
+`docs/EncodingProbe-1.1.0-作業引き継ぎメモ.md`「2.1 仕様書 10 節『未決事項』の決定」にある。
+
+| 項目 | 決定内容 | 実装箇所 |
+|---|---|---|
+| 混在改行の継承 | **CR-LF を含むなら CR-LF、含まないなら LF**。`LfAndCrLf` / `CrAndCrLf` / `LfAndCrAndCrLf` → CR-LF、`LfAndCr` → LF。OS に依存しない決定的な規則とする | `Internal/LineBreakResolver` |
+| 空ファイルからの継承 | Error にはしない。**`Encoding.Default`（.NET ランタイム既定・BOM 無し）と `Environment.NewLine`** を使う。net48/PS 5.1 なら ANSI コードページ、net10.0/PS 7.x なら UTF-8 | `Internal/EncodingInheritance` |
+| 同一パスの往復 | **同一パスを検出して非終了エラー**にする。ただし `-Raw` は出力前にファイルを閉じるため対象外 | `Internal/ActiveReadRegistry` |
+
+あわせて、本書 5.1 の `-LineBreak` から変更した点が 1 つある。
+
+| 項目 | 変更内容 | 理由 |
+|---|---|---|
+| `-LineBreak` の `Cr` | **追加した**（起票時は `Auto` / `CrLf` / `Lf` の 3 値だった） | `Resolve-Encoding` が `Cr`（旧 Macintosh 形式）を返しうるため。原則 B「検出しうる全状態が語彙で表現できること」に従う |
+
+### 1.2.0 以降に持ち越した課題
+
+1.1.0 の作業中に見つかった、コアの判定エンジン側の課題は
+`docs/EncodingProbe-1.2.0-課題-ISO2022判定.md` にまとめてある（3 件、いずれも未着手）。
+このうち「判定できても .NET が扱えないコードページがある」については、
+1.1.0 側で非終了エラー（`CodePageNotAvailable`）として報告する対応を済ませている。
 
 ---
 

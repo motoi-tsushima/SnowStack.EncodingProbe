@@ -3,6 +3,11 @@
 - 起票日: 2026-08-23
 - 対象: `SnowStack.EncodingProbe`（クラスライブラリ側の `EncodingDetector`）
 - 状態: 未着手。**1.1.0 では対応しない**
+- 再確認: 2026-08-31。UTF.Unknown を net10.0 で 2.7.0 に上げたあと、
+  下の「再現手順」を 3 件とも実行し、**判定結果に変化がない**ことを確認した
+  （課題 1 → `50227`、課題 2 → `50229`、課題 3 → `20127`）。
+  3 件はいずれも独自判定側（`EncodingDetector`）の課題であり、
+  UTF.Unknown のバージョンでは変わらない
 
 1.1.0 の作業中に見つかった、コアの判定処理の問題を記録する。
 1.1.0 は「追加のみ・コアは変更しない」というリリースであり、
@@ -116,6 +121,8 @@ SO/SI だけを根拠に ISO-2022 と判定すると、バイナリや他の形�
 
 いずれも `tests/PSCompat/ProbedCompatScenarios.ps1` の
 「実行環境が提供していないコードページ」の節と同じ要領で再現できる。
+
+以下は 2026-08-31 に UTF.Unknown 2.7.0 で実行し、コメントの結果になることを確認済み。
 
 ```powershell
 Import-Module .\publish\SnowStack.EncodingProbe.PowerShell\SnowStack.EncodingProbe.PowerShell.psd1

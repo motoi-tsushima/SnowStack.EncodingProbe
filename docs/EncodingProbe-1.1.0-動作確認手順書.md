@@ -2,6 +2,7 @@
 
 - 対象: 1.1.0（`feature/1.1.0-probed-content` ブランチ）
 - 作成日: 2026-08-23
+- 最終更新: 2026-08-31（UTF.Unknown 2.7.0 適用後に全手順を再実行）
 - 目的: 手元の PC で 1.1.0 の追加機能が期待どおり動くことを確認する
 
 この手順書のコマンドは、Windows 11 / .NET SDK 10.0.400 / PowerShell 7.6.5 / Windows PowerShell 5.1.26100
@@ -56,8 +57,12 @@ DLL と ヘルプは `.gitignore` で除外されているため、**次のビ�
 dotnet build SnowStack.EncodingProbe.slnx -c Release
 ```
 
-`0 エラー` になれば成功です。警告はテストプロジェクトのものが 90 件ほど出ますが、
-1.1.0 で追加したコードの警告ではありません。
+`0 エラー` になれば成功です。警告が 98 件出ますが、**すべてテストプロジェクトのもの**
+（null 許容の `CS86xx` 系と `xUnit1012`）で、製品プロジェクト側の警告は 0 件です。
+製品プロジェクトの警告が出た場合は、それは調べる価値があります。
+
+> UTF.Unknown は TFM ごとに参照バージョンが違います（net10.0 は 2.7.0、net48 は 2.6.0）。
+> これは意図した非対称です。理由は作業引き継ぎメモ 2.8 節にあります。
 
 ---
 
@@ -71,7 +76,7 @@ dotnet test SnowStack.EncodingProbe.slnx
 
 ```
 成功!  - 失敗: 0、合格:  64 ... EncodingProbe.Tests.dll (net10.0)
-成功!  - 失敗: 0、合格: 380 ... EncodingProbe.PowerShell.Tests.dll (net10.0)
+成功!  - 失敗: 0、合格: 432 ... EncodingProbe.PowerShell.Tests.dll (net10.0)
 成功!  - 失敗: 0、合格:  74 ... EncodingProbe.Tests.dll (net48)
 ```
 
@@ -82,7 +87,7 @@ pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1
 ```
 
 ```
-PowerShell 5.1 と 7.x の結果は完全に一致しました (195 シナリオ)。
+PowerShell 5.1 と 7.x の結果は完全に一致しました (223 シナリオ)。
 ```
 
 `What if:` の行が 2 行ほど流れますが、これは `-WhatIf` のシナリオが出しているもので異常ではありません。
@@ -442,6 +447,7 @@ $de = Join-Path $work 'german.txt'
 
 Resolve-Encoding $de -Strategy UtfUnknownOnly | Select-Object CodePage, EncodingWebName
 Resolve-Encoding $de -Strategy NativeOnly     | Select-Object CodePage, EncodingWebName
+Resolve-Encoding $de -Strategy Combined       | Select-Object CodePage, EncodingWebName
 
 Get-ProbedContent $de -Strategy UtfUnknownOnly
 ```
@@ -450,6 +456,12 @@ Get-ProbedContent $de -Strategy UtfUnknownOnly
 `Get-ProbedContent` の出力で「Grüße」「München」が正しく読めること。
 `NativeOnly` では実行環境のカルチャー既定のマルチバイト（日本語環境なら Shift-JIS）
 と判定され、文字化けすること。
+
+**`Combined`（既定）も `NativeOnly` と同じく Shift-JIS と判定されます。** これは正常です。
+`Combined` は独自判定が**判定できなかったときだけ** UTF.Unknown へ委ねるため、
+独自判定が誤った答えを返した場合は UTF.Unknown の出番が来ません。
+欧米のシングルバイトを日本語カルチャーの環境で読むときに
+`-Strategy UtfUnknownOnly` の明示が必要なのは、このためです。
 
 **`-EncodingFrom` にも効くこと**
 

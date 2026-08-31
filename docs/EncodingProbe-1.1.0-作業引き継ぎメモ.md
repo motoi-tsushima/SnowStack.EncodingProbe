@@ -1,6 +1,6 @@
 # SnowStack.EncodingProbe.PowerShell 1.1.0 作業引き継ぎメモ
 
-- 最終更新: 2026-08-29（課題文書の 3 件に対応）
+- 最終更新: 2026-08-31（UTF.Unknown 2.7.0 への対応、ドキュメントの棚卸し）
 - 作業ブランチ: `feature/1.1.0-probed-content`（push 済み）
 - **1.1.0 の作業はすべて完了しました。** 以降は、仕様書に無い挙動を足す前に
   `docs/EncodingProbe-1.1.0-仕様書.md` と本メモの「2. 確定した決定事項」を確認してください。
@@ -23,39 +23,23 @@
 | 第 5 段階 | `Add-ProbedContent` | 完了 |
 | 仕上げ | MAML ヘルプ / `.psd1` 更新 / バージョン更新 / README / CHANGELOG | 完了 |
 | 課題対応 | `-Culture` / `-Strategy` の追加、ヘルプの 5 言語化（課題文書の 3 件） | 完了 |
+| 依存更新 | UTF.Unknown を net10.0 だけ 2.7.0 へ（net48 は 2.6.0 のまま） | 完了 |
 
-### Git の状態（2026-08-23 時点）
+### Git の状態（2026-08-31 時点）
 
 | 項目 | 状態 |
 |---|---|
 | 作業ブランチ | `feature/1.1.0-probed-content` … `origin/feature/1.1.0-probed-content` を追跡 |
 | リモート | `origin` = `https://github.com/motoi-tsushima/SnowStack.EncodingProbe.git` |
-| push | **2026-08-23 に push 済み。** GitHub 上にブランチがあり、ローカルと一致している |
-| `master` | `2981455` = `origin/master`。**1.1.0 の作業はまだ 1 つも入っていない** |
+| `master` | **1.1.0 の作業はまだ 1 つも入っていない** |
 | PR | **未作成。** GitHub の PR 作成 URL は `.../pull/new/feature/1.1.0-probed-content` |
 | タグ | `v1.0.0` のみ。1.0.1 / 1.0.2 のタグは無く、`v1.1.0` も未作成 |
 
-**1.1.0 は「ブランチを push しただけ」の状態。** master へのマージ、`v1.1.0` タグ、
+**1.1.0 は「ブランチで作業を終えた」状態。** master へのマージ、`v1.1.0` タグ、
 NuGet / PowerShell Gallery への公開はいずれも未実施で、利用者の指示待ち。
 
-#### コミット履歴（master からの差分。新しい順）
-
-```
-706dbc5 1.1.0 判定できないコードページが終了エラーになる不具合を修正
-7a4721d 1.1.0 仕上げ: ヘルプ・バージョン・ドキュメントを整備
-7b11068 1.1.0 第5段階: Add-ProbedContent を追加
-5321be8 1.1.0 引き継ぎメモ: .cs の改行に関する記述を修正
-f637e0f 1.1.0 第4段階: Set-ProbedContent を追加
-1ebea01 1.1.0 作業引き継ぎメモを追加
-7912447 1.1.0 第3段階の修正: 文字エンコーディングの判定をファイル全体で行う
-c1fae6d 1.1.0 第3段階: Get-ProbedContent を追加
-6e5cc46 1.1.0 第2段階: ConvertTo-DotNetEncoding を追加
-6b3de19 1.1.0: メッセージを5言語にローカライズ
-2255f3c 1.1.0 第1段階: 統一語彙の解決基盤を追加
-```
-
-このメモの更新自体もコミットしているため、履歴は上の一覧より先に進んでいることがある。
-コミットハッシュは rebase / amend でも変わる。現在の状態は次で確認できる。
+コミットハッシュは rebase / amend で変わるため、ここには列挙しない。
+現在の状態は次で確認できる。
 
 ```bash
 git branch -vv                                              # ブランチと追跡先
@@ -64,21 +48,15 @@ git log --oneline master..HEAD                              # master に入っ�
 git log --oneline origin/feature/1.1.0-probed-content..HEAD # 未 push のコミット（空なら一致）
 ```
 
-#### 未コミットの変更
-
-| 状態 | ファイル | 扱い |
-|---|---|---|
-| 削除（未ステージ） | `docs/debug_memo.txt` | **1.1.0 の作業開始前からこの状態**。意図的な削除か判断できないため触っていない |
-| 未追跡 | `docs/EncodingProbe-1.1.0-仕様書.md` | 利用者の判断待ち |
-| 未追跡 | `docs/EncodingProbe-1.1.0-ClaudeCode指示書.md` | 利用者の判断待ち |
-
-本メモと `docs/EncodingProbe-1.2.0-課題-ISO2022判定.md` は追跡済み（コミット済み）。
-
 `publish/` の DLL と MAML ヘルプは `.gitignore` で除外されているため Git の管理外。
 ディスク上は 1.1.0 の Release ビルドに更新済みだが、**別の環境で clone しても入っていない**。
-配布する際は Release ビルドの出力と `<culture>` フォルダーを手動で配置し直すこと。
+配布する際は Release ビルドの出力と `<culture>` フォルダーを手動で配置し直すこと
+（手順は `docs/EncodingProbe-1.1.0-動作確認手順書.md` 4 節の方法 B）。
 
 ### 現在のテスト結果
+
+2026-08-31（UTF.Unknown 2.7.0 適用後）に Release 構成で再実行し、
+2026-08-29 時点と同じ結果であることを確認した。
 
 ```
 EncodingProbe.Tests (net10.0)            合格  64 / 失敗 0
@@ -86,6 +64,9 @@ EncodingProbe.PowerShell.Tests (net10.0) 合格 432 / 失敗 0
 EncodingProbe.Tests (net48)              合格  74 / 失敗 0
 PSCompat (PS 5.1 vs 7.x)                 223 シナリオ 完全一致
 ```
+
+ビルドの警告は 98 件で、すべてテストプロジェクトのもの（`CS86xx` 系の null 許容と
+`xUnit1012`）。製品プロジェクト側の警告は 0 件である。
 
 ---
 
@@ -244,6 +225,55 @@ Import-Module <dll>
 あわせて「英語の原文がそのまま残っていないこと」と
 「公開しているコマンドレットとパラメータが 5 言語すべてに記載されていること」も見ている。
 
+### 2.8 UTF.Unknown 2.7.0 への対応で決めたこと（2026-08-31）
+
+**TFM ごとに UTF.Unknown のバージョンを分ける。** これは意図的な非対称であり、
+揃え忘れではない。
+
+| TFM | UTF.Unknown | 参照するアセット |
+|---|---|---|
+| net10.0 | **2.7.0** | `lib/net10.0/UtfUnknown.dll` |
+| net48 | **2.6.0**（据え置き） | `lib/netstandard2.0/UtfUnknown.dll` |
+
+**net48 を 2.6.0 に据え置いた理由**
+
+2.7.0 の `netstandard2.0` アセットは `System.Memory` に依存するようになった
+（2.6.0 の依存は `System.Text.Encoding.CodePages` だけだった）。
+
+```
+UTF.Unknown 2.6.0 / netstandard2.0 → System.Text.Encoding.CodePages 4.7.1
+UTF.Unknown 2.7.0 / netstandard2.0 → System.Memory 4.6.3
+                                     System.Text.Encoding.CodePages 4.7.1
+```
+
+`System.Memory` は厳密名付きで、.NET Framework では参照アセンブリと実行時アセンブリの
+バージョンが食い違う。通常は `app.config` のバインディングリダイレクトで解決するが、
+**バイナリモジュールを `Import-Module` する PowerShell 5.1 ホストには `app.config` を差し込めない**。
+ホストは `powershell.exe.config` を読むため、こちらの都合を反映させる手段がない。
+
+net48 側は `ReadOnlySpan` 系の API を使っておらず、2.6.0 と 2.7.0 で判定結果も変わらない。
+リスクだけを負う変更になるため、据え置いた。判断の根拠は csproj のコメントにも残してある。
+
+**確認したこと**
+
+- 全テスト（net10.0 / net48 / PSCompat）が 2026-08-29 時点と同じ結果になること
+- `docs/EncodingProbe-1.2.0-課題-ISO2022判定.md` の 3 件の再現手順が、
+  2.7.0 でも**まったく同じ結果**になること（下表）。
+  2.7.0 で挙動が変わっていれば 1.2.0 の課題を書き直す必要があったが、その必要はなかった
+
+| 課題 | 入力 | 2.6.0 / 2.7.0 いずれも |
+|---|---|---|
+| 課題 1 | ISO-2022-TW（`ESC $ ) G`） | `50227` / `x-cp50227`（誤判定のまま） |
+| 課題 2 | ISO-2022-TW（`ESC $ + I`） | `50229` / `iso-2022-tw`（.NET が扱えない） |
+| 課題 3 | SO/SI 形式の 1 バイトカナ | `20127` / `us-ascii`（検出できないまま） |
+
+**サードパーティ表記の書き方**
+
+バージョンが TFM で分かれたため、`THIRD-PARTY-NOTICES.txt` と
+`EncodingProbe.cs` の `License` 定数（`Resolve-Encoding -License` が返す文字列）の
+両方を `2.7.0 (net10.0 build) / 2.6.0 (net48 build)` という 1 行にした。
+**この 2 か所は必ず同じ文面にすること**（過去にライセンス種別を誤記して修正した経緯がある）。
+
 ---
 
 ## 3. 実装済みの構成
@@ -268,7 +298,8 @@ Import-Module <dll>
 | `Internal/PathComparison.cs` | パスの比較方法（Windows では大文字小文字を区別しない） |
 | `Internal/EncodingInheritance.cs` | 既存ファイルからの継承（`-EncodingFrom` / `-Encoding Auto`）。空ファイル時の既定もここ |
 | `Internal/ProbedFileWriter.cs` | BOM 方針を明示した書き込み |
-| `Cmdlets/ProbedContentCommandBase.cs` | パス解決の共通基底。`ResolveExistingFiles` を持つ |
+| `Cmdlets/ResolveEncodingOptions.cs` | `-Culture` / `-Strategy` の語彙表と解析。`Resolve-Encoding` と Probed 系が**共有**する（表を二重に持たない） |
+| `Cmdlets/ProbedContentCommandBase.cs` | Probed 系 3 コマンドの共通基底。パス解決（`ResolveExistingFiles`）と `-Culture` / `-Strategy` を持つ。`BeginProcessing` を持つため、**派生側は必ず `base.BeginProcessing()` を先に呼ぶ** |
 | `Cmdlets/ConvertToDotNetEncodingCommand.cs` | 第 2 段階 |
 | `Cmdlets/GetProbedContentCommand.cs` | 第 3 段階 |
 | `Cmdlets/ProbedContentWriterCommandBase.cs` | 書き込み系に共通するパラメータ・継承・改行決定・後始末 |
@@ -318,7 +349,8 @@ Import-Module <dll>
 - **MAML ヘルプ** … `SnowStack.EncodingProbe.PowerShell/en-US/` と `ja-JP/` に
   `SnowStack.EncodingProbe.PowerShell.dll-Help.xml` を作成した。6 コマンドすべてを収録している。
   csproj の `Content` で出力へコピーされる。指示書 6.1 の 7 項目はすべて記載済み。
-  **2 言語の内容がずれないよう、片方だけ直さないこと**
+  **その後の課題対応で `ko-KR/` `zh-TW/` `zh-CN/` を足し、現在は 5 言語である**（2.7 参照）。
+  **5 言語の内容がずれないよう、1 つだけ直さないこと**
 - **`.psd1`** … `ModuleVersion` を 1.1.0 に、`CmdletsToExport` を 6 コマンドに、
   `ReleaseNotes` を更新した
 - **バージョン** … 両 csproj の `Version` / `AssemblyVersion` / `FileVersion` を 1.1.0 に

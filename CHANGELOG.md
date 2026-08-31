@@ -87,6 +87,25 @@ PowerShell モジュールにテキストの読み書きコマンドを追加し
 - `-LineBreak` には `Cr`（旧 Macintosh 形式）も指定できます。
   `Resolve-Encoding` が `Cr` を返しうるため、判定しうる状態はすべて書き戻せるようにしています
 
+### 依存パッケージ
+
+UTF.Unknown の参照バージョンを、**ターゲットフレームワークごとに分けました**。
+
+| ターゲット | UTF.Unknown |
+|---|---|
+| net10.0（PowerShell 7.x） | 2.7.0 |
+| net48（Windows PowerShell 5.1） | 2.6.0（据え置き） |
+
+2.7.0 の `netstandard2.0` 向けアセットは `System.Memory` に依存します。
+`System.Memory` は .NET Framework では参照アセンブリと実行時アセンブリのバージョンが
+食い違い、通常は `app.config` のバインディングリダイレクトで解決しますが、
+**バイナリモジュールを `Import-Module` する PowerShell 5.1 ホストには
+`app.config` を差し込めません**。net48 側は 2.7.0 で追加された API を使っておらず、
+判定結果も 2.6.0 と変わらないため、据え置いています。
+
+判定結果に差が無いことは、両ターゲットのテストと
+PowerShell 5.1 / 7.x の一致検証（223 シナリオ）で確認しています。
+
 ## 1.0.2
 
 - ライセンスリリース。

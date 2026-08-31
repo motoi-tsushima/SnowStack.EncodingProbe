@@ -97,6 +97,11 @@ Visual Studio 用には `Properties/launchSettings.json` に「.NET 4.8 テス�
 
 net48 では `PolySharp` により新しい言語機能（record 等）を使えるようにしている。
 
+**UTF.Unknown の参照バージョンも TFM で分かれている**（net10.0 = 2.7.0、net48 = 2.6.0）。
+2.7.0 の netstandard2.0 アセットが `System.Memory` に依存し、`app.config` を差し込めない
+PowerShell 5.1 ホストで解決できないためで、意図した非対称である。**揃えないこと。**
+理由は `docs/EncodingProbe-1.1.0-作業引き継ぎメモ.md` 2.8 節にある。
+
 ### PowerShell モジュール層
 
 - `EncodingProbeModuleInitializer`（`IModuleAssemblyInitializer`）が Import-Module 時に `CodePagesEncodingProvider` を登録する。.NET Core では CP932 等がこれ無しでは取れない。ホスト側の登録に依存しないこと
@@ -206,14 +211,15 @@ pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1
 新しいコマンドレットを追加したら、次も忘れずに行う:
 
 - `.psd1` の `CmdletsToExport` に追加する
-- `en-US` と `ja-JP` の MAML ヘルプに項目を追加する
+- MAML ヘルプ 5 言語（`en-US` / `ja-JP` / `ko-KR` / `zh-TW` / `zh-CN`）すべてに項目を追加する
+  （`MamlHelpTests` が骨格の一致を要求するため、1 言語だけ足すとテストが落ちる）
 - `tests/EncodingProbe.PowerShell.Tests/Helpers/ProbedCommandRunspaceFixture.cs` に登録する
   （登録しないとテストのランスペースから呼べない）
 - `tests/PSCompat/ProbedCompatScenarios.ps1` にシナリオを追加する
 
 ## ライセンス上の注意
 
-UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ とのトリプルライセンス）。過去に MIT と誤記して修正したコミットがある。サードパーティ表記は `THIRD-PARTY-NOTICES.txt` と `EncodingProbe.cs` の `License` 定数（`Resolve-Encoding -License` が返す文字列）の 2 か所にあり、内容を揃えること（`LICENSE.txt` は本プロジェクト自身の MIT ライセンス）。
+UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ とのトリプルライセンス）。過去に MIT と誤記して修正したコミットがある。サードパーティ表記は `THIRD-PARTY-NOTICES.txt` と `EncodingProbe.cs` の `License` 定数（`Resolve-Encoding -License` が返す文字列）の 2 か所にあり、内容を揃えること。バージョンは TFM で分かれるため、両方に `2.7.0 (net10.0 build) / 2.6.0 (net48 build)` の形で書く（`LICENSE.txt` は本プロジェクト自身の MIT ライセンス）。
 
 ## 1.1.0 の作業記録
 
@@ -225,6 +231,11 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 - `docs/EncodingProbe-1.1.0-作業引き継ぎメモ.md` … 決定事項とその根拠、踏んだ落とし穴。
   **仕様書に書かれていない判断の理由はここにある**
 - `docs/EncodingProbe-1.1.0-課題_人間記述用.md`… Claude Code 実装後に、人間が確認して発見した課題を記述している。Claude Code 再起動時はこの課題を解消すること。
+  起票済みの 3 件（`-Culture` / `-Strategy` の追加、ヘルプの 5 言語化）はすべて対応済み
+- `docs/EncodingProbe-1.1.0-動作確認手順書.md` … 手元の PC で動作を確認する手順
+- `docs/EncodingProbe-1.1.0-ブログ記事用資料.md` … 個人ブログの解説記事を書くための素材集。
+  **原稿ではない。** 実機で採取した実行結果を載せてあるので、挙動を変えたら採り直すこと
+- `docs/EncodingProbe-1.2.0-課題-ISO2022判定.md` … コアの判定エンジン側の未着手課題（3 件）
 
 1.1.0 では次を変更していない（指示書 1 節の制約。今後も維持すること）:
 

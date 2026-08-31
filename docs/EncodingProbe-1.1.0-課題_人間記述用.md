@@ -175,7 +175,17 @@ Windows が報告する UI カルチャー名そのもの（地域まで含む�
 今回追加した 2 つのメッセージも 5 言語ぶん入れてある。
 `Resolve-Encoding` の既存メッセージが英語のままである点は変えていない（指示書 1 節の制約）。
 
-## 
+---
 
+## 3 件の対応後の状態（2026-08-31 追記）
 
+課題 1〜3 はいずれも 1.1.0 のブランチに入っており、次で確認できる。
 
+| 確認したいこと | 方法 |
+|---|---|
+| `-Culture` / `-Strategy` が付いたか | `Get-Help Get-ProbedContent -Full` の構文、または `docs/EncodingProbe-1.1.0-動作確認手順書.md` 5.10 節 |
+| ヘルプが 5 言語になったか | 同手順書 5.8 節（`Import-Module` の**前に** UI カルチャーを変える） |
+| 回帰が無いか | `dotnet test SnowStack.EncodingProbe.slnx` と `pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1` |
+
+新たに見つかった課題は、この文書に節を足して記述してください。
+コアの判定エンジン側の課題は `docs/EncodingProbe-1.2.0-課題-ISO2022判定.md` に分けてあります。
