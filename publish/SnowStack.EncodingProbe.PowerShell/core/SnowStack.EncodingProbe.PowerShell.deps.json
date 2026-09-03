@@ -6,11 +6,10 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v10.0": {
-      "SnowStack.EncodingProbe.PowerShell/1.0.1": {
+      "SnowStack.EncodingProbe.PowerShell/1.1.0": {
         "dependencies": {
           "PowerShellStandard.Library": "5.1.1",
-          "SnowStack.EncodingProbe": "1.0.1",
-          "UTF.Unknown": "2.6.0"
+          "SnowStack.EncodingProbe": "1.1.0"
         },
         "runtime": {
           "SnowStack.EncodingProbe.PowerShell.dll": {}
@@ -24,29 +23,29 @@
           }
         }
       },
-      "UTF.Unknown/2.6.0": {
+      "UTF.Unknown/2.7.0": {
         "runtime": {
-          "lib/net8.0/UtfUnknown.dll": {
+          "lib/net10.0/UtfUnknown.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.725.0"
+            "fileVersion": "2.1.105.0"
           }
         }
       },
-      "SnowStack.EncodingProbe/1.0.1": {
+      "SnowStack.EncodingProbe/1.1.0": {
         "dependencies": {
-          "UTF.Unknown": "2.6.0"
+          "UTF.Unknown": "2.7.0"
         },
         "runtime": {
           "SnowStack.EncodingProbe.dll": {
-            "assemblyVersion": "1.0.1.0",
-            "fileVersion": "1.0.1.0"
+            "assemblyVersion": "1.1.0.0",
+            "fileVersion": "1.1.0.0"
           }
         }
       }
     }
   },
   "libraries": {
-    "SnowStack.EncodingProbe.PowerShell/1.0.1": {
+    "SnowStack.EncodingProbe.PowerShell/1.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -58,14 +57,14 @@
       "path": "powershellstandard.library/5.1.1",
       "hashPath": "powershellstandard.library.5.1.1.nupkg.sha512"
     },
-    "UTF.Unknown/2.6.0": {
+    "UTF.Unknown/2.7.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-YmmUcR9XKh3twmSjq6l0HD7qm7bj3X+gXCsdkWwpiuiB4wzGDJuCOneOQ3NvwQQEMqNeyVZOPO/EwFD4fuUoOQ==",
-      "path": "utf.unknown/2.6.0",
-      "hashPath": "utf.unknown.2.6.0.nupkg.sha512"
+      "sha512": "sha512-QpiN8FVvfEMB6QF3T8IhXCbA0atOu1opLHRlbVxPOW9Cv3VksGVPQVXAjCdWFc00sA7FL6z7pOFCYWtO89PbgQ==",
+      "path": "utf.unknown/2.7.0",
+      "hashPath": "utf.unknown.2.7.0.nupkg.sha512"
     },
-    "SnowStack.EncodingProbe/1.0.1": {
+    "SnowStack.EncodingProbe/1.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

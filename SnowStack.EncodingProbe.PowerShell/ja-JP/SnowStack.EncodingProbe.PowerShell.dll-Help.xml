@@ -1,0 +1,1486 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems schema="maml" xmlns="http://msh">
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Get-ProbedContent</command:name>
+      <maml:description>
+        <maml:para>文字エンコーディングを判定してテキストファイルを読み込みます。</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>ProbedContent</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>テキストファイルを読み込み、1 行 1 オブジェクトの文字列としてパイプラインに出力します。</maml:para>
+      <maml:para>-Encoding を省略した場合は、ファイルの文字エンコーディングを判定します。ファイル先頭の BOM は常に読み飛ばすため、U+FEFF が 1 行目に混入することはありません。</maml:para>
+      <maml:para>標準の Get-Content と異なり、-Encoding に同じ名前を渡せば Windows PowerShell 5.1 と PowerShell 7.x で同じ結果になります。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>対象ファイルのパス。ワイルドカードを使用できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Raw</maml:name>
+          <maml:description>
+            <maml:para>行に分割せず、ファイル全体を 1 個の文字列として返します。行に分割すると、各行の行末が CR-LF か LF か、末尾に改行があったかが失われるため、無損失に読み取れる唯一の手段です。-TotalCount とは同時に指定できません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>TotalCount</maml:name>
+          <maml:description>
+            <maml:para>各ファイルの先頭 N 行だけを読み込みます。-Raw とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Get-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Raw</maml:name>
+          <maml:description>
+            <maml:para>行に分割せず、ファイル全体を 1 個の文字列として返します。行に分割すると、各行の行末が CR-LF か LF か、末尾に改行があったかが失われるため、無損失に読み取れる唯一の手段です。-TotalCount とは同時に指定できません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>TotalCount</maml:name>
+          <maml:description>
+            <maml:para>各ファイルの先頭 N 行だけを読み込みます。-Raw とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>対象ファイルのパス。ワイルドカードを使用できます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Raw</maml:name>
+        <maml:description>
+          <maml:para>行に分割せず、ファイル全体を 1 個の文字列として返します。行に分割すると、各行の行末が CR-LF か LF か、末尾に改行があったかが失われるため、無損失に読み取れる唯一の手段です。-TotalCount とは同時に指定できません。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>TotalCount</maml:name>
+        <maml:description>
+          <maml:para>各ファイルの先頭 N 行だけを読み込みます。-Raw とは同時に指定できません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>-1 (unlimited)</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>パスをこのコマンドレットにパイプで渡せます。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>1 行につき 1 個の文字列。-Raw 指定時は 1 個の文字列。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>注意事項</maml:title>
+      <maml:alert>
+        <maml:para>本モジュールが受け付ける文字エンコーディング名（統一語彙）は、Windows PowerShell 5.1 と PowerShell 7.x で同じです。PowerShell 5.1 の標準コマンドの -Encoding が受け付ける名前とは 異なり、また Resolve-Encoding が返す PSEncodingName とも一致しない場合があります。一方の名前をもう一方にそのまま渡しても同じ結果になるとは限りません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>判定はファイル全体を対象とします。先頭 1 MB が英数字だけで、後方にだけ日本語のコメントがあるようなソースファイルも正しく判定されます。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>判定の失敗とファイルが存在しない場合は、標準の Get-Content と同様に非終了エラーとして報告します。-ErrorAction Stop で終了エラーにできます。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>同一のファイルを 1 つのパイプラインで読み書きすることは拒否されます。読み終える前に下流のコマンドがファイルを切り詰めてしまうためです。いったん変数に受けてください。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ProbedContent .\shift-jis.txt</dev:code>
+        <dev:remarks>
+          <maml:para>ファイルの文字エンコーディングを判定し、各行をパイプラインに出力します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem *.txt | Get-ProbedContent</dev:code>
+        <dev:remarks>
+          <maml:para>カレントディレクトリのテキストファイルをすべて読み込みます。ファイルごとに個別に判定されます。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ProbedContent .\a.txt -Encoding euc-jp</dev:code>
+        <dev:remarks>
+          <maml:para>判定を行わず EUC-JP として復号します。誤判定を避けたい場合に使います。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $text = Get-ProbedContent .\a.txt -Raw
+$text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -NoNewline</dev:code>
+        <dev:remarks>
+          <maml:para>無損失に読み込んで加工し、元の文字エンコーディング・BOM・改行コードを保ったまま書き戻します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Set-ProbedContent</command:name>
+      <maml:description>
+        <maml:para>文字エンコーディング・BOM・改行コードを明示してテキストファイルを書き込みます。</maml:para>
+      </maml:description>
+      <command:verb>Set</command:verb>
+      <command:noun>ProbedContent</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>ファイルに内容を書き込みます。既存の内容は失われます。</maml:para>
+      <maml:para>-Encoding に同じ名前を渡せば、Windows PowerShell 5.1 と PowerShell 7.x で同じバイト列になります。特に 'utf8NoBOM' は両方で BOM 無しの UTF-8 を書き出します。これは PowerShell 5.1 の標準の Set-Content にはできないことです。</maml:para>
+      <maml:para>-Encoding を省略した場合は、上書きされるファイルから文字エンコーディング・BOM・改行コードを継承します。既存ファイルの性質を黙って変えないためです。読み取り元のファイルから継承したい場合は -EncodingFrom を使ってください。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Set-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+          <maml:name>Value</maml:name>
+          <maml:description>
+            <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時（または Auto 指定時）は書き込み先の既存ファイルから継承します。そのファイルが存在しない場合はエラーになります。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>指定した参照ファイルから、文字エンコーディング・BOM の有無・改行コードの 3 点を継承します。値はそのまま使われ、ワイルドカードは展開されません。-LineBreak を明示した場合は、そちらが継承より優先されます。-Encoding とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>要素間および末尾に改行を出力しません。Get-ProbedContent -Raw で読んだ内容をそのまま書き戻す往復に必要です。-LineBreak と同時に指定した場合は、指定した改行が使われないだけなので警告を出します。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行する前に確認を求めます。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Set-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+          <maml:name>Value</maml:name>
+          <maml:description>
+            <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時（または Auto 指定時）は書き込み先の既存ファイルから継承します。そのファイルが存在しない場合はエラーになります。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>指定した参照ファイルから、文字エンコーディング・BOM の有無・改行コードの 3 点を継承します。値はそのまま使われ、ワイルドカードは展開されません。-LineBreak を明示した場合は、そちらが継承より優先されます。-Encoding とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>要素間および末尾に改行を出力しません。Get-ProbedContent -Raw で読んだ内容をそのまま書き戻す往復に必要です。-LineBreak と同時に指定した場合は、指定した改行が使われないだけなので警告を出します。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行する前に確認を求めます。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドを実行する前に確認を求めます。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時（または Auto 指定時）は書き込み先の既存ファイルから継承します。そのファイルが存在しない場合はエラーになります。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>指定した参照ファイルから、文字エンコーディング・BOM の有無・改行コードの 3 点を継承します。値はそのまま使われ、ワイルドカードは展開されません。-LineBreak を明示した場合は、そちらが継承より優先されます。-Encoding とは同時に指定できません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>NoNewline</maml:name>
+        <maml:description>
+          <maml:para>要素間および末尾に改行を出力しません。Get-ProbedContent -Raw で読んだ内容をそのまま書き戻す往復に必要です。-LineBreak と同時に指定した場合は、指定した改行が使われないだけなので警告を出します。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+        <maml:name>Value</maml:name>
+        <maml:description>
+          <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Object[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>書き込む内容をこのコマンドレットにパイプで渡せます。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>このコマンドレットは何も出力しません。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>注意事項</maml:title>
+      <maml:alert>
+        <maml:para>本モジュールが受け付ける文字エンコーディング名（統一語彙）は、Windows PowerShell 5.1 と PowerShell 7.x で同じです。PowerShell 5.1 の標準コマンドの -Encoding が受け付ける名前とは 異なり、また Resolve-Encoding が返す PSEncodingName とも一致しない場合があります。一方の名前をもう一方にそのまま渡しても同じ結果になるとは限りません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>書き込み系のコマンドは、裸の 'utf8'（および 'utf-8'、数値コードページ 65001）を受け付けません。PowerShell 5.1 と 7.x で BOM の有無の解釈が異なるためです。'utf8NoBOM' または 'utf8BOM' を 指定してください。他の Unicode 系も同様で、'unicodeNoBOM' / 'unicodeBOM' のように指定します。この失敗はパラメータ束縛の段階で起きるため、ファイルは一切変更されません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>改行コードの決まり方は、-Encoding に渡した値の形式によって変わります。EncodingInformation オブジェクト（Resolve-Encoding の出力）は判定元ファイルの改行コードを保持しているため、改行コードも継承されます。'utf8NoBOM' のような語彙名は改行の情報を持たないため、-LineBreak を指定しない限り OS 既定の改行になります。-EncodingFrom と既定の -Encoding Auto は、読み取ったファイルの改行コードを必ず継承します。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>System.Text.Encoding インスタンスを直接渡した場合は、そのインスタンスの GetPreamble() が BOM を書き出すかどうかを決めます。[System.Text.Encoding]::UTF8 と [System.Text.Encoding]::GetEncoding(65001) はどちらも BOM 付きインスタンスを返すため、そのまま渡すと BOM が書き出されます。BOM 無しの UTF-8 が必要なら (New-Object System.Text.UTF8Encoding $false) を渡すか、BOM 方針を名前で明示できる語彙名を使ってください。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>BOM 無しの UTF-16 / UTF-32（'unicodeNoBOM'、'bigendianunicodeNoBOM'、'utf32NoBOM'、'bigendianutf32NoBOM'）は、判定しうる状態をすべて書き戻せるようにするために用意していますが、推奨しません。BOM が無いと、他のプログラムがバイトオーダーを確実に判別できず、シングルバイトの文字エンコーディングとの区別もつかないためです。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>パラメータの組み合わせの誤り（-Encoding と -EncodingFrom の同時指定、-EncodingFrom の参照先が無い）は終了エラーです。対象ファイルごとの失敗（-Encoding Auto で書き込み先が無い、判定の失敗、読み取り専用、読み取り中のファイルへの書き込み）は非終了エラーです。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>書き込み先が存在しても 0 バイトの場合は判定できないため、稼働している .NET ランタイムの既定エンコーディング（BOM 無し）と OS 既定の改行を使います。Windows PowerShell 5.1 では ANSI コードページ、PowerShell 7.x では UTF-8 です。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Set-ProbedContent .\a.txt -Value 'hello' -Encoding utf8NoBOM</dev:code>
+        <dev:remarks>
+          <maml:para>PowerShell 5.1 と 7.x のどちらでも、BOM 無しの UTF-8 で書き込みます。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Set-ProbedContent .\out.txt -Value $lines -Encoding shift_jis -LineBreak CrLf</dev:code>
+        <dev:remarks>
+          <maml:para>Shift_JIS・CR-LF で書き込みます。PowerShell 5.1 の標準コマンドでは Shift_JIS を名前で指定できません。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Set-ProbedContent .\b.txt -Value $text -EncodingFrom .\a.txt</dev:code>
+        <dev:remarks>
+          <maml:para>a.txt の文字エンコーディング・BOM・改行コードで b.txt を書き込みます。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $enc = Resolve-Encoding .\a.txt
+Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $enc</dev:code>
+        <dev:remarks>
+          <maml:para>EncodingInformation オブジェクトを渡すと、文字エンコーディングと BOM に加えて改行コードも継承されます。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Add-ProbedContent</command:name>
+      <maml:description>
+        <maml:para>文字エンコーディングを保ったままテキストファイルに追記します。</maml:para>
+      </maml:description>
+      <command:verb>Add</command:verb>
+      <command:noun>ProbedContent</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>ファイルの末尾に内容を追記します。</maml:para>
+      <maml:para>-Encoding を省略した場合は、追記先のファイルの文字エンコーディングと改行コードを継承します。追記ではこれがそのまま自然な挙動になります。</maml:para>
+      <maml:para>追記できるかどうかは、文字エンコーディングの名前ではなく、実際に書き出されるバイト列で決まります。指定した文字エンコーディングで符号化したバイト列が、そのファイルが現在使っている文字エンコーディングで符号化したバイト列と完全に一致すれば、ファイルは一貫したままなので許可します。一致しない場合はエラーになります。UTF-8 のファイルへ -Encoding ascii で ASCII だけを追記できるのに、同じファイルへ -Encoding shift_jis で日本語を追記できないのはこのためです。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Add-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+          <maml:name>Value</maml:name>
+          <maml:description>
+            <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>追記に使う文字エンコーディング。省略時（または Auto 指定時）は追記先のファイルから継承します。そのファイルが存在しない場合はエラーになります。指定値のうち BOM の部分は常に無視されます。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>指定した参照ファイルから、文字エンコーディング・BOM の有無・改行コードの 3 点を継承します。値はそのまま使われ、ワイルドカードは展開されません。-LineBreak を明示した場合は、そちらが継承より優先されます。-Encoding とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>要素間および末尾に改行を出力しません。Get-ProbedContent -Raw で読んだ内容をそのまま書き戻す往復に必要です。-LineBreak と同時に指定した場合は、指定した改行が使われないだけなので警告を出します。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。特に、文字エンコーディングの整合性検査を緩めることはありません。そちらは -AllowEncodingChange を使ってください。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行する前に確認を求めます。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。このスイッチを指定すると既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Force にこの効果はありません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Add-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+          <maml:name>Value</maml:name>
+          <maml:description>
+            <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>追記に使う文字エンコーディング。省略時（または Auto 指定時）は追記先のファイルから継承します。そのファイルが存在しない場合はエラーになります。指定値のうち BOM の部分は常に無視されます。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>指定した参照ファイルから、文字エンコーディング・BOM の有無・改行コードの 3 点を継承します。値はそのまま使われ、ワイルドカードは展開されません。-LineBreak を明示した場合は、そちらが継承より優先されます。-Encoding とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>要素間および末尾に改行を出力しません。Get-ProbedContent -Raw で読んだ内容をそのまま書き戻す往復に必要です。-LineBreak と同時に指定した場合は、指定した改行が使われないだけなので警告を出します。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。特に、文字エンコーディングの整合性検査を緩めることはありません。そちらは -AllowEncodingChange を使ってください。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行する前に確認を求めます。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。このスイッチを指定すると既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Force にこの効果はありません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>AllowEncodingChange</maml:name>
+        <maml:description>
+          <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。このスイッチを指定すると既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Force にこの効果はありません。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドを実行する前に確認を求めます。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>追記に使う文字エンコーディング。省略時（または Auto 指定時）は追記先のファイルから継承します。そのファイルが存在しない場合はエラーになります。指定値のうち BOM の部分は常に無視されます。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>指定した参照ファイルから、文字エンコーディング・BOM の有無・改行コードの 3 点を継承します。値はそのまま使われ、ワイルドカードは展開されません。-LineBreak を明示した場合は、そちらが継承より優先されます。-Encoding とは同時に指定できません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。特に、文字エンコーディングの整合性検査を緩めることはありません。そちらは -AllowEncodingChange を使ってください。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>NoNewline</maml:name>
+        <maml:description>
+          <maml:para>要素間および末尾に改行を出力しません。Get-ProbedContent -Raw で読んだ内容をそのまま書き戻す往復に必要です。-LineBreak と同時に指定した場合は、指定した改行が使われないだけなので警告を出します。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+        <maml:name>Value</maml:name>
+        <maml:description>
+          <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Object[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>追記する内容をこのコマンドレットにパイプで渡せます。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>このコマンドレットは何も出力しません。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>注意事項</maml:title>
+      <maml:alert>
+        <maml:para>本モジュールが受け付ける文字エンコーディング名（統一語彙）は、Windows PowerShell 5.1 と PowerShell 7.x で同じです。PowerShell 5.1 の標準コマンドの -Encoding が受け付ける名前とは 異なり、また Resolve-Encoding が返す PSEncodingName とも一致しない場合があります。一方の名前をもう一方にそのまま渡しても同じ結果になるとは限りません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Add-ProbedContent では -Encoding の BOM の部分を常に無視します。ファイルの途中に BOM を書き込むことは正しくないため、'utf8BOM' と 'utf8NoBOM' は同じ結果になります。追記先が存在せず、このコマンドが新規作成する場合も同じです。警告は出しません。BOM 付きのファイルから -EncodingFrom で継承する使い方は正当だからです。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>書き込み系のコマンドは、裸の 'utf8'（および 'utf-8'、数値コードページ 65001）を受け付けません。PowerShell 5.1 と 7.x で BOM の有無の解釈が異なるためです。'utf8NoBOM' または 'utf8BOM' を 指定してください。他の Unicode 系も同様で、'unicodeNoBOM' / 'unicodeBOM' のように指定します。この失敗はパラメータ束縛の段階で起きるため、ファイルは一切変更されません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>改行コードの決まり方は、-Encoding に渡した値の形式によって変わります。EncodingInformation オブジェクト（Resolve-Encoding の出力）は判定元ファイルの改行コードを保持しているため、改行コードも継承されます。'utf8NoBOM' のような語彙名は改行の情報を持たないため、-LineBreak を指定しない限り OS 既定の改行になります。-EncodingFrom と既定の -Encoding Auto は、読み取ったファイルの改行コードを必ず継承します。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>System.Text.Encoding インスタンスを直接渡した場合は、そのインスタンスの GetPreamble() が BOM を書き出すかどうかを決めます。[System.Text.Encoding]::UTF8 と [System.Text.Encoding]::GetEncoding(65001) はどちらも BOM 付きインスタンスを返すため、そのまま渡すと BOM が書き出されます。BOM 無しの UTF-8 が必要なら (New-Object System.Text.UTF8Encoding $false) を渡すか、BOM 方針を名前で明示できる語彙名を使ってください。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>BOM 無しの UTF-16 / UTF-32（'unicodeNoBOM'、'bigendianunicodeNoBOM'、'utf32NoBOM'、'bigendianutf32NoBOM'）は、判定しうる状態をすべて書き戻せるようにするために用意していますが、推奨しません。BOM が無いと、他のプログラムがバイトオーダーを確実に判別できず、シングルバイトの文字エンコーディングとの区別もつかないためです。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>整合性の検査は -Force では回避できません。-Force は「読み取り専用ファイルへ書き込む」という意味しか持ちません。文字エンコーディングの変更を許可するには -AllowEncodingChange を使ってください。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>検査は 1 要素分（本文とその後ろの改行）ごとに行うため、改行だけが一致しない場合も検出されます（LF は UTF-8 では 1 バイト、UTF-16LE では 2 バイトです）。1 レコード内のいずれかの要素が拒否された場合、そのレコードは 1 要素も書き込みません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>改行コードの不一致は許可し、警告も出しません。改行が混在しても実害は無く、ある時点から LF に統一することは意図的でありうるためです。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>ファイルの末尾に改行が無い場合、追記した内容は最終行に連結されます。標準の Add-Content と同じ挙動です。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>ISO-2022-JP のような状態を持つ文字エンコーディングにも安全に追記できます。追記した部分は自身のエスケープシーケンスで始まり、末尾で ASCII に戻るため、その部分だけで完結します。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Add-ProbedContent .\log.txt -Value $line</dev:code>
+        <dev:remarks>
+          <maml:para>既存ファイルの文字エンコーディングと改行コードを保ったまま 1 行追記します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Add-ProbedContent .\utf8.txt -Value 'ABC' -Encoding ascii</dev:code>
+        <dev:remarks>
+          <maml:para>許可されます。ASCII だけの文字列は ascii でも UTF-8 でも同じバイト列になるためです。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Add-ProbedContent .\ascii.txt -Value $japanese -Encoding utf8NoBOM -AllowEncodingChange</dev:code>
+        <dev:remarks>
+          <maml:para>ASCII のファイルを UTF-8 に格上げしながら追記します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>ConvertTo-DotNetEncoding</command:name>
+      <maml:description>
+        <maml:para>統一語彙名・コードページ・判定結果を System.Text.Encoding オブジェクトに変換します。</maml:para>
+      </maml:description>
+      <command:verb>ConvertTo</command:verb>
+      <command:noun>DotNetEncoding</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>本モジュールが受け付ける多様な形式の文字エンコーディング指定を、1 つの System.Text.Encoding インスタンスに解決します。</maml:para>
+      <maml:para>これは .NET クラスライブラリの API（System.IO.StreamReader、System.IO.File、XmlWriter など）を PowerShell から直接呼び出す場合のための特殊なコマンドです。ファイルを読み書きしたいだけなら、Get-ProbedContent / Set-ProbedContent / Add-ProbedContent を使ってください。-Encoding が受け付ける値はまったく同じで、自分で変換する必要はありません。</maml:para>
+      <maml:para>値は読み取り用途として扱うため、BOM 方針が定まらない名前（'utf8'、'utf-8'、65001）と 'utf7' も受け付けます。判定対象のファイルが無いため、Auto は指定できません。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>ConvertTo-DotNetEncoding</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="0" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>変換する値。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。 Auto は指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="0" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>変換する値。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。 Auto は指定できません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>名前・コードページ・System.Text.Encoding インスタンス・EncodingInformation オブジェクト（Resolve-Encoding の出力）をパイプで渡せます。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Text.Encoding</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>解決された Encoding インスタンス。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>注意事項</maml:title>
+      <maml:alert>
+        <maml:para>本モジュールが受け付ける文字エンコーディング名（統一語彙）は、Windows PowerShell 5.1 と PowerShell 7.x で同じです。PowerShell 5.1 の標準コマンドの -Encoding が受け付ける名前とは 異なり、また Resolve-Encoding が返す PSEncodingName とも一致しない場合があります。一方の名前をもう一方にそのまま渡しても同じ結果になるとは限りません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>System.Text.Encoding インスタンスを直接渡した場合は、そのインスタンスの GetPreamble() が BOM を書き出すかどうかを決めます。[System.Text.Encoding]::UTF8 と [System.Text.Encoding]::GetEncoding(65001) はどちらも BOM 付きインスタンスを返すため、そのまま渡すと BOM が書き出されます。BOM 無しの UTF-8 が必要なら (New-Object System.Text.UTF8Encoding $false) を渡すか、BOM 方針を名前で明示できる語彙名を使ってください。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>BOM 無しの UTF-16 / UTF-32（'unicodeNoBOM'、'bigendianunicodeNoBOM'、'utf32NoBOM'、'bigendianutf32NoBOM'）は、判定しうる状態をすべて書き戻せるようにするために用意していますが、推奨しません。BOM が無いと、他のプログラムがバイトオーダーを確実に判別できず、シングルバイトの文字エンコーディングとの区別もつかないためです。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>返されるインスタンスの BOM 方針は名前に従います。'utf8BOM' は BOM を出力するインスタンス、'utf8NoBOM' は出力しないインスタンスを返します。裸の 'utf8' では BOM を出力しないインスタンスになります。書き込み系のコマンドがこの名前を推測で扱わず拒否するのはこのためです。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>UTF-7 は廃れた文字エンコーディングで、.NET 5 以降は Encoding.GetEncoding から取得できません。本コマンドはコンストラクタで直接組み立てるため、PowerShell 5.1 と 7.x のどちらでも 'utf7' を使えます。古いデータを読むためだけのものです。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; ConvertTo-DotNetEncoding utf8NoBOM</dev:code>
+        <dev:remarks>
+          <maml:para>BOM を出力しない UTF8Encoding インスタンスを返します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $enc = Resolve-Encoding .\a.txt | ConvertTo-DotNetEncoding
+[System.IO.File]::ReadAllText('.\a.txt', $enc)</dev:code>
+        <dev:remarks>
+          <maml:para>ファイルを判定し、その結果をそのまま .NET の API に渡します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $reader = New-Object System.IO.StreamReader('.\a.txt', (ConvertTo-DotNetEncoding shift_jis))</dev:code>
+        <dev:remarks>
+          <maml:para>PowerShell 5.1 と 7.x で同じ名前で Shift_JIS を指定します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Resolve-Encoding</command:name>
+      <maml:description>
+        <maml:para>テキストファイルの文字エンコーディングを判定します。</maml:para>
+      </maml:description>
+      <command:verb>Resolve</command:verb>
+      <command:noun>Encoding</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>ファイルの文字エンコーディングを判定し、その内容を表す EncodingInformation オブジェクトを返します。コードページ、WebName、BOM の有無、使われている改行コード、判定に用いたカルチャーが含まれます。</maml:para>
+      <maml:para>このオブジェクトは Get-ProbedContent / Set-ProbedContent / Add-ProbedContent の -Encoding と、ConvertTo-DotNetEncoding にそのまま渡せます。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Resolve-Encoding</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>判定するファイルのパス。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせを解決するためのカルチャー名。省略時は実行中のセッションのカルチャーを使います。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Resolve-Encoding</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>License</maml:name>
+          <maml:description>
+            <maml:para>本モジュールと、使用しているライブラリのライセンス文を返します。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Resolve-Encoding</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Version</maml:name>
+          <maml:description>
+            <maml:para>本モジュールのバージョンを返します。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせを解決するためのカルチャー名。省略時は実行中のセッションのカルチャーを使います。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>License</maml:name>
+        <maml:description>
+          <maml:para>本モジュールと、使用しているライブラリのライセンス文を返します。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>判定するファイルのパス。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>本モジュールのバージョンを返します。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>パスをこのコマンドレットにパイプで渡せます。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.EncodingInformation</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>判定結果。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>注意事項</maml:title>
+      <maml:alert>
+        <maml:para>本モジュールが受け付ける文字エンコーディング名（統一語彙）は、Windows PowerShell 5.1 と PowerShell 7.x で同じです。PowerShell 5.1 の標準コマンドの -Encoding が受け付ける名前とは 異なり、また Resolve-Encoding が返す PSEncodingName とも一致しない場合があります。一方の名前をもう一方にそのまま渡しても同じ結果になるとは限りません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>PSEncodingName プロパティの意味はホストによって異なります。PowerShell 7.x では 'utf8BOM' のような登録済みのフレンドリ名ですが、Windows PowerShell 5.1 では 5.1 の固定の -Encoding 値に一致した場合だけ値が入り、それ以外は null になります。UsePSName は、その値を標準コマンドの -Encoding にそのまま渡せるかどうかを表します。Get-ProbedContent / Set-ProbedContent / Add-ProbedContent の統一語彙にはこの問題はありません。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Resolve-Encoding .\a.txt | Format-List *</dev:code>
+        <dev:remarks>
+          <maml:para>判定結果をすべて表示します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Resolve-Encoding .\a.txt -Culture ko-KR</dev:code>
+        <dev:remarks>
+          <maml:para>韓国語のカルチャーを仮定して判定します。EUC-KR と CP949 のような曖昧さの解決に影響します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-EncodingProbePlatformInfo</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Get-EncodingProbePlatformInfo</command:name>
+      <maml:description>
+        <maml:para>本モジュールが動作している実行環境の情報を返します。</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>EncodingProbePlatformInfo</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>本モジュールが認識している OS・.NET ランタイム・ロケール・PowerShell ホストの情報を返します。</maml:para>
+      <maml:para>環境によって結果が違う場合の切り分けに使えます。ここに表示されるカルチャーと ANSI / OEM のコードページは、判定処理と 'ansi' / 'oem' の語彙が依存している情報です。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-EncodingProbePlatformInfo</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>このコマンドレットは入力を受け取りません。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.EncodingProbePlatformInformation</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>実行環境の情報。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-EncodingProbePlatformInfo | Format-List *</dev:code>
+        <dev:remarks>
+          <maml:para>実行環境の情報をすべて表示します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+</helpItems>

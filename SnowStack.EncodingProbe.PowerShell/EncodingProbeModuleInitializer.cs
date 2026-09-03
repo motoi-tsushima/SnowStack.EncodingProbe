@@ -1,6 +1,6 @@
 using System;
 using System.Management.Automation;
-using System.Text;
+using SnowStack.EncodingProbe.PowerShell.Internal;
 
 namespace SnowStack.EncodingProbe.PowerShell;
 
@@ -16,15 +16,6 @@ public sealed class EncodingProbeModuleInitializer : IModuleAssemblyInitializer
     /// </summary>
     public void OnImport()
     {
-        try
-        {
-            // Shift-JIS (CP932) が取得できるか確認する
-            _ = Encoding.GetEncoding(932);
-        }
-        catch (NotSupportedException)
-        {
-            // 未登録の場合のみ登録する
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        }
+        CodePagesProviderRegistration.EnsureRegistered();
     }
 }

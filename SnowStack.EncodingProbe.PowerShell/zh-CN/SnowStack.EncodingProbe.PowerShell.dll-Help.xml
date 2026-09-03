@@ -1,0 +1,1486 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems schema="maml" xmlns="http://msh">
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Get-ProbedContent</command:name>
+      <maml:description>
+        <maml:para>判定字符编码并读取文本文件。</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>ProbedContent</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>读取文本文件，以一行一个对象的字符串输出到管道。</maml:para>
+      <maml:para>省略 -Encoding 时会判定文件的字符编码。文件开头的 BOM 始终跳过，因此 U+FEFF 不会混入第一行。</maml:para>
+      <maml:para>与内置的 Get-Content 不同，将相同的名称传给 -Encoding，在 Windows PowerShell 5.1 与 PowerShell 7.x 会得到相同的结果。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>目标文件的路径。可以使用通配符。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>解码文件时使用的字符编码。省略时（或指定 Auto 时）会判定目标文件。显式指定时不进行判定，可作为纠正误判的手段。无论在此指定什么，文件开头的 BOM 始终跳过。统一词汇: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（仅供读取）。此外还可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、数值代码页（932、65001 等）、System.Text.Encoding 实例，以及 Resolve-Encoding 返回的 EncodingInformation 对象。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Raw</maml:name>
+          <maml:description>
+            <maml:para>不按行拆分，将整个文件作为一个字符串返回。按行拆分后会丢失每行行尾是 CR-LF 还是 LF，以及文件末尾是否有换行，因此这是唯一无损的读取方式。不能与 -TotalCount 同时指定。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>TotalCount</maml:name>
+          <maml:description>
+            <maml:para>只读取每个文件开头的 N 行。不能与 -Raw 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。Combined 先进行自有判定，只有在无法判定时才交给 UTF.Unknown。自有判定负责东亚的多字节，UTF.Unknown 负责欧美的单字节，因此自有判定会读错的欧美文本请用 UtfUnknownOnly 读取。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Get-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>目标文件的路径。直接使用输入的值，不展开通配符。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>解码文件时使用的字符编码。省略时（或指定 Auto 时）会判定目标文件。显式指定时不进行判定，可作为纠正误判的手段。无论在此指定什么，文件开头的 BOM 始终跳过。统一词汇: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（仅供读取）。此外还可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、数值代码页（932、65001 等）、System.Text.Encoding 实例，以及 Resolve-Encoding 返回的 EncodingInformation 对象。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Raw</maml:name>
+          <maml:description>
+            <maml:para>不按行拆分，将整个文件作为一个字符串返回。按行拆分后会丢失每行行尾是 CR-LF 还是 LF，以及文件末尾是否有换行，因此这是唯一无损的读取方式。不能与 -TotalCount 同时指定。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>TotalCount</maml:name>
+          <maml:description>
+            <maml:para>只读取每个文件开头的 N 行。不能与 -Raw 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。Combined 先进行自有判定，只有在无法判定时才交给 UTF.Unknown。自有判定负责东亚的多字节，UTF.Unknown 负责欧美的单字节，因此自有判定会读错的欧美文本请用 UtfUnknownOnly 读取。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>解码文件时使用的字符编码。省略时（或指定 Auto 时）会判定目标文件。显式指定时不进行判定，可作为纠正误判的手段。无论在此指定什么，文件开头的 BOM 始终跳过。统一词汇: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（仅供读取）。此外还可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、数值代码页（932、65001 等）、System.Text.Encoding 实例，以及 Resolve-Encoding 返回的 EncodingInformation 对象。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>目标文件的路径。直接使用输入的值，不展开通配符。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>目标文件的路径。可以使用通配符。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Raw</maml:name>
+        <maml:description>
+          <maml:para>不按行拆分，将整个文件作为一个字符串返回。按行拆分后会丢失每行行尾是 CR-LF 还是 LF，以及文件末尾是否有换行，因此这是唯一无损的读取方式。不能与 -TotalCount 同时指定。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。Combined 先进行自有判定，只有在无法判定时才交给 UTF.Unknown。自有判定负责东亚的多字节，UTF.Unknown 负责欧美的单字节，因此自有判定会读错的欧美文本请用 UtfUnknownOnly 读取。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>TotalCount</maml:name>
+        <maml:description>
+          <maml:para>只读取每个文件开头的 N 行。不能与 -Raw 同时指定。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>-1 (unlimited)</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>可以将路径通过管道传给该 Cmdlet。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>一行一个字符串。指定 -Raw 时为一个字符串。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>备注</maml:title>
+      <maml:alert>
+        <maml:para>本模块接受的字符编码名称（统一词汇）在 Windows PowerShell 5.1 与 PowerShell 7.x 是相同的。它与 PowerShell 5.1 的内置 Cmdlet 在 -Encoding 接受的名称不同，也不一定与 Resolve-Encoding 返回的 PSEncodingName 一致。请勿把一边的名称原样传给另一边并期待相同的结果。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>判定以整个文件为对象。开头 1 MB 只有英文数字、仅在末尾附近才有日文注释的源文件，也能正确判定。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>判定失败与文件不存在，和内置的 Get-Content 一样以非终止错误报告。可用 -ErrorAction Stop 转为终止错误。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>在同一个管道中读写同一个文件会被拒绝，因为下游命令会在读完之前把文件截断。请先把内容接收到变量中。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 示例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ProbedContent .\shift-jis.txt</dev:code>
+        <dev:remarks>
+          <maml:para>判定文件的字符编码，并将每一行输出到管道。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem *.txt | Get-ProbedContent</dev:code>
+        <dev:remarks>
+          <maml:para>读取当前目录下所有的文本文件。每个文件各自独立判定。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ProbedContent .\a.txt -Encoding euc-jp</dev:code>
+        <dev:remarks>
+          <maml:para>不进行判定，以 EUC-JP 解码。用于纠正误判。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $text = Get-ProbedContent .\a.txt -Raw
+$text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -NoNewline</dev:code>
+        <dev:remarks>
+          <maml:para>无损地读入并加工后，保持原有的字符编码、BOM 与换行符写回。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Set-ProbedContent</command:name>
+      <maml:description>
+        <maml:para>显式指定字符编码、BOM 与换行符后写入文本文件。</maml:para>
+      </maml:description>
+      <command:verb>Set</command:verb>
+      <command:noun>ProbedContent</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>将内容写入文件。原有的内容会丢失。</maml:para>
+      <maml:para>将相同的名称传给 -Encoding，在 Windows PowerShell 5.1 与 PowerShell 7.x 会得到相同的字节序列。特别是 utf8NoBOM 在两者都会写出不带 BOM 的 UTF-8，这是 PowerShell 5.1 的内置 Set-Content 做不到的。</maml:para>
+      <maml:para>省略 -Encoding 时，会从被覆盖的文件继承字符编码、BOM 与换行符，使覆盖不会悄悄改变已有文件的性质。若要改为从读取来源的文件继承，请使用 -EncodingFrom。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Set-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>目标文件的路径。可以使用通配符。文件不存在时会新建，但如果必须从该文件继承字符编码则会出错（请参阅 -Encoding）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+          <maml:name>Value</maml:name>
+          <maml:description>
+            <maml:para>要写入的内容。除非指定 -NoNewline，否则会在包括最后一个元素在内的每个元素之后输出换行。非字符串的值会通过 PowerShell 的类型转换转成字符串（使用固定区域性）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>写入时使用的字符编码与 BOM 方针。省略时（或指定 Auto 时）会从写入目标的已有文件继承。该文件不存在时会出错。不能与 -EncodingFrom 同时指定。统一词汇: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（仅供读取）。此外还可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、数值代码页（932、65001 等）、System.Text.Encoding 实例，以及 Resolve-Encoding 返回的 EncodingInformation 对象。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>从指定的参考文件继承字符编码、BOM 的有无与换行符这三项。值按原样使用，不展开通配符。显式指定 -LineBreak 时，该指定优先于继承。不能与 -Encoding 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>不在元素之间与末尾输出换行。要把 Get-ProbedContent -Raw 读入的内容原样写回时必须使用。若同时指定 -LineBreak 会发出警告，因为指定的换行不会被使用。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>要输出的换行符: Auto、CrLf、Lf、Cr。Auto 在有参考信息时会继承该信息（-EncodingFrom、-Encoding Auto、传给 -Encoding 的 EncodingInformation），否则使用操作系统默认值。参考文件的换行混杂时，只要含有 CR-LF 就继承 CR-LF，否则继承 LF。该规则不依赖操作系统。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>对设置了只读属性的文件也进行写入（先清除属性再写入）。该开关不会影响其他行为。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>执行命令前要求确认。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。Combined 先进行自有判定，只有在无法判定时才交给 UTF.Unknown。自有判定负责东亚的多字节，UTF.Unknown 负责欧美的单字节，因此自有判定会读错的欧美文本请用 UtfUnknownOnly 读取。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Set-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+          <maml:name>Value</maml:name>
+          <maml:description>
+            <maml:para>要写入的内容。除非指定 -NoNewline，否则会在包括最后一个元素在内的每个元素之后输出换行。非字符串的值会通过 PowerShell 的类型转换转成字符串（使用固定区域性）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>目标文件的路径。直接使用输入的值，不展开通配符。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>写入时使用的字符编码与 BOM 方针。省略时（或指定 Auto 时）会从写入目标的已有文件继承。该文件不存在时会出错。不能与 -EncodingFrom 同时指定。统一词汇: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（仅供读取）。此外还可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、数值代码页（932、65001 等）、System.Text.Encoding 实例，以及 Resolve-Encoding 返回的 EncodingInformation 对象。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>从指定的参考文件继承字符编码、BOM 的有无与换行符这三项。值按原样使用，不展开通配符。显式指定 -LineBreak 时，该指定优先于继承。不能与 -Encoding 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>不在元素之间与末尾输出换行。要把 Get-ProbedContent -Raw 读入的内容原样写回时必须使用。若同时指定 -LineBreak 会发出警告，因为指定的换行不会被使用。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>要输出的换行符: Auto、CrLf、Lf、Cr。Auto 在有参考信息时会继承该信息（-EncodingFrom、-Encoding Auto、传给 -Encoding 的 EncodingInformation），否则使用操作系统默认值。参考文件的换行混杂时，只要含有 CR-LF 就继承 CR-LF，否则继承 LF。该规则不依赖操作系统。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>对设置了只读属性的文件也进行写入（先清除属性再写入）。该开关不会影响其他行为。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>执行命令前要求确认。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。Combined 先进行自有判定，只有在无法判定时才交给 UTF.Unknown。自有判定负责东亚的多字节，UTF.Unknown 负责欧美的单字节，因此自有判定会读错的欧美文本请用 UtfUnknownOnly 读取。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>执行命令前要求确认。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>写入时使用的字符编码与 BOM 方针。省略时（或指定 Auto 时）会从写入目标的已有文件继承。该文件不存在时会出错。不能与 -EncodingFrom 同时指定。统一词汇: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（仅供读取）。此外还可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、数值代码页（932、65001 等）、System.Text.Encoding 实例，以及 Resolve-Encoding 返回的 EncodingInformation 对象。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>从指定的参考文件继承字符编码、BOM 的有无与换行符这三项。值按原样使用，不展开通配符。显式指定 -LineBreak 时，该指定优先于继承。不能与 -Encoding 同时指定。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>对设置了只读属性的文件也进行写入（先清除属性再写入）。该开关不会影响其他行为。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>要输出的换行符: Auto、CrLf、Lf、Cr。Auto 在有参考信息时会继承该信息（-EncodingFrom、-Encoding Auto、传给 -Encoding 的 EncodingInformation），否则使用操作系统默认值。参考文件的换行混杂时，只要含有 CR-LF 就继承 CR-LF，否则继承 LF。该规则不依赖操作系统。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>目标文件的路径。直接使用输入的值，不展开通配符。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>NoNewline</maml:name>
+        <maml:description>
+          <maml:para>不在元素之间与末尾输出换行。要把 Get-ProbedContent -Raw 读入的内容原样写回时必须使用。若同时指定 -LineBreak 会发出警告，因为指定的换行不会被使用。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>目标文件的路径。可以使用通配符。文件不存在时会新建，但如果必须从该文件继承字符编码则会出错（请参阅 -Encoding）。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。Combined 先进行自有判定，只有在无法判定时才交给 UTF.Unknown。自有判定负责东亚的多字节，UTF.Unknown 负责欧美的单字节，因此自有判定会读错的欧美文本请用 UtfUnknownOnly 读取。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+        <maml:name>Value</maml:name>
+        <maml:description>
+          <maml:para>要写入的内容。除非指定 -NoNewline，否则会在包括最后一个元素在内的每个元素之后输出换行。非字符串的值会通过 PowerShell 的类型转换转成字符串（使用固定区域性）。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Object[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>可以将要写入的内容通过管道传给该 Cmdlet。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>该 Cmdlet 不输出任何内容。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>备注</maml:title>
+      <maml:alert>
+        <maml:para>本模块接受的字符编码名称（统一词汇）在 Windows PowerShell 5.1 与 PowerShell 7.x 是相同的。它与 PowerShell 5.1 的内置 Cmdlet 在 -Encoding 接受的名称不同，也不一定与 Resolve-Encoding 返回的 PSEncodingName 一致。请勿把一边的名称原样传给另一边并期待相同的结果。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>写入类命令不接受裸的 utf8（以及 utf-8、数值代码页 65001），因为 PowerShell 5.1 与 7.x 对 BOM 有无的解释不同。请指定 utf8NoBOM 或 utf8BOM。其他 Unicode 系列也一样，请以 unicodeNoBOM / unicodeBOM 的形式指定。该失败发生在参数绑定阶段，因此文件完全不会被更改。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>换行符如何确定，取决于传给 -Encoding 的值的形式。EncodingInformation 对象（Resolve-Encoding 的输出）保存着判定来源文件的换行符，因此换行也会被继承。utf8NoBOM 这类词汇名称不带换行信息，因此未指定 -LineBreak 时会使用操作系统默认的换行。-EncodingFrom 与默认的 -Encoding Auto 一定会继承所读取文件的换行符。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>直接传入 System.Text.Encoding 实例时，由该实例自身的 GetPreamble() 决定是否写出 BOM。[System.Text.Encoding]::UTF8 与 [System.Text.Encoding]::GetEncoding(65001) 都会返回输出 BOM 的实例，因此直接传入会写出 BOM。若需要不带 BOM 的 UTF-8，请传入 (New-Object System.Text.UTF8Encoding $false)，或使用以名称明确表示 BOM 方针的词汇。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>不带 BOM 的 UTF-16 / UTF-32（unicodeNoBOM、bigendianunicodeNoBOM、utf32NoBOM、bigendianutf32NoBOM）是为了让判定得出的每一种状态都能写回而提供的，但并不推荐使用。没有 BOM 时，其他程序无法可靠地判别字节顺序，也无法与单字节的字符编码区分。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>参数组合的错误（-Encoding 与 -EncodingFrom 同时指定、-EncodingFrom 的参考对象不存在）是终止错误。针对单个目标文件的失败（-Encoding Auto 但写入目标不存在、判定失败、只读、对正在读取的文件写入）是非终止错误。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>写入目标虽然存在但为 0 字节时无法判定，因此使用正在运行的 .NET 运行时的默认编码（不带 BOM）与操作系统默认的换行。在 Windows PowerShell 5.1 是 ANSI 代码页，在 PowerShell 7.x 是 UTF-8。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 示例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Set-ProbedContent .\a.txt -Value 'hello' -Encoding utf8NoBOM</dev:code>
+        <dev:remarks>
+          <maml:para>在 PowerShell 5.1 与 7.x 都以不带 BOM 的 UTF-8 写入。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Set-ProbedContent .\out.txt -Value $lines -Encoding shift_jis -LineBreak CrLf</dev:code>
+        <dev:remarks>
+          <maml:para>以 Shift_JIS 与 CR-LF 写入。PowerShell 5.1 的内置 Cmdlet 无法以名称指定 Shift_JIS。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Set-ProbedContent .\b.txt -Value $text -EncodingFrom .\a.txt</dev:code>
+        <dev:remarks>
+          <maml:para>以 a.txt 的字符编码、BOM 与换行符写入 b.txt。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $enc = Resolve-Encoding .\a.txt
+Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $enc</dev:code>
+        <dev:remarks>
+          <maml:para>传入 EncodingInformation 对象时，除字符编码与 BOM 之外还会继承换行符。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Add-ProbedContent</command:name>
+      <maml:description>
+        <maml:para>保持字符编码不变地追加到文本文件。</maml:para>
+      </maml:description>
+      <command:verb>Add</command:verb>
+      <command:noun>ProbedContent</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>在文件末尾追加内容。</maml:para>
+      <maml:para>省略 -Encoding 时，会继承追加目标文件的字符编码与换行符。在追加的场景下，这就是最自然的行为。</maml:para>
+      <maml:para>能否追加，由实际将写出的字节序列决定，而不是由字符编码的名称决定。若以指定的字符编码编码出的字节序列，与以该文件当前使用的字符编码编码出的字节序列完全一致，文件就仍然保持一致，因此允许。不一致时会出错。这就是为什么可以用 -Encoding ascii 把 ASCII 文本追加到 UTF-8 文件，却不能用 -Encoding shift_jis 把日文追加到同一个文件。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Add-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>目标文件的路径。可以使用通配符。文件不存在时会新建，但如果必须从该文件继承字符编码则会出错（请参阅 -Encoding）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+          <maml:name>Value</maml:name>
+          <maml:description>
+            <maml:para>要追加的内容。除非指定 -NoNewline，否则会在包括最后一个元素在内的每个元素之后输出换行。非字符串的值会通过 PowerShell 的类型转换转成字符串（使用固定区域性）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>追加时使用的字符编码。省略时（或指定 Auto 时）会从追加目标的文件继承。该文件不存在时会出错。指定值当中属于 BOM 的部分始终被忽略。不能与 -EncodingFrom 同时指定。统一词汇: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（仅供读取）。此外还可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、数值代码页（932、65001 等）、System.Text.Encoding 实例，以及 Resolve-Encoding 返回的 EncodingInformation 对象。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>从指定的参考文件继承字符编码、BOM 的有无与换行符这三项。值按原样使用，不展开通配符。显式指定 -LineBreak 时，该指定优先于继承。不能与 -Encoding 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>不在元素之间与末尾输出换行。要把 Get-ProbedContent -Raw 读入的内容原样写回时必须使用。若同时指定 -LineBreak 会发出警告，因为指定的换行不会被使用。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>要输出的换行符: Auto、CrLf、Lf、Cr。Auto 在有参考信息时会继承该信息（-EncodingFrom、-Encoding Auto、传给 -Encoding 的 EncodingInformation），否则使用操作系统默认值。参考文件的换行混杂时，只要含有 CR-LF 就继承 CR-LF，否则继承 LF。该规则不依赖操作系统。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>对设置了只读属性的文件也进行写入（先清除属性再写入）。该开关不会影响其他行为。特别是它不会放宽字符编码的一致性检查；若需要如此，请使用 -AllowEncodingChange。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>执行命令前要求确认。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>即使产生的字节序列与已有的字符编码不同也允许追加，以此有意变更文件的字符编码。指定该开关时完全不会判定已有文件，因此对无法判定的文件也能追加。-Force 没有这个效果。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。Combined 先进行自有判定，只有在无法判定时才交给 UTF.Unknown。自有判定负责东亚的多字节，UTF.Unknown 负责欧美的单字节，因此自有判定会读错的欧美文本请用 UtfUnknownOnly 读取。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Add-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+          <maml:name>Value</maml:name>
+          <maml:description>
+            <maml:para>要追加的内容。除非指定 -NoNewline，否则会在包括最后一个元素在内的每个元素之后输出换行。非字符串的值会通过 PowerShell 的类型转换转成字符串（使用固定区域性）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>目标文件的路径。直接使用输入的值，不展开通配符。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>追加时使用的字符编码。省略时（或指定 Auto 时）会从追加目标的文件继承。该文件不存在时会出错。指定值当中属于 BOM 的部分始终被忽略。不能与 -EncodingFrom 同时指定。统一词汇: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（仅供读取）。此外还可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、数值代码页（932、65001 等）、System.Text.Encoding 实例，以及 Resolve-Encoding 返回的 EncodingInformation 对象。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>从指定的参考文件继承字符编码、BOM 的有无与换行符这三项。值按原样使用，不展开通配符。显式指定 -LineBreak 时，该指定优先于继承。不能与 -Encoding 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>不在元素之间与末尾输出换行。要把 Get-ProbedContent -Raw 读入的内容原样写回时必须使用。若同时指定 -LineBreak 会发出警告，因为指定的换行不会被使用。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>要输出的换行符: Auto、CrLf、Lf、Cr。Auto 在有参考信息时会继承该信息（-EncodingFrom、-Encoding Auto、传给 -Encoding 的 EncodingInformation），否则使用操作系统默认值。参考文件的换行混杂时，只要含有 CR-LF 就继承 CR-LF，否则继承 LF。该规则不依赖操作系统。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>对设置了只读属性的文件也进行写入（先清除属性再写入）。该开关不会影响其他行为。特别是它不会放宽字符编码的一致性检查；若需要如此，请使用 -AllowEncodingChange。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>执行命令前要求确认。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>即使产生的字节序列与已有的字符编码不同也允许追加，以此有意变更文件的字符编码。指定该开关时完全不会判定已有文件，因此对无法判定的文件也能追加。-Force 没有这个效果。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。Combined 先进行自有判定，只有在无法判定时才交给 UTF.Unknown。自有判定负责东亚的多字节，UTF.Unknown 负责欧美的单字节，因此自有判定会读错的欧美文本请用 UtfUnknownOnly 读取。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>AllowEncodingChange</maml:name>
+        <maml:description>
+          <maml:para>即使产生的字节序列与已有的字符编码不同也允许追加，以此有意变更文件的字符编码。指定该开关时完全不会判定已有文件，因此对无法判定的文件也能追加。-Force 没有这个效果。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>执行命令前要求确认。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>追加时使用的字符编码。省略时（或指定 Auto 时）会从追加目标的文件继承。该文件不存在时会出错。指定值当中属于 BOM 的部分始终被忽略。不能与 -EncodingFrom 同时指定。统一词汇: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（仅供读取）。此外还可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、数值代码页（932、65001 等）、System.Text.Encoding 实例，以及 Resolve-Encoding 返回的 EncodingInformation 对象。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>从指定的参考文件继承字符编码、BOM 的有无与换行符这三项。值按原样使用，不展开通配符。显式指定 -LineBreak 时，该指定优先于继承。不能与 -Encoding 同时指定。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>对设置了只读属性的文件也进行写入（先清除属性再写入）。该开关不会影响其他行为。特别是它不会放宽字符编码的一致性检查；若需要如此，请使用 -AllowEncodingChange。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>要输出的换行符: Auto、CrLf、Lf、Cr。Auto 在有参考信息时会继承该信息（-EncodingFrom、-Encoding Auto、传给 -Encoding 的 EncodingInformation），否则使用操作系统默认值。参考文件的换行混杂时，只要含有 CR-LF 就继承 CR-LF，否则继承 LF。该规则不依赖操作系统。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>目标文件的路径。直接使用输入的值，不展开通配符。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>NoNewline</maml:name>
+        <maml:description>
+          <maml:para>不在元素之间与末尾输出换行。要把 Get-ProbedContent -Raw 读入的内容原样写回时必须使用。若同时指定 -LineBreak 会发出警告，因为指定的换行不会被使用。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>目标文件的路径。可以使用通配符。文件不存在时会新建，但如果必须从该文件继承字符编码则会出错（请参阅 -Encoding）。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。Combined 先进行自有判定，只有在无法判定时才交给 UTF.Unknown。自有判定负责东亚的多字节，UTF.Unknown 负责欧美的单字节，因此自有判定会读错的欧美文本请用 UtfUnknownOnly 读取。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
+        <maml:name>Value</maml:name>
+        <maml:description>
+          <maml:para>要追加的内容。除非指定 -NoNewline，否则会在包括最后一个元素在内的每个元素之后输出换行。非字符串的值会通过 PowerShell 的类型转换转成字符串（使用固定区域性）。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Object[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>可以将要追加的内容通过管道传给该 Cmdlet。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>该 Cmdlet 不输出任何内容。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>备注</maml:title>
+      <maml:alert>
+        <maml:para>本模块接受的字符编码名称（统一词汇）在 Windows PowerShell 5.1 与 PowerShell 7.x 是相同的。它与 PowerShell 5.1 的内置 Cmdlet 在 -Encoding 接受的名称不同，也不一定与 Resolve-Encoding 返回的 PSEncodingName 一致。请勿把一边的名称原样传给另一边并期待相同的结果。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Add-ProbedContent 始终忽略 -Encoding 当中属于 BOM 的部分。在文件中途写入 BOM 在任何情况下都不正确，因此 utf8BOM 与 utf8NoBOM 会得到相同的结果。即使追加目标尚不存在、由本命令新建时也一样。不会发出警告，因为从含有 BOM 的文件用 -EncodingFrom 继承是正当的用法。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>写入类命令不接受裸的 utf8（以及 utf-8、数值代码页 65001），因为 PowerShell 5.1 与 7.x 对 BOM 有无的解释不同。请指定 utf8NoBOM 或 utf8BOM。其他 Unicode 系列也一样，请以 unicodeNoBOM / unicodeBOM 的形式指定。该失败发生在参数绑定阶段，因此文件完全不会被更改。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>换行符如何确定，取决于传给 -Encoding 的值的形式。EncodingInformation 对象（Resolve-Encoding 的输出）保存着判定来源文件的换行符，因此换行也会被继承。utf8NoBOM 这类词汇名称不带换行信息，因此未指定 -LineBreak 时会使用操作系统默认的换行。-EncodingFrom 与默认的 -Encoding Auto 一定会继承所读取文件的换行符。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>直接传入 System.Text.Encoding 实例时，由该实例自身的 GetPreamble() 决定是否写出 BOM。[System.Text.Encoding]::UTF8 与 [System.Text.Encoding]::GetEncoding(65001) 都会返回输出 BOM 的实例，因此直接传入会写出 BOM。若需要不带 BOM 的 UTF-8，请传入 (New-Object System.Text.UTF8Encoding $false)，或使用以名称明确表示 BOM 方针的词汇。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>不带 BOM 的 UTF-16 / UTF-32（unicodeNoBOM、bigendianunicodeNoBOM、utf32NoBOM、bigendianutf32NoBOM）是为了让判定得出的每一种状态都能写回而提供的，但并不推荐使用。没有 BOM 时，其他程序无法可靠地判别字节顺序，也无法与单字节的字符编码区分。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>一致性检查无法用 -Force 解除。-Force 只有“对只读文件写入”这一个含义。若要允许变更字符编码，请使用 -AllowEncodingChange。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>检查以每一个元素（正文与其后的换行）为单位进行，因此只有换行不一致的情形也会被检出（LF 在 UTF-8 是 1 个字节，在 UTF-16LE 是 2 个字节）。同一条记录中只要有任何一个元素被拒绝，该条记录就一个元素也不会写入。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>换行符的不一致是允许的，也不会发出警告。文件中换行混杂并无害处，而且从某个时点起统一为 LF 也可能是有意为之。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>若文件末尾没有换行，追加的内容会接在最后一行之后。这与内置的 Add-Content 行为相同。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>对 ISO-2022-JP 这类带状态的字符编码也能安全地追加: 追加的块会以自己的转义序列开始，并在末尾回到 ASCII，因此该块本身是完整的。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 示例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Add-ProbedContent .\log.txt -Value $line</dev:code>
+        <dev:remarks>
+          <maml:para>保持已有文件的字符编码与换行符，追加一行。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Add-ProbedContent .\utf8.txt -Value 'ABC' -Encoding ascii</dev:code>
+        <dev:remarks>
+          <maml:para>允许。因为只含 ASCII 的字符串，在 ascii 与 UTF-8 都会得到相同的字节序列。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Add-ProbedContent .\ascii.txt -Value $japanese -Encoding utf8NoBOM -AllowEncodingChange</dev:code>
+        <dev:remarks>
+          <maml:para>有意在追加的同时把 ASCII 文件提升为 UTF-8。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>ConvertTo-DotNetEncoding</command:name>
+      <maml:description>
+        <maml:para>将统一词汇名称、代码页或判定结果转换为 System.Text.Encoding 对象。</maml:para>
+      </maml:description>
+      <command:verb>ConvertTo</command:verb>
+      <command:noun>DotNetEncoding</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>把本模块接受的多种形式的字符编码指定，解析成单个 System.Text.Encoding 实例。</maml:para>
+      <maml:para>这是为了从 PowerShell 直接调用 .NET 类库 API（System.IO.StreamReader、System.IO.File、XmlWriter 等）而设的特殊命令。若只是要读写文件，请改用 Get-ProbedContent / Set-ProbedContent / Add-ProbedContent；它们的 -Encoding 接受完全相同的值，您无需自行转换。</maml:para>
+      <maml:para>值会视为供读取使用，因此也接受 BOM 方针未定的名称（utf8、utf-8、65001）与 utf7。由于没有可判定的文件，不能指定 Auto。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>ConvertTo-DotNetEncoding</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="0" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>要转换的值。统一词汇: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（仅供读取）。此外还可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、数值代码页（932、65001 等）、System.Text.Encoding 实例，以及 Resolve-Encoding 返回的 EncodingInformation 对象。不接受 Auto。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="0" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>要转换的值。统一词汇: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（仅供读取）。此外还可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、数值代码页（932、65001 等）、System.Text.Encoding 实例，以及 Resolve-Encoding 返回的 EncodingInformation 对象。不接受 Auto。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>可以将名称、代码页、System.Text.Encoding 实例或 EncodingInformation 对象（Resolve-Encoding 的输出）通过管道传给该 Cmdlet。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Text.Encoding</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>解析后的 Encoding 实例。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>备注</maml:title>
+      <maml:alert>
+        <maml:para>本模块接受的字符编码名称（统一词汇）在 Windows PowerShell 5.1 与 PowerShell 7.x 是相同的。它与 PowerShell 5.1 的内置 Cmdlet 在 -Encoding 接受的名称不同，也不一定与 Resolve-Encoding 返回的 PSEncodingName 一致。请勿把一边的名称原样传给另一边并期待相同的结果。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>直接传入 System.Text.Encoding 实例时，由该实例自身的 GetPreamble() 决定是否写出 BOM。[System.Text.Encoding]::UTF8 与 [System.Text.Encoding]::GetEncoding(65001) 都会返回输出 BOM 的实例，因此直接传入会写出 BOM。若需要不带 BOM 的 UTF-8，请传入 (New-Object System.Text.UTF8Encoding $false)，或使用以名称明确表示 BOM 方针的词汇。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>不带 BOM 的 UTF-16 / UTF-32（unicodeNoBOM、bigendianunicodeNoBOM、utf32NoBOM、bigendianutf32NoBOM）是为了让判定得出的每一种状态都能写回而提供的，但并不推荐使用。没有 BOM 时，其他程序无法可靠地判别字节顺序，也无法与单字节的字符编码区分。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>返回的实例的 BOM 方针取决于名称: utf8BOM 返回输出 BOM 的实例，utf8NoBOM 返回不输出的实例。裸的 utf8 会得到不输出 BOM 的实例，这也是写入类命令不以推测处理该名称而直接拒绝的原因。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>UTF-7 是已废弃的字符编码，.NET 5 之后无法通过 Encoding.GetEncoding 获取。本 Cmdlet 用构造函数直接创建，因此在 PowerShell 5.1 与 7.x 都可以使用 utf7。它仅用于读取旧有的数据。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 示例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; ConvertTo-DotNetEncoding utf8NoBOM</dev:code>
+        <dev:remarks>
+          <maml:para>返回不输出 BOM 的 UTF8Encoding 实例。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $enc = Resolve-Encoding .\a.txt | ConvertTo-DotNetEncoding
+[System.IO.File]::ReadAllText('.\a.txt', $enc)</dev:code>
+        <dev:remarks>
+          <maml:para>判定文件，并将结果直接传给 .NET 的 API。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $reader = New-Object System.IO.StreamReader('.\a.txt', (ConvertTo-DotNetEncoding shift_jis))</dev:code>
+        <dev:remarks>
+          <maml:para>在 PowerShell 5.1 与 7.x 以相同的名称指定 Shift_JIS。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Resolve-Encoding</command:name>
+      <maml:description>
+        <maml:para>判定文本文件的字符编码。</maml:para>
+      </maml:description>
+      <command:verb>Resolve</command:verb>
+      <command:noun>Encoding</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>判定文件的字符编码，并返回描述其内容的 EncodingInformation 对象。内容包含代码页、WebName、BOM 的有无、正在使用的换行符，以及判定时采用的区域性。</maml:para>
+      <maml:para>该对象可以直接传给 Get-ProbedContent / Set-ProbedContent / Add-ProbedContent 的 -Encoding，以及 ConvertTo-DotNetEncoding。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Resolve-Encoding</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>要判定的文件路径。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>用于解决 EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分之组合的区域性名称。省略时使用当前会话的区域性。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。Combined 先进行自有判定，只有在无法判定时才交给 UTF.Unknown。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Resolve-Encoding</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>License</maml:name>
+          <maml:description>
+            <maml:para>返回本模块与其所使用之库的许可条款全文。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Resolve-Encoding</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Version</maml:name>
+          <maml:description>
+            <maml:para>返回本模块的版本。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>用于解决 EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分之组合的区域性名称。省略时使用当前会话的区域性。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>License</maml:name>
+        <maml:description>
+          <maml:para>返回本模块与其所使用之库的许可条款全文。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>要判定的文件路径。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。Combined 先进行自有判定，只有在无法判定时才交给 UTF.Unknown。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Version</maml:name>
+        <maml:description>
+          <maml:para>返回本模块的版本。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>可以将路径通过管道传给该 Cmdlet。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.EncodingInformation</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>判定结果。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>备注</maml:title>
+      <maml:alert>
+        <maml:para>本模块接受的字符编码名称（统一词汇）在 Windows PowerShell 5.1 与 PowerShell 7.x 是相同的。它与 PowerShell 5.1 的内置 Cmdlet 在 -Encoding 接受的名称不同，也不一定与 Resolve-Encoding 返回的 PSEncodingName 一致。请勿把一边的名称原样传给另一边并期待相同的结果。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>PSEncodingName 属性在两个主机上的含义并不相同: 在 PowerShell 7.x 是像 utf8BOM 这样已注册的友好名称，而在 Windows PowerShell 5.1 只有在结果恰好匹配 5.1 固定的 -Encoding 值时才会填入，否则为 null。UsePSName 表示该值是否可以直接传给内置 Cmdlet 的 -Encoding 参数。Get-ProbedContent / Set-ProbedContent / Add-ProbedContent 的统一词汇没有这个问题。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 示例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Resolve-Encoding .\a.txt | Format-List *</dev:code>
+        <dev:remarks>
+          <maml:para>显示完整的判定结果。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Resolve-Encoding .\a.txt -Culture ko-KR</dev:code>
+        <dev:remarks>
+          <maml:para>假定为韩文的区域性进行判定。这会影响 EUC-KR 与 CP949 这类歧义的解决。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-EncodingProbePlatformInfo</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Get-EncodingProbePlatformInfo</command:name>
+      <maml:description>
+        <maml:para>返回本模块运行所在环境的信息。</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>EncodingProbePlatformInfo</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>返回本模块所看到的操作系统、.NET 运行时、区域设置与 PowerShell 主机的信息。</maml:para>
+      <maml:para>当结果因计算机而异时，可用于厘清原因: 此处显示的区域性与 ANSI / OEM 代码页，正是判定处理以及 ansi 与 oem 词汇所依赖的信息。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-EncodingProbePlatformInfo</maml:name>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>该 Cmdlet 不接受输入。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.EncodingProbePlatformInformation</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>运行环境的信息。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 示例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-EncodingProbePlatformInfo | Format-List *</dev:code>
+        <dev:remarks>
+          <maml:para>显示完整的运行环境信息。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+</helpItems>
