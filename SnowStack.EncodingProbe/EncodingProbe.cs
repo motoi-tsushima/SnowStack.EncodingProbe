@@ -246,6 +246,160 @@ altered here.
         }
 
         /// <summary>
+        /// UTF.Unknown の判定結果を <see cref="EncodingInformation"/> に反映する
+        /// </summary>
+        /// <param name="encInfo">BOM と改行コードを判定済みの <see cref="EncodingInformation"/></param>
+        /// <param name="result">UTF.Unknown の判定結果</param>
+        /// <returns>判定結果を反映した <paramref name="encInfo"/></returns>
+        private static EncodingInformation ApplyUtfUnknownResult(EncodingInformation encInfo, DetectionResult result)
+        {
+            if (result == null || result.Detected == null || result.Detected.Confidence <= 0.5)
+            {
+                encInfo.CodePage = -1;
+                return encInfo;
+            }
+
+            try
+            {
+                encInfo.EncodingWebName = result.Detected.EncodingName;
+                encInfo.CodePage = result.Detected.Encoding.CodePage;
+                encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
+            }
+            catch (ArgumentException)
+            {
+                // UtfUnknownが検出したエンコーディングが.NETでサポートされていない場合
+                // エンコーディング名だけを保存し、CodePageは-1にする
+                encInfo.EncodingWebName = result.Detected.EncodingName;
+                encInfo.CodePage = -1;
+            }
+            catch (NotSupportedException)
+            {
+                encInfo.EncodingWebName = result.Detected.EncodingName;
+                encInfo.CodePage = -1;
+            }
+
+            return encInfo;
+        }
+
+        /// <summary>
+        /// 独自判定が東アジアの旧マルチバイトとして返したコードページか判定する
+        /// </summary>
+        /// <remarks>
+        /// これらの判定はバイト構造の妥当性しか見ていないため、
+        /// 欧米のシングルバイトのテキストが偶然そのまま通ってしまうことがある。
+        /// BOM・ISO-2022・ASCII・Unicode 系は根拠が確かなので対象に含めない。
+        /// </remarks>
+        /// <param name="codePage">独自判定が返したコードページ</param>
+        /// <returns>true=バイト構造だけを根拠に決まったコードページである</returns>
+        private static bool IsEastAsianLegacyMultiByteCodePage(int codePage)
+        {
+            switch (codePage)
+            {
+                case 932:    // Shift_JIS
+                case 936:    // GBK
+                case 949:    // CP949 (UHC)
+                case 950:    // Big5
+                case 20932:  // EUC-JP
+                case 51936:  // EUC-CN (GB2312)
+                case 51949:  // EUC-KR
+                case 51950:  // EUC-TW
+                case 54936:  // GB18030
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// UTF.Unknown の判定結果がシングルバイト文字エンコーディングか判定する
+        /// </summary>
+        /// <remarks>
+        /// <c>Encoding.GetEncoding(codePage).IsSingleByte</c> は使わない。
+        /// .NET Core では <c>CodePagesEncodingProvider</c> を登録していないと cp1251 などを解決できず、
+        /// ホスト側の登録状況によって判定結果が変わってしまうためである。
+        /// ここではマルチバイト側を表で除外し、残りをシングルバイトとして扱う。
+        /// ASCII は独自判定が先に確定させるため、ここでは候補から外す。
+        /// </remarks>
+        /// <param name="codePage">UTF.Unknown が返したコードページ</param>
+        /// <returns>true=シングルバイト文字エンコーディングである</returns>
+        private static bool IsSingleByteCodePage(int codePage)
+        {
+            if (codePage < 0)
+            {
+                return false;
+            }
+
+            switch (codePage)
+            {
+                case 20127:  // us-ascii（独自判定が先に確定させる）
+                case 1200:   // UTF-16LE
+                case 1201:   // UTF-16BE
+                case 12000:  // UTF-32LE
+                case 12001:  // UTF-32BE
+                case 65000:  // UTF-7
+                case 65001:  // UTF-8
+                case 932:    // Shift_JIS
+                case 936:    // GBK
+                case 949:    // CP949 (UHC)
+                case 950:    // Big5
+                case 20932:  // EUC-JP
+                case 51932:  // EUC-JP（UTF.Unknown が返す方）
+                case 51936:  // EUC-CN (GB2312)
+                case 51949:  // EUC-KR
+                case 51950:  // EUC-TW
+                case 52936:  // HZ-GB-2312
+                case 54936:  // GB18030
+                case 50220:  // ISO-2022-JP
+                case 50221:  // ISO-2022-JP (csISO2022JP)
+                case 50222:  // ISO-2022-JP (SO/SI)
+                case 50225:  // ISO-2022-KR
+                case 50227:  // ISO-2022-CN
+                case 50229:  // ISO-2022-TW
+                    return false;
+                default:
+                    return true;
+            }
+        }
+
+        /// <summary>
+        /// 独自判定の結果を UTF.Unknown の結果で上書きすべきか判定する
+        /// </summary>
+        /// <remarks>
+        /// 独自判定は、カルチャーが東アジア漢字文化圏のときだけ旧マルチバイトを判定する。
+        /// その判定はバイト構造の妥当性しか見ていないため、たとえば日本語カルチャーの実行環境で
+        /// ドイツ語の cp1252 のテキストを読むと、Shift_JIS の外字領域として構造が成立してしまい
+        /// Shift_JIS と誤判定する。同じバイト列を UTF.Unknown がシングルバイト文字エンコーディングと
+        /// 判定したのであれば、そちらのほうが確からしい。
+        /// 逆に、本物の東アジアのテキストに対して UTF.Unknown が返すのはマルチバイトの符号化
+        /// （932 / 51932 / 54936 など）か判定不能であり、この条件には該当しない。
+        /// </remarks>
+        /// <param name="nativeInfo">独自判定の結果</param>
+        /// <param name="utfUnknownInfo">UTF.Unknown の判定結果</param>
+        /// <returns>true=UTF.Unknown の結果を採用する</returns>
+        private static bool ShouldPreferUtfUnknown(EncodingInformation nativeInfo, EncodingInformation utfUnknownInfo)
+        {
+            return IsEastAsianLegacyMultiByteCodePage(nativeInfo.CodePage)
+                && IsSingleByteCodePage(utfUnknownInfo.CodePage);
+        }
+
+        /// <summary>
+        /// ストリームの現在位置から末尾までをバイト配列として読み出す
+        /// </summary>
+        /// <param name="stream">テキストのストリーム</param>
+        /// <returns>読み出したバイト配列</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="stream"/> が null の場合</exception>
+        private static byte[] ReadAllBytes(Stream stream)
+        {
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
+
+            using (var ms = new MemoryStream())
+            {
+                stream.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
+        /// <summary>
         /// 文字エンコーディングを判定する（UTF.Unknown）
         /// </summary>
         /// <param name="buffer">テキストのバイト配列</param>
@@ -253,44 +407,8 @@ altered here.
         /// <returns></returns>
         internal static EncodingInformation DetectUtfUnknown(byte[] buffer, string culture = null)
         {
-            EncodingInformation encInfo = new EncodingInformation();
-
-            encInfo = DetectEncoding(buffer, DetectionMode.Skippable, culture);
-
-            var result = CharsetDetector.DetectFromBytes(buffer);
-            if (result != null && result.Detected != null)
-            {
-                if (result.Detected.Confidence > 0.5)
-                {
-                    try
-                    {
-                        encInfo.EncodingWebName = result.Detected.EncodingName;
-                        encInfo.CodePage = result.Detected.Encoding.CodePage;
-                        encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
-                    }
-                    catch (ArgumentException)
-                    {
-                        // UtfUnknownが検出したエンコーディングが.NETでサポートされていない場合
-                        // エンコーディング名だけを保存し、CodePageは-1にする
-                        encInfo.EncodingWebName = result.Detected.EncodingName;
-                        encInfo.CodePage = -1;
-                    }
-                    catch (NotSupportedException)
-                    {
-                        encInfo.EncodingWebName = result.Detected.EncodingName;
-                        encInfo.CodePage = -1;
-                    }
-                }
-                else
-                {
-                    encInfo.CodePage = -1;
-                }
-            }
-            else
-            {
-                encInfo.CodePage = -1;
-            }
-            return encInfo;
+            EncodingInformation encInfo = DetectEncoding(buffer, DetectionMode.Skippable, culture);
+            return ApplyUtfUnknownResult(encInfo, CharsetDetector.DetectFromBytes(buffer));
         }
 
         /// <summary>
@@ -301,44 +419,8 @@ altered here.
         /// <returns></returns>
         internal static EncodingInformation DetectUtfUnknown(Stream stream, string culture = null)
         {
-            EncodingInformation encInfo = new EncodingInformation();
-
-            encInfo = DetectEncoding(stream, DetectionMode.Skippable, culture);
-
-            var result = CharsetDetector.DetectFromStream(stream);
-            if (result != null && result.Detected != null)
-            {
-                if (result.Detected.Confidence > 0.5)
-                {
-                    try
-                    {
-                        encInfo.EncodingWebName = result.Detected.EncodingName;
-                        encInfo.CodePage = result.Detected.Encoding.CodePage;
-                        encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
-                    }
-                    catch (ArgumentException)
-                    {
-                        // UtfUnknownが検出したエンコーディングが.NETでサポートされていない場合
-                        // エンコーディング名だけを保存し、CodePageは-1にする
-                        encInfo.EncodingWebName = result.Detected.EncodingName;
-                        encInfo.CodePage = -1;
-                    }
-                    catch (NotSupportedException)
-                    {
-                        encInfo.EncodingWebName = result.Detected.EncodingName;
-                        encInfo.CodePage = -1;
-                    }
-                }
-                else
-                {
-                    encInfo.CodePage = -1;
-                }
-            }
-            else
-            {
-                encInfo.CodePage = -1;
-            }
-            return encInfo;
+            // ストリームは一度しか読めないため、バイト配列に読み出してから両方の判定に渡す
+            return DetectUtfUnknown(ReadAllBytes(stream), culture);
         }
 
         /// <summary>
@@ -349,44 +431,8 @@ altered here.
         /// <returns></returns>
         internal static EncodingInformation DetectUtfUnknown(string filePath, string culture = null)
         {
-            EncodingInformation encInfo = new EncodingInformation();
-
-            encInfo = DetectEncoding(filePath, DetectionMode.Skippable, culture);
-
-            var result = CharsetDetector.DetectFromFile(filePath);
-            if (result != null && result.Detected != null)
-            {
-                if (result.Detected.Confidence > 0.5)
-                {
-                    try
-                    {
-                        encInfo.EncodingWebName = result.Detected.EncodingName;
-                        encInfo.CodePage = result.Detected.Encoding.CodePage;
-                        encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
-                    }
-                    catch (ArgumentException)
-                    {
-                        // UtfUnknownが検出したエンコーディングが.NETでサポートされていない場合
-                        // エンコーディング名だけを保存し、CodePageは-1にする
-                        encInfo.EncodingWebName = result.Detected.EncodingName;
-                        encInfo.CodePage = -1;
-                    }
-                    catch (NotSupportedException)
-                    {
-                        encInfo.EncodingWebName = result.Detected.EncodingName;
-                        encInfo.CodePage = -1;
-                    }
-                }
-                else
-                {
-                    encInfo.CodePage = -1;
-                }
-            }
-            else
-            {
-                encInfo.CodePage = -1;
-            }
-            return encInfo;
+            EncodingInformation encInfo = DetectEncoding(filePath, DetectionMode.Skippable, culture);
+            return ApplyUtfUnknownResult(encInfo, CharsetDetector.DetectFromFile(filePath));
         }
 
         /// <summary>
@@ -397,13 +443,22 @@ altered here.
         /// <returns></returns>
         internal static EncodingInformation NormalDetectEncoding(byte[] buffer, string culture = null)
         {
-            EncodingInformation encInfo;
+            EncodingInformation encInfo = DetectEncoding(buffer, culture: culture);
 
-            encInfo = DetectEncoding(buffer, culture: culture);
             if (encInfo.CodePage < 0)
             {
-                encInfo = DetectUtfUnknown(buffer, culture);
+                return DetectUtfUnknown(buffer, culture);
             }
+
+            if (IsEastAsianLegacyMultiByteCodePage(encInfo.CodePage))
+            {
+                EncodingInformation utfUnknownInfo = DetectUtfUnknown(buffer, culture);
+                if (ShouldPreferUtfUnknown(encInfo, utfUnknownInfo))
+                {
+                    return utfUnknownInfo;
+                }
+            }
+
             return encInfo;
         }
 
@@ -415,14 +470,8 @@ altered here.
         /// <returns></returns>
         internal static EncodingInformation NormalDetectEncoding(Stream stream, string culture = null)
         {
-            EncodingInformation encInfo;
-
-            encInfo = DetectEncoding(stream, culture: culture);
-            if (encInfo.CodePage < 0)
-            {
-                encInfo = DetectUtfUnknown(stream, culture);
-            }
-            return encInfo;
+            // ストリームは一度しか読めないため、バイト配列に読み出してから両方の判定に渡す
+            return NormalDetectEncoding(ReadAllBytes(stream), culture);
         }
 
         /// <summary>
@@ -433,16 +482,24 @@ altered here.
         /// <returns></returns>
         internal static EncodingInformation NormalDetectEncoding(string filePath, string culture = null)
         {
-            EncodingInformation encInfo;
+            EncodingInformation encInfo = DetectEncoding(filePath, culture: culture);
 
-            encInfo = DetectEncoding(filePath, culture: culture);
             if (encInfo.CodePage < 0)
             {
-                encInfo = DetectUtfUnknown(filePath, culture);
+                return DetectUtfUnknown(filePath, culture);
             }
+
+            if (IsEastAsianLegacyMultiByteCodePage(encInfo.CodePage))
+            {
+                EncodingInformation utfUnknownInfo = DetectUtfUnknown(filePath, culture);
+                if (ShouldPreferUtfUnknown(encInfo, utfUnknownInfo))
+                {
+                    return utfUnknownInfo;
+                }
+            }
+
             return encInfo;
         }
 
     }
 }
-

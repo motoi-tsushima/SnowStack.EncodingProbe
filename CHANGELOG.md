@@ -3,6 +3,57 @@
 このファイルは SnowStack.EncodingProbe（NuGet パッケージ）と
 SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更をまとめたものです。
 
+## 1.2.0（開発中）
+
+文字エンコーディング判定を、東アジア以外の言語に対応させました。
+**リリース前の作業中の変更です。** バージョン番号はまだ上げていません。
+
+### 判定を変えた点
+
+- **東アジア以外のカルチャーでは、旧マルチバイトの判定を行わなくなりました。**
+  独自判定が担当するのは Shift_JIS / EUC / GB / Big5 など東アジア漢字文化圏のマルチバイトだけです。
+  カルチャーがそれ以外の言語圏のときは、これらの判定を実行せず UTF.Unknown に委ねます。
+  カルチャー名と判定対象の対応表は `EncodingDetector.GetEastAsianLegacyRegion()` に集約しました
+- **東アジアのカルチャーであっても、欧米のシングルバイトのテキストを誤判定しなくなりました。**
+  旧マルチバイトの判定はバイト構造の妥当性しか見ていないため、たとえば日本語カルチャーの実行環境で
+  windows-1252 のドイツ語を読むと、`FC DF`（`üß`）が Shift_JIS の外字領域の 2 バイト文字として
+  成立してしまい Shift_JIS と誤判定していました。
+  既定の判定方式（`Combined`）では、独自判定が旧マルチバイトを返したときに UTF.Unknown の結果と
+  突き合わせ、UTF.Unknown がシングルバイト文字エンコーディングと判定していればそちらを採用します
+- **UTF-8 の判定を RFC 3629 の整形式バイト列に厳密化しました。**
+  後続バイトが足りないまま ASCII に戻る形（windows-1252 の `Français` の `E7 61 69` など）、
+  ファイル終端で途切れた多バイト文字、冗長な符号化、サロゲート符号位置、
+  U+10FFFF を超える符号位置を、いずれも UTF-8 ではないと判定します。
+  従来はこれらを UTF-8 として受け入れていました
+
+### 変えていない点
+
+- BOM・ISO-2022・ASCII・UTF-32・UTF-16・UTF-8 の判定は、**カルチャーに関わらず**実行します。
+  UTF.Unknown は BOM 無しの UTF-16 / UTF-32 に対応していないため、
+  Unicode 系の判定を落とすわけにはいきません
+- `-Strategy NativeOnly` は独自判定だけを行います。上記の突き合わせも行いません
+- 日本語・韓国語・繁体字中国語・簡体字中国語のカルチャーにおける、
+  これらの言語のテキストの判定結果は変わりません
+- 公開 API に変更はありません
+
+### 内部の整理
+
+- `EncodingProbe.DetectUtfUnknown` の 3 つのオーバーロードで重複していた処理を
+  `ApplyUtfUnknownResult` にまとめました
+- `EncodingProbe.Detect(Stream)` が、ストリームを一度だけ読んでバイト配列にしてから
+  両方の判定に渡すようになりました。従来は独自判定が読み切ったストリームを
+  そのまま UTF.Unknown にも渡していたため、UTF.Unknown 側が空のストリームを見ていました。
+  PowerShell モジュールはバイト配列とファイルパスのオーバーロードしか使っていないため、
+  影響を受けるのはクラスライブラリを直接使ってストリームを渡していた場合だけです
+
+### テスト
+
+- `tests/EncodingProbe.Tests/TestData/` に German / French / Russian / Polish / Thai を追加しました。
+  生成は `tools/New-EncodingTestData.ps1` で行います
+- `WorldLanguageTests` が、これらのファイルを 10 のカルチャーで判定して結果が変わらないことを検証します
+- `Utf8StrictnessTests` が、UTF-8 判定と .NET の厳格なデコーダーの判断が一致することを検証します
+- `tests/PSCompat/ProbedCompatScenarios.ps1` に「世界言語の判定」の節を追加しました
+
 ## 1.1.0
 
 PowerShell モジュールにテキストの読み書きコマンドを追加しました。

@@ -58,8 +58,9 @@ Visual Studio 用には `Properties/launchSettings.json` に「.NET 4.8 テス�
 
 `EncodingProbe.Detect(byte[] | Stream | string)` は `EncodingDetectorOptions.Strategy` で振る舞いが決まる：
 
-- `Combined`（既定）… まず独自判定。`CodePage < 0`（＝判定不能）のときだけ UTF.Unknown に委譲する
-- `NativeOnly` … 独自判定のみ
+- `Combined`（既定）… まず独自判定。`CodePage < 0`（＝判定不能）なら UTF.Unknown に委譲する。
+  独自判定が**旧マルチバイト**のコードページを返したときも UTF.Unknown に問い合わせ、突き合わせる（後述）
+- `NativeOnly` … 独自判定のみ。突き合わせも行わない
 - `UtfUnknownOnly` … UTF.Unknown のみ
 
 分業の理由は README のとおり。独自判定は東アジア漢字文化圏のマルチバイト（Shift-JIS / EUC-JP / EUC-KR / CP949 / GB 系 / Big5 / EUC-TW / ISO-2022-*）を担当し、欧米のシングルバイトは UTF.Unknown が担当する。
@@ -70,7 +71,15 @@ Visual Studio 用には `Properties/launchSettings.json` に「.NET 4.8 テス�
 2. BOM（`ByteOrderMarkDetection`）— 一致したら即確定
 3. ISO-2022 / ASCII
 4. UTF-32 → UTF-16 → UTF-8（UTF-32 を UTF-16 より先に判定する）
-5. カルチャーで分岐。簡体字中国語なら GB2312 → GBK → GB18030 の 3 段階判定。それ以外は EUC 系 → CPxxx 系
+5. **カルチャーゲート**（`GetEastAsianLegacyRegion()`）。東アジア漢字文化圏でなければここで打ち切る
+6. カルチャーで分岐。簡体字中国語なら GB2312 → GBK → GB18030 の 3 段階判定。それ以外は EUC 系 → CPxxx 系
+
+**1〜4 はカルチャーに関わらず必ず実行する。** UTF.Unknown は BOM 無しの UTF-16 / UTF-32 に対応していないため、
+Unicode 系の判定を独自判定側から外すことはできない。
+
+`Utf8_Detection` は RFC 3629 の整形式バイト列の表どおりに検証する（途中で途切れた多バイト文字・冗長な符号化・
+サロゲート符号位置・U+10FFFF 超えをすべて規格外とする）。ここを緩くすると欧米のシングルバイトを UTF-8 と誤判定する。
+`.NET` の厳格な UTF-8 デコーダーと判断が一致することを `Utf8StrictnessTests` が検証している。
 
 `DetectionMode.Skippable` を渡すと BOM が無い時点で打ち切る（BOM の有無だけ知りたい呼び出し向け）。
 
@@ -83,6 +92,27 @@ Visual Studio 用には `Properties/launchSettings.json` に「.NET 4.8 テス�
 - EUC-TW と CP950 の両方に該当 → CP950(Big5)
 
 カルチャーはグローバル状態ではなくパラメータで渡す（`Detection(culture)` / `EncodingDetectorOptions.Culture`）。`CultureInfo.CurrentCulture` へのフォールバックは 1 か所だけ。
+
+**カルチャー名と判定対象の対応表は `EncodingDetector.GetEastAsianLegacyRegion()` に集約している。**
+`EastAsianLegacyRegion`（`None` / `Japanese` / `Korean` / `ChineseSimplified` / `ChineseTraditional`）を返し、
+`GetEucCodePageFromCulture()` と `CPxxx_Detection()` はこの結果で分岐する。表を増やさないこと。
+
+### 旧マルチバイト判定の横取りとクロスチェック（1.2.0）
+
+`SJIS_Detection` / `CP949_Detection` / `CP936_Detection` / `CP950_Detection` / `EUCxx_Detection` は
+**バイト構造の妥当性しか見ていない**。そのため欧米のシングルバイトのテキストがそのまま通ってしまう。
+たとえば日本語カルチャーの実行環境でドイツ語の windows-1252 を読むと、
+`FC DF`（`üß`）が Shift_JIS の外字領域の 2 バイト文字として成立し、Shift_JIS と誤判定する。
+
+`EncodingProbe.NormalDetectEncoding`（＝`Combined`）は、独自判定が旧マルチバイトのコードページ
+（`IsEastAsianLegacyMultiByteCodePage`）を返したときに UTF.Unknown にも判定させ、
+UTF.Unknown がシングルバイト文字エンコーディングを返していればそちらを採用する。
+本物の東アジアのテキストに対して UTF.Unknown が返すのはマルチバイトの符号化か判定不能なので、
+東アジアの判定結果は変わらない。
+
+`IsSingleByteCodePage` は `Encoding.GetEncoding(cp).IsSingleByte` を**使わない**。
+.NET Core では `CodePagesEncodingProvider` を登録していないと cp1251 などを解決できず、
+ホスト側の登録状況で判定が変わってしまうため。マルチバイト側を表で除外している。
 
 ### マルチターゲット（net10.0 / net48）と PSEncodingName
 
@@ -175,9 +205,12 @@ Import-Module <dll>
 
 ### テストデータ
 
-`tests/EncodingProbe.Tests/TestData/<言語>/` に言語別・エンコーディング別のサンプルファイルがある（English / Japanese / Korean / Chinese_Simplified / Chinese_Traditional）。PowerShell テストプロジェクトは `Link` でこれを共有している。
+`tests/EncodingProbe.Tests/TestData/<言語>/` に言語別・エンコーディング別のサンプルファイルがある（English / Japanese / Korean / Chinese_Simplified / Chinese_Traditional / German / French / Russian / Polish / Thai）。PowerShell テストプロジェクトは `Link` でこれを共有している。
 
-**注意:** `.editorconfig` は `[*.txt]` に `charset = utf-8-bom` を指定している。TestData の .txt はまさにそれ以外のエンコーディングであることが試験の目的なので、エディタや整形ツールがこれらを書き換えないようにすること。テストデータを新規作成するときはバイト列を明示して生成する。
+東アジア以外の 5 言語（German / French / Russian / Polish / Thai）は 1.2.0 で追加したもので、
+`tools/New-EncodingTestData.ps1` が生成する。内容を変えるときはこのスクリプトを直して再生成すること。
+
+**注意:** `.editorconfig` は `[*.txt]` に `charset = utf-8-bom` を指定している。TestData の .txt はまさにそれ以外のエンコーディングであることが試験の目的なので、エディタや整形ツールがこれらを書き換えないようにすること（`.gitattributes` で `tests/EncodingProbe.Tests/TestData/** -text` にしてある）。テストデータを新規作成するときはバイト列を明示して生成する。
 
 ### PowerShell 5.1 / 7.x の一致検証
 
@@ -242,3 +275,17 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 - `Resolve-Encoding` / `Get-EncodingProbePlatformInfo` のパラメータと戻り値
 - `EncodingInformation` 型（`DotNetEncoding` プロパティは「追加しない」と決定済み）
 - コアの NuGet パッケージの公開 API
+
+## 1.2.0 の作業記録
+
+開発中。**まだリリースしていないのでバージョン番号は上げていない。**
+作業は `feature/1.2.0-world-language-detection` ブランチで行う。
+
+- `docs/EncodingProbe-1.2.0-課題_人間記述用.md` … 人間が確認して発見した課題。
+  課題 1（東アジア以外の言語への対応）は対応済み。経緯と判断の理由は「Claude用記載欄」にある
+- `docs/EncodingProbe-1.2.0-課題-ISO2022判定.md` … ISO-2022 系の未着手課題（3 件）
+- `docs/TestReport_PS7.md` / `docs/TestReport_PS51.md` … 世界言語 83 ファイルの判定テスト結果。
+  1.1.0 時点の測定値であり、課題 1 の対応は反映されていない。
+  このレポートを生成する `tools/Invoke-EncodingProbeTest.ps1` とそのテストデータはリポジトリに入っていない
+
+済んだ変更は CHANGELOG.md の「1.2.0（開発中）」の節にまとめてある。

@@ -827,6 +827,81 @@ Add-Scenario 'Culture/追記継承/ko-KR' {
 
 Add-Scenario 'Culture/CP949期待値' { ($script:koCp949 | ForEach-Object { $_.ToString('X2') }) -join ' ' }
 
+
+# ---------------------------------------------------------------------------
+# 世界言語の判定 (1.2.0)
+#
+# 独自判定が担当するのは東アジア漢字文化圏の旧マルチバイトだけである。
+# それ以外の言語のシングルバイトのテキストは UTF.Unknown が判定するため、
+# 実行環境のカルチャーが何であっても同じ結果にならなければならない。
+#
+# とくに windows-1252 のドイツ語は Shift_JIS としても構造が成立してしまう
+# (FC DF = "üß" が Shift_JIS の外字領域の 2 バイト文字になる) ため、
+# 日本語カルチャーで Shift_JIS と誤判定していた。ここで回帰を固定する。
+# ---------------------------------------------------------------------------
+$script:worldSamples = @(
+    [PSCustomObject]@{ Name = 'de_cp1252'; CodePage = 1252; Text = 'Grüße aus München. Die Straße ist für Fußgänger. Schöne Grüße, Herr Müller.' }
+    [PSCustomObject]@{ Name = 'ru_cp1251'; CodePage = 1251; Text = 'Русский язык. Съешь ещё этих мягких французских булок, да выпей чаю.' }
+    [PSCustomObject]@{ Name = 'pl_cp1250'; CodePage = 1250; Text = 'Zażółć gęślą jaźń. Pchnąć w tę łódź jeża lub ośm skrzyń fig.' }
+    [PSCustomObject]@{ Name = 'th_cp874';  CodePage = 874;  Text = 'ภาษาไทย เป็นภาษาราชการของประเทศไทย และเป็นภาษาประจำชาติ' }
+)
+
+foreach ($worldSample in $script:worldSamples) {
+    foreach ($worldCulture in @('de-DE', 'ru-RU', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW')) {
+
+        # 判定したコードページ。カルチャーが変わっても同じ値でなければならない。
+        Add-Scenario ("World/{0}/{1}/CodePage" -f $worldSample.Name, $worldCulture) {
+            $bytes = [System.Text.Encoding]::GetEncoding($worldSample.CodePage).GetBytes($worldSample.Text + "`n")
+            $path = New-ByteFile ("world_{0}_{1}.txt" -f $worldSample.Name, $worldCulture) $bytes
+            (Resolve-Encoding -Path $path -Culture $worldCulture).CodePage
+        }.GetNewClosure()
+
+        # 復号した本文。誤判定していれば文字化けするので、元の文字列と一致しなくなる。
+        Add-Scenario ("World/{0}/{1}/復号" -f $worldSample.Name, $worldCulture) {
+            $bytes = [System.Text.Encoding]::GetEncoding($worldSample.CodePage).GetBytes($worldSample.Text + "`n")
+            $path = New-ByteFile ("world_dec_{0}_{1}.txt" -f $worldSample.Name, $worldCulture) $bytes
+            $decoded = Get-ProbedContent -LiteralPath $path -Culture $worldCulture -Raw
+            if ($decoded.TrimEnd("`r", "`n") -ceq $worldSample.Text) { '元の本文と一致' } else { Format-Text $decoded }
+        }.GetNewClosure()
+    }
+}
+
+# Unicode の判定はカルチャーに関わらず実行する。
+# UTF.Unknown は BOM 無しの UTF-16 / UTF-32 に対応していないため、
+# 「東アジア以外では独自判定を一切動かさない」という作りにはできない。
+foreach ($unicodeCulture in @('de-DE', 'ru-RU', 'th-TH', 'ja-JP')) {
+    Add-Scenario ("World/BOM無しUTF-16LE/{0}" -f $unicodeCulture) {
+        $bytes = [System.Text.Encoding]::Unicode.GetBytes('Grüße aus München.' + "`n")
+        $path = New-ByteFile ("world_u16_{0}.txt" -f $unicodeCulture) $bytes
+        (Resolve-Encoding -Path $path -Culture $unicodeCulture).CodePage
+    }.GetNewClosure()
+
+    Add-Scenario ("World/BOM無しUTF-16BE/{0}" -f $unicodeCulture) {
+        $bytes = [System.Text.Encoding]::BigEndianUnicode.GetBytes('Grüße aus München.' + "`n")
+        $path = New-ByteFile ("world_u16be_{0}.txt" -f $unicodeCulture) $bytes
+        (Resolve-Encoding -Path $path -Culture $unicodeCulture).CodePage
+    }.GetNewClosure()
+}
+
+# UTF-8 判定は RFC 3629 の整形式バイト列だけを受け入れる。
+# 後続バイトが足りないまま ASCII に戻る形 (cp1252 の "Français" など) を
+# UTF-8 と誤判定していたのを 1.2.0 で直した。
+$script:utf8Probes = @(
+    [PSCustomObject]@{ Name = '正しい3バイト文字';       Bytes = [byte[]](0x41, 0xE3, 0x81, 0x82, 0x42, 0x0A) }
+    [PSCustomObject]@{ Name = '後続バイト不足';           Bytes = [byte[]](0x46, 0x72, 0x61, 0x6E, 0xE7, 0x61, 0x69, 0x73, 0x0A) }
+    [PSCustomObject]@{ Name = '終端で途切れる';           Bytes = [byte[]](0x41, 0xE3, 0x81) }
+    [PSCustomObject]@{ Name = '冗長な2バイト文字';        Bytes = [byte[]](0xC0, 0x80, 0x0A) }
+    [PSCustomObject]@{ Name = 'サロゲート符号位置';       Bytes = [byte[]](0xED, 0xA0, 0x80, 0x0A) }
+    [PSCustomObject]@{ Name = 'U+10FFFF を超える';        Bytes = [byte[]](0xF4, 0x90, 0x80, 0x80, 0x0A) }
+)
+
+foreach ($utf8Probe in $script:utf8Probes) {
+    Add-Scenario ("World/UTF-8厳密判定/{0}" -f $utf8Probe.Name) {
+        $path = New-ByteFile ("world_u8_{0}.txt" -f ($utf8Probe.Name -replace '[^0-9A-Za-z]', '_')) $utf8Probe.Bytes
+        (Resolve-Encoding -Path $path -Culture de-DE -Strategy NativeOnly).CodePage
+    }.GetNewClosure()
+}
+
 # ---------------------------------------------------------------------------
 # レポート出力
 # ---------------------------------------------------------------------------
