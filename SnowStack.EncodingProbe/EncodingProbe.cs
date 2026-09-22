@@ -246,14 +246,42 @@ altered here.
         }
 
         /// <summary>
+        /// UTF.Unknown の結果を「答えとして採用する」信頼度の下限
+        /// </summary>
+        /// <remarks>
+        /// UtfUnknownOnly のとき、および独自判定が判定不能だったときの補完に使う。
+        /// この値を超えていなければ判定不能（CodePage = -1）として扱う。
+        /// </remarks>
+        private const double UtfUnknownAdoptionThreshold = 0.5;
+
+        /// <summary>
+        /// 独自判定が出した旧マルチバイトの答えを「シングルバイトで上書きする」信頼度の下限
+        /// </summary>
+        /// <remarks>
+        /// 採用の下限（<see cref="UtfUnknownAdoptionThreshold"/>）より高くしてある。
+        /// 独自判定がすでに出した答えを覆すには、答えとして採用するより強い根拠を求める、という考え方である。
+        ///
+        /// UTF.Unknown は短い漢字列や HKSCS 入りの Big5 に対して 0.5 前後の信頼度でシングルバイトを返す。
+        /// 実測では、旧マルチバイトのテキストに対してシングルバイトを返したときの最大が 0.5105
+        /// （GBK 6 バイトの「这是一」→ tis-620）であり、
+        /// 上書きが必要なシングルバイトのテキストの最小が 0.5695（ロシア語 cp1251 / koi8-r）であった。
+        /// 値はこの間に取ってある。net48（UTF.Unknown 2.6.0）と net10.0（2.7.0）で測定値は一致する。
+        /// </remarks>
+        private const double SingleByteOverrideThreshold = 0.55;
+
+        /// <summary>
         /// UTF.Unknown の判定結果を <see cref="EncodingInformation"/> に反映する
         /// </summary>
         /// <param name="encInfo">BOM と改行コードを判定済みの <see cref="EncodingInformation"/></param>
         /// <param name="result">UTF.Unknown の判定結果</param>
+        /// <param name="confidence">UTF.Unknown が返した信頼度（判定できなかった場合は 0）</param>
         /// <returns>判定結果を反映した <paramref name="encInfo"/></returns>
-        private static EncodingInformation ApplyUtfUnknownResult(EncodingInformation encInfo, DetectionResult result)
+        private static EncodingInformation ApplyUtfUnknownResult(EncodingInformation encInfo, DetectionResult result, out double confidence)
         {
-            if (result == null || result.Detected == null || result.Detected.Confidence <= 0.5)
+            bool detected = (result != null && result.Detected != null);
+            confidence = detected ? result.Detected.Confidence : 0.0;
+
+            if (!detected || confidence <= UtfUnknownAdoptionThreshold)
             {
                 encInfo.CodePage = -1;
                 return encInfo;
@@ -372,14 +400,39 @@ altered here.
         /// 判定したのであれば、そちらのほうが確からしい。
         /// 逆に、本物の東アジアのテキストに対して UTF.Unknown が返すのはマルチバイトの符号化
         /// （932 / 51932 / 54936 など）か判定不能であり、この条件には該当しない。
+        ///
+        /// ただし、UTF.Unknown は短い漢字列や HKSCS 入りの Big5 に対しても 0.5 前後の信頼度で
+        /// シングルバイトを返す。コードページの組み合わせだけで上書きを決めると、
+        /// 0.5 をわずかに超えただけで正しい独自判定が覆ってしまうため、
+        /// <see cref="SingleByteOverrideThreshold"/> を超える信頼度を要求する。
         /// </remarks>
         /// <param name="nativeInfo">独自判定の結果</param>
         /// <param name="utfUnknownInfo">UTF.Unknown の判定結果</param>
+        /// <param name="confidence">UTF.Unknown が返した信頼度</param>
         /// <returns>true=UTF.Unknown の結果を採用する</returns>
-        private static bool ShouldPreferUtfUnknown(EncodingInformation nativeInfo, EncodingInformation utfUnknownInfo)
+        private static bool ShouldPreferUtfUnknown(EncodingInformation nativeInfo, EncodingInformation utfUnknownInfo, double confidence)
         {
             return IsEastAsianLegacyMultiByteCodePage(nativeInfo.CodePage)
-                && IsSingleByteCodePage(utfUnknownInfo.CodePage);
+                && IsSingleByteCodePage(utfUnknownInfo.CodePage)
+                && confidence > SingleByteOverrideThreshold;
+        }
+
+        /// <summary>
+        /// 独自判定が旧マルチバイトを返したときのクロスチェックを行い、採用する結果を返す
+        /// </summary>
+        /// <param name="nativeInfo">独自判定の結果</param>
+        /// <param name="utfUnknownInfo">同じバイト列に対する UTF.Unknown の判定結果</param>
+        /// <param name="confidence">UTF.Unknown が返した信頼度</param>
+        /// <returns>採用する判定結果</returns>
+        private static EncodingInformation ResolveEastAsianLegacyCrossCheck(
+            EncodingInformation nativeInfo, EncodingInformation utfUnknownInfo, double confidence)
+        {
+            if (ShouldPreferUtfUnknown(nativeInfo, utfUnknownInfo, confidence))
+            {
+                return utfUnknownInfo;
+            }
+
+            return nativeInfo;
         }
 
         /// <summary>
@@ -407,8 +460,21 @@ altered here.
         /// <returns></returns>
         internal static EncodingInformation DetectUtfUnknown(byte[] buffer, string culture = null)
         {
+            double confidence;
+            return DetectUtfUnknown(buffer, culture, out confidence);
+        }
+
+        /// <summary>
+        /// 文字エンコーディングを判定する（UTF.Unknown）
+        /// </summary>
+        /// <param name="buffer">テキストのバイト配列</param>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
+        /// <param name="confidence">UTF.Unknown が返した信頼度（判定できなかった場合は 0）</param>
+        /// <returns></returns>
+        private static EncodingInformation DetectUtfUnknown(byte[] buffer, string culture, out double confidence)
+        {
             EncodingInformation encInfo = DetectEncoding(buffer, DetectionMode.Skippable, culture);
-            return ApplyUtfUnknownResult(encInfo, CharsetDetector.DetectFromBytes(buffer));
+            return ApplyUtfUnknownResult(encInfo, CharsetDetector.DetectFromBytes(buffer), out confidence);
         }
 
         /// <summary>
@@ -431,8 +497,21 @@ altered here.
         /// <returns></returns>
         internal static EncodingInformation DetectUtfUnknown(string filePath, string culture = null)
         {
+            double confidence;
+            return DetectUtfUnknown(filePath, culture, out confidence);
+        }
+
+        /// <summary>
+        /// 文字エンコーディングを判定する（UTF.Unknown）
+        /// </summary>
+        /// <param name="filePath">テキストファイルのパス</param>
+        /// <param name="culture">使用するカルチャー名（例: "ja-JP"）。null または空の場合は現在のカルチャーを使用する。</param>
+        /// <param name="confidence">UTF.Unknown が返した信頼度（判定できなかった場合は 0）</param>
+        /// <returns></returns>
+        private static EncodingInformation DetectUtfUnknown(string filePath, string culture, out double confidence)
+        {
             EncodingInformation encInfo = DetectEncoding(filePath, DetectionMode.Skippable, culture);
-            return ApplyUtfUnknownResult(encInfo, CharsetDetector.DetectFromFile(filePath));
+            return ApplyUtfUnknownResult(encInfo, CharsetDetector.DetectFromFile(filePath), out confidence);
         }
 
         /// <summary>
@@ -452,11 +531,9 @@ altered here.
 
             if (IsEastAsianLegacyMultiByteCodePage(encInfo.CodePage))
             {
-                EncodingInformation utfUnknownInfo = DetectUtfUnknown(buffer, culture);
-                if (ShouldPreferUtfUnknown(encInfo, utfUnknownInfo))
-                {
-                    return utfUnknownInfo;
-                }
+                double confidence;
+                EncodingInformation utfUnknownInfo = DetectUtfUnknown(buffer, culture, out confidence);
+                return ResolveEastAsianLegacyCrossCheck(encInfo, utfUnknownInfo, confidence);
             }
 
             return encInfo;
@@ -491,11 +568,9 @@ altered here.
 
             if (IsEastAsianLegacyMultiByteCodePage(encInfo.CodePage))
             {
-                EncodingInformation utfUnknownInfo = DetectUtfUnknown(filePath, culture);
-                if (ShouldPreferUtfUnknown(encInfo, utfUnknownInfo))
-                {
-                    return utfUnknownInfo;
-                }
+                double confidence;
+                EncodingInformation utfUnknownInfo = DetectUtfUnknown(filePath, culture, out confidence);
+                return ResolveEastAsianLegacyCrossCheck(encInfo, utfUnknownInfo, confidence);
             }
 
             return encInfo;

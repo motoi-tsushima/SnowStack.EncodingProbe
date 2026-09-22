@@ -193,6 +193,24 @@ Get-ChildItem *.txt | Get-ProbedContent
   独自判定は東アジアのマルチバイト、UTF.Unknown は欧米のシングルバイトを担当するため、
   独自判定が誤る欧米のテキストは `UtfUnknownOnly` で読む
 
+#### UTF.Unknown の信頼度に対する 2 つの下限（1.2.0）
+
+`Combined` は独自判定と UTF.Unknown の両方を使う。UTF.Unknown の信頼度に対する下限は、
+**役割ごとに 2 つ**あり、値が異なる。`EncodingProbe.cs` に定数として持つ。
+
+| 下限 | 役割 | 値 |
+|---|---|---|
+| 採用の下限（`UtfUnknownAdoptionThreshold`） | UTF.Unknown の結果を答えとして使う。`UtfUnknownOnly` のとき、および独自判定が判定不能だったときの補完 | **0.5 超** |
+| 上書きの下限（`SingleByteOverrideThreshold`） | 独自判定が返した東アジア旧マルチバイトの答えを、UTF.Unknown のシングルバイトの結果で覆す | **0.55 超** |
+
+上書きの下限を高くしてあるのは、**独自判定がすでに出した答えを覆すには、
+答えとして採用するより強い根拠を求める**という考え方による。
+UTF.Unknown は短い漢字列や HKSCS 固有字を含む Big5 に対して 0.5 前後の信頼度で
+シングルバイトを返すため、採用の下限だけで上書きを決めると、
+0.5 をわずかに超えただけで正しい判定が覆ってしまう。
+
+`-Strategy NativeOnly` はどちらの下限も使わない（UTF.Unknown を呼ばないため）。
+
 `-Encoding` を明示した場合は判定を行わないため、どちらも影響しない。
 
 解釈できない値は**ファイルを開く前**に Error 終了とする。`-Encoding` の検証と同じ方針で、

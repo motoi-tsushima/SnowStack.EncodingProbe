@@ -110,6 +110,23 @@ UTF.Unknown がシングルバイト文字エンコーディングを返して�
 本物の東アジアのテキストに対して UTF.Unknown が返すのはマルチバイトの符号化か判定不能なので、
 東アジアの判定結果は変わらない。
 
+**UTF.Unknown の信頼度に対する下限は、役割ごとに 2 つあり値が違う。**
+
+- `UtfUnknownAdoptionThreshold`（0.5）… UTF.Unknown の結果を**答えとして採用する**下限。
+  `ApplyUtfUnknownResult` が使う。`UtfUnknownOnly` と、独自判定が判定不能だったときの補完に効く
+- `SingleByteOverrideThreshold`（0.55）… 独自判定が出した旧マルチバイトの答えを
+  **シングルバイトで上書きする**下限。`ShouldPreferUtfUnknown` が使う
+
+上書きの下限を高くしてあるのは、独自判定がすでに出した答えを覆すには、
+答えとして採用するより強い根拠を求めるためである。
+UTF.Unknown は短い漢字列や HKSCS 入りの Big5 に対して 0.5 前後でシングルバイトを返すので、
+コードページの組み合わせだけで上書きを決めると正しい判定が覆る
+（GBK の「这是一」6 バイトが tis-620 / 0.5104… で cp874 に化けていた）。
+値は実測に基づく: 旧マルチバイトに対してシングルバイトを返したときの最大が 0.5105、
+上書きが必要なシングルバイトのテキストの最小が 0.5695（ロシア語）。
+**測定値は net48（UTF.Unknown 2.6.0）と net10.0（2.7.0）で一致する。**
+`CrossCheckConfidenceTests` がこの境界を固定している。
+
 `IsSingleByteCodePage` は `Encoding.GetEncoding(cp).IsSingleByte` を**使わない**。
 .NET Core では `CodePagesEncodingProvider` を登録していないと cp1251 などを解決できず、
 ホスト側の登録状況で判定が変わってしまうため。マルチバイト側を表で除外している。
