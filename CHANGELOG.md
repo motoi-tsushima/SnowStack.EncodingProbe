@@ -91,6 +91,20 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
     別の課題として扱います（`docs/EncodingProbe-課題-ヘルプの用字付きカルチャー名.md`）
 - 配布物（`publish/`）へのヘルプのコピー先は、`core\` と `desktop\` の下に 7 言語ぶん、計 14 か所になりました
 
+### 1.1.0 から存在した不具合の修正（緊急修正）
+
+- **ルーマニア語などのテキストを判定すると `NullReferenceException` が発生していたのを直しました。**
+  UTF.Unknown は、.NET が提供していないエンコーディング（ルーマニア語に対する `iso-8859-16` など）を返すことがあり、
+  その場合 UTF.Unknown の `Encoding` は null になります。これを読んで例外が発生し、
+  `Resolve-Encoding` や `Get-ProbedContent` の利用者までそのまま届いていました。
+  判定方式 `Combined` と `UtfUnknownOnly`、すべてのカルチャー、PowerShell 5.1 / 7.x のすべてで発生していました。
+  **リリース済みの 1.1.0 から存在した不具合です。**
+- 修正後は、.NET が非対応のエンコーディングの既存の扱いと同じく、名前（`EncodingWebName`）だけを保存し、
+  `CodePage` を -1 にします。読み書き系のコマンドは判定失敗（`EncodingDetectionFailed`）の非終了エラーを報告し、
+  `-Encoding` による明示指定を案内します
+- 同じ扱いになる名前は、ほかに `iso-8859-10` / `viscii` / `euc-tw` / `X-ISO-10646-UCS-4-3412` / `X-ISO-10646-UCS-4-2143`、
+  および .NET 10 ビルドの `utf-7` です（UTF.Unknown がこれらを返した場合）
+
 ### 変えていない点
 
 - BOM・ISO-2022・ASCII・UTF-32・UTF-16・UTF-8 の判定は、**カルチャーに関わらず**実行します。
@@ -138,6 +152,9 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
 - PSCompat に、UI カルチャーを `zh-HK` / `zh-MO` / `yue-HK` / `zh_HK` にしたときの
   メッセージとヘルプの言語が PowerShell 5.1 / 7.x で一致することのシナリオを追加しました
   （`zh_HK` のヘルプは上記の既知の制限により比較の対象外です）
+- `UnsupportedEncodingTests`（コア）と `UnsupportedUtfUnknownEncodingTests`（PowerShell 層）が、
+  `iso-8859-16` のルーマニア語バイト列で例外が出ないことを検証します。
+  修正前のコードでは、前者は 18 件中 17 件、後者は 12 件中 11 件が失敗します
 
 ## 1.1.0
 

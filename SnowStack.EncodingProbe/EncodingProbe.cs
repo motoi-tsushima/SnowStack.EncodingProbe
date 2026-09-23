@@ -298,6 +298,16 @@ altered here.
                 return encInfo;
             }
 
+            if (result.Detected.Encoding == null)
+            {
+                // UTF.Unknown が .NET に無いエンコーディング（iso-8859-16 など）を返した場合、
+                // Encoding は null になる。下の catch と同じく、名前だけ保存して CodePage は -1 にする。
+                // 1.1.0 ではここで NullReferenceException が利用者まで届いていた
+                encInfo.EncodingWebName = result.Detected.EncodingName;
+                encInfo.CodePage = -1;
+                return encInfo;
+            }
+
             try
             {
                 encInfo.EncodingWebName = result.Detected.EncodingName;
