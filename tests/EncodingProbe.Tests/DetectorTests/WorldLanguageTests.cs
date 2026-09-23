@@ -34,10 +34,21 @@ namespace EncodingProbe.Tests.DetectorTests
         /// ドイツ語の cp1252 と ISO-8859-1、フランス語の cp1252 と ISO-8859-15 は、
         /// このテストデータの文字だけを使う限りバイト列が完全に一致する。
         /// バイト列が同じである以上どちらか一方しか返しようがないため、
-        /// ISO-8859-1 (28591) を期待値としている。
+        /// ISO-8859-1 (28591) を期待値としている。スペイン語の cp1252 も同じ理由で 28591 である。
+        /// <br/>
+        /// スペイン語とエストニア語（1.2.0 で追加）は、東アジアのカルチャーで独自判定が旧マルチバイトを返し、
+        /// UTF.Unknown のシングルバイトで上書きされる（上書き経路に入って正しく救済される）ことを固定する。
+        /// 判定不能になるもの・短文の限界は KnownLimitTests にある。
         /// </remarks>
         private static readonly object[][] SampleFiles =
         {
+            new object[] { "Spanish",   "sample_cp1252.txt",     28591 },
+            new object[] { "Spanish",   "sample_utf8.txt",       65001 },
+            new object[] { "Estonian",  "sample_cp1257.txt",      1257 },
+            new object[] { "Estonian",  "sample_iso8859_15.txt", 28605 },
+            new object[] { "Estonian",  "sample_utf8.txt",       65001 },
+            new object[] { "Ukrainian", "sample_utf8.txt",       65001 },
+            new object[] { "Romanian",  "sample_utf8.txt",       65001 },
             new object[] { "German",  "sample_cp1252.txt",     28591 },
             new object[] { "German",  "sample_iso8859_1.txt",  28591 },
             new object[] { "German",  "sample_utf8.txt",       65001 },
@@ -150,6 +161,34 @@ namespace EncodingProbe.Tests.DetectorTests
             var result = SnowStack.EncodingProbe.EncodingProbe.Detect(buffer, options);
 
             Assert.True(result.CodePage < 0, $"{culture} で cp{result.CodePage} と判定された。");
+        }
+
+        /// <summary>
+        /// スペイン語・エストニア語は、東アジアのカルチャーで上書き経路に入ること（前提の確認）
+        /// </summary>
+        /// <remarks>
+        /// 独自判定だけでは旧マルチバイトと誤判定し、Combined では UTF.Unknown のシングルバイトで上書きされて正しくなる。
+        /// この前提が崩れると、SampleFiles の期待値が上書きの回帰を検出しなくなるため、明示的に確認する。
+        /// </remarks>
+        [Theory]
+        [InlineData("Spanish",  "sample_cp1252.txt",     "ja-JP", 932)]
+        [InlineData("Spanish",  "sample_cp1252.txt",     "ko-KR", 949)]
+        [InlineData("Spanish",  "sample_cp1252.txt",     "zh-CN", 54936)]
+        [InlineData("Spanish",  "sample_cp1252.txt",     "zh-TW", 950)]
+        [InlineData("Spanish",  "sample_cp1252.txt",     "zh-HK", 950)]
+        [InlineData("Estonian", "sample_iso8859_15.txt", "ja-JP", 932)]
+        [InlineData("Estonian", "sample_iso8859_15.txt", "ko-KR", 949)]
+        [InlineData("Estonian", "sample_iso8859_15.txt", "zh-CN", 54936)]
+        [InlineData("Estonian", "sample_cp1257.txt",     "zh-TW", 950)]
+        [InlineData("Estonian", "sample_cp1257.txt",     "zh-HK", 950)]
+        public void Detect_NativeOnly_EastAsianCulture_EntersOverridePath(string language, string fileName, string culture, int nativeCodePage)
+        {
+            var buffer = TestDataHelper.ReadBytes(language, fileName);
+            var options = new EncodingDetectorOptions { Culture = culture, Strategy = DetectionStrategy.NativeOnly };
+
+            var result = SnowStack.EncodingProbe.EncodingProbe.Detect(buffer, options);
+
+            Assert.Equal(nativeCodePage, result.CodePage);
         }
 
         /// <summary>

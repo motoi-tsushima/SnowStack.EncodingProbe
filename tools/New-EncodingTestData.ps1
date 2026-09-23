@@ -9,8 +9,12 @@
     .editorconfig の [*.txt] charset = utf-8-bom は TestData には適用してはならない
     （.gitattributes で TestData/** は -text にしてある）。
 
-    生成対象は 1.2.0 で追加した「東アジア以外の言語」と香港（Chinese_HongKong）だけである。
+    生成対象は 1.2.0 で追加した「東アジア以外の言語」、香港（Chinese_HongKong）、
+    繁体字・簡体字の長めのサンプル（*_long.txt）だけである。
     English / Japanese / Korean / Chinese_* の既存ファイルは上書きしない。
+
+    言語の選び方と、各ファイルで何を固定しているかは
+    docs/EncodingProbe-1.2.0-調査-クロスチェック信頼度の測定.md を参照。
 
 .PARAMETER TestDataRoot
     出力先の TestData フォルダー。既定はこのスクリプトから見た相対パス。
@@ -193,6 +197,114 @@ function Write-HkscsSampleFile {
     '{0,-22} {1,-24} cp{2,-6} {3,5} bytes' -f $Language, $FileName, 950, $bytes.Length
 }
 
+#--------------------------------------------------------------------------
+# スペイン語・エストニア語
+#   東アジアのカルチャーで独自判定が旧マルチバイトを返し（上書き経路に入り）、
+#   UTF.Unknown のシングルバイトで正しく救済される。上書きの回帰を検出するためのデータ
+#--------------------------------------------------------------------------
+$spanishText = @"
+Español. El pingüino Wenceslao hizo kilómetros bajo exhaustiva lluvia y frío.
+Madrid es la capital de España y tiene una larga historia.
+Los niños van a la escuela cada mañana a pie.
+Muchas gracias y hasta pronto.
+"@
+
+$estonianText = @"
+Eesti keel. Põdur Zagrebi tšellomängija-följetonist Ciqo külmetas kehvas garaažis.
+Tallinn on Eesti pealinn ja suurim linn.
+Lapsed käivad igal hommikul jala koolis.
+Aitäh ja head päeva.
+"@
+
+#--------------------------------------------------------------------------
+# ウクライナ語
+#   UTF.Unknown の信頼度が採用の下限（0.5）に届かず、判定不能になる（cp1251 / KOI8-U とも）。
+#   KOI8-U は UTF.Unknown が知らず、koi8-r と答える
+#--------------------------------------------------------------------------
+$ukrainianText = @"
+Українська мова. Чуєш їх, доцю, га? Кумедна ж ти, прощайся без ґольфів!
+Київ є столицею України та найбільшим містом країни.
+Діти щоранку ходять до школи пішки.
+Дякую і гарного дня.
+"@
+
+#--------------------------------------------------------------------------
+# ルーマニア語（ISO-8859-16）
+#   UTF.Unknown は iso-8859-16 と答えるが、.NET には iso-8859-16 が無い。
+#   1.1.0 では NullReferenceException になっていた（緊急修正で直した経路の固定）。
+#   .NET に符号化器が無いため、バイトの対応を明示して書き出す
+#--------------------------------------------------------------------------
+$romanianText = @"
+Limba română este o limbă romanică. Fiecare zi este o nouă șansă de a învăța.
+București este capitala României și cel mai mare oraș din țară.
+Copiii merg în fiecare dimineață la școală pe jos.
+Mulțumesc frumos și o zi bună.
+"@
+
+$iso885916Bytes = @{
+    [char]0x0103 = 0xE3; [char]0x00E2 = 0xE2; [char]0x00EE = 0xEE; [char]0x0219 = 0xBA; [char]0x021B = 0xFE
+    [char]0x0102 = 0xC3; [char]0x00C2 = 0xC2; [char]0x00CE = 0xCE; [char]0x0218 = 0xAA; [char]0x021A = 0xDE
+}
+
+#--------------------------------------------------------------------------
+# 短文の既知の限界（*_short_*.txt）
+#   UTF.Unknown の短文での信頼度・精度の限界により、東アジアのカルチャーで誤判定が残る入力。
+#   現在の挙動が正しいわけではない。テストは UTF.Unknown の改善に気づくために置いている。
+#   測定した行と同じバイト列にするため、末尾に改行（CRLF）を付ける
+#--------------------------------------------------------------------------
+$icelandicShortText = "Takk kærlega og góðan dag.`r`n"
+$russianShortText = "Эх, чужак, общий съём цен шляп (юфть) вдрызг!`r`n"
+$ukrainianShortText = "Київ є столицею України та найбільшим містом країни.`r`n"
+
+#--------------------------------------------------------------------------
+# 繁体字・簡体字の長めのサンプル（200 バイト程度）
+#   既存の東アジアのテストデータは 4〜15 バイトと短く、UTF.Unknown が系統（Big5 / GB）を判定できない。
+#   繁簡の系統クロスチェック（1.2.0 第二次修正）が通常のテストデータでも発動するよう、長めの文を置く。
+#   簡体字は GB2312 の範囲の字だけを使う（GB 系の判別規則で 936 になる）
+#--------------------------------------------------------------------------
+$traditionalLongText = @"
+繁體中文是臺灣、香港與澳門使用的書寫系統。這份測試資料用來確認文字編碼的判斷結果是否正確。
+電腦在讀取檔案時，必須先知道檔案使用哪一種編碼，才能正確顯示文字內容。如果判斷錯誤，畫面上就會出現亂碼。
+"@
+
+$simplifiedLongText = @"
+简体中文是中国大陆和新加坡使用的书写系统。这份测试数据用来确认文字编码的判断结果是否正确。
+电脑在读取文件时，必须先知道文件使用哪一种编码，才能正确显示文字内容。如果判断错误，屏幕上就会出现乱码。
+"@
+
+<#
+.SYNOPSIS
+    .NET に符号化器の無い文字エンコーディングで、バイトの対応を明示して書き出す（BOM は付けない）。
+#>
+function Write-ExplicitBytesFile {
+    param(
+        [Parameter(Mandatory)] [string]    $Language,
+        [Parameter(Mandatory)] [string]    $FileName,
+        [Parameter(Mandatory)] [string]    $EncodingName,
+        [Parameter(Mandatory)] [hashtable] $Map,
+        [Parameter(Mandatory)] [string]    $Text
+    )
+
+    $directory = Join-Path $TestDataRoot $Language
+    if (-not (Test-Path -LiteralPath $directory)) {
+        New-Item -ItemType Directory -Path $directory | Out-Null
+    }
+
+    $Text = $Text -replace "`r?`n", "`r`n"
+    $bytes = New-Object byte[] $Text.Length
+    for ($i = 0; $i -lt $Text.Length; $i++) {
+        $c = $Text[$i]
+        if ([int]$c -lt 0x80) { $bytes[$i] = [byte][int]$c }
+        elseif ($Map.ContainsKey($c)) { $bytes[$i] = [byte]$Map[$c] }
+        else { throw "$Language/$FileName : $EncodingName に対応を定義していない文字 '$c' が含まれている。" }
+    }
+
+    $path = Join-Path $directory $FileName
+    [System.IO.File]::WriteAllBytes($path, $bytes)
+
+    '{0,-22} {1,-24} {2,-8} {3,5} bytes' -f $Language, $FileName, $EncodingName, $bytes.Length
+}
+
 $results = @()
 $results += Write-SampleFile -Language 'German'  -FileName 'sample_cp1252.txt'     -CodePage 1252  -Text $germanText
 $results += Write-SampleFile -Language 'German'  -FileName 'sample_iso8859_1.txt'  -CodePage 28591 -Text $germanText
@@ -216,5 +328,26 @@ $results += Write-SampleFile -Language 'Thai'    -FileName 'sample_utf8.txt'    
 $results += Write-SampleFile -Language 'Chinese_HongKong' -FileName 'sample_big5.txt' -CodePage 950   -Text $hongKongText
 $results += Write-SampleFile -Language 'Chinese_HongKong' -FileName 'sample_utf8.txt' -CodePage 65001 -Text $hongKongText
 $results += Write-HkscsSampleFile -Language 'Chinese_HongKong' -FileName 'sample_big5hkscs.txt' -Text $hongKongText -ExtensionBytes $hkscsBytes
+
+$results += Write-SampleFile -Language 'Spanish'   -FileName 'sample_cp1252.txt'     -CodePage 1252  -Text $spanishText
+$results += Write-SampleFile -Language 'Spanish'   -FileName 'sample_utf8.txt'       -CodePage 65001 -Text $spanishText
+
+$results += Write-SampleFile -Language 'Estonian'  -FileName 'sample_cp1257.txt'     -CodePage 1257  -Text $estonianText
+$results += Write-SampleFile -Language 'Estonian'  -FileName 'sample_iso8859_15.txt' -CodePage 28605 -Text $estonianText
+$results += Write-SampleFile -Language 'Estonian'  -FileName 'sample_utf8.txt'       -CodePage 65001 -Text $estonianText
+
+$results += Write-SampleFile -Language 'Ukrainian' -FileName 'sample_cp1251.txt'     -CodePage 1251  -Text $ukrainianText
+$results += Write-SampleFile -Language 'Ukrainian' -FileName 'sample_koi8u.txt'      -CodePage 21866 -Text $ukrainianText
+$results += Write-SampleFile -Language 'Ukrainian' -FileName 'sample_utf8.txt'       -CodePage 65001 -Text $ukrainianText
+
+$results += Write-ExplicitBytesFile -Language 'Romanian' -FileName 'sample_iso8859_16.txt' -EncodingName 'iso-8859-16' -Map $iso885916Bytes -Text $romanianText
+$results += Write-SampleFile -Language 'Romanian'  -FileName 'sample_utf8.txt'       -CodePage 65001 -Text $romanianText
+
+$results += Write-SampleFile -Language 'Icelandic' -FileName 'sample_short_cp1252.txt' -CodePage 1252  -Text $icelandicShortText
+$results += Write-SampleFile -Language 'Russian'   -FileName 'sample_short_koi8r.txt'  -CodePage 20866 -Text $russianShortText
+$results += Write-SampleFile -Language 'Ukrainian' -FileName 'sample_short_koi8u.txt'  -CodePage 21866 -Text $ukrainianShortText
+
+$results += Write-SampleFile -Language 'Chinese_Traditional' -FileName 'sample_big5_long.txt' -CodePage 950 -Text $traditionalLongText
+$results += Write-SampleFile -Language 'Chinese_Simplified'  -FileName 'sample_gbk_long.txt'  -CodePage 936 -Text $simplifiedLongText
 
 $results

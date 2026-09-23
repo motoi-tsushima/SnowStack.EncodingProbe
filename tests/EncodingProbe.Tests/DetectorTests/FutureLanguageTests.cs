@@ -40,6 +40,7 @@ namespace EncodingProbe.Tests.DetectorTests
         [InlineData("sample_utf8.txt",  65001, "utf-8")]
         [InlineData("sample_big5.txt",  950,   "big5")]
         [InlineData("sample_euctw.txt", 950,   "big5")]
+        [InlineData("sample_big5_long.txt", 950, "big5")]
         public void Detection_ChineseTraditional_FromByteArray(string fileName, int expectedCodePage, string expectedEncodingName)
         {
             var buffer = TestDataHelper.ReadBytes("Chinese_Traditional", fileName);
@@ -147,6 +148,61 @@ namespace EncodingProbe.Tests.DetectorTests
     }
 
     /// <summary>
+    /// 繁簡の系統クロスチェック（1.2.0 第二次修正）が、通常のテストデータで発動することのテスト
+    /// </summary>
+    /// <remarks>
+    /// sample_big5.txt（8 バイト）などの既存の東アジアのテストデータは短く、UTF.Unknown が系統を判定できないため、
+    /// 系統クロスチェックが一度も発動していなかった。200 バイト程度の sample_big5_long.txt / sample_gbk_long.txt
+    /// では UTF.Unknown が系統を 0.99 で返し、クロスチェックが発動する。
+    /// 各テストは、独自判定だけでは反対の系統になる（経路に入る）ことと、Combined で正しい系統に直ることを組で確かめる。
+    /// </remarks>
+    public class ChineseFamilyCrossCheckTestDataTests
+    {
+        private static EncodingInformation Detect(string language, string fileName, string culture, DetectionStrategy strategy)
+            => SnowStack.EncodingProbe.EncodingProbe.Detect(
+                TestDataHelper.ReadBytes(language, fileName),
+                new EncodingDetectorOptions { Culture = culture, Strategy = strategy });
+
+        /// <summary>
+        /// 大陸カルチャーで繁体字の長文を読むと 950 になること
+        /// </summary>
+        [Theory]
+        [InlineData("zh-CN")]
+        [InlineData("zh-Hans-CN")]
+        public void Big5Long_SimplifiedCulture_Returns950(string culture)
+        {
+            Assert.Equal(54936, Detect("Chinese_Traditional", "sample_big5_long.txt", culture, DetectionStrategy.NativeOnly).CodePage);
+            Assert.Equal(950, Detect("Chinese_Traditional", "sample_big5_long.txt", culture, DetectionStrategy.Combined).CodePage);
+        }
+
+        /// <summary>
+        /// 台湾・香港カルチャーで簡体字の長文を読むと 936 になること
+        /// </summary>
+        [Theory]
+        [InlineData("zh-TW")]
+        [InlineData("zh-HK")]
+        [InlineData("zh-Hant-HK")]
+        public void GbkLong_TraditionalCulture_Returns936(string culture)
+        {
+            Assert.Equal(950, Detect("Chinese_Simplified", "sample_gbk_long.txt", culture, DetectionStrategy.NativeOnly).CodePage);
+            Assert.Equal(936, Detect("Chinese_Simplified", "sample_gbk_long.txt", culture, DetectionStrategy.Combined).CodePage);
+        }
+
+        /// <summary>
+        /// 正しいカルチャーで読んだ場合は、系統クロスチェックの前後で結果が変わらないこと
+        /// </summary>
+        [Theory]
+        [InlineData("Chinese_Traditional", "sample_big5_long.txt", "zh-TW", 950)]
+        [InlineData("Chinese_Traditional", "sample_big5_long.txt", "zh-HK", 950)]
+        [InlineData("Chinese_Simplified",  "sample_gbk_long.txt",  "zh-CN", 936)]
+        public void Long_MatchingCulture_IsUnchanged(string language, string fileName, string culture, int expected)
+        {
+            Assert.Equal(expected, Detect(language, fileName, culture, DetectionStrategy.NativeOnly).CodePage);
+            Assert.Equal(expected, Detect(language, fileName, culture, DetectionStrategy.Combined).CodePage);
+        }
+    }
+
+    /// <summary>
     /// 簡体字中国語テキストのエンコーディング判定テスト
     /// </summary>
     /// <remarks>
@@ -159,6 +215,7 @@ namespace EncodingProbe.Tests.DetectorTests
         [InlineData("sample_gb2312.txt",  936,   "gbk")]
         [InlineData("sample_gbk.txt",     54936, "gb18030")]
         [InlineData("sample_gb18030.txt", 54936, "gb18030")]
+        [InlineData("sample_gbk_long.txt", 936,  "gbk")]
         public void Detection_ChineseSimplified_FromByteArray(string fileName, int expectedCodePage, string expectedEncodingName)
         {
             var buffer = TestDataHelper.ReadBytes("Chinese_Simplified", fileName);

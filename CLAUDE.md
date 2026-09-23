@@ -138,6 +138,16 @@ UTF.Unknown は短い漢字列や HKSCS 入りの Big5 に対して 0.5 前後�
 上書きが必要なシングルバイトのテキストの最小が 0.5695（ロシア語）。
 **測定値は net48（UTF.Unknown 2.6.0）と net10.0（2.7.0）で一致する。**
 `CrossCheckConfidenceTests` がこの境界を固定している。
+測定の条件・全表・短文での限界は `docs/EncodingProbe-1.2.0-調査-クロスチェック信頼度の測定.md` にある。
+
+**UTF.Unknown の依存を上げたら、`dotnet build` のあと `pwsh -NoProfile -File tools/Invoke-CrossCheckMeasurement.ps1` で再測定し、
+表 B の最大 < 0.55 < 表 A の最小 が保たれているかを確かめること。** 余裕は下に 0.04、上に 0.02 しかない。
+
+- 多くの言語では 0.55 ではなく 0.5 が効く。東アジアの判定がすべて拒否するバイト（cp1251 の `я` = 0xFF など）を含む入力は
+  独自判定が判定不能になり、上書き経路に入らないため
+- 約 90 バイト以下の短文では、閾値に関係なく誤判定が残る（UTF.Unknown の限界）。
+  `KnownLimitTests` が現在の挙動を固定しているが、**それは正しい挙動ではない**。落ちたら改善か悪化かを調べる
+- UTF.Unknown が .NET に無いエンコーディング（iso-8859-10 など）を返した場合は `CodePage = -1` になり、上書き経路の対象にならない
 
 **繁簡の系統クロスチェック（1.2.0 第二次修正）。** 独自判定が Big5 系（950）または GB 系（936 / 54936 / 20936）を返し、
 UTF.Unknown が**反対の系統**を `ChineseFamilyOverrideThreshold`（**0.8 以上**、上の 2 つとは別の定数）で返したら、
@@ -257,12 +267,18 @@ Import-Module <dll>
 
 ### テストデータ
 
-`tests/EncodingProbe.Tests/TestData/<言語>/` に言語別・エンコーディング別のサンプルファイルがある（English / Japanese / Korean / Chinese_Simplified / Chinese_Traditional / Chinese_HongKong / German / French / Russian / Polish / Thai）。PowerShell テストプロジェクトは `Link` でこれを共有している。
+`tests/EncodingProbe.Tests/TestData/<言語>/` に言語別・エンコーディング別のサンプルファイルがある（English / Japanese / Korean / Chinese_Simplified / Chinese_Traditional / Chinese_HongKong / German / French / Russian / Polish / Thai / Spanish / Estonian / Ukrainian / Romanian / Icelandic）。PowerShell テストプロジェクトは `Link` でこれを共有している。
 
-東アジア以外の 5 言語（German / French / Russian / Polish / Thai）と Chinese_HongKong は 1.2.0 で追加したもので、
+東アジア以外の言語（German / French / Russian / Polish / Thai / Spanish / Estonian / Ukrainian / Romanian / Icelandic）と
+Chinese_HongKong、繁体字・簡体字の長めのサンプル（`*_long.txt`）は 1.2.0 で追加したもので、
 `tools/New-EncodingTestData.ps1` が生成する。内容を変えるときはこのスクリプトを直して再生成すること。
 スクリプトは改行を CRLF に正規化して書き出す（スクリプト自体の改行コードに結果が左右されないように）。
 `sample_big5hkscs.txt` の HKSCS 固有字は .NET のエンコーダーで作れないのでバイト列を明示して挟んでいる。
+
+各ファイルが何を固定しているかは `docs/EncodingProbe-1.2.0-調査-クロスチェック信頼度の測定.md` 11 章の表にある。
+`*_short_*.txt` とウクライナ語は **UTF.Unknown の限界で誤判定・判定不能になる入力**で、`KnownLimitTests` が現在の挙動を固定している（正しい挙動ではない）。
+東アジアの既存データ（4〜15 バイト）は短すぎて UTF.Unknown が系統を判定できないため、
+繁簡の系統クロスチェックは `*_long.txt`（196 バイト）でだけ発動する。
 
 `PrivateUseAreaTests/PrivateUseAreaRoundTripTests` は私用領域方針の付録 A の往復検査で、件数まで固定している。
 テストプロジェクトはコアの internal（カルチャーゲート等）を `InternalsVisibleTo` で参照できる。
@@ -348,6 +364,10 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 - `docs/EncodingProbe-1.2.0-依頼-第三次修正_香港ロケール.md` … 完了。
   香港・マカオのメッセージとヘルプを台湾と同じ内容で提供する（B 案）。
   言語選択を判定のカルチャーゲートと共通化した
+- `docs/EncodingProbe-依頼-緊急修正_Encoding-null-クラッシュ.md` … 完了。
+  UTF.Unknown の `Encoding` が null（iso-8859-16 など）のときの `NullReferenceException`（1.1.0 から存在）を直した
+- `docs/EncodingProbe-1.2.0-依頼-追加作業_測定文書化とテストデータ.md` … 完了。
+  測定結果は `docs/EncodingProbe-1.2.0-調査-クロスチェック信頼度の測定.md`、測定スクリプトは `tools/Invoke-CrossCheckMeasurement.ps1`
 - `docs/EncodingProbe-課題-ヘルプの用字付きカルチャー名.md` … PS 7 で `zh-Hant-*` / `zh_HK` のヘルプが en-US になる。未着手
 - `docs/EncodingProbe-課題-ヘルプ配布の自動化.md` … 配布物へのヘルプのコピーの自動化。未着手
 - `docs/EncodingProbe-課題-香港Big5段階3_HKSCS復号.md` … HKSCS の復号・符号化。

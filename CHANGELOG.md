@@ -39,6 +39,11 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
   UTF.Unknown の結果を答えとして採用する下限（0.5 超）は従来どおりです。
   独自判定がすでに出した答えをシングルバイトで覆すときは、これより高い下限（**0.55 超**）を要求します。
   独自判定の答えを覆すには、答えとして採用するより強い根拠を求める、という考え方です
+- **既知の限界（短文）:** 概ね 90 バイト以下の短いシングルバイト系テキストを東アジアのカルチャーで判定すると、
+  誤ったエンコーディングになる、または東アジアの文字エンコーディングのまま残る場合があります。
+  UTF.Unknown の短文での信頼度と精度の限界によるもので、下限の値では解決しません。
+  通常の長さ（約 170 バイト以上）の文では起きないことを、テストデータに無い 17 言語で確認しています
+  （`docs/EncodingProbe-1.2.0-調査-クロスチェック信頼度の測定.md`）
 
 ### 香港対応 段階 1（第二次修正）
 
@@ -152,6 +157,17 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
 - PSCompat に、UI カルチャーを `zh-HK` / `zh-MO` / `yue-HK` / `zh_HK` にしたときの
   メッセージとヘルプの言語が PowerShell 5.1 / 7.x で一致することのシナリオを追加しました
   （`zh_HK` のヘルプは上記の既知の制限により比較の対象外です）
+- テストデータに Spanish / Estonian / Ukrainian / Romanian / Icelandic を追加しました。
+  スペイン語・エストニア語は上書き経路に入って正しく救済されること、ウクライナ語は判定不能になること、
+  ルーマニア語（ISO-8859-16）は名前だけが保存されることを固定します。
+  `*_short_*.txt`（アイスランド語・KOI8-R・KOI8-U の短い行）は短文での既知の限界を固定するもので、
+  `KnownLimitTests` の期待値は**正しい挙動ではありません**（UTF.Unknown の改善に気づくために置いています）
+- 繁体字・簡体字の長めのサンプル（`sample_big5_long.txt` / `sample_gbk_long.txt`、196 バイト）を追加しました。
+  既存の東アジアのテストデータは短く、繁簡の系統クロスチェックが一度も発動していませんでした。
+  `ChineseFamilyCrossCheckTestDataTests` が、zh-CN で繁体字が 950、zh-TW / zh-HK で簡体字が 936 になることを検証します
+- 信頼度の下限の根拠となる測定を `docs/EncodingProbe-1.2.0-調査-クロスチェック信頼度の測定.md` に記録し、
+  測定スクリプト（`tools/Measure-CrossCheckConfidence.ps1` / `tools/Invoke-CrossCheckMeasurement.ps1`）を追加しました。
+  UTF.Unknown を更新したときは再測定してください
 - `UnsupportedEncodingTests`（コア）と `UnsupportedUtfUnknownEncodingTests`（PowerShell 層）が、
   `iso-8859-16` のルーマニア語バイト列で例外が出ないことを検証します。
   修正前のコードでは、前者は 18 件中 17 件、後者は 12 件中 11 件が失敗します
