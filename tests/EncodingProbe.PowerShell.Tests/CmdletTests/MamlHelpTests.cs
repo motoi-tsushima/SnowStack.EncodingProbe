@@ -13,13 +13,14 @@ namespace EncodingProbe.PowerShell.Tests.CmdletTests;
 /// 言語別の MAML ヘルプが互いにずれていないことを検証するテスト。
 /// </summary>
 /// <remarks>
-/// ヘルプは 5 言語ぶんの XML を手作業で保守している。片方の言語にだけ
+/// ヘルプは 5 言語ぶん（と、その複製の zh-HK / zh-MO）の XML を手作業で保守している。片方の言語にだけ
 /// パラメーターを足す・訳を入れ忘れるといった食い違いは、実際に
 /// その言語の環境で Get-Help を実行するまで表面化しない。
 /// そこで「本文以外の構造は全言語で完全に一致する」ことを機械的に固定する。
 /// <br/>
-/// 判定処理が対象としている言語圏に合わせた 5 言語のみを持ち、
+/// 判定処理が対象としている言語圏に合わせた 5 言語を持ち、
 /// それ以外のカルチャーは en-US にフォールバックさせる。
+/// 香港（zh-HK）とマカオ（zh-MO）には、zh-TW と同じ内容を置いている（1.2.0、B 案）。
 /// </remarks>
 public class MamlHelpTests
 {
@@ -32,9 +33,15 @@ public class MamlHelpTests
     /// <remarks>
     /// Windows が報告する UI カルチャー名そのものを使う。Get-Help はカルチャーの
     /// 親をたどって探すため、より限定的な名前を置くほうが確実に見つかる。
-    /// zh-HK（香港・繁体字広東語）は今回未対応であり、en-US へフォールバックする。
+    /// zh-HK と zh-MO は zh-TW の複製である（B 案。<see cref="HongKongAndMacauFolders"/>）。
+    /// zh-MO の親は zh-Hant であり zh-HK フォルダーには届かないため、zh-MO にも置いている。
     /// </remarks>
-    public static readonly string[] Cultures = { "en-US", "ja-JP", "ko-KR", "zh-TW", "zh-CN" };
+    public static readonly string[] Cultures = { "en-US", "ja-JP", "ko-KR", "zh-TW", "zh-CN", "zh-HK", "zh-MO" };
+
+    /// <summary>
+    /// zh-TW と同じ内容を置いているフォルダー
+    /// </summary>
+    public static readonly string[] HongKongAndMacauFolders = { "zh-HK", "zh-MO" };
 
     /// <summary>MAML の名前空間</summary>
     private static readonly XNamespace Maml =
@@ -52,7 +59,7 @@ public class MamlHelpTests
     };
 
     /// <summary>
-    /// 5 言語ぶんのヘルプがすべて存在すること。
+    /// すべての言語フォルダーのヘルプが存在すること。
     /// </summary>
     [Theory]
     [MemberData(nameof(CultureNames))]
@@ -100,6 +107,30 @@ public class MamlHelpTests
 
         Assert.Empty(untranslated);
     }
+
+    /// <summary>
+    /// 香港・マカオのヘルプが、台湾（zh-TW）と同じ内容であること（B 案による意図的な同一）。
+    /// </summary>
+    /// <remarks>
+    /// 1.2.0 では香港用の文面を作らず、zh-TW をそのまま複製すると決めた（B 案）。
+    /// Microsoft は Windows の zh-HK 言語パックの提供をやめて zh-TW を案内しており、
+    /// 香港の繁体字 UI で実際に表示されるのは台湾向けの文面であるため。
+    /// <see cref="HelpFile_ParagraphsAreTranslated"/> は英語との比較だけなので、複製であることは検出できない。
+    /// ここでバイト列の一致を固定しておく。zh-TW を直して複製を忘れた場合もこのテストが落ちる。
+    /// 将来、香港用の文面を持つとこのテストは落ちる。そのときは B 案を見直す判断の機会として扱うこと。
+    /// </remarks>
+    [Theory]
+    [MemberData(nameof(HongKongAndMacauFolderNames))]
+    public void HelpFile_HongKongAndMacau_AreIntentionallySameAsTaiwan_PlanB(string culture)
+    {
+        byte[] taiwan = File.ReadAllBytes(HelpPath("zh-TW"));
+        byte[] copy = File.ReadAllBytes(HelpPath(culture));
+
+        Assert.Equal(taiwan, copy);
+    }
+
+    public static IEnumerable<object[]> HongKongAndMacauFolderNames()
+        => HongKongAndMacauFolders.Select(culture => new object[] { culture });
 
     /// <summary>
     /// すべてのコマンドレットが、全言語のヘルプに記載されていること。

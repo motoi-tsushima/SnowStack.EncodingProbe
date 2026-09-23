@@ -965,6 +965,50 @@ Add-Scenario 'HongKong/hkscs/往復' {
 }
 
 # ---------------------------------------------------------------------------
+# 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
+#
+# UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。
+# ヘルプの言語は Import-Module の前に UI カルチャーを変えないと切り替わらないため。
+# 子プロセスの結果は UTF-8 のファイルで受け取る (標準出力はコンソールのコードページに左右される)。
+#
+# - メッセージは判定のカルチャーゲートと同じ規則で言語を選ぶ。香港・マカオ・広東語は台湾と同じ繁体字 (B 案)
+# - ヘルプは zh-HK / zh-MO フォルダーに zh-TW の複製を置いた。yue 系は en-US (既知の制限)
+# - zh_HK のヘルプは両ホストで異なる (PS 7 は en-US)。ICU がカルチャー名を正規化しないためで、
+#   zh-Hant-HK などと同じ別課題として扱う。ここではメッセージだけを比べる
+# ---------------------------------------------------------------------------
+$script:uiCultureChild = Join-Path $script:WorkRoot 'uiculture_child.ps1'
+[IO.File]::WriteAllText($script:uiCultureChild, @'
+param([string]$Dll, [string]$Culture, [string]$OutFile)
+$ErrorActionPreference = 'Stop'
+[System.Threading.Thread]::CurrentThread.CurrentUICulture = New-Object System.Globalization.CultureInfo($Culture)
+Import-Module $Dll
+try { ConvertTo-DotNetEncoding 'nonexistent-encoding' | Out-Null; $message = '(no error)' }
+catch {
+    $e = $_.Exception
+    while ($null -ne $e.InnerException) { $e = $e.InnerException }
+    $message = $e.Message
+}
+$synopsis = ((Get-Help Get-ProbedContent).Synopsis | Out-String).Trim()
+[IO.File]::WriteAllLines($OutFile, [string[]]@($message, $synopsis), (New-Object System.Text.UTF8Encoding($false)))
+'@, (New-Object System.Text.UTF8Encoding($true)))
+
+$script:hostExecutable = (Get-Process -Id $PID).Path
+$script:dllFullPath = (Resolve-Path -LiteralPath $Dll).Path
+
+# 注意: 変数名は大文字小文字を区別しない。$outFile のような名前はスクリプトの -OutFile を上書きしてしまう
+foreach ($uiCulture in @('zh-HK', 'zh-MO', 'yue-HK', 'zh_HK')) {
+    $uiCultureResult = Join-Path $script:WorkRoot ("uiculture_{0}.txt" -f $uiCulture)
+    & $script:hostExecutable -NoProfile -ExecutionPolicy Bypass -File $script:uiCultureChild `
+        -Dll $script:dllFullPath -Culture $uiCulture -OutFile $uiCultureResult
+    $lines = if (Test-Path -LiteralPath $uiCultureResult) { [IO.File]::ReadAllLines($uiCultureResult) } else { @('(結果なし)', '(結果なし)') }
+
+    $script:Report.Add(("UICulture/{0}/メッセージ`tOK`t{1}" -f $uiCulture, $lines[0]))
+    if ($uiCulture -ne 'zh_HK') {
+        $script:Report.Add(("UICulture/{0}/Get-Help`tOK`t{1}" -f $uiCulture, $lines[1]))
+    }
+}
+
+# ---------------------------------------------------------------------------
 # レポート出力
 # ---------------------------------------------------------------------------
 

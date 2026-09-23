@@ -11,6 +11,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// 対応言語は、EncodingProbe の独自判定処理が対象としている言語圏に合わせて
     /// 英語・日本語・韓国語・繁体字中国語・簡体字中国語の5言語とする。
     /// いずれにも該当しない場合は英語にフォールバックする。
+    /// 香港・マカオ・広東語は台湾と同じ繁体字の文面を使う（<see cref="ResolveLanguage"/> を参照）。
     /// <br/>
     /// 言語の決定には <see cref="CultureInfo.CurrentUICulture"/> を用いる。
     /// メッセージの表示言語と、数値や日付の書式に用いるカルチャー
@@ -38,12 +39,6 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         /// <summary>簡体字中国語</summary>
         public const string ChineseSimplified = "zh-Hans";
-
-        /// <summary>中国語の言語コード</summary>
-        private const string ChineseLanguageCode = "zh";
-
-        /// <summary>繁体字を使用する地域のサブタグ（台湾・香港・マカオ）</summary>
-        private static readonly string[] TraditionalChineseRegions = { "-TW", "-HK", "-MO" };
 
         private static readonly Dictionary<MessageKey, string> EnglishMessages =
             new Dictionary<MessageKey, string>
@@ -530,6 +525,23 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// カルチャーから、対応言語のいずれかを決定する。
         /// 対応しない言語は英語にフォールバックする。
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// 文字エンコーディング判定のカルチャーゲート
+        /// （<see cref="EncodingDetector.ResolveEastAsianLegacyRegion(string)"/>）と同じ規則を使う。
+        /// カルチャー名をサブタグに分解して判定し、<see cref="CultureInfo.TwoLetterISOLanguageName"/> や
+        /// 親カルチャーのチェーンは使わない。これらは .NET Framework（NLS）と .NET Core（ICU）とで
+        /// 名前や親が異なり、<c>zh_HK</c> が PowerShell 7 では簡体字、5.1 では繁体字になっていた。
+        /// また <c>yue</c>（広東語）を判定側は香港として扱うのに、メッセージは英語になっていた。
+        /// </para>
+        /// <para>
+        /// 香港・マカオ・広東語には台湾と同じ繁体字の文面を使う（B 案）。
+        /// Microsoft は Windows の zh-HK 言語パックの提供をやめて zh-TW を案内しており、
+        /// 香港の繁体字 UI で実際に表示されるのは台湾向けの文面であるため。
+        /// 香港用の文面を持つ場合は、辞書と <see cref="Catalogs"/> の行を足し、
+        /// <see cref="LanguageFromRegion"/> の香港の行を変えればよい。
+        /// </para>
+        /// </remarks>
         public static string ResolveLanguage(CultureInfo? culture)
         {
             if (culture == null)
@@ -537,62 +549,30 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 return English;
             }
 
-            string language = culture.TwoLetterISOLanguageName;
-
-            if (string.Equals(language, ChineseLanguageCode, StringComparison.OrdinalIgnoreCase))
-            {
-                return ResolveChineseScript(culture);
-            }
-
-            if (string.Equals(language, Japanese, StringComparison.OrdinalIgnoreCase))
-            {
-                return Japanese;
-            }
-
-            if (string.Equals(language, Korean, StringComparison.OrdinalIgnoreCase))
-            {
-                return Korean;
-            }
-
-            return English;
+            return LanguageFromRegion(EncodingDetector.ResolveEastAsianLegacyRegion(culture.Name));
         }
 
         /// <summary>
-        /// 中国語のカルチャーが繁体字と簡体字のどちらであるかを判定する。
+        /// 判定のカルチャー圏を、メッセージの言語に写す
         /// </summary>
-        /// <remarks>
-        /// zh-TW / zh-CN などの具体的なカルチャーは、親をたどると zh-Hant / zh-Hans に到達する。
-        /// .NET Framework 4.8 では途中に zh-CHT / zh-CHS が挟まるが、いずれも最終的には
-        /// zh-Hant / zh-Hans を経由するため、親チェーンの走査で両ランタイムに対応できる。
-        /// スクリプトを特定できない中立カルチャー(zh)は簡体字として扱う。
-        /// </remarks>
-        private static string ResolveChineseScript(CultureInfo culture)
+        private static string LanguageFromRegion(EncodingDetector.EastAsianLegacyRegion region)
         {
-            for (CultureInfo? current = culture;
-                 current != null && !string.IsNullOrEmpty(current.Name);
-                 current = current.Parent)
+            switch (region)
             {
-                if (string.Equals(current.Name, ChineseTraditional, StringComparison.OrdinalIgnoreCase))
-                {
-                    return ChineseTraditional;
-                }
-
-                if (string.Equals(current.Name, ChineseSimplified, StringComparison.OrdinalIgnoreCase))
-                {
+                case EncodingDetector.EastAsianLegacyRegion.Japanese:
+                    return Japanese;
+                case EncodingDetector.EastAsianLegacyRegion.Korean:
+                    return Korean;
+                case EncodingDetector.EastAsianLegacyRegion.ChineseSimplified:
                     return ChineseSimplified;
-                }
-            }
-
-            // 親チェーンからスクリプトを特定できない場合は地域で判定する
-            foreach (string region in TraditionalChineseRegions)
-            {
-                if (culture.Name.EndsWith(region, StringComparison.OrdinalIgnoreCase))
-                {
+                case EncodingDetector.EastAsianLegacyRegion.ChineseTraditional:
                     return ChineseTraditional;
-                }
+                case EncodingDetector.EastAsianLegacyRegion.ChineseHongKong:
+                    // B 案: 香港用の辞書は持たず、台湾と同じ繁体字の文面を使う
+                    return ChineseTraditional;
+                default:
+                    return English;
             }
-
-            return ChineseSimplified;
         }
     }
 }

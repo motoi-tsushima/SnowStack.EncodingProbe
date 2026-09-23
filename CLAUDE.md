@@ -99,7 +99,7 @@ Unicode 系の判定を独自判定側から外すことはできない。
 
 - カルチャー名は `Internal/CultureNameSubtags` で言語・用字・地域のサブタグに分解してから引く。
   `CultureInfo` の親チェーンは使わない（net48 の NLS と net10.0 の ICU で名前・親が異なるため）。
-  第三次修正で `MessageCatalog` の言語選択にも同じ規則を使う予定
+  `MessageCatalog` の言語選択も同じ規則を使う（1.2.0 第三次修正。`MessageCatalog.ResolveLanguage`）
 - `zh` / `yue` は 用字サブタグ → 地域サブタグ → 言語の既定（`zh` は簡体字、`yue` は香港）の順で決める。
   繁体字のうち地域 `HK` / `MO` が `ChineseHongKong`
 - 日本語・韓国語も言語サブタグの完全一致（`ja` / `ko`）で判定する。前方一致に戻さないこと。
@@ -199,6 +199,12 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
   名前の組み合わせ表では判定しない（仕様書 6.1）
 - メッセージは `Internal/MessageCatalog` が英語・日本語・韓国語・繁体字中国語・簡体字中国語で持つ。
   サテライトアセンブリではなく単一アセンブリ内の表。`Resolve-Encoding` の既存メッセージは英語のまま
+- 言語は `CurrentUICulture` の名前を `EncodingDetector.ResolveEastAsianLegacyRegion` に渡し、
+  判定のカルチャー圏をそのまま言語に写して決める（`LanguageFromRegion`）。
+  `TwoLetterISOLanguageName` や親カルチャーのチェーンは使わない（NLS と ICU で名前・親が異なる）。
+  **香港（`ChineseHongKong`）は台湾と同じ繁体字の辞書を使う（B 案）。** 香港用の辞書は持たない。
+  香港用の文面を持つ場合は、辞書と `Catalogs` の行を足して `LanguageFromRegion` の香港の行を変える。
+  `MessageCatalogTests.HongKongMessages_AreIntentionallySameAsTaiwan_PlanB` が落ちるので、そこで B 案を見直す
 - `-Culture` / `-Strategy` は共通の基底クラス `Cmdlets/ProbedContentCommandBase` にある。
   `Resolve-Encoding` と**同じ名前・同じ値**であり、判定方式の語彙表は
   `Cmdlets/ResolveEncodingOptions.TryParseStrategy` に集約している（表を二重に持たない）。
@@ -214,18 +220,24 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
 
 ### MAML ヘルプ
 
-`SnowStack.EncodingProbe.PowerShell/` の下の `en-US/` `ja-JP/` `ko-KR/` `zh-TW/` `zh-CN/` に
+`SnowStack.EncodingProbe.PowerShell/` の下の `en-US/` `ja-JP/` `ko-KR/` `zh-TW/` `zh-CN/` `zh-HK/` `zh-MO/` に
 `SnowStack.EncodingProbe.PowerShell.dll-Help.xml` を置いている（csproj で出力へコピーする）。
 対応言語はメッセージ（`MessageCatalog`）と同じ 5 言語。
+**`zh-HK/` と `zh-MO/` は `zh-TW/` のバイト単位の複製である（1.2.0、B 案）。**
+Microsoft が zh-HK 言語パックの提供をやめ zh-TW を案内しているのに合わせた判断で、香港用の文面は作らない。
+**zh-TW を直したら zh-HK / zh-MO にもコピーすること。**
+`MamlHelpTests.HelpFile_HongKongAndMacau_AreIntentionallySameAsTaiwan_PlanB` がバイト列の一致を検査している。
 
-`Get-Help` はアセンブリと同じ場所のカルチャー別フォルダーを、UI カルチャーの親を
-たどりながら探す。フォルダー名は **Windows が報告する UI カルチャー名そのもの**にしてある。
-`zh-Hant` / `zh-Hans` のような親カルチャー名を置くと `zh-HK`（香港）まで拾ってしまい、
-「香港は後のバージョンで対応する」という方針に反するため、置いていない。
-`zh-HK` `zh-SG` `ko` などは en-US にフォールバックする（これが期待どおりの挙動）。
+`Get-Help` は「UI カルチャー名と同名のフォルダー → 親カルチャーのフォルダー → en-US」の順で探す（両ホストで同じ）。
+フォルダー名は **Windows が報告する UI カルチャー名そのもの**にしてある。
+`zh-Hant` / `zh-Hans` のような親カルチャー名は置かない（台湾版と香港版を分けられなくなる）。
+`zh-MO` の親は `zh-Hant` で `zh-HK` フォルダーには届かないため、`zh-MO/` も置いている。
+`zh-SG` `ko` `yue` 系などは en-US にフォールバックする。
+PS 7（ICU）は `zh-Hant-TW` / `zh-Hant-HK` / `zh-Hant-MO` / `zh_HK` を正規化しないため、これらのヘルプは en-US になる
+（PS 5.1 は `zh-TW` などに正規化するので繁体字）。既知の課題: `docs/EncodingProbe-課題-ヘルプの用字付きカルチャー名.md`
 
-`publish/` へ配置する際は `core\` と `desktop\` の下に 5 言語ぶん、計 10 か所へコピーする
-（`Copy-Item -Recurse` でビルド出力ごと配ればよい）。
+`publish/` へ配置する際は `core\` と `desktop\` の下に 7 フォルダーぶん、計 14 か所へコピーする
+（`Copy-Item -Recurse` でビルド出力ごと配ればよい）。自動化は `docs/EncodingProbe-課題-ヘルプ配布の自動化.md`
 
 **5 言語の内容がずれないよう、1 つだけ直さないこと。**
 `tests/EncodingProbe.PowerShell.Tests/CmdletTests/MamlHelpTests.cs` が、
@@ -289,8 +301,9 @@ pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1
 新しいコマンドレットを追加したら、次も忘れずに行う:
 
 - `.psd1` の `CmdletsToExport` に追加する
-- MAML ヘルプ 5 言語（`en-US` / `ja-JP` / `ko-KR` / `zh-TW` / `zh-CN`）すべてに項目を追加する
-  （`MamlHelpTests` が骨格の一致を要求するため、1 言語だけ足すとテストが落ちる）
+- MAML ヘルプ 5 言語（`en-US` / `ja-JP` / `ko-KR` / `zh-TW` / `zh-CN`）すべてに項目を追加し、
+  `zh-TW` を `zh-HK` / `zh-MO` へコピーする
+  （`MamlHelpTests` が骨格の一致と複製の一致を要求するため、1 言語だけ足すとテストが落ちる）
 - `tests/EncodingProbe.PowerShell.Tests/Helpers/ProbedCommandRunspaceFixture.cs` に登録する
   （登録しないとテストのランスペースから呼べない）
 - `tests/PSCompat/ProbedCompatScenarios.ps1` にシナリオを追加する
@@ -332,8 +345,11 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 - `docs/EncodingProbe-1.2.0-依頼-第一次修正_クロスチェック信頼度.md` … 完了
 - `docs/EncodingProbe-1.2.0-依頼-第二次修正_香港Big5段階1.md` … 完了。
   背景と実測は `docs/EncodingProbe-1.2.0-課題-香港Big5対応.md`、私用領域の扱いは `docs/私用領域の扱い_方針草案.md`
-- 第三次修正（予定）… ヘルプ（MAML）と `MessageCatalog` の香港対応（zh-HK 版、zh-MO は同じ内容）。
-  第二次修正では `MessageCatalog` と MAML ヘルプ、`MamlHelpTests` の期待値に触れていない
+- `docs/EncodingProbe-1.2.0-依頼-第三次修正_香港ロケール.md` … 完了。
+  香港・マカオのメッセージとヘルプを台湾と同じ内容で提供する（B 案）。
+  言語選択を判定のカルチャーゲートと共通化した
+- `docs/EncodingProbe-課題-ヘルプの用字付きカルチャー名.md` … PS 7 で `zh-Hant-*` / `zh_HK` のヘルプが en-US になる。未着手
+- `docs/EncodingProbe-課題-ヘルプ配布の自動化.md` … 配布物へのヘルプのコピーの自動化。未着手
 - `docs/EncodingProbe-課題-香港Big5段階3_HKSCS復号.md` … HKSCS の復号・符号化。
   **本製品では対応しない（方針）。** 私用領域の内容に干渉しないのが基本方針で、香港固有字の解釈は利用者に任せる。
   対処するとしても別製品・別機能で扱う。HKSCS の対応表や写像を本製品に持ち込まないこと

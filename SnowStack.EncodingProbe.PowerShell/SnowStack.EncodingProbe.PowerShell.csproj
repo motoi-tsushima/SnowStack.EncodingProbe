@@ -36,7 +36,10 @@
     対応言語は、判定処理が対象としている言語圏に合わせた 5 言語。
     フォルダー名は Windows が報告する UI カルチャー名そのものにする
     （zh-Hant / zh-Hans のような親カルチャー名は使わない）。
-    zh-HK（香港）は今回未対応であり、en-US へフォールバックさせる。
+    zh-HK（香港）と zh-MO（マカオ）には、zh-TW と同じ内容をそのまま置く（1.2.0、B 案）。
+    Microsoft は Windows の zh-HK 言語パックの提供をやめて zh-TW を案内しているため。
+    zh-MO の親は zh-Hant であり zh-HK フォルダーには届かないので、zh-MO にも置く。
+    zh-Hant-HK のような用字付きの名前は PowerShell 7（ICU）では正規化されず en-US に落ちる（既知の課題）。
   -->
   <ItemGroup>
     <Content Include="en-US\SnowStack.EncodingProbe.PowerShell.dll-Help.xml">
@@ -49,6 +52,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="zh-TW\SnowStack.EncodingProbe.PowerShell.dll-Help.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="zh-HK\SnowStack.EncodingProbe.PowerShell.dll-Help.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="zh-MO\SnowStack.EncodingProbe.PowerShell.dll-Help.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="zh-CN\SnowStack.EncodingProbe.PowerShell.dll-Help.xml">
