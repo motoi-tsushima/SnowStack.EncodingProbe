@@ -357,5 +357,5 @@ try { [System.Text.Encoding]::GetEncoding(951) } catch { 'cp951: ' + $_.Exceptio
   カルチャーゲートとクロスチェックを導入した経緯はここにある
 - `docs/EncodingProbe-1.2.0-課題-ISO2022判定.md` … 課題 2 が本文書 4 節と同じ構図
   （判定できても .NET が扱えないコードページをどう返すか）
-- `docs/TestReport_PS7.md` / `docs/TestReport_PS51.md` … 1.1.0 時点の測定値。
+- `docs/TestReport_PS7.md` / `docs/TestReport_PS51.md`（1.2.0 完了時に削除。git の履歴に残っている）… 1.1.0 時点の測定値。
   83 番の `traditional_chinese_hk_big5hkscs.txt` が香港の HKSCS ファイルで、`950 / big5` と判定されている
