@@ -24,7 +24,7 @@ namespace EncodingProbe.Tests.DetectorTests
         private static readonly string[] CultureNames =
         {
             "de-DE", "fr-FR", "ru-RU", "pl-PL", "th-TH", "en-US",
-            "ja-JP", "ko-KR", "zh-CN", "zh-TW", "zh-HK",
+            "ja-JP", "ko-KR", "zh-CN", "zh-TW", "zh-HK", "kok-IN",
         };
 
         /// <summary>
@@ -130,6 +130,26 @@ namespace EncodingProbe.Tests.DetectorTests
             var result = SnowStack.EncodingProbe.EncodingProbe.Detect(buffer, options);
 
             Assert.True(result.CodePage < 0, $"{language}/{fileName} が独自判定で cp{result.CodePage} と判定された。");
+        }
+
+        /// <summary>
+        /// コンカニ語（kok）のカルチャーでは、韓国語の旧マルチバイトの判定を行わないこと
+        /// </summary>
+        /// <remarks>
+        /// 1.2.0 より前はカルチャー名の前方一致で韓国語を判定していたため、
+        /// kok-IN を韓国語と扱い、EUC-KR / CP949 のバイト列を cp949 と判定していた。
+        /// </remarks>
+        [Theory]
+        [InlineData("kok")]
+        [InlineData("kok-IN")]
+        public void Detect_NativeOnly_Konkani_DoesNotDetectKorean(string culture)
+        {
+            var buffer = TestDataHelper.ReadBytes("Korean", "sample_cp949.txt");
+            var options = new EncodingDetectorOptions { Culture = culture, Strategy = DetectionStrategy.NativeOnly };
+
+            var result = SnowStack.EncodingProbe.EncodingProbe.Detect(buffer, options);
+
+            Assert.True(result.CodePage < 0, $"{culture} で cp{result.CodePage} と判定された。");
         }
 
         /// <summary>

@@ -102,8 +102,9 @@ Unicode 系の判定を独自判定側から外すことはできない。
   第三次修正で `MessageCatalog` の言語選択にも同じ規則を使う予定
 - `zh` / `yue` は 用字サブタグ → 地域サブタグ → 言語の既定（`zh` は簡体字、`yue` は香港）の順で決める。
   繁体字のうち地域 `HK` / `MO` が `ChineseHongKong`
-- 日本語・韓国語は結果を変えないため、従来どおり前方一致（`ja*` / `ko*`）のまま。
-  そのため `kok`（コンカニ語）は Korean になる（1.2.0 より前からの挙動）
+- 日本語・韓国語も言語サブタグの完全一致（`ja` / `ko`）で判定する。前方一致に戻さないこと。
+  1.2.0 より前は前方一致だったため `kok`（コンカニ語）を Korean と判定していた。
+  .NET の一覧で `ja` / `ko` で始まる別言語は `kok` だけだが、Windows は未登録の名前（`kos` 等）も受け付ける
 - `ChineseHongKong` と `ChineseTraditional` の挙動差は EUC-TW を候補にしないことだけ。
   台湾 Big5 と香港 Big5 はバイト列から区別せず、どちらも `950 / big5` を返す（段階 2 は見送り）。
   HKSCS 固有字は私用領域に復号され、本ライブラリは介入しない（`docs/私用領域の扱い_方針草案.md`）
@@ -333,7 +334,9 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
   背景と実測は `docs/EncodingProbe-1.2.0-課題-香港Big5対応.md`、私用領域の扱いは `docs/私用領域の扱い_方針草案.md`
 - 第三次修正（予定）… ヘルプ（MAML）と `MessageCatalog` の香港対応（zh-HK 版、zh-MO は同じ内容）。
   第二次修正では `MessageCatalog` と MAML ヘルプ、`MamlHelpTests` の期待値に触れていない
-- `docs/EncodingProbe-課題-香港Big5段階3_HKSCS復号.md` … HKSCS の復号・符号化（オプトイン）。未着手
+- `docs/EncodingProbe-課題-香港Big5段階3_HKSCS復号.md` … HKSCS の復号・符号化。
+  **本製品では対応しない（方針）。** 私用領域の内容に干渉しないのが基本方針で、香港固有字の解釈は利用者に任せる。
+  対処するとしても別製品・別機能で扱う。HKSCS の対応表や写像を本製品に持ち込まないこと
 - `docs/TestReport_PS7.md` / `docs/TestReport_PS51.md` … 世界言語 83 ファイルの判定テスト結果。
   1.1.0 時点の測定値であり、課題 1 の対応は反映されていない。
   このレポートを生成する `tools/Invoke-EncodingProbeTest.ps1` とそのテストデータはリポジトリに入っていない

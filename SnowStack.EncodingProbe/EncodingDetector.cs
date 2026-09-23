@@ -739,7 +739,8 @@ namespace SnowStack.EncodingProbe
         /// 地域が無い場合は <c>zh</c> → 台湾、<c>yue</c> → 香港</item>
         /// </list>
         /// <para>
-        /// 日本語・韓国語は、1.2.0 より前と結果を変えないため、従来どおりカルチャー名の前方一致で判定する。
+        /// 日本語（<c>ja</c>）・韓国語（<c>ko</c>）も言語サブタグの完全一致で判定する。
+        /// 1.2.0 より前は前方一致だったため、<c>kok</c>（コンカニ語）を韓国語と判定していた。
         /// </para>
         /// </remarks>
         /// <param name="cultureName">カルチャー名（例: <c>zh-Hant-HK</c>）</param>
@@ -751,18 +752,20 @@ namespace SnowStack.EncodingProbe
                 return EastAsianLegacyRegion.None;
             }
 
+            CultureNameSubtags subtags = CultureNameSubtags.Parse(cultureName);
+
             // 日本語
-            if (cultureName!.StartsWith("ja", StringComparison.OrdinalIgnoreCase))
+            if (subtags.Language == "ja")
             {
                 return EastAsianLegacyRegion.Japanese;
             }
             // 韓国語
-            if (cultureName.StartsWith("ko", StringComparison.OrdinalIgnoreCase))
+            // 言語サブタグの完全一致で判定する。前方一致では kok（コンカニ語）まで韓国語になっていた
+            if (subtags.Language == "ko")
             {
                 return EastAsianLegacyRegion.Korean;
             }
 
-            CultureNameSubtags subtags = CultureNameSubtags.Parse(cultureName);
             bool isCantonese = (subtags.Language == "yue");
 
             if (subtags.Language != "zh" && !isCantonese)

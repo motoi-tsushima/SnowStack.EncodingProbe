@@ -847,7 +847,7 @@ $script:worldSamples = @(
 )
 
 foreach ($worldSample in $script:worldSamples) {
-    foreach ($worldCulture in @('de-DE', 'ru-RU', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW', 'zh-HK')) {
+    foreach ($worldCulture in @('de-DE', 'ru-RU', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW', 'zh-HK', 'kok-IN')) {
 
         # 判定したコードページ。カルチャーが変わっても同じ値でなければならない。
         Add-Scenario ("World/{0}/{1}/CodePage" -f $worldSample.Name, $worldCulture) {
@@ -939,6 +939,12 @@ foreach ($hkSample in $script:hkSamples) {
             (Resolve-Encoding -Path $path -Culture $hkCulture -Strategy NativeOnly).CodePage
         }.GetNewClosure()
     }
+}
+
+# kok (コンカニ語) を韓国語と判定しない。1.2.0 より前は前方一致のため cp949 と判定していた
+Add-Scenario 'Culture/kok-IN/韓国語の判定を行わない' {
+    $path = New-ByteFile 'kok_cp949.txt' ([System.Text.Encoding]::GetEncoding(949).GetBytes('안녕하세요. 한국어 문장입니다.' + "`n"))
+    (Resolve-Encoding -Path $path -Culture kok-IN -Strategy NativeOnly).CodePage
 }
 
 # HKSCS 固有字は例外も置換文字も出さずに私用領域へ写される

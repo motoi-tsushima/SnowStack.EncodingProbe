@@ -47,8 +47,13 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
   `zh-Hans-CN`、`zh-Hant-TW` などが判定不能になっていました。
   大文字小文字を区別せず、`_` は `-` と同じに扱います（`zh_HK` も香港）。
   中国語（`zh`）と広東語（`yue`）は、用字サブタグ → 地域サブタグ → 言語の既定の順で繁簡を決めます。
-  `zh` だけのカルチャーは簡体字、`yue` は香港の繁体字として扱います。
-  日本語・韓国語の判定は従来と同じです
+  `zh` だけのカルチャーは簡体字、`yue` は香港の繁体字として扱います
+- **`kok`（コンカニ語）を韓国語と判定しなくなりました。**
+  日本語・韓国語はカルチャー名の前方一致（`ja*` / `ko*`）で判定していたため、
+  `kok` / `kok-IN` を韓国語と扱い、EUC-KR / CP949 の判定にかけていました。
+  日本語・韓国語も言語サブタグの完全一致で判定するようにしました。
+  `ja` / `ja-JP` / `ko` / `ko-KR` / `ko-KP` の結果は変わりません。
+  `ja_JP` や `ja-JP_radstr` のような表記も日本語として扱います
 - **香港・マカオ・広東語のカルチャーを、台湾と分けて扱うようになりました。**
   香港では EUC-TW（CNS 11643、台湾の規格）を候補にしません。
   EUC-TW のバイト列は Big5 としても成立し、両方成立時は Big5 を優先するため、判定結果は変わりません
@@ -93,7 +98,7 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
 
 - `tests/EncodingProbe.Tests/TestData/` に German / French / Russian / Polish / Thai を追加しました。
   生成は `tools/New-EncodingTestData.ps1` で行います
-- `WorldLanguageTests` が、これらのファイルを 11 のカルチャーで判定して結果が変わらないことを検証します
+- `WorldLanguageTests` が、これらのファイルを 12 のカルチャーで判定して結果が変わらないことを検証します
 - `Utf8StrictnessTests` が、UTF-8 判定と .NET の厳格なデコーダーの判断が一致することを検証します
 - `CrossCheckConfidenceTests` が、短い簡体字・繁体字と HKSCS 固有字を含む Big5 が
   シングルバイトに覆されないことを検証します。
@@ -106,7 +111,8 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
 - `CultureGateTests` が、カルチャー名とカルチャー圏の対応表を検証します
 - `ChineseHongKongEncodingTests`（`FutureLanguageTests.cs`）が香港のテストデータを検証します
 - `CrossCheckConfidenceTests` に繁簡の系統クロスチェックのテストを追加しました
-- `WorldLanguageTests` と PSCompat の世界言語の節に `zh-HK` を加えました。PSCompat には香港の節も追加しました
+- `WorldLanguageTests` と PSCompat の世界言語の節に `zh-HK` と `kok-IN` を加えました。PSCompat には香港の節と、
+  `kok-IN` で韓国語の判定を行わないことのシナリオも追加しました
 - `PrivateUseAreaRoundTripTests` が、私用領域に写されるバイト列の往復（私用領域方針の付録 A）を検証します
 - コアの csproj に `InternalsVisibleTo("EncodingProbe.Tests")` を追加しました（カルチャーゲートの単体テスト用）
 

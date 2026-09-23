@@ -61,7 +61,10 @@ namespace EncodingProbe.Tests.DetectorTests
         [Theory]
         [InlineData("ja")]
         [InlineData("ja-JP")]
-        public void Resolve_Japanese_Unchanged(string culture)
+        [InlineData("ja_JP")]
+        [InlineData("JA-jp")]
+        [InlineData("ja-JP_radstr")]   // Windows の並べ替え指定付きの名前
+        public void Resolve_Japanese(string culture)
         {
             Assert.Equal(Region.Japanese, EncodingDetector.ResolveEastAsianLegacyRegion(culture));
         }
@@ -69,9 +72,30 @@ namespace EncodingProbe.Tests.DetectorTests
         [Theory]
         [InlineData("ko")]
         [InlineData("ko-KR")]
-        public void Resolve_Korean_Unchanged(string culture)
+        [InlineData("ko-KP")]
+        [InlineData("ko_KR")]
+        [InlineData("KO-kr")]
+        public void Resolve_Korean(string culture)
         {
             Assert.Equal(Region.Korean, EncodingDetector.ResolveEastAsianLegacyRegion(culture));
+        }
+
+        /// <summary>
+        /// 言語コードが ja / ko で始まるだけの別の言語を、日本語・韓国語と判定しないこと
+        /// </summary>
+        /// <remarks>
+        /// 1.2.0 より前は前方一致で判定していたため、kok（コンカニ語）を韓国語と判定し、
+        /// EUC-KR / CP949 の判定にかけていた。kos（コスラエ語）は .NET の一覧には無いが、
+        /// Windows は未登録の名前も受け付けるため、前方一致に戻っていないことの確認として置く。
+        /// </remarks>
+        [Theory]
+        [InlineData("kok")]
+        [InlineData("kok-IN")]
+        [InlineData("kos")]
+        [InlineData("jam")]
+        public void Resolve_LanguagesStartingWithJaOrKo_AreNone(string culture)
+        {
+            Assert.Equal(Region.None, EncodingDetector.ResolveEastAsianLegacyRegion(culture));
         }
 
         [Theory]
