@@ -847,7 +847,7 @@ $script:worldSamples = @(
 )
 
 foreach ($worldSample in $script:worldSamples) {
-    foreach ($worldCulture in @('de-DE', 'ru-RU', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW')) {
+    foreach ($worldCulture in @('de-DE', 'ru-RU', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW', 'zh-HK')) {
 
         # 判定したコードページ。カルチャーが変わっても同じ値でなければならない。
         Add-Scenario ("World/{0}/{1}/CodePage" -f $worldSample.Name, $worldCulture) {
@@ -900,6 +900,62 @@ foreach ($utf8Probe in $script:utf8Probes) {
         $path = New-ByteFile ("world_u8_{0}.txt" -f ($utf8Probe.Name -replace '[^0-9A-Za-z]', '_')) $utf8Probe.Bytes
         (Resolve-Encoding -Path $path -Culture de-DE -Strategy NativeOnly).CodePage
     }.GetNewClosure()
+}
+
+# ---------------------------------------------------------------------------
+# 香港 Big5 (1.2.0 第二次修正)
+#
+# - カルチャー名はサブタグに分解して判定する。zh-Hant-HK は PS 5.1 では
+#   CultureInfo.Name が zh-HK に正規化されるが、判定には渡された名前がそのまま届く
+# - 台湾 Big5 と香港 Big5 はバイト列から区別しない。HKSCS 固有字が入っても 950 / big5
+# - 繁簡の系統が食い違ったら、UTF.Unknown の系統の投票で判定し直す
+#   (香港・台湾カルチャーの簡体字 → 936、大陸カルチャーの繁体字 → 950)
+# - 大陸カルチャーの HKSCS 入り Big5 は救済されない (既知の限界、54936 のまま)
+# - HKSCS 固有字は私用領域として復号され、書き戻すと元のバイト列に戻る
+# ---------------------------------------------------------------------------
+$script:hkHant = '香港是一個國際大都會，粵語是香港人的主要語言。今天天氣很好，我們一起去飲茶吧。中文資訊處理需要正確的文字編碼判斷方法。'
+$script:hkHans = '香港是一个国际大都会，粤语是香港人的主要语言。今天天气很好，我们一起去饮茶吧。中文信息处理需要正确的文字编码判断方法。'
+$script:hkBig5 = [System.Text.Encoding]::GetEncoding(950).GetBytes($script:hkHant + "`r`n")
+$script:hkGbk = [System.Text.Encoding]::GetEncoding(936).GetBytes($script:hkHans + "`r`n")
+# HKSCS 固有領域の 4 文字 (88 62 / 8B F8 / FA 5F / FE 52) を改行の直前に挟む
+$script:hkHkscs = [byte[]]($script:hkBig5[0..($script:hkBig5.Length - 3)] + [byte[]](0x88, 0x62, 0x8B, 0xF8, 0xFA, 0x5F, 0xFE, 0x52) + [byte[]](0x0D, 0x0A))
+
+$script:hkSamples = @(
+    [PSCustomObject]@{ Name = 'big5';  Bytes = $script:hkBig5 }
+    [PSCustomObject]@{ Name = 'hkscs'; Bytes = $script:hkHkscs }
+    [PSCustomObject]@{ Name = 'gbk';   Bytes = $script:hkGbk }
+)
+
+foreach ($hkSample in $script:hkSamples) {
+    foreach ($hkCulture in @('zh-TW', 'zh-HK', 'zh-Hant-HK', 'zh-MO', 'yue-HK', 'zh-CN')) {
+        Add-Scenario ("HongKong/{0}/{1}/Combined" -f $hkSample.Name, $hkCulture) {
+            $path = New-ByteFile ("hk_{0}_{1}.txt" -f $hkSample.Name, $hkCulture) $hkSample.Bytes
+            $info = Resolve-Encoding -Path $path -Culture $hkCulture
+            '{0} / {1}' -f $info.CodePage, $info.EncodingWebName
+        }.GetNewClosure()
+
+        Add-Scenario ("HongKong/{0}/{1}/NativeOnly" -f $hkSample.Name, $hkCulture) {
+            $path = New-ByteFile ("hk_n_{0}_{1}.txt" -f $hkSample.Name, $hkCulture) $hkSample.Bytes
+            (Resolve-Encoding -Path $path -Culture $hkCulture -Strategy NativeOnly).CodePage
+        }.GetNewClosure()
+    }
+}
+
+# HKSCS 固有字は例外も置換文字も出さずに私用領域へ写される
+Add-Scenario 'HongKong/hkscs/私用領域の符号位置' {
+    $path = New-ByteFile 'hk_pua.txt' $script:hkHkscs
+    $text = Get-ProbedContent -LiteralPath $path -Culture zh-HK -Raw
+    ($text.ToCharArray() | Where-Object { [int]$_ -ge 0xE000 -and [int]$_ -le 0xF8FF } |
+        ForEach-Object { 'U+{0:X4}' -f [int]$_ }) -join ' '
+}
+
+# 加工せずに書き戻すと、私用領域を経由してもバイト列が保存される
+Add-Scenario 'HongKong/hkscs/往復' {
+    $source = New-ByteFile 'hk_rt_src.txt' $script:hkHkscs
+    $destination = Join-Path $script:WorkRoot 'hk_rt_dst.txt'
+    $text = Get-ProbedContent -LiteralPath $source -Culture zh-HK -Raw
+    Set-ProbedContent -LiteralPath $destination -Value $text -EncodingFrom $source -Culture zh-HK -NoNewline -ErrorAction Stop
+    if ((Format-FileBytes $destination) -eq (Format-FileBytes $source)) { 'バイト列が一致' } else { Format-FileBytes $destination }
 }
 
 # ---------------------------------------------------------------------------

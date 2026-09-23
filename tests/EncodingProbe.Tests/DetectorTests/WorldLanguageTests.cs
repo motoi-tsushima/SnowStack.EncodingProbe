@@ -24,7 +24,7 @@ namespace EncodingProbe.Tests.DetectorTests
         private static readonly string[] CultureNames =
         {
             "de-DE", "fr-FR", "ru-RU", "pl-PL", "th-TH", "en-US",
-            "ja-JP", "ko-KR", "zh-CN", "zh-TW",
+            "ja-JP", "ko-KR", "zh-CN", "zh-TW", "zh-HK",
         };
 
         /// <summary>

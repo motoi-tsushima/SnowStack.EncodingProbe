@@ -188,6 +188,179 @@ namespace EncodingProbe.Tests.DetectorTests
         }
 
         /// <summary>
+        /// 繁簡の系統クロスチェックを検査する長さと標本の組み合わせ
+        /// </summary>
+        private static TheoryData<int, int, string> FamilyLengths(int[] lengths, string[] cultures)
+        {
+            var data = new TheoryData<int, int, string>();
+            foreach (var culture in cultures)
+            {
+                foreach (var length in lengths)
+                {
+                    for (int sample = 0; sample < 3; sample++)
+                    {
+                        data.Add(length, sample * 5, culture);
+                    }
+                }
+            }
+            return data;
+        }
+
+        /// <summary>
+        /// 系統の差し替えが必ず起きる長さ。
+        /// 実測では 24 バイト以上で、UTF.Unknown はどの標本にも正しい系統を 0.97 以上で返した
+        /// </summary>
+        private static readonly int[] SwitchedLengths = { 24, 32, 48, 64, 96, 128, 192, 256, 384, 512 };
+
+        /// <summary>
+        /// 系統の差し替えが起きるかどうかが標本によって変わる長さ。
+        /// UTF.Unknown は標本によって正しい系統を 0.99 で返すか、シングルバイトの低い信頼度か判定不能を返す
+        /// </summary>
+        private static readonly int[] ShortLengths = { 12, 14, 16, 18, 20 };
+
+        private static readonly string[] TraditionalCultures = { "zh-TW", "zh-HK", "zh-Hant-HK" };
+
+        private static readonly string[] SimplifiedCultures = { "zh-CN", "zh-Hans-CN" };
+
+        public static TheoryData<int, int, string> TraditionalCultureLengths()
+            => FamilyLengths(SwitchedLengths, TraditionalCultures);
+
+        public static TheoryData<int, int, string> SimplifiedCultureLengths()
+            => FamilyLengths(SwitchedLengths, SimplifiedCultures);
+
+        public static TheoryData<int, int, string> TraditionalCultureShortLengths()
+            => FamilyLengths(ShortLengths, TraditionalCultures);
+
+        public static TheoryData<int, int, string> SimplifiedCultureShortLengths()
+            => FamilyLengths(ShortLengths, SimplifiedCultures);
+
+        /// <summary>
+        /// 短い簡体字（GBK）は、台湾・香港カルチャーで 936（差し替え）か 950（据え置き）のどちらかになること
+        /// </summary>
+        /// <remarks>
+        /// UTF.Unknown が反対の系統（Big5）を返すことは無いので、936 / 950 以外にはならない。
+        /// </remarks>
+        [Theory]
+        [MemberData(nameof(TraditionalCultureShortLengths))]
+        public void Detect_Combined_TraditionalCulture_ShortGbk_IsGbkOrBig5(int length, int offset, string culture)
+        {
+            var buffer = Repeat(GbkCharacters, length, offset);
+
+            var result = DetectCombined(buffer, culture);
+
+            Assert.Contains(result.CodePage, new[] { 936, 950 });
+        }
+
+        /// <summary>
+        /// 短い繁体字（Big5）は、大陸カルチャーで 950（差し替え）か GB 系（据え置き）のどちらかになること
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(SimplifiedCultureShortLengths))]
+        public void Detect_Combined_SimplifiedCulture_ShortBig5_IsBig5OrGb(int length, int offset, string culture)
+        {
+            var buffer = Repeat(Big5Characters, length, offset);
+
+            var result = DetectCombined(buffer, culture);
+
+            Assert.Contains(result.CodePage, new[] { 950, 936, 54936 });
+        }
+
+        /// <summary>
+        /// 台湾・香港カルチャーで簡体字（GBK）を読むと、GB 系の判別規則で判定し直されること
+        /// </summary>
+        /// <remarks>
+        /// GBK の簡体字は Big5 としても構造が成立するため、独自判定は 950 を返す。
+        /// UTF.Unknown は GB 系（gb18030）を 0.99 で返すので、GB 系の独自判定をやり直し、
+        /// 既存の判別規則により 936 を返す（UTF.Unknown の 54936 をそのまま使わない）。
+        /// </remarks>
+        [Theory]
+        [MemberData(nameof(TraditionalCultureLengths))]
+        public void Detect_Combined_TraditionalCulture_Gbk_Returns936(int length, int offset, string culture)
+        {
+            var buffer = Repeat(GbkCharacters, length, offset);
+
+            var result = DetectCombined(buffer, culture);
+
+            Assert.Equal(936, result.CodePage);
+            Assert.Equal("gbk", result.EncodingWebName);
+        }
+
+        /// <summary>
+        /// 大陸カルチャーで繁体字（Big5）を読むと、Big5 で判定し直されること
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(SimplifiedCultureLengths))]
+        public void Detect_Combined_SimplifiedCulture_Big5_Returns950(int length, int offset, string culture)
+        {
+            var buffer = Repeat(Big5Characters, length, offset);
+
+            var result = DetectCombined(buffer, culture);
+
+            Assert.Equal(950, result.CodePage);
+            Assert.Equal("big5", result.EncodingWebName);
+        }
+
+        /// <summary>
+        /// 大陸カルチャーの HKSCS 入り Big5 は救済されない（既知の限界）
+        /// </summary>
+        /// <remarks>
+        /// UTF.Unknown は HKSCS 固有字が入ると系統を言えなくなる（シングルバイトまたは判定不能）ため、
+        /// 系統の差し替えの条件を満たさず、独自判定の GB18030 のまま残る。
+        /// </remarks>
+        [Theory]
+        [MemberData(nameof(HkscsLengths))]
+        public void Detect_Combined_ZhCn_Big5WithHkscs_StaysGb18030(int length, int offset)
+        {
+            var buffer = Big5WithHkscs(length, offset);
+
+            var result = DetectCombined(buffer, "zh-CN");
+
+            Assert.Equal(54936, result.CodePage);
+        }
+
+        /// <summary>
+        /// NativeOnly は突き合わせを行わないので、系統の差し替えも起きないこと
+        /// </summary>
+        [Theory]
+        [InlineData("zh-TW", 950)]
+        [InlineData("zh-HK", 950)]
+        public void Detect_NativeOnly_TraditionalCulture_Gbk_IsNotSwitched(string culture, int expected)
+        {
+            var buffer = Repeat(GbkCharacters, 128, 0);
+
+            var result = SnowStack.EncodingProbe.EncodingProbe.Detect(
+                buffer, new EncodingDetectorOptions { Culture = culture, Strategy = DetectionStrategy.NativeOnly });
+
+            Assert.Equal(expected, result.CodePage);
+        }
+
+        /// <summary>
+        /// 入力の種類（バイト配列 / ストリーム / ファイルパス）で系統の差し替えの結果が変わらないこと
+        /// </summary>
+        [Theory]
+        [InlineData("zh-CN")]
+        [InlineData("zh-TW")]
+        [InlineData("zh-HK")]
+        public void Detect_Combined_HongKongBig5Sample_SameForEveryInputKind(string culture)
+        {
+            var buffer = Helpers.TestDataHelper.ReadBytes("Chinese_HongKong", "sample_big5.txt");
+            var path = Helpers.TestDataHelper.GetPath("Chinese_HongKong", "sample_big5.txt");
+            var options = new EncodingDetectorOptions { Culture = culture, Strategy = DetectionStrategy.Combined };
+
+            var fromBytes = SnowStack.EncodingProbe.EncodingProbe.Detect(buffer, options);
+            var fromPath = SnowStack.EncodingProbe.EncodingProbe.Detect(path, options);
+            EncodingInformation fromStream;
+            using (var stream = Helpers.TestDataHelper.OpenStream("Chinese_HongKong", "sample_big5.txt"))
+            {
+                fromStream = SnowStack.EncodingProbe.EncodingProbe.Detect(stream, options);
+            }
+
+            Assert.Equal(950, fromBytes.CodePage);
+            Assert.Equal(950, fromPath.CodePage);
+            Assert.Equal(950, fromStream.CodePage);
+        }
+
+        /// <summary>
         /// 6〜8 バイトの繁体字が Big5 のまま維持されること
         /// </summary>
         [Theory]

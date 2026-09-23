@@ -9,7 +9,7 @@
     .editorconfig の [*.txt] charset = utf-8-bom は TestData には適用してはならない
     （.gitattributes で TestData/** は -text にしてある）。
 
-    生成対象は 1.2.0 で追加した「東アジア以外の言語」だけである。
+    生成対象は 1.2.0 で追加した「東アジア以外の言語」と香港（Chinese_HongKong）だけである。
     English / Japanese / Korean / Chinese_* の既存ファイルは上書きしない。
 
 .PARAMETER TestDataRoot
@@ -49,6 +49,9 @@ function Write-SampleFile {
     if (-not (Test-Path -LiteralPath $directory)) {
         New-Item -ItemType Directory -Path $directory | Out-Null
     }
+
+    # ヒアドキュメントの改行はこのスクリプト自体の改行コードに従うため、CRLF に揃える
+    $Text = $Text -replace "`r?`n", "`r`n"
 
     if ($CodePage -eq 65001) {
         $encoding = New-Object System.Text.UTF8Encoding($false)
@@ -126,6 +129,70 @@ $thaiText = @"
 ฉันชอบกินข้าวผัดกับไข่ดาว อร่อยมาก
 "@
 
+#--------------------------------------------------------------------------
+# 香港（繁体字）
+#   本文は cp950 で表現できる共通漢字だけを使う。
+#   sample_big5hkscs.txt は、これに HKSCS 固有領域のバイト列を明示して挟んだもの。
+#   HKSCS 固有字は .NET の cp950 エンコーダーでは生成できない
+#   （復号すると私用領域 U+E000–U+F8FF に写される）。
+#--------------------------------------------------------------------------
+$hongKongText = @"
+香港是一個國際大都會，粵語是香港人的主要語言。
+今天天氣很好，我們一起去飲茶吧。
+維多利亞港的夜景非常美麗，每晚都有很多遊客。
+中文資訊處理需要正確的文字編碼判斷方法。
+"@
+
+# HKSCS 固有領域の 4 文字（88 62 / 8B F8 / FA 5F / FE 52）
+$hkscsBytes = [byte[]](0x88, 0x62, 0x8B, 0xF8, 0xFA, 0x5F, 0xFE, 0x52)
+
+<#
+.SYNOPSIS
+    Big5（cp950）の本文の 1 行目の末尾に、HKSCS 固有領域のバイト列を挟んで書き出す。
+#>
+function Write-HkscsSampleFile {
+    param(
+        [Parameter(Mandatory)] [string] $Language,
+        [Parameter(Mandatory)] [string] $FileName,
+        [Parameter(Mandatory)] [string] $Text,
+        [Parameter(Mandatory)] [byte[]] $ExtensionBytes
+    )
+
+    $directory = Join-Path $TestDataRoot $Language
+    if (-not (Test-Path -LiteralPath $directory)) {
+        New-Item -ItemType Directory -Path $directory | Out-Null
+    }
+
+    # ヒアドキュメントの改行はこのスクリプト自体の改行コードに従うため、CRLF に揃える
+    $Text = $Text -replace "`r?`n", "`r`n"
+
+    $encoding = [System.Text.Encoding]::GetEncoding(950)
+    $body = $encoding.GetBytes($Text)
+    if ($encoding.GetString($body) -ne $Text) {
+        throw "$Language/$FileName : cp950 で表現できない文字が含まれている。"
+    }
+
+    # 1 行目の改行の直前（文字境界）に挟む
+    $insertAt = [Array]::IndexOf($body, [byte]0x0A)
+    if ($insertAt -gt 0 -and $body[$insertAt - 1] -eq 0x0D) { $insertAt-- }
+
+    $bytes = New-Object byte[] ($body.Length + $ExtensionBytes.Length)
+    [Array]::Copy($body, 0, $bytes, 0, $insertAt)
+    [Array]::Copy($ExtensionBytes, 0, $bytes, $insertAt, $ExtensionBytes.Length)
+    [Array]::Copy($body, $insertAt, $bytes, $insertAt + $ExtensionBytes.Length, $body.Length - $insertAt)
+
+    # 私用領域を経由してもバイト列が往復することを確かめる（私用領域の扱い 4.1）
+    $back = $encoding.GetBytes($encoding.GetString($bytes))
+    if ([BitConverter]::ToString($back) -ne [BitConverter]::ToString($bytes)) {
+        throw "$Language/$FileName : cp950 で往復しない。"
+    }
+
+    $path = Join-Path $directory $FileName
+    [System.IO.File]::WriteAllBytes($path, $bytes)
+
+    '{0,-22} {1,-24} cp{2,-6} {3,5} bytes' -f $Language, $FileName, 950, $bytes.Length
+}
+
 $results = @()
 $results += Write-SampleFile -Language 'German'  -FileName 'sample_cp1252.txt'     -CodePage 1252  -Text $germanText
 $results += Write-SampleFile -Language 'German'  -FileName 'sample_iso8859_1.txt'  -CodePage 28591 -Text $germanText
@@ -145,5 +212,9 @@ $results += Write-SampleFile -Language 'Polish'  -FileName 'sample_utf8.txt'    
 
 $results += Write-SampleFile -Language 'Thai'    -FileName 'sample_cp874.txt'      -CodePage 874   -Text $thaiText
 $results += Write-SampleFile -Language 'Thai'    -FileName 'sample_utf8.txt'       -CodePage 65001 -Text $thaiText
+
+$results += Write-SampleFile -Language 'Chinese_HongKong' -FileName 'sample_big5.txt' -CodePage 950   -Text $hongKongText
+$results += Write-SampleFile -Language 'Chinese_HongKong' -FileName 'sample_utf8.txt' -CodePage 65001 -Text $hongKongText
+$results += Write-HkscsSampleFile -Language 'Chinese_HongKong' -FileName 'sample_big5hkscs.txt' -Text $hongKongText -ExtensionBytes $hkscsBytes
 
 $results

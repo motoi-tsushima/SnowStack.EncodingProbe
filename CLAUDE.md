@@ -71,7 +71,7 @@ Visual Studio 用には `Properties/launchSettings.json` に「.NET 4.8 テス�
 2. BOM（`ByteOrderMarkDetection`）— 一致したら即確定
 3. ISO-2022 / ASCII
 4. UTF-32 → UTF-16 → UTF-8（UTF-32 を UTF-16 より先に判定する）
-5. **カルチャーゲート**（`GetEastAsianLegacyRegion()`）。東アジア漢字文化圏でなければここで打ち切る
+5. **カルチャーゲート**（`GetEastAsianLegacyRegion()` → `ResolveEastAsianLegacyRegion()`）。東アジア漢字文化圏でなければここで打ち切る
 6. カルチャーで分岐。簡体字中国語なら GB2312 → GBK → GB18030 の 3 段階判定。それ以外は EUC 系 → CPxxx 系
 
 **1〜4 はカルチャーに関わらず必ず実行する。** UTF.Unknown は BOM 無しの UTF-16 / UTF-32 に対応していないため、
@@ -89,13 +89,24 @@ Unicode 系の判定を独自判定側から外すことはできない。
 
 - EUC-JP と Shift-JIS の両方に該当 → 改行が CRLF なら Shift-JIS、LF なら EUC-JP、改行なしなら OS（Windows → Shift-JIS）
 - EUC-KR と CP949 の両方に該当 → CP949
-- EUC-TW と CP950 の両方に該当 → CP950(Big5)
+- EUC-TW と CP950 の両方に該当 → CP950(Big5)（香港カルチャーは EUC-TW を候補にしない）
 
 カルチャーはグローバル状態ではなくパラメータで渡す（`Detection(culture)` / `EncodingDetectorOptions.Culture`）。`CultureInfo.CurrentCulture` へのフォールバックは 1 か所だけ。
 
-**カルチャー名と判定対象の対応表は `EncodingDetector.GetEastAsianLegacyRegion()` に集約している。**
-`EastAsianLegacyRegion`（`None` / `Japanese` / `Korean` / `ChineseSimplified` / `ChineseTraditional`）を返し、
+**カルチャー名と判定対象の対応表は `EncodingDetector.ResolveEastAsianLegacyRegion(string)`（internal static）に集約している。**
+`EastAsianLegacyRegion`（`None` / `Japanese` / `Korean` / `ChineseSimplified` / `ChineseTraditional` / `ChineseHongKong`）を返し、
 `GetEucCodePageFromCulture()` と `CPxxx_Detection()` はこの結果で分岐する。表を増やさないこと。
+
+- カルチャー名は `Internal/CultureNameSubtags` で言語・用字・地域のサブタグに分解してから引く。
+  `CultureInfo` の親チェーンは使わない（net48 の NLS と net10.0 の ICU で名前・親が異なるため）。
+  第三次修正で `MessageCatalog` の言語選択にも同じ規則を使う予定
+- `zh` / `yue` は 用字サブタグ → 地域サブタグ → 言語の既定（`zh` は簡体字、`yue` は香港）の順で決める。
+  繁体字のうち地域 `HK` / `MO` が `ChineseHongKong`
+- 日本語・韓国語は結果を変えないため、従来どおり前方一致（`ja*` / `ko*`）のまま。
+  そのため `kok`（コンカニ語）は Korean になる（1.2.0 より前からの挙動）
+- `ChineseHongKong` と `ChineseTraditional` の挙動差は EUC-TW を候補にしないことだけ。
+  台湾 Big5 と香港 Big5 はバイト列から区別せず、どちらも `950 / big5` を返す（段階 2 は見送り）。
+  HKSCS 固有字は私用領域に復号され、本ライブラリは介入しない（`docs/私用領域の扱い_方針草案.md`）
 
 ### 旧マルチバイト判定の横取りとクロスチェック（1.2.0）
 
@@ -126,6 +137,17 @@ UTF.Unknown は短い漢字列や HKSCS 入りの Big5 に対して 0.5 前後�
 上書きが必要なシングルバイトのテキストの最小が 0.5695（ロシア語）。
 **測定値は net48（UTF.Unknown 2.6.0）と net10.0（2.7.0）で一致する。**
 `CrossCheckConfidenceTests` がこの境界を固定している。
+
+**繁簡の系統クロスチェック（1.2.0 第二次修正）。** 独自判定が Big5 系（950）または GB 系（936 / 54936 / 20936）を返し、
+UTF.Unknown が**反対の系統**を `ChineseFamilyOverrideThreshold`（**0.8 以上**、上の 2 つとは別の定数）で返したら、
+`EncodingDetector.RedetectChineseLegacy` で反対の系統の独自判定を**カルチャーゲートを通らずに**やり直す。
+UTF.Unknown のコードページはそのまま使わない（GB 系の番号は `GB_Detection` の規則で決める）。
+成立しなければ元の結果を返す。系統表（`GetChineseLegacyFamily`）に日本語・韓国語のコードページを入れないこと
+（EUC-JP の 20932 と UTF.Unknown の 51932 のような同一系統の食い違いを差し替えてしまう）。
+短い入力（実測では 20 バイト程度まで、標本による）と HKSCS 入りの Big5 では UTF.Unknown が系統を言えないので差し替えは起きない。
+zh-CN の Big5+HKSCS が 54936 のまま残るのは既知の限界。
+
+`CP950_Detection` の後続バイトは `0x40–0x7E` / `0xA1–0xFE`（1.2.0 で `0x80–0xA0` を除外した）。
 
 `IsSingleByteCodePage` は `Encoding.GetEncoding(cp).IsSingleByte` を**使わない**。
 .NET Core では `CodePagesEncodingProvider` を登録していないと cp1251 などを解決できず、
@@ -222,10 +244,15 @@ Import-Module <dll>
 
 ### テストデータ
 
-`tests/EncodingProbe.Tests/TestData/<言語>/` に言語別・エンコーディング別のサンプルファイルがある（English / Japanese / Korean / Chinese_Simplified / Chinese_Traditional / German / French / Russian / Polish / Thai）。PowerShell テストプロジェクトは `Link` でこれを共有している。
+`tests/EncodingProbe.Tests/TestData/<言語>/` に言語別・エンコーディング別のサンプルファイルがある（English / Japanese / Korean / Chinese_Simplified / Chinese_Traditional / Chinese_HongKong / German / French / Russian / Polish / Thai）。PowerShell テストプロジェクトは `Link` でこれを共有している。
 
-東アジア以外の 5 言語（German / French / Russian / Polish / Thai）は 1.2.0 で追加したもので、
+東アジア以外の 5 言語（German / French / Russian / Polish / Thai）と Chinese_HongKong は 1.2.0 で追加したもので、
 `tools/New-EncodingTestData.ps1` が生成する。内容を変えるときはこのスクリプトを直して再生成すること。
+スクリプトは改行を CRLF に正規化して書き出す（スクリプト自体の改行コードに結果が左右されないように）。
+`sample_big5hkscs.txt` の HKSCS 固有字は .NET のエンコーダーで作れないのでバイト列を明示して挟んでいる。
+
+`PrivateUseAreaTests/PrivateUseAreaRoundTripTests` は私用領域方針の付録 A の往復検査で、件数まで固定している。
+テストプロジェクトはコアの internal（カルチャーゲート等）を `InternalsVisibleTo` で参照できる。
 
 **注意:** `.editorconfig` は `[*.txt]` に `charset = utf-8-bom` を指定している。TestData の .txt はまさにそれ以外のエンコーディングであることが試験の目的なので、エディタや整形ツールがこれらを書き換えないようにすること（`.gitattributes` で `tests/EncodingProbe.Tests/TestData/** -text` にしてある）。テストデータを新規作成するときはバイト列を明示して生成する。
 
@@ -301,6 +328,12 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 - `docs/EncodingProbe-1.2.0-課題_人間記述用.md` … 人間が確認して発見した課題。
   課題 1（東アジア以外の言語への対応）は対応済み。経緯と判断の理由は「Claude用記載欄」にある
 - `docs/EncodingProbe-1.2.0-課題-ISO2022判定.md` … ISO-2022 系の未着手課題（3 件）
+- `docs/EncodingProbe-1.2.0-依頼-第一次修正_クロスチェック信頼度.md` … 完了
+- `docs/EncodingProbe-1.2.0-依頼-第二次修正_香港Big5段階1.md` … 完了。
+  背景と実測は `docs/EncodingProbe-1.2.0-課題-香港Big5対応.md`、私用領域の扱いは `docs/私用領域の扱い_方針草案.md`
+- 第三次修正（予定）… ヘルプ（MAML）と `MessageCatalog` の香港対応（zh-HK 版、zh-MO は同じ内容）。
+  第二次修正では `MessageCatalog` と MAML ヘルプ、`MamlHelpTests` の期待値に触れていない
+- `docs/EncodingProbe-課題-香港Big5段階3_HKSCS復号.md` … HKSCS の復号・符号化（オプトイン）。未着手
 - `docs/TestReport_PS7.md` / `docs/TestReport_PS51.md` … 世界言語 83 ファイルの判定テスト結果。
   1.1.0 時点の測定値であり、課題 1 の対応は反映されていない。
   このレポートを生成する `tools/Invoke-EncodingProbeTest.ps1` とそのテストデータはリポジトリに入っていない

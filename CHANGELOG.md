@@ -13,7 +13,7 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
 - **東アジア以外のカルチャーでは、旧マルチバイトの判定を行わなくなりました。**
   独自判定が担当するのは Shift_JIS / EUC / GB / Big5 など東アジア漢字文化圏のマルチバイトだけです。
   カルチャーがそれ以外の言語圏のときは、これらの判定を実行せず UTF.Unknown に委ねます。
-  カルチャー名と判定対象の対応表は `EncodingDetector.GetEastAsianLegacyRegion()` に集約しました
+  カルチャー名と判定対象の対応表は `EncodingDetector.ResolveEastAsianLegacyRegion()` に集約しました
 - **東アジアのカルチャーであっても、欧米のシングルバイトのテキストを誤判定しなくなりました。**
   旧マルチバイトの判定はバイト構造の妥当性しか見ていないため、たとえば日本語カルチャーの実行環境で
   windows-1252 のドイツ語を読むと、`FC DF`（`üß`）が Shift_JIS の外字領域の 2 バイト文字として
@@ -40,6 +40,35 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
   独自判定がすでに出した答えをシングルバイトで覆すときは、これより高い下限（**0.55 超**）を要求します。
   独自判定の答えを覆すには、答えとして採用するより強い根拠を求める、という考え方です
 
+### 香港対応 段階 1（第二次修正）
+
+- **カルチャー名をサブタグに分解して解釈するようになりました。**
+  従来は完全一致で表を引いていたため、.NET 10（ICU）が保持する `zh-Hant-HK` や
+  `zh-Hans-CN`、`zh-Hant-TW` などが判定不能になっていました。
+  大文字小文字を区別せず、`_` は `-` と同じに扱います（`zh_HK` も香港）。
+  中国語（`zh`）と広東語（`yue`）は、用字サブタグ → 地域サブタグ → 言語の既定の順で繁簡を決めます。
+  `zh` だけのカルチャーは簡体字、`yue` は香港の繁体字として扱います。
+  日本語・韓国語の判定は従来と同じです
+- **香港・マカオ・広東語のカルチャーを、台湾と分けて扱うようになりました。**
+  香港では EUC-TW（CNS 11643、台湾の規格）を候補にしません。
+  EUC-TW のバイト列は Big5 としても成立し、両方成立時は Big5 を優先するため、判定結果は変わりません
+- **繁体字と簡体字の取り違えを直しました。**
+  台湾・香港カルチャーで GBK の簡体字を読むと `950 / big5`、
+  大陸カルチャーで Big5 の繁体字を読むと `54936 / gb18030` と判定していました。
+  `Combined` では、UTF.Unknown が独自判定と反対の系統（Big5 系 ⇔ GB 系）を
+  信頼度 **0.8 以上**で返したとき、その系統の独自判定をカルチャーに関係なくやり直します
+  （簡体字 → `936 / gbk`、繁体字 → `950 / big5`）。
+  日本語・韓国語のコードページは対象外です
+- **Big5 の後続バイトを厳密化しました。**
+  `0x80–0xA0` を後続バイトとして受け入れなくなりました（Big5 / HKSCS とも存在しない範囲です）
+- 台湾 Big5 と香港 Big5 はバイト列から区別しません。HKSCS 固有字を含んでいても `950 / big5` を返します。
+  HKSCS 固有字は私用領域（U+E000–U+F8FF）として復号され、加工せずに書き戻せば元のバイト列に戻ります
+  （`docs/私用領域の扱い_方針草案.md`）
+- **既知の限界:** 大陸カルチャーで HKSCS 固有字を含む Big5 を読むと、`54936 / gb18030` のままです。
+  UTF.Unknown が HKSCS 固有字の入った文書の系統を判定できないためです
+- 返す値（`950 / big5`）と公開 API は変えていません。
+  ヘルプとメッセージの香港対応は第三次修正で行います
+
 ### 変えていない点
 
 - BOM・ISO-2022・ASCII・UTF-32・UTF-16・UTF-8 の判定は、**カルチャーに関わらず**実行します。
@@ -64,13 +93,22 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
 
 - `tests/EncodingProbe.Tests/TestData/` に German / French / Russian / Polish / Thai を追加しました。
   生成は `tools/New-EncodingTestData.ps1` で行います
-- `WorldLanguageTests` が、これらのファイルを 10 のカルチャーで判定して結果が変わらないことを検証します
+- `WorldLanguageTests` が、これらのファイルを 11 のカルチャーで判定して結果が変わらないことを検証します
 - `Utf8StrictnessTests` が、UTF-8 判定と .NET の厳格なデコーダーの判断が一致することを検証します
 - `CrossCheckConfidenceTests` が、短い簡体字・繁体字と HKSCS 固有字を含む Big5 が
   シングルバイトに覆されないことを検証します。
   テストデータは cp950 / cp936 を解決できない実行環境でも動くよう、
   また HKSCS 固有字は .NET のエンコーダーで作れないため、バイト列を明示して組み立てています
 - `tests/PSCompat/ProbedCompatScenarios.ps1` に「世界言語の判定」の節を追加しました
+- `TestData/Chinese_HongKong/` を追加しました（Big5、HKSCS 固有字入りの Big5、UTF-8）。
+  HKSCS 固有字は .NET のエンコーダーで作れないため、`tools/New-EncodingTestData.ps1` がバイト列を明示して生成します。
+  同スクリプトは、ヒアドキュメントの改行コードをスクリプト自体の改行コードに依存させず CRLF に揃えるようにしました
+- `CultureGateTests` が、カルチャー名とカルチャー圏の対応表を検証します
+- `ChineseHongKongEncodingTests`（`FutureLanguageTests.cs`）が香港のテストデータを検証します
+- `CrossCheckConfidenceTests` に繁簡の系統クロスチェックのテストを追加しました
+- `WorldLanguageTests` と PSCompat の世界言語の節に `zh-HK` を加えました。PSCompat には香港の節も追加しました
+- `PrivateUseAreaRoundTripTests` が、私用領域に写されるバイト列の往復（私用領域方針の付録 A）を検証します
+- コアの csproj に `InternalsVisibleTo("EncodingProbe.Tests")` を追加しました（カルチャーゲートの単体テスト用）
 
 ## 1.1.0
 

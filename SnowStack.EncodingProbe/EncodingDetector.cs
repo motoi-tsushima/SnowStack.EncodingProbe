@@ -632,7 +632,8 @@ namespace SnowStack.EncodingProbe
                         return encInfo;
                     }
 
-                    // 台湾・香港カルチャーの場合、EUC-TW と CP950 の両方に該当するか確認する
+                    // 台湾カルチャーの場合、EUC-TW と CP950 の両方に該当するか確認する
+                    // （香港カルチャーは EUC-TW を候補にしないので、ここには来ない）
                     if (eucCodePage == CodePageEucTw && !CP950_Detection())
                     {
                         // 両方に該当 → CP950 を優先
@@ -681,7 +682,7 @@ namespace SnowStack.EncodingProbe
         /// <see cref="None"/> のカルチャーでは Unicode 系・ASCII・ISO-2022 以外の判定を行わず、
         /// シングルバイトの判定は UTF.Unknown に委ねる。
         /// </remarks>
-        private enum EastAsianLegacyRegion
+        internal enum EastAsianLegacyRegion
         {
             /// <summary>独自判定が非対応（欧米・ロシア・タイなど）</summary>
             None,
@@ -691,62 +692,126 @@ namespace SnowStack.EncodingProbe
             Korean,
             /// <summary>中国語 簡体字（GB2312 / GBK / GB18030）</summary>
             ChineseSimplified,
-            /// <summary>中国語 繁体字（Big5 / EUC-TW）</summary>
+            /// <summary>中国語 繁体字・台湾（Big5 / EUC-TW）</summary>
             ChineseTraditional,
+            /// <summary>
+            /// 中国語 繁体字・香港・マカオ、広東語（Big5）。
+            /// EUC-TW（CNS 11643、台湾の規格）を候補に含めない点だけが <see cref="ChineseTraditional"/> と異なる。
+            /// 台湾 Big5 と香港 Big5（HKSCS）はバイト列から区別しない
+            /// </summary>
+            ChineseHongKong,
         }
 
         /// <summary>
         /// カルチャー名から、独自判定が担当するカルチャー圏を求める
         /// </summary>
         /// <remarks>
-        /// カルチャー名と判定対象の対応表はここに集約している。
         /// 判定対象のコードページを決める箇所（EUC 系・CPxxx 系）は必ずこの結果で分岐すること。
         /// </remarks>
         /// <returns>カルチャー圏（該当なしの場合は <see cref="EastAsianLegacyRegion.None"/>）</returns>
         private EastAsianLegacyRegion GetEastAsianLegacyRegion()
         {
-            try
+            if (_cultureName == null)
             {
-                if (_cultureName == null)
-                {
-                    CultureInfo currentCulture = CultureInfo.CurrentCulture;
-                    _cultureName = currentCulture.Name;
-                }
+                _cultureName = CultureInfo.CurrentCulture.Name;
+            }
 
-                // 日本語
-                if (_cultureName.StartsWith("ja", StringComparison.OrdinalIgnoreCase))
-                {
-                    return EastAsianLegacyRegion.Japanese;
-                }
-                // 韓国語
-                if (_cultureName.StartsWith("ko", StringComparison.OrdinalIgnoreCase))
-                {
-                    return EastAsianLegacyRegion.Korean;
-                }
-                // 中国語（簡体字）
-                if (_cultureName.Equals("zh-CN", StringComparison.OrdinalIgnoreCase) ||
-                    _cultureName.Equals("zh-Hans", StringComparison.OrdinalIgnoreCase) ||
-                    _cultureName.Equals("zh-SG", StringComparison.OrdinalIgnoreCase))
-                {
-                    return EastAsianLegacyRegion.ChineseSimplified;
-                }
-                // 中国語（繁体字・台湾・香港・マカオ）
-                if (_cultureName.Equals("zh-TW", StringComparison.OrdinalIgnoreCase) ||
-                    _cultureName.Equals("zh-Hant", StringComparison.OrdinalIgnoreCase) ||
-                    _cultureName.Equals("zh-HK", StringComparison.OrdinalIgnoreCase) ||
-                    _cultureName.Equals("zh-MO", StringComparison.OrdinalIgnoreCase))
-                {
-                    return EastAsianLegacyRegion.ChineseTraditional;
-                }
+            return ResolveEastAsianLegacyRegion(_cultureName);
+        }
 
+        /// <summary>
+        /// カルチャー名から、独自判定が担当するカルチャー圏を求める
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// カルチャー名と判定対象の対応表はここに集約している。表を増やさないこと。
+        /// カルチャー名は <see cref="CultureNameSubtags"/> でサブタグに分解してから引く。
+        /// 完全一致で引いていた頃は <c>zh-Hant-HK</c> や <c>zh-Hans-CN</c> が判定不能になっていた。
+        /// </para>
+        /// <para>
+        /// 中国語（<c>zh</c>）と広東語（<c>yue</c>）は次の順で決める。
+        /// </para>
+        /// <list type="number">
+        /// <item>用字サブタグがあればそれで繁簡を決める（<c>Hans</c> → 簡体字、<c>Hant</c> → 繁体字）</item>
+        /// <item>無ければ地域サブタグから決める（<c>TW</c> / <c>HK</c> / <c>MO</c> → 繁体字、<c>CN</c> / <c>SG</c> → 簡体字）</item>
+        /// <item>どちらも無ければ言語の既定（<c>zh</c> → 簡体字、<c>yue</c> → 繁体字）</item>
+        /// <item>繁体字の中では、地域が <c>HK</c> / <c>MO</c> なら香港、それ以外は台湾。
+        /// 地域が無い場合は <c>zh</c> → 台湾、<c>yue</c> → 香港</item>
+        /// </list>
+        /// <para>
+        /// 日本語・韓国語は、1.2.0 より前と結果を変えないため、従来どおりカルチャー名の前方一致で判定する。
+        /// </para>
+        /// </remarks>
+        /// <param name="cultureName">カルチャー名（例: <c>zh-Hant-HK</c>）</param>
+        /// <returns>カルチャー圏（該当なしの場合は <see cref="EastAsianLegacyRegion.None"/>）</returns>
+        internal static EastAsianLegacyRegion ResolveEastAsianLegacyRegion(string? cultureName)
+        {
+            if (string.IsNullOrEmpty(cultureName))
+            {
+                return EastAsianLegacyRegion.None;
+            }
+
+            // 日本語
+            if (cultureName!.StartsWith("ja", StringComparison.OrdinalIgnoreCase))
+            {
+                return EastAsianLegacyRegion.Japanese;
+            }
+            // 韓国語
+            if (cultureName.StartsWith("ko", StringComparison.OrdinalIgnoreCase))
+            {
+                return EastAsianLegacyRegion.Korean;
+            }
+
+            CultureNameSubtags subtags = CultureNameSubtags.Parse(cultureName);
+            bool isCantonese = (subtags.Language == "yue");
+
+            if (subtags.Language != "zh" && !isCantonese)
+            {
                 // 該当なし
                 return EastAsianLegacyRegion.None;
             }
-            catch
+
+            bool isHongKongRegion = (subtags.Region == "HK" || subtags.Region == "MO");
+
+            // 1. 用字サブタグ → 2. 地域サブタグ → 3. 言語の既定 の順で用字を決める
+            string? script = subtags.Script;
+            if (script == null)
             {
-                // エラーが発生した場合は判定対象なしとして扱う
-                return EastAsianLegacyRegion.None;
+                switch (subtags.Region)
+                {
+                    case "TW":
+                    case "HK":
+                    case "MO":
+                        script = "Hant";
+                        break;
+                    case "CN":
+                    case "SG":
+                        script = "Hans";
+                        break;
+                    default:
+                        script = isCantonese ? "Hant" : "Hans";
+                        break;
+                }
             }
+
+            // 中国語（簡体字）
+            if (script == "Hans")
+            {
+                return EastAsianLegacyRegion.ChineseSimplified;
+            }
+
+            // 中国語（繁体字）。4. 香港・マカオと台湾を分ける
+            if (script == "Hant")
+            {
+                if (isHongKongRegion || (subtags.Region == null && isCantonese))
+                {
+                    return EastAsianLegacyRegion.ChineseHongKong;
+                }
+                return EastAsianLegacyRegion.ChineseTraditional;
+            }
+
+            // 該当なし（zh-Latn など）
+            return EastAsianLegacyRegion.None;
         }
 
 
@@ -1589,9 +1654,15 @@ namespace SnowStack.EncodingProbe
                 // 中国語（簡体字） -> EUC-CN
                 case EastAsianLegacyRegion.ChineseSimplified:
                     return CodePageEucCn;
-                // 中国語（繁体字・台湾・香港） -> EUC-TW
+                // 中国語（繁体字・台湾） -> EUC-TW
                 case EastAsianLegacyRegion.ChineseTraditional:
                     return CodePageEucTw;
+                // 中国語（繁体字・香港） -> なし
+                // EUC-TW は CNS 11643（台湾の規格）であり、香港では使われない。
+                // EUC-TW のバイト列は構造上つねに Big5 としても成立し、両方成立時は CP950 を優先するため、
+                // 候補から外しても判定結果は変わらない
+                case EastAsianLegacyRegion.ChineseHongKong:
+                    return -1;
                 // 該当なし
                 default:
                     return -1;
@@ -1745,6 +1816,7 @@ namespace SnowStack.EncodingProbe
                         break;
 
                     case EastAsianLegacyRegion.ChineseTraditional:
+                    case EastAsianLegacyRegion.ChineseHongKong:
                         // 台湾・香港（繁体字） -> CP950
                         outOfSpecification = CP950_Detection();
                         if (!outOfSpecification)
@@ -1765,6 +1837,62 @@ namespace SnowStack.EncodingProbe
             }
 
             return outOfSpecification;
+        }
+
+        /// <summary>
+        /// カルチャーゲートを通らずに、中国語の旧マルチバイト（GB 系または Big5 系）として判定し直す
+        /// </summary>
+        /// <remarks>
+        /// 統合層の繁簡の系統クロスチェック（<see cref="EncodingProbe"/>）で使う。
+        /// UTF.Unknown が「独自判定とは反対の系統だ」と高い信頼度で言ったとき、
+        /// その系統の独自判定をカルチャーに関係なく実行し直すためのものである。
+        /// UTF.Unknown のコードページをそのまま使わないのは、GB 系のどれ（936 / 54936 など）かを
+        /// 既存の判別規則で決めるためである。
+        /// GB 系・Big5 系の判定関数はバイト構造だけを見ており、カルチャーに依存しない。
+        /// </remarks>
+        /// <param name="region">
+        /// <see cref="EastAsianLegacyRegion.ChineseSimplified"/>（GB 系）または
+        /// <see cref="EastAsianLegacyRegion.ChineseTraditional"/>（Big5 系）
+        /// </param>
+        /// <param name="nativeInfo">元の独自判定の結果（改行コードやカルチャーを引き継ぐ）</param>
+        /// <returns>成立すればその判定結果。成立しなければ null</returns>
+        internal EncodingInformation? RedetectChineseLegacy(EastAsianLegacyRegion region, EncodingInformation nativeInfo)
+        {
+            int codePage;
+            bool outOfSpecification;
+
+            switch (region)
+            {
+                case EastAsianLegacyRegion.ChineseSimplified:
+                    // GB2312 / GBK / GB18030 の判別規則
+                    outOfSpecification = GB_Detection(out codePage);
+                    break;
+
+                case EastAsianLegacyRegion.ChineseTraditional:
+                case EastAsianLegacyRegion.ChineseHongKong:
+                    // EUC-TW と CP950 の両方に該当する場合は CP950 を優先する規則があるため、CP950 だけを見ればよい
+                    outOfSpecification = CP950_Detection();
+                    codePage = outOfSpecification ? -1 : CodePageCp950;
+                    break;
+
+                default:
+                    return null;
+            }
+
+            if (outOfSpecification)
+            {
+                return null;
+            }
+
+            string psEncodingName = EncodingDetector.PSEncodingName(codePage, false);
+            return nativeInfo with
+            {
+                CodePage = codePage,
+                EncodingWebName = EncodingName(codePage),
+                Bom = false,
+                PSEncodingName = psEncodingName,
+                UsePSName = EncodingDetector.SetUsePSName(psEncodingName),
+            };
         }
 
         /// <summary>
@@ -2083,9 +2211,10 @@ namespace SnowStack.EncodingProbe
                     currentByteType = CP950_BYTECODE.TwoByteBefore;
                 }
                 else if (beforeByte == CP950_BYTECODE.TwoByteBefore &&
-                        ((b >= 0x40 && b <= 0x7E) || (b >= 0x80 && b <= 0xFE)))
+                        ((b >= 0x40 && b <= 0x7E) || (b >= 0xA1 && b <= 0xFE)))
                 {
                     // 2バイト文字の2バイト目
+                    // Big5 / HKSCS とも 0x80–0xA0 は後続バイトに存在しない
                     currentByteType = CP950_BYTECODE.TwoByteAfter;
                 }
                 else if (b == 0x80 || b == 0xFF)

@@ -270,6 +270,17 @@ altered here.
         private const double SingleByteOverrideThreshold = 0.55;
 
         /// <summary>
+        /// 独自判定が出した中国語の旧マルチバイトの答えを「反対の系統（Big5 系 ⇔ GB 系）で差し替える」信頼度の下限
+        /// </summary>
+        /// <remarks>
+        /// <see cref="SingleByteOverrideThreshold"/> とは別の定数である。この値「以上」で差し替える。
+        /// 実測（PS 5.1 / 7.x で同一）では、12 バイト以上の Big5 / GBK に対して
+        /// UTF.Unknown は正しい系統を常に 0.99 で返し、反対の系統を返した例は 6〜512 バイトのどの長さでも無かった。
+        /// 短い入力や HKSCS 入りの入力ではシングルバイトまたは判定不能を返すため、差し替えは起きない。
+        /// </remarks>
+        private const double ChineseFamilyOverrideThreshold = 0.8;
+
+        /// <summary>
         /// UTF.Unknown の判定結果を <see cref="EncodingInformation"/> に反映する
         /// </summary>
         /// <param name="encInfo">BOM と改行コードを判定済みの <see cref="EncodingInformation"/></param>
@@ -418,18 +429,96 @@ altered here.
         }
 
         /// <summary>
+        /// コードページが属する中国語の旧マルチバイトの系統を返す
+        /// </summary>
+        /// <remarks>
+        /// 系統表はここに集約している。日本語・韓国語のコードページは含めない
+        /// （EUC-JP の 20932 / 51932 のような同一系統の別番号の食い違いを差し替えの対象にしないため）。
+        /// </remarks>
+        /// <param name="codePage">コードページ</param>
+        /// <returns>
+        /// Big5 系なら <see cref="EncodingDetector.EastAsianLegacyRegion.ChineseTraditional"/>、
+        /// GB 系なら <see cref="EncodingDetector.EastAsianLegacyRegion.ChineseSimplified"/>、
+        /// どちらでもなければ <see cref="EncodingDetector.EastAsianLegacyRegion.None"/>
+        /// </returns>
+        private static EncodingDetector.EastAsianLegacyRegion GetChineseLegacyFamily(int codePage)
+        {
+            switch (codePage)
+            {
+                case 950:    // Big5
+                    return EncodingDetector.EastAsianLegacyRegion.ChineseTraditional;
+                case 936:    // GBK
+                case 54936:  // GB18030
+                case 20936:  // GB2312
+                    return EncodingDetector.EastAsianLegacyRegion.ChineseSimplified;
+                default:
+                    return EncodingDetector.EastAsianLegacyRegion.None;
+            }
+        }
+
+        /// <summary>
+        /// 独自判定の中国語の結果を、反対の系統（Big5 系 ⇔ GB 系）で判定し直すべきか判定する
+        /// </summary>
+        /// <remarks>
+        /// 独自判定の GB 系・Big5 系の判定はバイト構造の妥当性しか見ていない。
+        /// GBK の簡体字の大半は Big5 としても構造が成立し、Big5 の繁体字は GB18030 としても成立するため、
+        /// 台湾・香港カルチャーで簡体字を読むと Big5、大陸カルチャーで繁体字を読むと GB18030 と誤判定する。
+        /// UTF.Unknown は統計モデルで繁簡を見分けるので、その系統の判断を投票として使う。
+        /// </remarks>
+        /// <param name="nativeInfo">独自判定の結果</param>
+        /// <param name="utfUnknownInfo">UTF.Unknown の判定結果</param>
+        /// <param name="confidence">UTF.Unknown が返した信頼度</param>
+        /// <param name="family">判定し直す系統</param>
+        /// <returns>true=反対の系統で判定し直す</returns>
+        private static bool ShouldSwitchChineseFamily(
+            EncodingInformation nativeInfo, EncodingInformation utfUnknownInfo, double confidence,
+            out EncodingDetector.EastAsianLegacyRegion family)
+        {
+            family = EncodingDetector.EastAsianLegacyRegion.None;
+
+            EncodingDetector.EastAsianLegacyRegion nativeFamily = GetChineseLegacyFamily(nativeInfo.CodePage);
+            EncodingDetector.EastAsianLegacyRegion utfUnknownFamily = GetChineseLegacyFamily(utfUnknownInfo.CodePage);
+
+            if (nativeFamily == EncodingDetector.EastAsianLegacyRegion.None ||
+                utfUnknownFamily == EncodingDetector.EastAsianLegacyRegion.None ||
+                nativeFamily == utfUnknownFamily ||
+                confidence < ChineseFamilyOverrideThreshold)
+            {
+                return false;
+            }
+
+            family = utfUnknownFamily;
+            return true;
+        }
+
+        /// <summary>
         /// 独自判定が旧マルチバイトを返したときのクロスチェックを行い、採用する結果を返す
         /// </summary>
+        /// <remarks>
+        /// 規則は 2 つある。
+        /// <list type="number">
+        /// <item>UTF.Unknown がシングルバイトを返した → UTF.Unknown の結果を採用する（<see cref="ShouldPreferUtfUnknown"/>）</item>
+        /// <item>UTF.Unknown が反対の系統（Big5 系 ⇔ GB 系）を返した → その系統の独自判定を
+        /// カルチャーに関係なく実行し直し、成立すればその結果を採用する（<see cref="ShouldSwitchChineseFamily"/>）。
+        /// UTF.Unknown のコードページはそのまま使わない</item>
+        /// </list>
+        /// </remarks>
+        /// <param name="detector">独自判定に使った判定器（判定し直しに使う）</param>
         /// <param name="nativeInfo">独自判定の結果</param>
         /// <param name="utfUnknownInfo">同じバイト列に対する UTF.Unknown の判定結果</param>
         /// <param name="confidence">UTF.Unknown が返した信頼度</param>
         /// <returns>採用する判定結果</returns>
         private static EncodingInformation ResolveEastAsianLegacyCrossCheck(
-            EncodingInformation nativeInfo, EncodingInformation utfUnknownInfo, double confidence)
+            EncodingDetector detector, EncodingInformation nativeInfo, EncodingInformation utfUnknownInfo, double confidence)
         {
             if (ShouldPreferUtfUnknown(nativeInfo, utfUnknownInfo, confidence))
             {
                 return utfUnknownInfo;
+            }
+
+            if (ShouldSwitchChineseFamily(nativeInfo, utfUnknownInfo, confidence, out var family))
+            {
+                return detector.RedetectChineseLegacy(family, nativeInfo) ?? nativeInfo;
             }
 
             return nativeInfo;
@@ -522,7 +611,8 @@ altered here.
         /// <returns></returns>
         internal static EncodingInformation NormalDetectEncoding(byte[] buffer, string culture = null)
         {
-            EncodingInformation encInfo = DetectEncoding(buffer, culture: culture);
+            EncodingDetector detector = new EncodingDetector(buffer);
+            EncodingInformation encInfo = detector.Detection(culture);
 
             if (encInfo.CodePage < 0)
             {
@@ -533,7 +623,7 @@ altered here.
             {
                 double confidence;
                 EncodingInformation utfUnknownInfo = DetectUtfUnknown(buffer, culture, out confidence);
-                return ResolveEastAsianLegacyCrossCheck(encInfo, utfUnknownInfo, confidence);
+                return ResolveEastAsianLegacyCrossCheck(detector, encInfo, utfUnknownInfo, confidence);
             }
 
             return encInfo;
@@ -559,7 +649,8 @@ altered here.
         /// <returns></returns>
         internal static EncodingInformation NormalDetectEncoding(string filePath, string culture = null)
         {
-            EncodingInformation encInfo = DetectEncoding(filePath, culture: culture);
+            EncodingDetector detector = new EncodingDetector(filePath);
+            EncodingInformation encInfo = detector.Detection(culture);
 
             if (encInfo.CodePage < 0)
             {
@@ -570,7 +661,7 @@ altered here.
             {
                 double confidence;
                 EncodingInformation utfUnknownInfo = DetectUtfUnknown(filePath, culture, out confidence);
-                return ResolveEastAsianLegacyCrossCheck(encInfo, utfUnknownInfo, confidence);
+                return ResolveEastAsianLegacyCrossCheck(detector, encInfo, utfUnknownInfo, confidence);
             }
 
             return encInfo;
