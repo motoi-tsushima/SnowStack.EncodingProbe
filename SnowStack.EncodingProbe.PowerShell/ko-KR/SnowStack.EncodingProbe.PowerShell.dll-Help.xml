@@ -330,14 +330,14 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다.</maml:para>
+            <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다. 정하는 것은 각 요소 뒤에 붙이는 줄 바꿈뿐이며, 값 안에 포함된 줄 바꿈("a`nb" 등)은 그대로 씁니다. 파일 안의 줄 바꿈을 통일하려면 Convert-ProbedContent를 사용하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>읽기 전용 특성이 붙은 파일에도 씁니다(특성을 해제한 뒤 씁니다). 이 스위치는 그 밖에는 영향을 주지 않습니다.</maml:para>
+            <maml:para>읽기 전용 특성이 붙은 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓰기 후에(쓰기에 실패한 경우에도) 원래대로 되돌립니다. 이 스위치는 그 밖에는 영향을 주지 않습니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -406,14 +406,14 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다.</maml:para>
+            <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다. 정하는 것은 각 요소 뒤에 붙이는 줄 바꿈뿐이며, 값 안에 포함된 줄 바꿈("a`nb" 등)은 그대로 씁니다. 파일 안의 줄 바꿈을 통일하려면 Convert-ProbedContent를 사용하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>읽기 전용 특성이 붙은 파일에도 씁니다(특성을 해제한 뒤 씁니다). 이 스위치는 그 밖에는 영향을 주지 않습니다.</maml:para>
+            <maml:para>읽기 전용 특성이 붙은 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓰기 후에(쓰기에 실패한 경우에도) 원래대로 되돌립니다. 이 스위치는 그 밖에는 영향을 주지 않습니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -494,7 +494,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>읽기 전용 특성이 붙은 파일에도 씁니다(특성을 해제한 뒤 씁니다). 이 스위치는 그 밖에는 영향을 주지 않습니다.</maml:para>
+          <maml:para>읽기 전용 특성이 붙은 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓰기 후에(쓰기에 실패한 경우에도) 원래대로 되돌립니다. 이 스위치는 그 밖에는 영향을 주지 않습니다.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -505,7 +505,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>LineBreak</maml:name>
         <maml:description>
-          <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다.</maml:para>
+          <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다. 정하는 것은 각 요소 뒤에 붙이는 줄 바꿈뿐이며, 값 안에 포함된 줄 바꿈("a`nb" 등)은 그대로 씁니다. 파일 안의 줄 바꿈을 통일하려면 Convert-ProbedContent를 사용하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         <dev:type>
@@ -735,14 +735,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다.</maml:para>
+            <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다. 정하는 것은 각 요소 뒤에 붙이는 줄 바꿈뿐이며, 값 안에 포함된 줄 바꿈("a`nb" 등)은 그대로 씁니다. 파일 안의 줄 바꿈을 통일하려면 Convert-ProbedContent를 사용하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>읽기 전용 특성이 붙은 파일에도 씁니다(특성을 해제한 뒤 씁니다). 이 스위치는 그 밖에는 영향을 주지 않습니다. 특히 문자 인코딩의 정합성 검사를 느슨하게 하지는 않습니다. 그것이 목적이라면 -AllowEncodingChange를 사용하십시오.</maml:para>
+            <maml:para>읽기 전용 특성이 붙은 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓰기 후에(쓰기에 실패한 경우에도) 원래대로 되돌립니다. 이 스위치는 그 밖에는 영향을 주지 않습니다. 특히 문자 인코딩의 정합성 검사를 느슨하게 하지는 않습니다. 그것이 목적이라면 -AllowEncodingChange를 사용하십시오.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -817,14 +817,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다.</maml:para>
+            <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다. 정하는 것은 각 요소 뒤에 붙이는 줄 바꿈뿐이며, 값 안에 포함된 줄 바꿈("a`nb" 등)은 그대로 씁니다. 파일 안의 줄 바꿈을 통일하려면 Convert-ProbedContent를 사용하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>읽기 전용 특성이 붙은 파일에도 씁니다(특성을 해제한 뒤 씁니다). 이 스위치는 그 밖에는 영향을 주지 않습니다. 특히 문자 인코딩의 정합성 검사를 느슨하게 하지는 않습니다. 그것이 목적이라면 -AllowEncodingChange를 사용하십시오.</maml:para>
+            <maml:para>읽기 전용 특성이 붙은 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓰기 후에(쓰기에 실패한 경우에도) 원래대로 되돌립니다. 이 스위치는 그 밖에는 영향을 주지 않습니다. 특히 문자 인코딩의 정합성 검사를 느슨하게 하지는 않습니다. 그것이 목적이라면 -AllowEncodingChange를 사용하십시오.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -922,7 +922,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>읽기 전용 특성이 붙은 파일에도 씁니다(특성을 해제한 뒤 씁니다). 이 스위치는 그 밖에는 영향을 주지 않습니다. 특히 문자 인코딩의 정합성 검사를 느슨하게 하지는 않습니다. 그것이 목적이라면 -AllowEncodingChange를 사용하십시오.</maml:para>
+          <maml:para>읽기 전용 특성이 붙은 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓰기 후에(쓰기에 실패한 경우에도) 원래대로 되돌립니다. 이 스위치는 그 밖에는 영향을 주지 않습니다. 특히 문자 인코딩의 정합성 검사를 느슨하게 하지는 않습니다. 그것이 목적이라면 -AllowEncodingChange를 사용하십시오.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -933,7 +933,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>LineBreak</maml:name>
         <maml:description>
-          <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다.</maml:para>
+          <maml:para>출력할 줄 바꿈 코드: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, -Encoding Auto, -Encoding에 전달한 EncodingInformation), 없으면 운영 체제 기본값을 사용합니다. 참조 파일에 줄 바꿈이 섞여 있는 경우에는 CR-LF가 하나라도 있으면 CR-LF를, 없으면 LF를 상속합니다. 이 규칙은 운영 체제에 의존하지 않습니다. 정하는 것은 각 요소 뒤에 붙이는 줄 바꿈뿐이며, 값 안에 포함된 줄 바꿈("a`nb" 등)은 그대로 씁니다. 파일 안의 줄 바꿈을 통일하려면 Convert-ProbedContent를 사용하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         <dev:type>
@@ -1108,6 +1108,969 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Out-ProbedFile</command:name>
+      <maml:description>
+        <maml:para>개체를 서식 지정하여 파일로 출력합니다. 문자 인코딩, BOM, 줄 바꿈은 통합 어휘로 지정합니다.</maml:para>
+      </maml:description>
+      <command:verb>Out</command:verb>
+      <command:noun>ProbedFile</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>받은 개체를 기본 제공 Out-File과 같은 방법으로 서식 지정하여 파일에 씁니다. Out-File의 매개 변수를 모두 가지며, Set-ProbedContent / Add-ProbedContent에서 가져온 매개 변수(-EncodingFrom, -LineBreak, -AllowEncodingChange, -Culture, -Strategy)를 더했습니다.</maml:para>
+      <maml:para>인코딩 계층(문자 인코딩, BOM, 줄 바꿈)은 Windows PowerShell 5.1과 PowerShell 7.x에서 같은 바이트열이 됩니다. 서식 지정 계층(개체를 문자열로 만드는 처리)은 실행 중인 호스트의 Out-String에 맡기므로 표나 목록의 모양은 호스트에 따라 다를 수 있습니다(참고 참조). 문자열은 서식 지정의 영향을 받지 않으므로 두 호스트에서 같은 결과가 됩니다.</maml:para>
+      <maml:para>파일을 여는(만들거나 자르는) 시점은 명령 시작 시가 아니라 첫 줄을 쓰기 직전입니다. 따라서 Get-ProbedContent a.txt | Out-ProbedFile a.txt는 a.txt를 다 읽기 전에 조용히 잘라 버리지 않고 오류로 보고됩니다.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Out-ProbedFile</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="Path">
+          <maml:name>FilePath</maml:name>
+          <maml:description>
+            <maml:para>출력 파일의 경로. 와일드카드는 확장되며 기존 파일 정확히 1개로 확인되어야 합니다. 와일드카드 문자가 없는 존재하지 않는 경로는 새로 만듭니다. 별칭 -Path는 Windows PowerShell 5.1에서도 사용할 수 있습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>쓸 개체. 실행 중인 호스트의 Out-String -Stream으로 서식 지정하고, 얻은 각 줄 뒤에 줄 바꿈을 붙여 씁니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>지정한 참조 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다. 입력한 그대로 사용하며 와일드카드는 확장하지 않습니다. -LineBreak를 명시하면 상속한 줄 바꿈보다 그것을 우선합니다. -Encoding과 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>각 줄 뒤에 붙이는 줄 바꿈: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, 명시한 -Encoding Auto, -Encoding에 전달한 EncodingInformation, -Encoding을 생략한 -Append의 추가 대상), 없으면 운영 체제 기본값을 사용합니다. 문자열 안에 포함된 줄 바꿈은 바꾸지 않습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈춥니다. 그때까지 쓴 줄은 남으며 파일은 일관성을 유지합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>기존 파일을 덮어쓰지 않습니다. 파일이 있으면 건드리지 않고 종료 오류로 멈춥니다. -Force를 붙여도 해제되지 않습니다. -Append와 함께 지정하면 기본 제공 Out-File과 마찬가지로 -Append가 우선하여 추가합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>읽기 전용 특성이 붙은 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓰기 후에(쓰기에 실패한 경우에도) 원래대로 되돌립니다. -NoClobber를 해제하지 않으며 -Append의 정합성 검사도 느슨하게 하지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Width</maml:name>
+          <maml:description>
+            <maml:para>서식 지정된 출력의 한 줄 문자 수. Out-String에 전달합니다. 최솟값은 2입니다. 생략하면 실행 중인 호스트의 Out-String 기본값을 사용하며, PowerShell 5.1과 7.x에서 다를 수 있습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>각 줄을 구분 없이 이어서 쓰며 끝에도 줄 바꿈을 붙이지 않습니다. 빈 줄은 아무것도 남기지 않습니다. -LineBreak도 지정하면 줄 바꿈이 사용되지 않으므로 경고를 표시합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>파일 판정이 필요할 때 사용하는 판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>명령을 실행하기 전에 확인을 요청합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Out-ProbedFile</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>출력 파일의 경로. 입력한 그대로 사용하며 와일드카드는 확장하지 않습니다. c[1].txt처럼 이름에 와일드카드 문자가 포함된 파일을 만들 때 사용합니다. 이 매개 변수는 파이프라인에서 값을 받지 않습니다. 별칭 -PSPath와 -LP는 Windows PowerShell 5.1에서도 사용할 수 있습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>쓸 개체. 실행 중인 호스트의 Out-String -Stream으로 서식 지정하고, 얻은 각 줄 뒤에 줄 바꿈을 붙여 씁니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>지정한 참조 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다. 입력한 그대로 사용하며 와일드카드는 확장하지 않습니다. -LineBreak를 명시하면 상속한 줄 바꿈보다 그것을 우선합니다. -Encoding과 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>각 줄 뒤에 붙이는 줄 바꿈: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, 명시한 -Encoding Auto, -Encoding에 전달한 EncodingInformation, -Encoding을 생략한 -Append의 추가 대상), 없으면 운영 체제 기본값을 사용합니다. 문자열 안에 포함된 줄 바꿈은 바꾸지 않습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈춥니다. 그때까지 쓴 줄은 남으며 파일은 일관성을 유지합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>기존 파일을 덮어쓰지 않습니다. 파일이 있으면 건드리지 않고 종료 오류로 멈춥니다. -Force를 붙여도 해제되지 않습니다. -Append와 함께 지정하면 기본 제공 Out-File과 마찬가지로 -Append가 우선하여 추가합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>읽기 전용 특성이 붙은 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓰기 후에(쓰기에 실패한 경우에도) 원래대로 되돌립니다. -NoClobber를 해제하지 않으며 -Append의 정합성 검사도 느슨하게 하지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Width</maml:name>
+          <maml:description>
+            <maml:para>서식 지정된 출력의 한 줄 문자 수. Out-String에 전달합니다. 최솟값은 2입니다. 생략하면 실행 중인 호스트의 Out-String 기본값을 사용하며, PowerShell 5.1과 7.x에서 다를 수 있습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>각 줄을 구분 없이 이어서 쓰며 끝에도 줄 바꿈을 붙이지 않습니다. 빈 줄은 아무것도 남기지 않습니다. -LineBreak도 지정하면 줄 바꿈이 사용되지 않으므로 경고를 표시합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>파일 판정이 필요할 때 사용하는 판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>명령을 실행하기 전에 확인을 요청합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>AllowEncodingChange</maml:name>
+        <maml:description>
+          <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Append</maml:name>
+        <maml:description>
+          <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈춥니다. 그때까지 쓴 줄은 남으며 파일은 일관성을 유지합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>명령을 실행하기 전에 확인을 요청합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>utf8NoBOM</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>지정한 참조 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다. 입력한 그대로 사용하며 와일드카드는 확장하지 않습니다. -LineBreak를 명시하면 상속한 줄 바꿈보다 그것을 우선합니다. -Encoding과 함께 지정할 수 없습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="Path">
+        <maml:name>FilePath</maml:name>
+        <maml:description>
+          <maml:para>출력 파일의 경로. 와일드카드는 확장되며 기존 파일 정확히 1개로 확인되어야 합니다. 와일드카드 문자가 없는 존재하지 않는 경로는 새로 만듭니다. 별칭 -Path는 Windows PowerShell 5.1에서도 사용할 수 있습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>읽기 전용 특성이 붙은 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓰기 후에(쓰기에 실패한 경우에도) 원래대로 되돌립니다. -NoClobber를 해제하지 않으며 -Append의 정합성 검사도 느슨하게 하지 않습니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+        <maml:name>InputObject</maml:name>
+        <maml:description>
+          <maml:para>쓸 개체. 실행 중인 호스트의 Out-String -Stream으로 서식 지정하고, 얻은 각 줄 뒤에 줄 바꿈을 붙여 씁니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>각 줄 뒤에 붙이는 줄 바꿈: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, 명시한 -Encoding Auto, -Encoding에 전달한 EncodingInformation, -Encoding을 생략한 -Append의 추가 대상), 없으면 운영 체제 기본값을 사용합니다. 문자열 안에 포함된 줄 바꿈은 바꾸지 않습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>출력 파일의 경로. 입력한 그대로 사용하며 와일드카드는 확장하지 않습니다. c[1].txt처럼 이름에 와일드카드 문자가 포함된 파일을 만들 때 사용합니다. 이 매개 변수는 파이프라인에서 값을 받지 않습니다. 별칭 -PSPath와 -LP는 Windows PowerShell 5.1에서도 사용할 수 있습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+        <maml:name>NoClobber</maml:name>
+        <maml:description>
+          <maml:para>기존 파일을 덮어쓰지 않습니다. 파일이 있으면 건드리지 않고 종료 오류로 멈춥니다. -Force를 붙여도 해제되지 않습니다. -Append와 함께 지정하면 기본 제공 Out-File과 마찬가지로 -Append가 우선하여 추가합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>NoNewline</maml:name>
+        <maml:description>
+          <maml:para>각 줄을 구분 없이 이어서 쓰며 끝에도 줄 바꿈을 붙이지 않습니다. 빈 줄은 아무것도 남기지 않습니다. -LineBreak도 지정하면 줄 바꿈이 사용되지 않으므로 경고를 표시합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>파일 판정이 필요할 때 사용하는 판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Width</maml:name>
+        <maml:description>
+          <maml:para>서식 지정된 출력의 한 줄 문자 수. Out-String에 전달합니다. 최솟값은 2입니다. 생략하면 실행 중인 호스트의 Out-String 기본값을 사용하며, PowerShell 5.1과 7.x에서 다를 수 있습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>이 cmdlet에는 임의의 개체를 파이프로 전달할 수 있습니다.</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>이 cmdlet은 아무것도 출력하지 않습니다.</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>참고</maml:title>
+      <maml:alert>
+        <maml:para>이 cmdlet의 실패는 모두 종료 오류입니다(기본 제공 Out-File과 같음). 출력 대상은 항상 1개이며, 종료되지 않는 오류로 하면 업스트림에서 레코드가 도착할 때마다 같은 오류가 반복되기 때문입니다. Set-ProbedContent는 여러 파일에 쓸 수 있으므로 같은 사건(읽기 전용 등)이라도 종료되지 않는 오류가 되는 것이 있습니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>서식 지정 계층은 호스트에 의존합니다. PowerShell 5.1과 7.x에서는 다음이 다를 수 있습니다: 표 각 행 끝의 공백, 표와 목록 앞뒤의 빈 줄 수, 잘림 표시(마침표 3개인지 줄임표 1문자인지), 전각 문자의 너비를 세는 방법, -Width를 생략했을 때의 너비. 문자열은 두 호스트에서 같게 기록됩니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Encoding 생략과 Auto 지정은 의미가 다릅니다. 생략: 새로 만들기와 덮어쓰기는 utf8NoBOM, -Append는 추가 대상에서 상속. Auto: 출력 대상의 기존 파일에서 상속(파일이 필요). -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-LineBreak가 정하는 것은 각 줄 뒤에 붙이는 줄 바꿈뿐입니다. 문자열 안에 포함된 줄 바꿈("a`r`nb" 등)은 기본 제공 Out-File / Set-Content와 마찬가지로 그대로 씁니다. 파일 안의 줄 바꿈을 통일하려면 Convert-ProbedContent를 사용하십시오.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>기본 제공 Out-File과의 차이: 기본 문자 인코딩은 PowerShell 5.1과 7.x 모두 utf8NoBOM(-Append는 추가 대상에서 상속). -Append는 문자 인코딩의 일관성을 검사. 파일을 만들거나 자르는 시점은 명령 시작 시가 아니라 첫 줄을 쓰기 직전. $null을 1개 전달하면 0바이트 파일이 됨(Out-File은 BOM만 씀). 별칭 -Path / -LP를 PowerShell 5.1에서도 사용 가능. -LiteralPath는 파이프라인에서 값을 받지 않음.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>BOM은 한 줄이라도 썼을 때만 씁니다. 입력이 하나도 없으면 출력 대상은 BOM 없이 0바이트로 만들어집니다(기존 파일이면 0바이트로 자름). -Append이면 기존 파일은 건드리지 않습니다.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 예제 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-Process | Out-ProbedFile .\processes.txt</dev:code>
+        <dev:remarks>
+          <maml:para>프로세스 목록을 서식 지정하여 PowerShell 5.1과 7.x 모두에서 BOM 없는 UTF-8로 씁니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem | Out-ProbedFile .\list.txt shift_jis -LineBreak CrLf -Width 200</dev:code>
+        <dev:remarks>
+          <maml:para>줄 바꿈 CR-LF, 한 줄 200자의 Shift_JIS 파일을 씁니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; 'appended line' | Out-ProbedFile .\log.txt -Append</dev:code>
+        <dev:remarks>
+          <maml:para>log.txt의 문자 인코딩과 줄 바꿈 그대로 추가합니다. 추가할 문자열을 같은 바이트열로 쓸 수 없으면, 한 파일에 문자 인코딩을 섞지 않고 오류로 멈춥니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $data | Out-ProbedFile .\out.txt -EncodingFrom .\template.txt</dev:code>
+        <dev:remarks>
+          <maml:para>template.txt의 문자 인코딩, BOM, 줄 바꿈으로 씁니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Convert-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Convert-ProbedContent</command:name>
+      <maml:description>
+        <maml:para>기존 텍스트 파일의 문자 인코딩, BOM, 줄 바꿈을 변환합니다.</maml:para>
+      </maml:description>
+      <command:verb>Convert</command:verb>
+      <command:noun>ProbedContent</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>텍스트 파일을 다른 문자 인코딩, BOM, 줄 바꿈으로 다시 씁니다. 문자 자체는 바꾸지 않습니다. 대상 파일은 -Path / -LiteralPath로 지정하거나 Get-ChildItem의 출력을 파이프로 전달합니다. 이 cmdlet 자체에는 -Recurse나 필터링 기능이 없습니다.</maml:para>
+      <maml:para>문자를 잃는 일은 없습니다. 원본 문자 인코딩으로서 잘못된 바이트열이나 대상 문자 인코딩으로 표현할 수 없는 문자가 포함된 파일은 변환하지 않고 그대로 둡니다. 오류 메시지에 그 위치를 표시합니다. 그런 문자를 바꿔서 변환하는 옵션은 없습니다.</maml:para>
+      <maml:para>각 파일은 같은 폴더의 임시 파일에 쓴 뒤 원래 파일과 바꾸므로, 도중에 실패해도 원래 파일은 손상되지 않습니다. 변환 결과가 원래 바이트열과 완전히 같으면 다시 쓰지 않으며 수정 시간도 바뀌지 않습니다.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Convert-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>변환할 파일. 와일드카드를 사용할 수 있습니다. 일치하는 파일이 없는 경로는 종료되지 않는 오류로 보고합니다. 디렉터리는 건너뜁니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>변환 대상의 문자 인코딩(과 BOM). 생략하면 원본 파일의 문자 인코딩을 유지합니다. 통합 어휘, WebName, 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. Auto는 지정할 수 없습니다. -Bom과 함께 쓰면 Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 계열 이름으로 다루고 BOM은 -Bom으로 정합니다. -Bom이 없으면 다른 쓰기 cmdlet과 같은 규칙이므로 단순 utf8은 거부합니다. -Bom과의 조합은 참고를 참조하십시오.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>지정한 참조 파일의 문자 인코딩, BOM, 줄 바꿈으로 변환합니다. 입력한 그대로 사용합니다. 상속한 BOM과 줄 바꿈은 -Bom과 -LineBreak로 덮어쓸 수 있습니다. -Encoding과 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Bom</maml:name>
+          <maml:description>
+            <maml:para>Add는 BOM을 붙이고 Remove는 BOM을 뗍니다. 생략하면 -Encoding에 전달한 이름이 BOM을 정하지 않는 한 BOM을 바꾸지 않습니다. BOM을 가질 수 있는 것은 Unicode 계열 5개뿐입니다. 그 밖의 문자 인코딩에 대한 Add는 오류가 되며 Remove는 아무것도 하지 않습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>변환 대상의 줄 바꿈: CrLf, Lf, Cr. 파일 안의 모든 줄 바꿈(CR-LF, LF, CR)을 바꾸며, 마지막 줄 끝에 줄 바꿈이 있는지는 유지합니다. U+2028, U+2029, U+0085는 줄 바꿈으로 다루지 않습니다. 기본값 Auto는 줄 바꿈을 유지합니다(-EncodingFrom이나 EncodingInformation이 있으면 그것에서 상속). 쓰기 cmdlet의 -LineBreak와 달리 파일 안의 모든 줄 바꿈을 통일합니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>SourceEncoding</maml:name>
+          <maml:description>
+            <maml:para>원본 파일의 문자 인코딩. 생략하면(또는 Auto) 파일마다 판정합니다. 판정 오류를 피하고 싶을 때 지정합니다. Get-ProbedContent의 -Encoding과 같은 값(단순 utf8 포함)을 지정할 수 있습니다. 파일 첫머리의 BOM은 이 문자 인코딩의 BOM과 일치하면 건너뜁니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>원본 파일의 문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>원본 파일의 판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Destination</maml:name>
+          <maml:description>
+            <maml:para>변환한 파일의 출력 폴더. 파일 이름은 원본 그대로 유지합니다. 생략하면 그 자리에서 변환합니다. 폴더는 존재해야 하며 만들지 않습니다. 원본의 폴더 구조는 유지하지 않고 모두 이 폴더 바로 아래에 씁니다. -Destination의 경우 변환 결과가 원본과 같아도 씁니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>읽기 전용 파일도 특성을 일시적으로 해제하여 변환합니다. 특성은 변환 후에 원래대로 되돌립니다. -Destination의 경우 이름이 같은 기존 파일을 덮어씁니다. 같은 명령에서 이미 쓴 파일은 덮어쓰지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>PassThru</maml:name>
+          <maml:description>
+            <maml:para>변환한 파일(변경할 필요가 없었던 것 포함)마다 Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak, Changed 속성을 가진 개체를 1개 출력합니다. 기본적으로는 아무것도 출력하지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않으며 -PassThru로도 아무것도 출력하지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>파일마다 변환하기 전에 확인을 요청합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Convert-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>변환할 파일. 입력한 그대로 사용하며 와일드카드는 확장하지 않습니다. Get-ChildItem의 출력은 PSPath 속성으로 이 매개 변수에 바인딩됩니다. 디렉터리는 건너뛰고 자세한 정보 메시지에 기록합니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>변환 대상의 문자 인코딩(과 BOM). 생략하면 원본 파일의 문자 인코딩을 유지합니다. 통합 어휘, WebName, 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. Auto는 지정할 수 없습니다. -Bom과 함께 쓰면 Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 계열 이름으로 다루고 BOM은 -Bom으로 정합니다. -Bom이 없으면 다른 쓰기 cmdlet과 같은 규칙이므로 단순 utf8은 거부합니다. -Bom과의 조합은 참고를 참조하십시오.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>지정한 참조 파일의 문자 인코딩, BOM, 줄 바꿈으로 변환합니다. 입력한 그대로 사용합니다. 상속한 BOM과 줄 바꿈은 -Bom과 -LineBreak로 덮어쓸 수 있습니다. -Encoding과 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Bom</maml:name>
+          <maml:description>
+            <maml:para>Add는 BOM을 붙이고 Remove는 BOM을 뗍니다. 생략하면 -Encoding에 전달한 이름이 BOM을 정하지 않는 한 BOM을 바꾸지 않습니다. BOM을 가질 수 있는 것은 Unicode 계열 5개뿐입니다. 그 밖의 문자 인코딩에 대한 Add는 오류가 되며 Remove는 아무것도 하지 않습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>변환 대상의 줄 바꿈: CrLf, Lf, Cr. 파일 안의 모든 줄 바꿈(CR-LF, LF, CR)을 바꾸며, 마지막 줄 끝에 줄 바꿈이 있는지는 유지합니다. U+2028, U+2029, U+0085는 줄 바꿈으로 다루지 않습니다. 기본값 Auto는 줄 바꿈을 유지합니다(-EncodingFrom이나 EncodingInformation이 있으면 그것에서 상속). 쓰기 cmdlet의 -LineBreak와 달리 파일 안의 모든 줄 바꿈을 통일합니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>SourceEncoding</maml:name>
+          <maml:description>
+            <maml:para>원본 파일의 문자 인코딩. 생략하면(또는 Auto) 파일마다 판정합니다. 판정 오류를 피하고 싶을 때 지정합니다. Get-ProbedContent의 -Encoding과 같은 값(단순 utf8 포함)을 지정할 수 있습니다. 파일 첫머리의 BOM은 이 문자 인코딩의 BOM과 일치하면 건너뜁니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>원본 파일의 문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>원본 파일의 판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Destination</maml:name>
+          <maml:description>
+            <maml:para>변환한 파일의 출력 폴더. 파일 이름은 원본 그대로 유지합니다. 생략하면 그 자리에서 변환합니다. 폴더는 존재해야 하며 만들지 않습니다. 원본의 폴더 구조는 유지하지 않고 모두 이 폴더 바로 아래에 씁니다. -Destination의 경우 변환 결과가 원본과 같아도 씁니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>읽기 전용 파일도 특성을 일시적으로 해제하여 변환합니다. 특성은 변환 후에 원래대로 되돌립니다. -Destination의 경우 이름이 같은 기존 파일을 덮어씁니다. 같은 명령에서 이미 쓴 파일은 덮어쓰지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>PassThru</maml:name>
+          <maml:description>
+            <maml:para>변환한 파일(변경할 필요가 없었던 것 포함)마다 Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak, Changed 속성을 가진 개체를 1개 출력합니다. 기본적으로는 아무것도 출력하지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않으며 -PassThru로도 아무것도 출력하지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>파일마다 변환하기 전에 확인을 요청합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Bom</maml:name>
+        <maml:description>
+          <maml:para>Add는 BOM을 붙이고 Remove는 BOM을 뗍니다. 생략하면 -Encoding에 전달한 이름이 BOM을 정하지 않는 한 BOM을 바꾸지 않습니다. BOM을 가질 수 있는 것은 Unicode 계열 5개뿐입니다. 그 밖의 문자 인코딩에 대한 Add는 오류가 되며 Remove는 아무것도 하지 않습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.BomOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>파일마다 변환하기 전에 확인을 요청합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>원본 파일의 문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Destination</maml:name>
+        <maml:description>
+          <maml:para>변환한 파일의 출력 폴더. 파일 이름은 원본 그대로 유지합니다. 생략하면 그 자리에서 변환합니다. 폴더는 존재해야 하며 만들지 않습니다. 원본의 폴더 구조는 유지하지 않고 모두 이 폴더 바로 아래에 씁니다. -Destination의 경우 변환 결과가 원본과 같아도 씁니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>변환 대상의 문자 인코딩(과 BOM). 생략하면 원본 파일의 문자 인코딩을 유지합니다. 통합 어휘, WebName, 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. Auto는 지정할 수 없습니다. -Bom과 함께 쓰면 Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 계열 이름으로 다루고 BOM은 -Bom으로 정합니다. -Bom이 없으면 다른 쓰기 cmdlet과 같은 규칙이므로 단순 utf8은 거부합니다. -Bom과의 조합은 참고를 참조하십시오.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>지정한 참조 파일의 문자 인코딩, BOM, 줄 바꿈으로 변환합니다. 입력한 그대로 사용합니다. 상속한 BOM과 줄 바꿈은 -Bom과 -LineBreak로 덮어쓸 수 있습니다. -Encoding과 함께 지정할 수 없습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>읽기 전용 파일도 특성을 일시적으로 해제하여 변환합니다. 특성은 변환 후에 원래대로 되돌립니다. -Destination의 경우 이름이 같은 기존 파일을 덮어씁니다. 같은 명령에서 이미 쓴 파일은 덮어쓰지 않습니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>변환 대상의 줄 바꿈: CrLf, Lf, Cr. 파일 안의 모든 줄 바꿈(CR-LF, LF, CR)을 바꾸며, 마지막 줄 끝에 줄 바꿈이 있는지는 유지합니다. U+2028, U+2029, U+0085는 줄 바꿈으로 다루지 않습니다. 기본값 Auto는 줄 바꿈을 유지합니다(-EncodingFrom이나 EncodingInformation이 있으면 그것에서 상속). 쓰기 cmdlet의 -LineBreak와 달리 파일 안의 모든 줄 바꿈을 통일합니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>변환할 파일. 입력한 그대로 사용하며 와일드카드는 확장하지 않습니다. Get-ChildItem의 출력은 PSPath 속성으로 이 매개 변수에 바인딩됩니다. 디렉터리는 건너뛰고 자세한 정보 메시지에 기록합니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>PassThru</maml:name>
+        <maml:description>
+          <maml:para>변환한 파일(변경할 필요가 없었던 것 포함)마다 Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak, Changed 속성을 가진 개체를 1개 출력합니다. 기본적으로는 아무것도 출력하지 않습니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>변환할 파일. 와일드카드를 사용할 수 있습니다. 일치하는 파일이 없는 경로는 종료되지 않는 오류로 보고합니다. 디렉터리는 건너뜁니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>SourceEncoding</maml:name>
+        <maml:description>
+          <maml:para>원본 파일의 문자 인코딩. 생략하면(또는 Auto) 파일마다 판정합니다. 판정 오류를 피하고 싶을 때 지정합니다. Get-ProbedContent의 -Encoding과 같은 값(단순 utf8 포함)을 지정할 수 있습니다. 파일 첫머리의 BOM은 이 문자 인코딩의 BOM과 일치하면 건너뜁니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>원본 파일의 판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않으며 -PassThru로도 아무것도 출력하지 않습니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>Get-ChildItem의 출력처럼 PSPath 속성을 가진 개체를 파이프로 전달할 수 있습니다.</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>-PassThru를 지정하면 변환한 파일마다 개체 1개(형식 이름 SnowStack.EncodingProbe.ConvertResult). 문자 인코딩은 통합 어휘의 이름(utf8BOM, unicodeNoBOM, shift_jis 등)으로 나타내므로 SourceEncoding을 그대로 -Encoding에 전달하면 원래 바이트열로 되돌릴 수 있습니다.</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>참고</maml:title>
+      <maml:alert>
+        <maml:para>원본 문자 인코딩으로서 잘못된 바이트열이나 대상 문자 인코딩으로 표현할 수 없는 문자가 포함된 파일은 변환하지 않습니다. 오류에는 첫 번째 잘못된 바이트열의 바이트 위치, 또는 처음으로 표현하지 못한 문자와 그 행·열을 표시합니다. 문자를 바꿔서 변환하는 수단은 없습니다. 바꿔도 된다면 먼저 문자열을 편집하십시오.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>이 cmdlet의 -LineBreak는 파일 안의 모든 줄 바꿈을 바꿉니다. Set-ProbedContent / Add-ProbedContent / Out-ProbedFile의 -LineBreak는 요소 뒤에 붙이는 줄 바꿈만 정하며 문자열 안의 줄 바꿈은 그대로 둡니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Encoding과 -Bom의 관계: BOM 접미사가 붙은 이름(utf8BOM, unicodeNoBOM 등)은 -Bom과 일치해야 합니다. Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 BOM을 -Bom으로 정합니다. 그 밖의 문자 인코딩(shift_jis, 932 등)에 대한 -Bom Add는 오류, -Bom Remove는 허용합니다. EncodingInformation이나 -EncodingFrom의 BOM은 -Bom으로 덮어쓸 수 있습니다. System.Text.Encoding 인스턴스는 -Bom과 일치해야 합니다. -Encoding을 생략하면 원본 문자 인코딩을 유지하며, BOM을 가질 수 없는 원본에 대한 -Bom Add는 그 파일의 오류로 보고합니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>원본은 파일 전체를 메모리에 읽어 들이므로 매우 큰 파일에는 그만큼의 메모리가 필요합니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Destination은 폴더 구조를 유지하지 않습니다. 파일 이름이 같은 원본이 2개 있으면, 같은 명령에서 쓴 파일을 덮어쓰지 않도록 -Force가 있어도 두 번째는 오류가 됩니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>사용자 정의 영역의 문자(홍콩 Big5의 HKSCS 고유 문자 등)는 경고 없이 코드 포인트 그대로 변환합니다. 그런 Big5 파일을 UTF-8로 변환했다가 Big5로 되돌리면 원래 바이트열로 돌아갑니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>매개 변수의 오류(변환 지정 없음, -Encoding Auto, BOM 지정의 불일치, -Destination 폴더 없음 등)는 종료 오류입니다. 한 파일에 관한 실패는 종료되지 않는 오류이며, 그 파일은 변경하지 않고 남기고 다른 파일의 처리는 계속합니다.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 예제 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Encoding utf8NoBOM -LineBreak Lf</dev:code>
+        <dev:remarks>
+          <maml:para>현재 폴더의 텍스트 파일을 파일마다 문자 인코딩을 판정하여 BOM 없는 UTF-8, 줄 바꿈 LF로 변환합니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Bom Remove</dev:code>
+        <dev:remarks>
+          <maml:para>문자 인코딩을 몰라도 BOM만 뗄 수 있습니다. BOM을 가질 수 없는 파일은 그대로 남습니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem -Recurse -Filter *.cs | Convert-ProbedContent -Encoding utf8BOM</dev:code>
+        <dev:remarks>
+          <maml:para>현재 폴더 아래의 모든 C# 소스 파일을 BOM이 붙은 UTF-8로 변환합니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Encoding utf8NoBOM -Destination .\out -PassThru</dev:code>
+        <dev:remarks>
+          <maml:para>변환한 복사본을 out 폴더에 쓰고 파일마다 결과를 출력합니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 5 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent .\legacy.txt -SourceEncoding euc-jp -Encoding shift_jis</dev:code>
+        <dev:remarks>
+          <maml:para>원본 문자 인코딩을 판정하지 않고 EUC-JP에서 Shift_JIS로 변환합니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Out-ProbedFile</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
         <maml:uri />
       </maml:navigationLink>
     </maml:relatedLinks>

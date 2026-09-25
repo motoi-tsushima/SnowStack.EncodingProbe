@@ -330,14 +330,14 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。</maml:para>
+            <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。只決定每個元素後面加上的換行，值中所含的換行（例如 "a`nb"）會原樣寫入。若要統一檔案內的換行，請使用 Convert-ProbedContent。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>對設有唯讀屬性的檔案也進行寫入（先解除屬性再寫入）。這個參數不會影響其他行為。</maml:para>
+            <maml:para>對設有唯讀屬性的檔案也會暫時解除屬性再寫入。屬性會在寫入後（即使寫入失敗）還原。這個參數不會影響其他行為。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -406,14 +406,14 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。</maml:para>
+            <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。只決定每個元素後面加上的換行，值中所含的換行（例如 "a`nb"）會原樣寫入。若要統一檔案內的換行，請使用 Convert-ProbedContent。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>對設有唯讀屬性的檔案也進行寫入（先解除屬性再寫入）。這個參數不會影響其他行為。</maml:para>
+            <maml:para>對設有唯讀屬性的檔案也會暫時解除屬性再寫入。屬性會在寫入後（即使寫入失敗）還原。這個參數不會影響其他行為。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -494,7 +494,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>對設有唯讀屬性的檔案也進行寫入（先解除屬性再寫入）。這個參數不會影響其他行為。</maml:para>
+          <maml:para>對設有唯讀屬性的檔案也會暫時解除屬性再寫入。屬性會在寫入後（即使寫入失敗）還原。這個參數不會影響其他行為。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -505,7 +505,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>LineBreak</maml:name>
         <maml:description>
-          <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。</maml:para>
+          <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。只決定每個元素後面加上的換行，值中所含的換行（例如 "a`nb"）會原樣寫入。若要統一檔案內的換行，請使用 Convert-ProbedContent。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         <dev:type>
@@ -735,14 +735,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。</maml:para>
+            <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。只決定每個元素後面加上的換行，值中所含的換行（例如 "a`nb"）會原樣寫入。若要統一檔案內的換行，請使用 Convert-ProbedContent。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>對設有唯讀屬性的檔案也進行寫入（先解除屬性再寫入）。這個參數不會影響其他行為。特別是它不會放寬字元編碼的一致性檢查；若需要如此，請使用 -AllowEncodingChange。</maml:para>
+            <maml:para>對設有唯讀屬性的檔案也會暫時解除屬性再寫入。屬性會在寫入後（即使寫入失敗）還原。這個參數不會影響其他行為。特別是它不會放寬字元編碼的一致性檢查；若需要如此，請使用 -AllowEncodingChange。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -817,14 +817,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。</maml:para>
+            <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。只決定每個元素後面加上的換行，值中所含的換行（例如 "a`nb"）會原樣寫入。若要統一檔案內的換行，請使用 Convert-ProbedContent。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>對設有唯讀屬性的檔案也進行寫入（先解除屬性再寫入）。這個參數不會影響其他行為。特別是它不會放寬字元編碼的一致性檢查；若需要如此，請使用 -AllowEncodingChange。</maml:para>
+            <maml:para>對設有唯讀屬性的檔案也會暫時解除屬性再寫入。屬性會在寫入後（即使寫入失敗）還原。這個參數不會影響其他行為。特別是它不會放寬字元編碼的一致性檢查；若需要如此，請使用 -AllowEncodingChange。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -922,7 +922,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>對設有唯讀屬性的檔案也進行寫入（先解除屬性再寫入）。這個參數不會影響其他行為。特別是它不會放寬字元編碼的一致性檢查；若需要如此，請使用 -AllowEncodingChange。</maml:para>
+          <maml:para>對設有唯讀屬性的檔案也會暫時解除屬性再寫入。屬性會在寫入後（即使寫入失敗）還原。這個參數不會影響其他行為。特別是它不會放寬字元編碼的一致性檢查；若需要如此，請使用 -AllowEncodingChange。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -933,7 +933,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>LineBreak</maml:name>
         <maml:description>
-          <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。</maml:para>
+          <maml:para>要輸出的換行字元: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、-Encoding Auto、傳給 -Encoding 的 EncodingInformation），否則使用作業系統預設值。參考檔案的換行混雜時，只要含有 CR-LF 就繼承 CR-LF，否則繼承 LF。這個規則不依賴作業系統。只決定每個元素後面加上的換行，值中所含的換行（例如 "a`nb"）會原樣寫入。若要統一檔案內的換行，請使用 Convert-ProbedContent。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         <dev:type>
@@ -1108,6 +1108,969 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Out-ProbedFile</command:name>
+      <maml:description>
+        <maml:para>將物件格式化後輸出到檔案。字元編碼、BOM 與換行以統一詞彙指定。</maml:para>
+      </maml:description>
+      <command:verb>Out</command:verb>
+      <command:noun>ProbedFile</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>以與內建 Out-File 相同的方式將收到的物件格式化並寫入檔案。它具備 Out-File 的所有參數，另外加上源自 Set-ProbedContent / Add-ProbedContent 的參數（-EncodingFrom、-LineBreak、-AllowEncodingChange、-Culture、-Strategy）。</maml:para>
+      <maml:para>編碼層（字元編碼、BOM、換行）在 Windows PowerShell 5.1 與 PowerShell 7.x 會產生相同的位元組序列。格式化層（把物件轉成字串的處理）交給執行中主機的 Out-String，因此表格與清單的形式可能因主機而異（請參閱備註）。字串不受格式化影響，在兩種主機上的結果相同。</maml:para>
+      <maml:para>開啟（建立或截斷）檔案的時機不是命令開始時，而是寫入第一行之前。因此 Get-ProbedContent a.txt | Out-ProbedFile a.txt 不會在讀完 a.txt 之前默默將其截斷，而是回報為錯誤。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Out-ProbedFile</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="Path">
+          <maml:name>FilePath</maml:name>
+          <maml:description>
+            <maml:para>輸出檔案的路徑。萬用字元會展開，且必須恰好解析為一個現有檔案。不含萬用字元且不存在的路徑會新建。別名 -Path 在 Windows PowerShell 5.1 也可使用。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>要寫出的物件。以執行中主機的 Out-String -Stream 格式化，並在得到的每一行後面加上換行寫入。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>從指定的參考檔案繼承字元編碼、BOM 方針與換行。依輸入原樣使用，不展開萬用字元。明確指定 -LineBreak 時，以其優先於繼承的換行。不能與 -Encoding 同時指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>在每一行後面加上的換行: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、明確指定的 -Encoding Auto、傳給 -Encoding 的 EncodingInformation、省略 -Encoding 時 -Append 的附加目標），否則使用作業系統預設值。字串中所含的換行不會被取代。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止。先前寫入的行會保留，檔案仍保持一致。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>不覆寫既有檔案。檔案存在時不碰觸檔案並以終止錯誤停止。加上 -Force 也不會解除。與 -Append 同時指定時，與內建 Out-File 相同，以 -Append 優先進行附加。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>對設有唯讀屬性的檔案也會暫時解除屬性再寫入。屬性會在寫入後（即使寫入失敗）還原。不會解除 -NoClobber，也不會放寬 -Append 的一致性檢查。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Width</maml:name>
+          <maml:description>
+            <maml:para>格式化輸出每一行的字元數，會傳給 Out-String。最小值為 2。省略時使用執行中主機的 Out-String 預設值，PowerShell 5.1 與 7.x 可能不同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>將各行不加分隔地串接寫入，結尾也不加換行。空行不會留下任何內容。同時指定 -LineBreak 時，因為換行不會被使用，會發出警告。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>需要判斷檔案時使用的判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。名稱與可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>顯示執行命令時會發生什麼事。不會建立或變更檔案。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>執行命令前要求確認。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Out-ProbedFile</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>輸出檔案的路徑。依輸入原樣使用，不展開萬用字元。建立名稱含萬用字元的檔案（例如 c[1].txt）時使用。這個參數不從管線接收值。別名 -PSPath 與 -LP 在 Windows PowerShell 5.1 也可使用。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>要寫出的物件。以執行中主機的 Out-String -Stream 格式化，並在得到的每一行後面加上換行寫入。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>從指定的參考檔案繼承字元編碼、BOM 方針與換行。依輸入原樣使用，不展開萬用字元。明確指定 -LineBreak 時，以其優先於繼承的換行。不能與 -Encoding 同時指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>在每一行後面加上的換行: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、明確指定的 -Encoding Auto、傳給 -Encoding 的 EncodingInformation、省略 -Encoding 時 -Append 的附加目標），否則使用作業系統預設值。字串中所含的換行不會被取代。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止。先前寫入的行會保留，檔案仍保持一致。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>不覆寫既有檔案。檔案存在時不碰觸檔案並以終止錯誤停止。加上 -Force 也不會解除。與 -Append 同時指定時，與內建 Out-File 相同，以 -Append 優先進行附加。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>對設有唯讀屬性的檔案也會暫時解除屬性再寫入。屬性會在寫入後（即使寫入失敗）還原。不會解除 -NoClobber，也不會放寬 -Append 的一致性檢查。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Width</maml:name>
+          <maml:description>
+            <maml:para>格式化輸出每一行的字元數，會傳給 Out-String。最小值為 2。省略時使用執行中主機的 Out-String 預設值，PowerShell 5.1 與 7.x 可能不同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>將各行不加分隔地串接寫入，結尾也不加換行。空行不會留下任何內容。同時指定 -LineBreak 時，因為換行不會被使用，會發出警告。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>需要判斷檔案時使用的判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。名稱與可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>顯示執行命令時會發生什麼事。不會建立或變更檔案。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>執行命令前要求確認。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>AllowEncodingChange</maml:name>
+        <maml:description>
+          <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Append</maml:name>
+        <maml:description>
+          <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止。先前寫入的行會保留，檔案仍保持一致。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>執行命令前要求確認。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>utf8NoBOM</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>從指定的參考檔案繼承字元編碼、BOM 方針與換行。依輸入原樣使用，不展開萬用字元。明確指定 -LineBreak 時，以其優先於繼承的換行。不能與 -Encoding 同時指定。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="Path">
+        <maml:name>FilePath</maml:name>
+        <maml:description>
+          <maml:para>輸出檔案的路徑。萬用字元會展開，且必須恰好解析為一個現有檔案。不含萬用字元且不存在的路徑會新建。別名 -Path 在 Windows PowerShell 5.1 也可使用。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>對設有唯讀屬性的檔案也會暫時解除屬性再寫入。屬性會在寫入後（即使寫入失敗）還原。不會解除 -NoClobber，也不會放寬 -Append 的一致性檢查。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+        <maml:name>InputObject</maml:name>
+        <maml:description>
+          <maml:para>要寫出的物件。以執行中主機的 Out-String -Stream 格式化，並在得到的每一行後面加上換行寫入。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>在每一行後面加上的換行: Auto、CrLf、Lf、Cr。Auto 在有參考資訊時會繼承該資訊（-EncodingFrom、明確指定的 -Encoding Auto、傳給 -Encoding 的 EncodingInformation、省略 -Encoding 時 -Append 的附加目標），否則使用作業系統預設值。字串中所含的換行不會被取代。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>輸出檔案的路徑。依輸入原樣使用，不展開萬用字元。建立名稱含萬用字元的檔案（例如 c[1].txt）時使用。這個參數不從管線接收值。別名 -PSPath 與 -LP 在 Windows PowerShell 5.1 也可使用。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+        <maml:name>NoClobber</maml:name>
+        <maml:description>
+          <maml:para>不覆寫既有檔案。檔案存在時不碰觸檔案並以終止錯誤停止。加上 -Force 也不會解除。與 -Append 同時指定時，與內建 Out-File 相同，以 -Append 優先進行附加。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>NoNewline</maml:name>
+        <maml:description>
+          <maml:para>將各行不加分隔地串接寫入，結尾也不加換行。空行不會留下任何內容。同時指定 -LineBreak 時，因為換行不會被使用，會發出警告。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>需要判斷檔案時使用的判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。名稱與可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>顯示執行命令時會發生什麼事。不會建立或變更檔案。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Width</maml:name>
+        <maml:description>
+          <maml:para>格式化輸出每一行的字元數，會傳給 Out-String。最小值為 2。省略時使用執行中主機的 Out-String 預設值，PowerShell 5.1 與 7.x 可能不同。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>可以將任何物件以管線傳給這個 Cmdlet。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>這個 Cmdlet 不輸出任何內容。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>備註</maml:title>
+      <maml:alert>
+        <maml:para>這個 Cmdlet 的失敗全都是終止錯誤（與內建 Out-File 相同）。因為輸出目標永遠只有一個，若設為非終止錯誤，每當上游送來記錄時就會重複相同的錯誤。Set-ProbedContent 可以寫入多個檔案，因此同樣的事件（例如唯讀）有時是非終止錯誤。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>格式化層依主機而定。PowerShell 5.1 與 7.x 之間以下幾點可能不同: 表格每列結尾的空白、表格與清單前後空行的數量、截斷記號（三個句點或一個省略符號字元）、全形字元寬度的計算方式、省略 -Width 時的寬度。字串在兩種主機上的寫入結果相同。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>省略 -Encoding 與指定 Auto 的意義不同。省略: 新建與覆寫為 utf8NoBOM，-Append 從附加目標繼承。Auto: 從輸出目標的既有檔案繼承（檔案必須存在）。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-LineBreak 只決定每一行後面加上的換行。字串中所含的換行（例如 "a`r`nb"）與內建 Out-File / Set-Content 相同，會原樣寫入。若要統一檔案內的換行，請使用 Convert-ProbedContent。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>與內建 Out-File 的差異: 預設字元編碼在 PowerShell 5.1 與 7.x 都是 utf8NoBOM（-Append 從附加目標繼承）；-Append 會檢查字元編碼的一致性；建立或截斷檔案的時機不是命令開始時，而是寫入第一行之前；傳入一個 $null 會產生 0 位元組的檔案（Out-File 只寫入 BOM）；別名 -Path / -LP 在 PowerShell 5.1 也可使用；-LiteralPath 不從管線接收值。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>只有在至少寫入一行時才寫入 BOM。完全沒有輸入時，輸出目標會以不含 BOM 的 0 位元組建立（既有檔案則截斷為 0 位元組）。指定 -Append 時不會碰觸既有檔案。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 範例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-Process | Out-ProbedFile .\processes.txt</dev:code>
+        <dev:remarks>
+          <maml:para>將處理程序清單格式化，在 PowerShell 5.1 與 7.x 都以不含 BOM 的 UTF-8 寫入。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 範例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem | Out-ProbedFile .\list.txt shift_jis -LineBreak CrLf -Width 200</dev:code>
+        <dev:remarks>
+          <maml:para>以 CR-LF 換行、每行 200 個字元寫入 Shift_JIS 檔案。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 範例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; 'appended line' | Out-ProbedFile .\log.txt -Append</dev:code>
+        <dev:remarks>
+          <maml:para>以 log.txt 的字元編碼與換行附加內容。若附加的字串無法以相同的位元組序列寫入，就不會在同一個檔案中混用字元編碼，而是以錯誤停止。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 範例 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $data | Out-ProbedFile .\out.txt -EncodingFrom .\template.txt</dev:code>
+        <dev:remarks>
+          <maml:para>以 template.txt 的字元編碼、BOM 與換行寫入。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Convert-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Convert-ProbedContent</command:name>
+      <maml:description>
+        <maml:para>轉換既有文字檔的字元編碼、BOM 與換行。</maml:para>
+      </maml:description>
+      <command:verb>Convert</command:verb>
+      <command:noun>ProbedContent</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>以不同的字元編碼、BOM 或換行重寫文字檔。字元本身不會改變。目標檔案以 -Path / -LiteralPath 指定，或以管線傳入 Get-ChildItem 的輸出。這個 Cmdlet 本身沒有 -Recurse 或篩選功能。</maml:para>
+      <maml:para>絕不會遺失字元。含有對來源字元編碼而言無效的位元組序列，或含有無法以目標字元編碼表示之字元的檔案不會轉換，而是保持原狀。錯誤訊息會指出其位置。沒有將這類字元取代後再轉換的選項。</maml:para>
+      <maml:para>每個檔案都會先寫入同一資料夾的暫存檔再取代原始檔案，因此即使中途失敗，原始檔案也不會損壞。若轉換結果與原始位元組序列完全相同，則不會重寫，修改時間也不會改變。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Convert-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>要轉換的檔案。可使用萬用字元。沒有符合檔案的路徑會回報為非終止錯誤。目錄會被略過。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>轉換目標的字元編碼（與 BOM）。省略時保留來源檔案的字元編碼。可指定統一詞彙、WebName、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不可指定 Auto。與 -Bom 一起使用時，Unicode 系的裸名稱或 WebName（utf8、utf-8、unicode 等）會視為系列名稱，BOM 由 -Bom 決定。沒有 -Bom 時採用與其他寫入 Cmdlet 相同的規則，因此會拒絕裸 utf8。與 -Bom 的組合請參閱備註。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>轉換為指定參考檔案的字元編碼、BOM 與換行。依輸入原樣使用。繼承的 BOM 與換行可用 -Bom 與 -LineBreak 覆寫。不能與 -Encoding 同時指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Bom</maml:name>
+          <maml:description>
+            <maml:para>Add 會加上 BOM，Remove 會移除 BOM。省略時，除非傳給 -Encoding 的名稱決定了 BOM，否則不變更 BOM。只有 Unicode 系的五個系列能擁有 BOM。對其他字元編碼指定 Add 會發生錯誤，而 Remove 則不做任何事。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>轉換目標的換行: CrLf、Lf、Cr。會取代檔案內所有的換行（CR-LF、LF、CR），並保留最後一行結尾是否有換行。U+2028、U+2029、U+0085 不視為換行。預設的 Auto 會保留換行（若有 -EncodingFrom 或 EncodingInformation 則從其繼承）。與寫入 Cmdlet 的 -LineBreak 不同，這會統一檔案內的所有換行。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>SourceEncoding</maml:name>
+          <maml:description>
+            <maml:para>來源檔案的字元編碼。省略時（或 Auto）會逐一判斷每個檔案。要避免判斷錯誤時請指定。可指定與 Get-ProbedContent 的 -Encoding 相同的值（包括裸 utf8）。檔案開頭的 BOM 若與此字元編碼的 BOM 一致則會略過。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判斷來源檔案字元編碼時使用的文化特性名稱（例如 ko-KR）。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>來源檔案的判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Destination</maml:name>
+          <maml:description>
+            <maml:para>轉換後檔案的輸出資料夾，檔案名稱保持與來源相同。省略時就地轉換。資料夾必須存在，不會建立。不保留來源的資料夾結構，全部寫在這個資料夾的正下方。使用 -Destination 時，即使轉換結果與來源相同也會寫出。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>唯讀檔案也會暫時解除屬性後進行轉換。屬性會在轉換後還原。使用 -Destination 時會覆寫同名的既有檔案。同一個命令已寫入的檔案不會被覆寫。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>PassThru</maml:name>
+          <maml:description>
+            <maml:para>每個轉換的檔案（包括不需要變更的檔案）輸出一個具有 Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed 屬性的物件。預設不輸出任何內容。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更，-PassThru 也不會輸出任何內容。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>轉換每個檔案之前要求確認。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Convert-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>要轉換的檔案。依輸入原樣使用，不展開萬用字元。Get-ChildItem 的輸出會透過 PSPath 屬性繫結到這個參數。目錄會被略過並記錄於詳細資訊訊息。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>轉換目標的字元編碼（與 BOM）。省略時保留來源檔案的字元編碼。可指定統一詞彙、WebName、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不可指定 Auto。與 -Bom 一起使用時，Unicode 系的裸名稱或 WebName（utf8、utf-8、unicode 等）會視為系列名稱，BOM 由 -Bom 決定。沒有 -Bom 時採用與其他寫入 Cmdlet 相同的規則，因此會拒絕裸 utf8。與 -Bom 的組合請參閱備註。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>轉換為指定參考檔案的字元編碼、BOM 與換行。依輸入原樣使用。繼承的 BOM 與換行可用 -Bom 與 -LineBreak 覆寫。不能與 -Encoding 同時指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Bom</maml:name>
+          <maml:description>
+            <maml:para>Add 會加上 BOM，Remove 會移除 BOM。省略時，除非傳給 -Encoding 的名稱決定了 BOM，否則不變更 BOM。只有 Unicode 系的五個系列能擁有 BOM。對其他字元編碼指定 Add 會發生錯誤，而 Remove 則不做任何事。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>轉換目標的換行: CrLf、Lf、Cr。會取代檔案內所有的換行（CR-LF、LF、CR），並保留最後一行結尾是否有換行。U+2028、U+2029、U+0085 不視為換行。預設的 Auto 會保留換行（若有 -EncodingFrom 或 EncodingInformation 則從其繼承）。與寫入 Cmdlet 的 -LineBreak 不同，這會統一檔案內的所有換行。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>SourceEncoding</maml:name>
+          <maml:description>
+            <maml:para>來源檔案的字元編碼。省略時（或 Auto）會逐一判斷每個檔案。要避免判斷錯誤時請指定。可指定與 Get-ProbedContent 的 -Encoding 相同的值（包括裸 utf8）。檔案開頭的 BOM 若與此字元編碼的 BOM 一致則會略過。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判斷來源檔案字元編碼時使用的文化特性名稱（例如 ko-KR）。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>來源檔案的判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Destination</maml:name>
+          <maml:description>
+            <maml:para>轉換後檔案的輸出資料夾，檔案名稱保持與來源相同。省略時就地轉換。資料夾必須存在，不會建立。不保留來源的資料夾結構，全部寫在這個資料夾的正下方。使用 -Destination 時，即使轉換結果與來源相同也會寫出。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>唯讀檔案也會暫時解除屬性後進行轉換。屬性會在轉換後還原。使用 -Destination 時會覆寫同名的既有檔案。同一個命令已寫入的檔案不會被覆寫。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>PassThru</maml:name>
+          <maml:description>
+            <maml:para>每個轉換的檔案（包括不需要變更的檔案）輸出一個具有 Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed 屬性的物件。預設不輸出任何內容。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更，-PassThru 也不會輸出任何內容。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>轉換每個檔案之前要求確認。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Bom</maml:name>
+        <maml:description>
+          <maml:para>Add 會加上 BOM，Remove 會移除 BOM。省略時，除非傳給 -Encoding 的名稱決定了 BOM，否則不變更 BOM。只有 Unicode 系的五個系列能擁有 BOM。對其他字元編碼指定 Add 會發生錯誤，而 Remove 則不做任何事。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.BomOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>轉換每個檔案之前要求確認。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>判斷來源檔案字元編碼時使用的文化特性名稱（例如 ko-KR）。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Destination</maml:name>
+        <maml:description>
+          <maml:para>轉換後檔案的輸出資料夾，檔案名稱保持與來源相同。省略時就地轉換。資料夾必須存在，不會建立。不保留來源的資料夾結構，全部寫在這個資料夾的正下方。使用 -Destination 時，即使轉換結果與來源相同也會寫出。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>轉換目標的字元編碼（與 BOM）。省略時保留來源檔案的字元編碼。可指定統一詞彙、WebName、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不可指定 Auto。與 -Bom 一起使用時，Unicode 系的裸名稱或 WebName（utf8、utf-8、unicode 等）會視為系列名稱，BOM 由 -Bom 決定。沒有 -Bom 時採用與其他寫入 Cmdlet 相同的規則，因此會拒絕裸 utf8。與 -Bom 的組合請參閱備註。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>轉換為指定參考檔案的字元編碼、BOM 與換行。依輸入原樣使用。繼承的 BOM 與換行可用 -Bom 與 -LineBreak 覆寫。不能與 -Encoding 同時指定。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>唯讀檔案也會暫時解除屬性後進行轉換。屬性會在轉換後還原。使用 -Destination 時會覆寫同名的既有檔案。同一個命令已寫入的檔案不會被覆寫。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>轉換目標的換行: CrLf、Lf、Cr。會取代檔案內所有的換行（CR-LF、LF、CR），並保留最後一行結尾是否有換行。U+2028、U+2029、U+0085 不視為換行。預設的 Auto 會保留換行（若有 -EncodingFrom 或 EncodingInformation 則從其繼承）。與寫入 Cmdlet 的 -LineBreak 不同，這會統一檔案內的所有換行。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>要轉換的檔案。依輸入原樣使用，不展開萬用字元。Get-ChildItem 的輸出會透過 PSPath 屬性繫結到這個參數。目錄會被略過並記錄於詳細資訊訊息。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>PassThru</maml:name>
+        <maml:description>
+          <maml:para>每個轉換的檔案（包括不需要變更的檔案）輸出一個具有 Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed 屬性的物件。預設不輸出任何內容。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>要轉換的檔案。可使用萬用字元。沒有符合檔案的路徑會回報為非終止錯誤。目錄會被略過。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>SourceEncoding</maml:name>
+        <maml:description>
+          <maml:para>來源檔案的字元編碼。省略時（或 Auto）會逐一判斷每個檔案。要避免判斷錯誤時請指定。可指定與 Get-ProbedContent 的 -Encoding 相同的值（包括裸 utf8）。檔案開頭的 BOM 若與此字元編碼的 BOM 一致則會略過。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>來源檔案的判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更，-PassThru 也不會輸出任何內容。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>可以用管線傳入具有 PSPath 屬性的物件，例如 Get-ChildItem 的輸出。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>指定 -PassThru 時，每個轉換的檔案輸出一個物件（類型名稱 SnowStack.EncodingProbe.ConvertResult）。字元編碼以統一詞彙的名稱表示（utf8BOM、unicodeNoBOM、shift_jis 等），因此把 SourceEncoding 原樣傳給 -Encoding 即可還原為原本的位元組序列。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>備註</maml:title>
+      <maml:alert>
+        <maml:para>含有對來源字元編碼而言無效的位元組序列，或含有無法以目標字元編碼表示之字元的檔案不會轉換。錯誤會指出第一個無效位元組序列的位元組位置，或第一個無法表示的字元及其行與欄。沒有取代字元後再轉換的方法。若可以接受取代，請先編輯字串。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>這個 Cmdlet 的 -LineBreak 會取代檔案內所有的換行。Set-ProbedContent / Add-ProbedContent / Out-ProbedFile 的 -LineBreak 只決定每個元素後面加上的換行，字串中的換行則保持原樣。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Encoding 與 -Bom 的關係: 帶有 BOM 後置詞的名稱（utf8BOM、unicodeNoBOM 等）必須與 -Bom 一致。Unicode 系的裸名稱或 WebName（utf8、utf-8、unicode 等）的 BOM 由 -Bom 決定。對其他字元編碼（shift_jis、932 等）指定 -Bom Add 會發生錯誤，-Bom Remove 則允許。EncodingInformation 或 -EncodingFrom 的 BOM 可用 -Bom 覆寫。System.Text.Encoding 執行個體必須與 -Bom 一致。省略 -Encoding 時保留來源的字元編碼，對無法擁有 BOM 的來源指定 -Bom Add 會回報為該檔案的錯誤。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>來源會將整個檔案讀入記憶體，因此非常大的檔案需要相應的記憶體。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Destination 不保留資料夾結構。若有兩個同名的來源檔案，為了不覆寫同一個命令寫入的檔案，即使有 -Force，第二個也會發生錯誤。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>私人使用區的字元（例如香港 Big5 的 HKSCS 特有字）會在不發出警告的情況下以字碼指標原樣轉換。將這類 Big5 檔案轉換為 UTF-8 再轉回 Big5，會還原為原本的位元組序列。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>參數錯誤（未指定轉換內容、-Encoding Auto、BOM 指定互相矛盾、-Destination 資料夾不存在等）是終止錯誤。與單一檔案有關的失敗是非終止錯誤，該檔案保持不變，其他檔案的處理會繼續。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 範例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Encoding utf8NoBOM -LineBreak Lf</dev:code>
+        <dev:remarks>
+          <maml:para>逐一判斷目前資料夾中每個文字檔的字元編碼，轉換為不含 BOM 的 UTF-8 與 LF 換行。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 範例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Bom Remove</dev:code>
+        <dev:remarks>
+          <maml:para>即使不知道字元編碼也能只移除 BOM。無法擁有 BOM 的檔案保持原狀。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 範例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem -Recurse -Filter *.cs | Convert-ProbedContent -Encoding utf8BOM</dev:code>
+        <dev:remarks>
+          <maml:para>將目前資料夾下所有的 C# 原始檔轉換為帶有 BOM 的 UTF-8。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 範例 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Encoding utf8NoBOM -Destination .\out -PassThru</dev:code>
+        <dev:remarks>
+          <maml:para>將轉換後的副本寫入 out 資料夾，並輸出每個檔案的結果。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 範例 5 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent .\legacy.txt -SourceEncoding euc-jp -Encoding shift_jis</dev:code>
+        <dev:remarks>
+          <maml:para>不判斷來源的字元編碼，直接從 EUC-JP 轉換為 Shift_JIS。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Out-ProbedFile</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
         <maml:uri />
       </maml:navigationLink>
     </maml:relatedLinks>

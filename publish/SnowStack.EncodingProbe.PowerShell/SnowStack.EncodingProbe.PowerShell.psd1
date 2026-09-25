@@ -1,6 +1,6 @@
 ﻿@{
     RootModule           = 'SnowStack.EncodingProbe.PowerShell.psm1'
-    ModuleVersion        = '1.1.0'
+    ModuleVersion        = '1.2.0'
     GUID                 = 'c807b12c-ca2a-4964-a3fe-b5f8823f78e8'
     Author               = 'motoi.tsushima'
     CompanyName          = 'motoi.tsushima'
@@ -16,6 +16,8 @@
         'Get-ProbedContent',
         'Set-ProbedContent',
         'Add-ProbedContent',
+        'Out-ProbedFile',
+        'Convert-ProbedContent',
         'ConvertTo-DotNetEncoding'
     )
     FunctionsToExport    = @()
@@ -29,6 +31,27 @@
             LicenseUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe/blob/master/LICENSE.txt'
             ProjectUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe'
             ReleaseNotes = @'
+1.2.0
+コマンドを 2 つ追加し、文字エンコーディング判定を東アジア以外の言語に対応させました。
+
+- Out-ProbedFile : オブジェクトを整形してファイルへ出力します。標準の Out-File のパラメーターを
+  すべて持ち、文字エンコーディング・BOM・改行を統一語彙で指定できます。-Encoding を省略すると
+  PowerShell 5.1 と 7.x のどちらでも utf8NoBOM で書き、-Append では追記先の文字エンコーディングを継承して
+  整合性を検査します。
+- Convert-ProbedContent : 既存のテキストファイルの文字エンコーディング・BOM・改行を変換します。
+  不正なバイト列や表現できない文字があるファイルは変換せず、文字を失わないことを保証します。
+
+既存コマンドの変更:
+- Set-ProbedContent / Add-ProbedContent の -Force は、書き込み後に読み取り専用の属性を元に戻すように
+  なりました（標準の Set-Content / Add-Content と同じ）。
+- -LineBreak が決めるのは要素の後ろに付ける改行だけで、文字列の中の改行は置き換えないことを明文化しました。
+
+判定の変更:
+- 東アジア以外のカルチャーでは、Shift_JIS などの東アジアの旧マルチバイトの判定を行わなくなりました。
+- 東アジアのカルチャーでも、欧米のシングルバイトのテキストを旧マルチバイトと誤判定しにくくなりました。
+- UTF-8 の判定を厳密にしました。
+- 香港・マカオのカルチャーに対応し、メッセージとヘルプは台湾と同じ繁体字の内容で提供します。
+
 1.1.0
 テキストの読み書きコマンドを追加しました。既存のコマンドと公開 API に変更はありません。
 

@@ -330,14 +330,14 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system.</maml:para>
+            <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system. Only the line break written after each element is decided; line breaks contained in a value (for example "a`nb") are written as they are. To unify the line breaks in a file, use Convert-ProbedContent.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>Writes to a file that has the read-only attribute set, clearing the attribute first. This switch has no effect on anything else.</maml:para>
+            <maml:para>Writes to a file that has the read-only attribute set, by clearing the attribute temporarily; the attribute is restored after writing, even if writing fails. This switch has no effect on anything else.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -406,14 +406,14 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system.</maml:para>
+            <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system. Only the line break written after each element is decided; line breaks contained in a value (for example "a`nb") are written as they are. To unify the line breaks in a file, use Convert-ProbedContent.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>Writes to a file that has the read-only attribute set, clearing the attribute first. This switch has no effect on anything else.</maml:para>
+            <maml:para>Writes to a file that has the read-only attribute set, by clearing the attribute temporarily; the attribute is restored after writing, even if writing fails. This switch has no effect on anything else.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -494,7 +494,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>Writes to a file that has the read-only attribute set, clearing the attribute first. This switch has no effect on anything else.</maml:para>
+          <maml:para>Writes to a file that has the read-only attribute set, by clearing the attribute temporarily; the attribute is restored after writing, even if writing fails. This switch has no effect on anything else.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -505,7 +505,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>LineBreak</maml:name>
         <maml:description>
-          <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system.</maml:para>
+          <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system. Only the line break written after each element is decided; line breaks contained in a value (for example "a`nb") are written as they are. To unify the line breaks in a file, use Convert-ProbedContent.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         <dev:type>
@@ -735,14 +735,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system.</maml:para>
+            <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system. Only the line break written after each element is decided; line breaks contained in a value (for example "a`nb") are written as they are. To unify the line breaks in a file, use Convert-ProbedContent.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>Writes to a file that has the read-only attribute set, clearing the attribute first. This switch has no effect on anything else. In particular it does NOT relax the encoding consistency check; use -AllowEncodingChange for that.</maml:para>
+            <maml:para>Writes to a file that has the read-only attribute set, by clearing the attribute temporarily; the attribute is restored after writing, even if writing fails. This switch has no effect on anything else. In particular it does NOT relax the encoding consistency check; use -AllowEncodingChange for that.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -817,14 +817,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system.</maml:para>
+            <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system. Only the line break written after each element is decided; line breaks contained in a value (for example "a`nb") are written as they are. To unify the line breaks in a file, use Convert-ProbedContent.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>Writes to a file that has the read-only attribute set, clearing the attribute first. This switch has no effect on anything else. In particular it does NOT relax the encoding consistency check; use -AllowEncodingChange for that.</maml:para>
+            <maml:para>Writes to a file that has the read-only attribute set, by clearing the attribute temporarily; the attribute is restored after writing, even if writing fails. This switch has no effect on anything else. In particular it does NOT relax the encoding consistency check; use -AllowEncodingChange for that.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -922,7 +922,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>Writes to a file that has the read-only attribute set, clearing the attribute first. This switch has no effect on anything else. In particular it does NOT relax the encoding consistency check; use -AllowEncodingChange for that.</maml:para>
+          <maml:para>Writes to a file that has the read-only attribute set, by clearing the attribute temporarily; the attribute is restored after writing, even if writing fails. This switch has no effect on anything else. In particular it does NOT relax the encoding consistency check; use -AllowEncodingChange for that.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -933,7 +933,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>LineBreak</maml:name>
         <maml:description>
-          <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system.</maml:para>
+          <maml:para>Line break to write: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, -Encoding Auto, or an EncodingInformation passed to -Encoding), and otherwise uses the operating system default. When the reference file has mixed line breaks, CR-LF is inherited if the file contains any CR-LF and LF otherwise; this rule does not depend on the operating system. Only the line break written after each element is decided; line breaks contained in a value (for example "a`nb") are written as they are. To unify the line breaks in a file, use Convert-ProbedContent.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         <dev:type>
@@ -1108,6 +1108,969 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Out-ProbedFile</command:name>
+      <maml:description>
+        <maml:para>Sends output to a file, with the character encoding, BOM and line break stated in the unified vocabulary.</maml:para>
+      </maml:description>
+      <command:verb>Out</command:verb>
+      <command:noun>ProbedFile</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>Formats the objects it receives in the same way as the built-in Out-File and writes them to a file. It has every parameter of Out-File, plus the parameters of Set-ProbedContent and Add-ProbedContent (-EncodingFrom, -LineBreak, -AllowEncodingChange, -Culture and -Strategy).</maml:para>
+      <maml:para>The encoding layer (the character encoding, the BOM and the line break) produces the same bytes on Windows PowerShell 5.1 and PowerShell 7.x. The formatting layer (turning objects into text) is left to Out-String of the running host, so tables and lists can differ between the two hosts (see NOTES). Strings are not affected by formatting and are written identically on both hosts.</maml:para>
+      <maml:para>The file is opened (created or truncated) just before the first line is written, not when the command starts. Therefore Get-ProbedContent a.txt | Out-ProbedFile a.txt is reported as an error instead of silently truncating a.txt before it has been read.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Out-ProbedFile</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="Path">
+          <maml:name>FilePath</maml:name>
+          <maml:description>
+            <maml:para>Path to the output file. Wildcards are expanded and must resolve to exactly one existing file; a path without wildcard characters that does not exist is created. The alias -Path is available on Windows PowerShell 5.1 as well.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding, and BOM policy, used to write the file. When omitted, the file is written as utf8NoBOM without looking at an existing file; with -Append the character encoding, the BOM policy and the line break are inherited from the file being appended to (utf8NoBOM if it does not exist or is empty). Auto, when specified explicitly, inherits them from the existing output file and reports an error if it does not exist. This differs from Set-ProbedContent, where omitting -Encoding means Auto. Accepts the unified vocabulary (utf8NoBOM, utf8BOM, unicodeBOM, ...), WebNames (shift_jis, euc-jp, ...), numeric code pages, System.Text.Encoding instances and EncodingInformation objects. Cannot be combined with -EncodingFrom.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>Objects to write. They are formatted with Out-String -Stream of the running host, and each resulting line is written followed by a line break.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>Inherits the character encoding, the BOM policy and the line break from the given reference file. The value is used exactly as typed; wildcards are not expanded. An explicit -LineBreak still wins over the inherited line break. Cannot be combined with -Encoding.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>Line break written after each line: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, an explicit -Encoding Auto, an EncodingInformation passed to -Encoding, or the file appended to when -Encoding is omitted with -Append), and otherwise uses the operating system default. Line breaks contained in a string are not replaced.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>Does not overwrite an existing file; if the file exists, the command stops with a terminating error without touching it. -Force does not cancel it. When -Append is also specified, -Append wins and the output is appended, as with the built-in Out-File.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>Writes to a file that has the read-only attribute set by clearing the attribute temporarily; the attribute is restored after writing, even if writing fails. It does not cancel -NoClobber and does not relax the -Append consistency check.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Width</maml:name>
+          <maml:description>
+            <maml:para>Number of characters in each line of formatted output, passed to Out-String. The minimum is 2. When omitted, the default of Out-String on the running host is used, which can differ between PowerShell 5.1 and 7.x.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>Writes the lines one after another with no line break between them or at the end. Empty lines leave nothing. When -LineBreak is also specified a warning is issued, because the line break simply goes unused.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>Detection strategy used when a file has to be detected: Combined (default), NativeOnly or UtfUnknownOnly. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts for confirmation before running the cmdlet.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Out-ProbedFile</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the output file. The value is used exactly as typed; wildcards are not expanded. Use this to create a file whose name contains wildcard characters, such as c[1].txt. This parameter does not take input from the pipeline. The aliases -PSPath and -LP are available on Windows PowerShell 5.1 as well.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding, and BOM policy, used to write the file. When omitted, the file is written as utf8NoBOM without looking at an existing file; with -Append the character encoding, the BOM policy and the line break are inherited from the file being appended to (utf8NoBOM if it does not exist or is empty). Auto, when specified explicitly, inherits them from the existing output file and reports an error if it does not exist. This differs from Set-ProbedContent, where omitting -Encoding means Auto. Accepts the unified vocabulary (utf8NoBOM, utf8BOM, unicodeBOM, ...), WebNames (shift_jis, euc-jp, ...), numeric code pages, System.Text.Encoding instances and EncodingInformation objects. Cannot be combined with -EncodingFrom.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>Objects to write. They are formatted with Out-String -Stream of the running host, and each resulting line is written followed by a line break.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>Inherits the character encoding, the BOM policy and the line break from the given reference file. The value is used exactly as typed; wildcards are not expanded. An explicit -LineBreak still wins over the inherited line break. Cannot be combined with -Encoding.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>Line break written after each line: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, an explicit -Encoding Auto, an EncodingInformation passed to -Encoding, or the file appended to when -Encoding is omitted with -Append), and otherwise uses the operating system default. Line breaks contained in a string are not replaced.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>Does not overwrite an existing file; if the file exists, the command stops with a terminating error without touching it. -Force does not cancel it. When -Append is also specified, -Append wins and the output is appended, as with the built-in Out-File.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>Writes to a file that has the read-only attribute set by clearing the attribute temporarily; the attribute is restored after writing, even if writing fails. It does not cancel -NoClobber and does not relax the -Append consistency check.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Width</maml:name>
+          <maml:description>
+            <maml:para>Number of characters in each line of formatted output, passed to Out-String. The minimum is 2. When omitted, the default of Out-String on the running host is used, which can differ between PowerShell 5.1 and 7.x.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>Writes the lines one after another with no line break between them or at the end. Empty lines leave nothing. When -LineBreak is also specified a warning is issued, because the line break simply goes unused.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>Detection strategy used when a file has to be detected: Combined (default), NativeOnly or UtfUnknownOnly. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts for confirmation before running the cmdlet.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>AllowEncodingChange</maml:name>
+        <maml:description>
+          <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Append</maml:name>
+        <maml:description>
+          <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>Prompts for confirmation before running the cmdlet.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>Character encoding, and BOM policy, used to write the file. When omitted, the file is written as utf8NoBOM without looking at an existing file; with -Append the character encoding, the BOM policy and the line break are inherited from the file being appended to (utf8NoBOM if it does not exist or is empty). Auto, when specified explicitly, inherits them from the existing output file and reports an error if it does not exist. This differs from Set-ProbedContent, where omitting -Encoding means Auto. Accepts the unified vocabulary (utf8NoBOM, utf8BOM, unicodeBOM, ...), WebNames (shift_jis, euc-jp, ...), numeric code pages, System.Text.Encoding instances and EncodingInformation objects. Cannot be combined with -EncodingFrom.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>utf8NoBOM</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>Inherits the character encoding, the BOM policy and the line break from the given reference file. The value is used exactly as typed; wildcards are not expanded. An explicit -LineBreak still wins over the inherited line break. Cannot be combined with -Encoding.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="Path">
+        <maml:name>FilePath</maml:name>
+        <maml:description>
+          <maml:para>Path to the output file. Wildcards are expanded and must resolve to exactly one existing file; a path without wildcard characters that does not exist is created. The alias -Path is available on Windows PowerShell 5.1 as well.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>Writes to a file that has the read-only attribute set by clearing the attribute temporarily; the attribute is restored after writing, even if writing fails. It does not cancel -NoClobber and does not relax the -Append consistency check.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+        <maml:name>InputObject</maml:name>
+        <maml:description>
+          <maml:para>Objects to write. They are formatted with Out-String -Stream of the running host, and each resulting line is written followed by a line break.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>Line break written after each line: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, an explicit -Encoding Auto, an EncodingInformation passed to -Encoding, or the file appended to when -Encoding is omitted with -Append), and otherwise uses the operating system default. Line breaks contained in a string are not replaced.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the output file. The value is used exactly as typed; wildcards are not expanded. Use this to create a file whose name contains wildcard characters, such as c[1].txt. This parameter does not take input from the pipeline. The aliases -PSPath and -LP are available on Windows PowerShell 5.1 as well.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+        <maml:name>NoClobber</maml:name>
+        <maml:description>
+          <maml:para>Does not overwrite an existing file; if the file exists, the command stops with a terminating error without touching it. -Force does not cancel it. When -Append is also specified, -Append wins and the output is appended, as with the built-in Out-File.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>NoNewline</maml:name>
+        <maml:description>
+          <maml:para>Writes the lines one after another with no line break between them or at the end. Empty lines leave nothing. When -LineBreak is also specified a warning is issued, because the line break simply goes unused.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>Detection strategy used when a file has to be detected: Combined (default), NativeOnly or UtfUnknownOnly. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Width</maml:name>
+        <maml:description>
+          <maml:para>Number of characters in each line of formatted output, passed to Out-String. The minimum is 2. When omitted, the default of Out-String on the running host is used, which can differ between PowerShell 5.1 and 7.x.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>You can pipe any object to this cmdlet.</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>This cmdlet returns no output.</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>Notes</maml:title>
+      <maml:alert>
+        <maml:para>All failures of this cmdlet are terminating errors, as with the built-in Out-File: there is always exactly one output file, and a non-terminating error would be repeated for every record arriving from upstream. Set-ProbedContent reports some of the same events (such as a read-only file) as non-terminating errors because it can write to several files.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>The formatting layer depends on the host. Between PowerShell 5.1 and 7.x the following can differ: trailing spaces in table rows, the number of blank lines around tables and lists, the truncation mark (three periods or a single ellipsis character), how the width of full-width characters is counted, and the default width when -Width is omitted. Strings are written identically on both hosts.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Omitting -Encoding and specifying Auto mean different things. Omitted: utf8NoBOM for a new or overwritten file, and inherited from the target for -Append. Auto: inherited from the existing output file, which must exist. This differs from Set-ProbedContent, where omitting -Encoding means Auto.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-LineBreak decides only the line break written after each line. Line breaks contained in a string (for example "a`r`nb") are written as they are, as with the built-in Out-File and Set-Content. To unify the line breaks in a file, use Convert-ProbedContent.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Differences from the built-in Out-File: the default character encoding is utf8NoBOM on both PowerShell 5.1 and 7.x (inherited from the target with -Append); -Append checks that the character encoding of the file stays consistent; the file is created or truncated just before the first line is written rather than when the command starts; passing a single $null creates an empty (0-byte) file, whereas Out-File writes only a BOM; the aliases -Path and -LP are available on PowerShell 5.1; and -LiteralPath does not take input from the pipeline.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>A BOM is written only when at least one line is written. When no input arrives, the output file is created empty (or truncated to 0 bytes) without a BOM; with -Append an existing file is left untouched.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-Process | Out-ProbedFile .\processes.txt</dev:code>
+        <dev:remarks>
+          <maml:para>Writes the formatted process table as UTF-8 without a BOM, on both PowerShell 5.1 and 7.x.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem | Out-ProbedFile .\list.txt shift_jis -LineBreak CrLf -Width 200</dev:code>
+        <dev:remarks>
+          <maml:para>Writes a Shift_JIS file with CR-LF line breaks and a line width of 200 characters.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; 'appended line' | Out-ProbedFile .\log.txt -Append</dev:code>
+        <dev:remarks>
+          <maml:para>Appends to log.txt in the character encoding and line break of log.txt. If the appended text cannot be written with the same bytes, the command stops with an error instead of mixing character encodings in one file.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $data | Out-ProbedFile .\out.txt -EncodingFrom .\template.txt</dev:code>
+        <dev:remarks>
+          <maml:para>Writes with the character encoding, BOM and line break of template.txt.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Convert-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Convert-ProbedContent</command:name>
+      <maml:description>
+        <maml:para>Converts the character encoding, BOM and line breaks of existing text files.</maml:para>
+      </maml:description>
+      <command:verb>Convert</command:verb>
+      <command:noun>ProbedContent</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>Rewrites text files with a different character encoding, BOM or line break. The characters themselves are never changed. Files are selected with -Path or -LiteralPath, or by piping the output of Get-ChildItem; this cmdlet has no -Recurse or filtering of its own.</maml:para>
+      <maml:para>No character is ever lost. A file that contains bytes that are invalid in the source character encoding, or characters that cannot be represented in the destination character encoding, is not converted and is left as it is; the error message shows the position. There is no option to replace such characters.</maml:para>
+      <maml:para>Each file is written to a temporary file in the same folder, which then replaces the original, so the original is not damaged if the conversion fails midway. If the result is byte-for-byte identical to the original, the file is not rewritten and its timestamp does not change.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Convert-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Files to convert. Wildcards are permitted. A path that matches no file is reported as a non-terminating error. Directories are skipped.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding (and BOM) to convert to. When omitted, the character encoding of the source file is kept. Accepts the unified vocabulary, WebNames, numeric code pages, System.Text.Encoding instances and EncodingInformation objects; Auto is not accepted. Together with -Bom, a bare Unicode name or WebName (utf8, utf-8, unicode, ...) is treated as the name of the family and the BOM is decided by -Bom; without -Bom the rules of the other writing cmdlets apply, so the bare utf8 is rejected. See NOTES for the combinations with -Bom.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>Converts to the character encoding, BOM and line break of the given reference file. The value is used exactly as typed. -Bom and -LineBreak override the inherited BOM and line break. Cannot be combined with -Encoding.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Bom</maml:name>
+          <maml:description>
+            <maml:para>Add adds a BOM and Remove removes it. When omitted, the BOM is not changed, unless the name given to -Encoding decides it. Only the five Unicode families can have a BOM: Add for another character encoding is an error, while Remove does nothing.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>Line break to convert to: CrLf, Lf or Cr. Every line break in the file (CR-LF, LF and CR) is replaced, and whether the last line ends with a line break is kept. U+2028, U+2029 and U+0085 are not treated as line breaks. Auto, the default, keeps the line breaks, or inherits them from -EncodingFrom or an EncodingInformation. Unlike -LineBreak of the writing cmdlets, this unifies all line breaks in the file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>SourceEncoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding of the source files. When omitted (or Auto), it is detected for each file. Specify it to avoid a misdetection; the same values as Get-ProbedContent -Encoding are accepted, including the bare utf8. A BOM at the start of the file is skipped when it matches this character encoding.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>Culture name used when detecting the character encoding of the source files, such as ko-KR. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>Detection strategy used for the source files: Combined (default), NativeOnly or UtfUnknownOnly. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Destination</maml:name>
+          <maml:description>
+            <maml:para>Folder to write the converted files to, keeping their file names. When omitted, the files are converted in place. The folder must exist; it is not created. The folder structure of the sources is not kept: all files are written directly under this folder. With -Destination a file is written even if the result is identical to the source.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>Converts read-only files by clearing the attribute temporarily; the attribute is restored afterwards. With -Destination, an existing file of the same name is overwritten. A file already written by the same command is never overwritten.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>PassThru</maml:name>
+          <maml:description>
+            <maml:para>Outputs one object per converted file, including files that did not need to change, with the properties Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak and Changed. By default the cmdlet outputs nothing.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Shows what would happen if the cmdlet runs. No file is modified, and nothing is output with -PassThru.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts for confirmation before converting each file.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Convert-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>Files to convert. The value is used exactly as typed; wildcards are not expanded. The output of Get-ChildItem is bound to this parameter through its PSPath property. Directories are skipped and recorded in the verbose stream.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding (and BOM) to convert to. When omitted, the character encoding of the source file is kept. Accepts the unified vocabulary, WebNames, numeric code pages, System.Text.Encoding instances and EncodingInformation objects; Auto is not accepted. Together with -Bom, a bare Unicode name or WebName (utf8, utf-8, unicode, ...) is treated as the name of the family and the BOM is decided by -Bom; without -Bom the rules of the other writing cmdlets apply, so the bare utf8 is rejected. See NOTES for the combinations with -Bom.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>Converts to the character encoding, BOM and line break of the given reference file. The value is used exactly as typed. -Bom and -LineBreak override the inherited BOM and line break. Cannot be combined with -Encoding.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Bom</maml:name>
+          <maml:description>
+            <maml:para>Add adds a BOM and Remove removes it. When omitted, the BOM is not changed, unless the name given to -Encoding decides it. Only the five Unicode families can have a BOM: Add for another character encoding is an error, while Remove does nothing.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>Line break to convert to: CrLf, Lf or Cr. Every line break in the file (CR-LF, LF and CR) is replaced, and whether the last line ends with a line break is kept. U+2028, U+2029 and U+0085 are not treated as line breaks. Auto, the default, keeps the line breaks, or inherits them from -EncodingFrom or an EncodingInformation. Unlike -LineBreak of the writing cmdlets, this unifies all line breaks in the file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>SourceEncoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding of the source files. When omitted (or Auto), it is detected for each file. Specify it to avoid a misdetection; the same values as Get-ProbedContent -Encoding are accepted, including the bare utf8. A BOM at the start of the file is skipped when it matches this character encoding.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>Culture name used when detecting the character encoding of the source files, such as ko-KR. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>Detection strategy used for the source files: Combined (default), NativeOnly or UtfUnknownOnly. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Destination</maml:name>
+          <maml:description>
+            <maml:para>Folder to write the converted files to, keeping their file names. When omitted, the files are converted in place. The folder must exist; it is not created. The folder structure of the sources is not kept: all files are written directly under this folder. With -Destination a file is written even if the result is identical to the source.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>Converts read-only files by clearing the attribute temporarily; the attribute is restored afterwards. With -Destination, an existing file of the same name is overwritten. A file already written by the same command is never overwritten.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>PassThru</maml:name>
+          <maml:description>
+            <maml:para>Outputs one object per converted file, including files that did not need to change, with the properties Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak and Changed. By default the cmdlet outputs nothing.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Shows what would happen if the cmdlet runs. No file is modified, and nothing is output with -PassThru.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts for confirmation before converting each file.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Bom</maml:name>
+        <maml:description>
+          <maml:para>Add adds a BOM and Remove removes it. When omitted, the BOM is not changed, unless the name given to -Encoding decides it. Only the five Unicode families can have a BOM: Add for another character encoding is an error, while Remove does nothing.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.BomOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>Prompts for confirmation before converting each file.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>Culture name used when detecting the character encoding of the source files, such as ko-KR. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Destination</maml:name>
+        <maml:description>
+          <maml:para>Folder to write the converted files to, keeping their file names. When omitted, the files are converted in place. The folder must exist; it is not created. The folder structure of the sources is not kept: all files are written directly under this folder. With -Destination a file is written even if the result is identical to the source.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>Character encoding (and BOM) to convert to. When omitted, the character encoding of the source file is kept. Accepts the unified vocabulary, WebNames, numeric code pages, System.Text.Encoding instances and EncodingInformation objects; Auto is not accepted. Together with -Bom, a bare Unicode name or WebName (utf8, utf-8, unicode, ...) is treated as the name of the family and the BOM is decided by -Bom; without -Bom the rules of the other writing cmdlets apply, so the bare utf8 is rejected. See NOTES for the combinations with -Bom.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>Converts to the character encoding, BOM and line break of the given reference file. The value is used exactly as typed. -Bom and -LineBreak override the inherited BOM and line break. Cannot be combined with -Encoding.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>Converts read-only files by clearing the attribute temporarily; the attribute is restored afterwards. With -Destination, an existing file of the same name is overwritten. A file already written by the same command is never overwritten.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>Line break to convert to: CrLf, Lf or Cr. Every line break in the file (CR-LF, LF and CR) is replaced, and whether the last line ends with a line break is kept. U+2028, U+2029 and U+0085 are not treated as line breaks. Auto, the default, keeps the line breaks, or inherits them from -EncodingFrom or an EncodingInformation. Unlike -LineBreak of the writing cmdlets, this unifies all line breaks in the file.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>Files to convert. The value is used exactly as typed; wildcards are not expanded. The output of Get-ChildItem is bound to this parameter through its PSPath property. Directories are skipped and recorded in the verbose stream.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>PassThru</maml:name>
+        <maml:description>
+          <maml:para>Outputs one object per converted file, including files that did not need to change, with the properties Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak and Changed. By default the cmdlet outputs nothing.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>Files to convert. Wildcards are permitted. A path that matches no file is reported as a non-terminating error. Directories are skipped.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>SourceEncoding</maml:name>
+        <maml:description>
+          <maml:para>Character encoding of the source files. When omitted (or Auto), it is detected for each file. Specify it to avoid a misdetection; the same values as Get-ProbedContent -Encoding are accepted, including the bare utf8. A BOM at the start of the file is skipped when it matches this character encoding.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>Detection strategy used for the source files: Combined (default), NativeOnly or UtfUnknownOnly. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Shows what would happen if the cmdlet runs. No file is modified, and nothing is output with -PassThru.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>You can pipe objects that have a PSPath property, such as the output of Get-ChildItem.</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>With -PassThru, one object per converted file, whose type name is SnowStack.EncodingProbe.ConvertResult. Character encodings are named in the unified vocabulary (utf8BOM, unicodeNoBOM, shift_jis, ...), so passing SourceEncoding back to -Encoding restores the original bytes.</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>Notes</maml:title>
+      <maml:alert>
+        <maml:para>A file that contains bytes that are invalid in the source character encoding, or characters that cannot be represented in the destination character encoding, is not converted. The error shows the byte offset of the first invalid bytes, or the first unrepresentable character with its line and column. There is no way to convert such a file by replacing the characters; edit the text first if replacing them is acceptable.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-LineBreak of this cmdlet replaces every line break in the file. -LineBreak of Set-ProbedContent, Add-ProbedContent and Out-ProbedFile only decides the line break written after each element and leaves line breaks inside the strings as they are.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Encoding and -Bom: a name with a BOM suffix (utf8BOM, unicodeNoBOM, ...) must agree with -Bom; a bare Unicode name or WebName (utf8, utf-8, unicode, ...) takes its BOM from -Bom; for other character encodings (shift_jis, 932, ...) -Bom Add is an error and -Bom Remove is allowed; the BOM of an EncodingInformation or of -EncodingFrom can be overridden by -Bom; a System.Text.Encoding instance must agree with -Bom. When -Encoding is omitted, the source character encoding is kept, and -Bom Add on a source that cannot have a BOM is reported as an error for that file.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Each source file is read into memory as a whole, so a very large file requires a corresponding amount of memory.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Destination does not keep the folder structure. When two sources have the same file name, the second one is reported as an error even with -Force, so that a file written by the same command is not overwritten.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Characters in the Private Use Area, such as the HKSCS-specific characters of Hong Kong Big5, are converted as code points without a warning. Converting such a Big5 file to UTF-8 and back to Big5 restores the original bytes.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Errors in the parameters (nothing to convert, -Encoding Auto, conflicting BOM requests, a missing -Destination folder, ...) are terminating errors. Failures that concern one file are non-terminating errors; that file is left unchanged and the other files are still processed.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Encoding utf8NoBOM -LineBreak Lf</dev:code>
+        <dev:remarks>
+          <maml:para>Converts the text files in the current folder to UTF-8 without a BOM and LF line breaks, detecting the character encoding of each file.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Bom Remove</dev:code>
+        <dev:remarks>
+          <maml:para>Removes the BOM without having to know the character encodings. Files that cannot have a BOM are left as they are.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem -Recurse -Filter *.cs | Convert-ProbedContent -Encoding utf8BOM</dev:code>
+        <dev:remarks>
+          <maml:para>Converts all C# source files under the current folder to UTF-8 with a BOM.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Encoding utf8NoBOM -Destination .\out -PassThru</dev:code>
+        <dev:remarks>
+          <maml:para>Writes converted copies to the out folder and outputs the result for each file.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 5 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent .\legacy.txt -SourceEncoding euc-jp -Encoding shift_jis</dev:code>
+        <dev:remarks>
+          <maml:para>Converts from EUC-JP to Shift_JIS without detecting the source character encoding.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Out-ProbedFile</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
         <maml:uri />
       </maml:navigationLink>
     </maml:relatedLinks>

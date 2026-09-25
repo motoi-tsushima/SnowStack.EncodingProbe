@@ -74,37 +74,11 @@ public sealed class AddProbedContentCommand : ProbedContentWriterCommandBase
 
         Encoding specified = spec.Encoding!;
 
-        if (specified.CodePage == baseline.CodePage)
-        {
-            return null;
-        }
-
-        if (BytesAreEqual(specified.GetBytes(chunk), baseline.GetBytes(chunk)))
+        if (AppendConsistency.ProducesSameBytes(specified, baseline, chunk))
         {
             return null;
         }
 
         return ValidationMessages.EncodingChangeOnAppend(file, specified.WebName, baseline.WebName);
-    }
-
-    /// <summary>
-    /// バイト列が完全に一致するかどうか
-    /// </summary>
-    private static bool BytesAreEqual(byte[] left, byte[] right)
-    {
-        if (left.Length != right.Length)
-        {
-            return false;
-        }
-
-        for (int i = 0; i < left.Length; i++)
-        {
-            if (left[i] != right[i])
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

@@ -127,6 +127,71 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.InvalidStrategy] =
                     "'{0}' cannot be interpreted as a detection strategy. "
                     + "Specify 'Combined', 'NativeOnly' or 'UtfUnknownOnly'.",
+
+                [MessageKey.FileIsReadOnly] =
+                    "'{0}' is read-only. Specify -Force to write to it; the read-only attribute is restored "
+                    + "after writing.",
+
+                [MessageKey.NoClobberFileExists] =
+                    "The file '{0}' already exists. -NoClobber prevents an existing file from being overwritten.",
+
+                [MessageKey.WildcardMatchedNoFile] =
+                    "No file matches '{0}'. A path containing wildcard characters must match exactly "
+                    + "one existing file. To create a file whose name contains wildcard characters, use "
+                    + "-LiteralPath.",
+
+                [MessageKey.WildcardMatchedMultipleFiles] =
+                    "'{0}' matches {1} files. A path containing wildcard characters must match exactly "
+                    + "one file.",
+
+                [MessageKey.ParentDirectoryNotFound] =
+                    "Cannot write '{0}' because its parent directory does not exist.",
+
+                [MessageKey.AllowEncodingChangeWithoutAppend] =
+                    "-AllowEncodingChange has no effect without -Append, so it is ignored.",
+
+                [MessageKey.NoConversionSpecified] =
+                    "Nothing to convert. Specify at least one of -Encoding, -EncodingFrom, -Bom and -LineBreak.",
+
+                [MessageKey.AutoNotAllowedForConvertContent] =
+                    "Auto cannot be used as the -Encoding of Convert-ProbedContent. To keep the character "
+                    + "encoding of the source file, omit -Encoding.",
+
+                [MessageKey.BomConflictsWithEncoding] =
+                    "The character encoding '{0}' contradicts -Bom {1}. Specify only one of them, or "
+                    + "make them agree.",
+
+                [MessageKey.BomNotSupportedByEncoding] =
+                    "The character encoding '{0}' cannot have a BOM, so -Bom Add cannot be applied. A "
+                    + "BOM exists only for the five Unicode families: utf8, unicode, bigendianunicode, "
+                    + "utf32 and bigendianutf32.",
+
+                [MessageKey.DestinationFolderNotFound] =
+                    "The destination folder '{0}' does not exist. -Destination must be an existing folder; "
+                    + "it is not created.",
+
+                [MessageKey.InvalidSourceBytes] =
+                    "'{0}' was not converted because it contains bytes that are invalid in the character "
+                    + "encoding '{1}', at byte offset {2} ({3}). The file was left unchanged. If the character "
+                    + "encoding was misdetected, specify it with -SourceEncoding.",
+
+                [MessageKey.UnrepresentableCharacter] =
+                    "'{0}' was not converted because the character {2} '{3}' at line {4}, column {5} "
+                    + "cannot be represented in the character encoding '{1}'. The file was left unchanged.",
+
+                [MessageKey.DestinationFileExists] =
+                    "The file '{0}' already exists. Specify -Force to overwrite it.",
+
+                [MessageKey.DestinationNameConflict] =
+                    "'{1}' was not converted because '{0}' has already been written by this command from "
+                    + "another file with the same name. -Destination does not keep the folder structure.",
+
+                [MessageKey.DestinationIsSource] =
+                    "'{0}' was not converted because the destination is the source file itself. To convert "
+                    + "a file in place, omit -Destination.",
+
+                [MessageKey.SkippedDirectory] =
+                    "Skipped the directory '{0}'.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -216,6 +281,61 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.InvalidStrategy] =
                     "'{0}' は判定方式として解釈できません。"
                     + "'Combined'、'NativeOnly'、'UtfUnknownOnly' のいずれかを指定してください。",
+
+                [MessageKey.FileIsReadOnly] =
+                    "'{0}' は読み取り専用です。書き込むには -Force を指定してください。読み取り専用の属性は書き込み後に元に戻します。",
+
+                [MessageKey.NoClobberFileExists] =
+                    "ファイル '{0}' は既に存在します。-NoClobber が指定されているため上書きしません。",
+
+                [MessageKey.WildcardMatchedNoFile] =
+                    "'{0}' に一致するファイルがありません。ワイルドカード文字を含むパスは、既存のファイル 1 件にだけ一致する必要があります。名前にワイルドカード文字を含むファイルを作成するには "
+                    + "-LiteralPath を使用してください。",
+
+                [MessageKey.WildcardMatchedMultipleFiles] =
+                    "'{0}' は {1} 件のファイルに一致しました。ワイルドカード文字を含むパスは、ファイル 1 件にだけ一致する必要があります。",
+
+                [MessageKey.ParentDirectoryNotFound] =
+                    "親ディレクトリが存在しないため、'{0}' に書き込めません。",
+
+                [MessageKey.AllowEncodingChangeWithoutAppend] =
+                    "-AllowEncodingChange は -Append と組み合わせたときだけ意味を持つため、無視します。",
+
+                [MessageKey.NoConversionSpecified] =
+                    "変換する内容が指定されていません。-Encoding、-EncodingFrom、-Bom、-LineBreak のいずれかを指定してください。",
+
+                [MessageKey.AutoNotAllowedForConvertContent] =
+                    "Convert-ProbedContent の -Encoding には Auto を指定できません。変換元の文字エンコーディングを保つ場合は、-Encoding "
+                    + "を省略してください。",
+
+                [MessageKey.BomConflictsWithEncoding] =
+                    "文字エンコーディング '{0}' と -Bom {1} が食い違っています。どちらか一方だけを指定するか、両者を一致させてください。",
+
+                [MessageKey.BomNotSupportedByEncoding] =
+                    "文字エンコーディング '{0}' は BOM を持てないため、-Bom Add を適用できません。BOM があるのは utf8 / unicode / bigendianunicode "
+                    + "/ utf32 / bigendianutf32 の 5 系統だけです。",
+
+                [MessageKey.DestinationFolderNotFound] =
+                    "出力先のフォルダー '{0}' が存在しません。-Destination には既存のフォルダーを指定してください（フォルダーは作成しません）。",
+
+                [MessageKey.InvalidSourceBytes] =
+                    "'{0}' には文字エンコーディング '{1}' として不正なバイト列がある（バイト位置 {2}: {3}）ため、変換しませんでした。ファイルは変更していません。"
+                    + "文字エンコーディングの判定が誤っている場合は -SourceEncoding で指定してください。",
+
+                [MessageKey.UnrepresentableCharacter] =
+                    "'{0}' の {4} 行 {5} 桁目の文字 {2} '{3}' は文字エンコーディング '{1}' で表現できないため、変換しませんでした。ファイルは変更していません。",
+
+                [MessageKey.DestinationFileExists] =
+                    "ファイル '{0}' は既に存在します。上書きするには -Force を指定してください。",
+
+                [MessageKey.DestinationNameConflict] =
+                    "同じ名前の別のファイルから '{0}' を既に書き込んだため、'{1}' は変換しませんでした。-Destination はフォルダー構造を保ちません。",
+
+                [MessageKey.DestinationIsSource] =
+                    "出力先が変換元のファイル自身であるため、'{0}' は変換しませんでした。その場で変換する場合は -Destination を省略してください。",
+
+                [MessageKey.SkippedDirectory] =
+                    "ディレクトリ '{0}' は対象外のため飛ばしました。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -305,6 +425,63 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.InvalidStrategy] =
                     "'{0}'은(는) 판정 방식으로 해석할 수 없습니다. "
                     + "'Combined', 'NativeOnly', 'UtfUnknownOnly' 중 하나를 지정하십시오.",
+
+                [MessageKey.FileIsReadOnly] =
+                    "'{0}'은(는) 읽기 전용입니다. 쓰려면 -Force를 지정하십시오. 읽기 전용 특성은 쓰기 후에 원래대로 되돌립니다.",
+
+                [MessageKey.NoClobberFileExists] =
+                    "파일 '{0}'이(가) 이미 있습니다. -NoClobber가 지정되어 있으므로 덮어쓰지 않습니다.",
+
+                [MessageKey.WildcardMatchedNoFile] =
+                    "'{0}'과(와) 일치하는 파일이 없습니다. 와일드카드 문자를 포함한 경로는 기존 파일 1개와만 일치해야 합니다. 이름에 와일드카드 문자가 포함된 "
+                    + "파일을 만들려면 -LiteralPath를 사용하십시오.",
+
+                [MessageKey.WildcardMatchedMultipleFiles] =
+                    "'{0}'이(가) 파일 {1}개와 일치했습니다. 와일드카드 문자를 포함한 경로는 파일 1개와만 일치해야 합니다.",
+
+                [MessageKey.ParentDirectoryNotFound] =
+                    "상위 디렉터리가 없으므로 '{0}'에 쓸 수 없습니다.",
+
+                [MessageKey.AllowEncodingChangeWithoutAppend] =
+                    "-AllowEncodingChange는 -Append와 함께 지정할 때만 의미가 있으므로 무시합니다.",
+
+                [MessageKey.NoConversionSpecified] =
+                    "변환할 내용이 지정되지 않았습니다. -Encoding, -EncodingFrom, -Bom, -LineBreak 중 하나 이상을 지정하십시오.",
+
+                [MessageKey.AutoNotAllowedForConvertContent] =
+                    "Convert-ProbedContent의 -Encoding에는 Auto를 지정할 수 없습니다. 원본 파일의 문자 인코딩을 유지하려면 -Encoding을 "
+                    + "생략하십시오.",
+
+                [MessageKey.BomConflictsWithEncoding] =
+                    "문자 인코딩 '{0}'과(와) -Bom {1}이(가) 서로 맞지 않습니다. 둘 중 하나만 지정하거나 둘을 일치시키십시오.",
+
+                [MessageKey.BomNotSupportedByEncoding] =
+                    "문자 인코딩 '{0}'은(는) BOM을 가질 수 없으므로 -Bom Add를 적용할 수 없습니다. BOM이 있는 것은 utf8 / unicode "
+                    + "/ bigendianunicode / utf32 / bigendianutf32 의 5개 계열뿐입니다.",
+
+                [MessageKey.DestinationFolderNotFound] =
+                    "대상 폴더 '{0}'이(가) 없습니다. -Destination에는 기존 폴더를 지정하십시오(폴더는 만들지 않습니다).",
+
+                [MessageKey.InvalidSourceBytes] =
+                    "'{0}'에 문자 인코딩 '{1}'(으)로서 잘못된 바이트열이 있으므로(바이트 위치 {2}: {3}) 변환하지 않았습니다. 파일은 변경하지 않았습니다. "
+                    + "문자 인코딩 판별이 잘못된 경우에는 -SourceEncoding으로 지정하십시오.",
+
+                [MessageKey.UnrepresentableCharacter] =
+                    "'{0}'의 {4}행 {5}열에 있는 문자 {2} '{3}'을(를) 문자 인코딩 '{1}'(으)로 표현할 수 없으므로 변환하지 않았습니다. 파일은 "
+                    + "변경하지 않았습니다.",
+
+                [MessageKey.DestinationFileExists] =
+                    "파일 '{0}'이(가) 이미 있습니다. 덮어쓰려면 -Force를 지정하십시오.",
+
+                [MessageKey.DestinationNameConflict] =
+                    "이름이 같은 다른 파일에서 '{0}'을(를) 이미 썼으므로 '{1}'은(는) 변환하지 않았습니다. -Destination은 폴더 구조를 유지하지 "
+                    + "않습니다.",
+
+                [MessageKey.DestinationIsSource] =
+                    "대상이 원본 파일 자체이므로 '{0}'은(는) 변환하지 않았습니다. 그 자리에서 변환하려면 -Destination을 생략하십시오.",
+
+                [MessageKey.SkippedDirectory] =
+                    "디렉터리 '{0}'은(는) 대상이 아니므로 건너뛰었습니다.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -392,6 +569,59 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.InvalidStrategy] =
                     "無法將 '{0}' 解譯為判斷方式。"
                     + "請指定 'Combined'、'NativeOnly' 或 'UtfUnknownOnly'。",
+
+                [MessageKey.FileIsReadOnly] =
+                    "'{0}' 為唯讀。若要寫入，請指定 -Force。唯讀屬性會在寫入後還原。",
+
+                [MessageKey.NoClobberFileExists] =
+                    "檔案 '{0}' 已存在。由於指定了 -NoClobber，因此不會覆寫。",
+
+                [MessageKey.WildcardMatchedNoFile] =
+                    "沒有符合 '{0}' 的檔案。包含萬用字元的路徑必須恰好符合一個現有檔案。若要建立名稱包含萬用字元的檔案，請使用 -LiteralPath。",
+
+                [MessageKey.WildcardMatchedMultipleFiles] =
+                    "'{0}' 符合 {1} 個檔案。包含萬用字元的路徑必須恰好符合一個檔案。",
+
+                [MessageKey.ParentDirectoryNotFound] =
+                    "上層目錄不存在，因此無法寫入 '{0}'。",
+
+                [MessageKey.AllowEncodingChangeWithoutAppend] =
+                    "-AllowEncodingChange 僅在與 -Append 一起指定時才有意義，因此將予以忽略。",
+
+                [MessageKey.NoConversionSpecified] =
+                    "未指定要轉換的內容。請至少指定 -Encoding、-EncodingFrom、-Bom、-LineBreak 其中之一。",
+
+                [MessageKey.AutoNotAllowedForConvertContent] =
+                    "Convert-ProbedContent 的 -Encoding 不可指定 Auto。若要保留來源檔案的字元編碼，請省略 -Encoding。",
+
+                [MessageKey.BomConflictsWithEncoding] =
+                    "字元編碼 '{0}' 與 -Bom {1} 互相矛盾。請只指定其中之一，或使兩者一致。",
+
+                [MessageKey.BomNotSupportedByEncoding] =
+                    "字元編碼 '{0}' 無法擁有 BOM，因此無法套用 -Bom Add。擁有 BOM 的僅有 utf8 / unicode / bigendianunicode "
+                    + "/ utf32 / bigendianutf32 這五個系列。",
+
+                [MessageKey.DestinationFolderNotFound] =
+                    "目的地資料夾 '{0}' 不存在。-Destination 必須是現有的資料夾（不會建立資料夾）。",
+
+                [MessageKey.InvalidSourceBytes] =
+                    "'{0}' 含有以字元編碼 '{1}' 而言無效的位元組序列（位元組位置 {2}：{3}），因此未轉換。檔案未變更。若字元編碼判斷有誤，請以 -SourceEncoding "
+                    + "指定。",
+
+                [MessageKey.UnrepresentableCharacter] =
+                    "'{0}' 第 {4} 行第 {5} 欄的字元 {2} '{3}' 無法以字元編碼 '{1}' 表示，因此未轉換。檔案未變更。",
+
+                [MessageKey.DestinationFileExists] =
+                    "檔案 '{0}' 已存在。若要覆寫，請指定 -Force。",
+
+                [MessageKey.DestinationNameConflict] =
+                    "已從另一個同名檔案寫入 '{0}'，因此未轉換 '{1}'。-Destination 不會保留資料夾結構。",
+
+                [MessageKey.DestinationIsSource] =
+                    "目的地就是來源檔案本身，因此未轉換 '{0}'。若要就地轉換，請省略 -Destination。",
+
+                [MessageKey.SkippedDirectory] =
+                    "已略過目錄 '{0}'。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -479,6 +709,59 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.InvalidStrategy] =
                     "无法将 '{0}' 解释为判定方式。"
                     + "请指定 'Combined'、'NativeOnly' 或 'UtfUnknownOnly'。",
+
+                [MessageKey.FileIsReadOnly] =
+                    "'{0}' 为只读。若要写入，请指定 -Force。只读属性会在写入后恢复。",
+
+                [MessageKey.NoClobberFileExists] =
+                    "文件 '{0}' 已存在。由于指定了 -NoClobber，因此不会覆盖。",
+
+                [MessageKey.WildcardMatchedNoFile] =
+                    "没有与 '{0}' 匹配的文件。包含通配符的路径必须恰好匹配一个现有文件。若要创建名称包含通配符的文件，请使用 -LiteralPath。",
+
+                [MessageKey.WildcardMatchedMultipleFiles] =
+                    "'{0}' 匹配了 {1} 个文件。包含通配符的路径必须恰好匹配一个文件。",
+
+                [MessageKey.ParentDirectoryNotFound] =
+                    "父目录不存在，因此无法写入 '{0}'。",
+
+                [MessageKey.AllowEncodingChangeWithoutAppend] =
+                    "-AllowEncodingChange 仅在与 -Append 一起指定时才有意义，因此将被忽略。",
+
+                [MessageKey.NoConversionSpecified] =
+                    "未指定要转换的内容。请至少指定 -Encoding、-EncodingFrom、-Bom、-LineBreak 中的一个。",
+
+                [MessageKey.AutoNotAllowedForConvertContent] =
+                    "Convert-ProbedContent 的 -Encoding 不能指定 Auto。若要保留源文件的字符编码，请省略 -Encoding。",
+
+                [MessageKey.BomConflictsWithEncoding] =
+                    "字符编码 '{0}' 与 -Bom {1} 相互矛盾。请只指定其中之一，或使两者一致。",
+
+                [MessageKey.BomNotSupportedByEncoding] =
+                    "字符编码 '{0}' 无法带有 BOM，因此无法应用 -Bom Add。带有 BOM 的只有 utf8 / unicode / bigendianunicode "
+                    + "/ utf32 / bigendianutf32 这五个系列。",
+
+                [MessageKey.DestinationFolderNotFound] =
+                    "目标文件夹 '{0}' 不存在。-Destination 必须是现有的文件夹（不会创建文件夹）。",
+
+                [MessageKey.InvalidSourceBytes] =
+                    "'{0}' 含有以字符编码 '{1}' 而言无效的字节序列（字节位置 {2}：{3}），因此未转换。文件未更改。若字符编码判断有误，请用 -SourceEncoding "
+                    + "指定。",
+
+                [MessageKey.UnrepresentableCharacter] =
+                    "'{0}' 第 {4} 行第 {5} 列的字符 {2} '{3}' 无法用字符编码 '{1}' 表示，因此未转换。文件未更改。",
+
+                [MessageKey.DestinationFileExists] =
+                    "文件 '{0}' 已存在。若要覆盖，请指定 -Force。",
+
+                [MessageKey.DestinationNameConflict] =
+                    "已从另一个同名文件写入 '{0}'，因此未转换 '{1}'。-Destination 不会保留文件夹结构。",
+
+                [MessageKey.DestinationIsSource] =
+                    "目标就是源文件本身，因此未转换 '{0}'。若要就地转换，请省略 -Destination。",
+
+                [MessageKey.SkippedDirectory] =
+                    "已跳过目录 '{0}'。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using SnowStack.EncodingProbe;  // クラスライブラリのnamespace
 
 namespace SnowStack.EncodingProbe.PowerShell.Internal
@@ -65,6 +66,111 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 default:
                     return Environment.NewLine;
             }
+        }
+
+        /// <summary>
+        /// 文字列の中のすべての改行（CR-LF / LF / CR）を、指定の改行に揃える（Convert-ProbedContent 用）。
+        /// </summary>
+        /// <remarks>
+        /// CR-LF は 1 個の改行として扱う。U+2028 / U+2029 / U+0085 などは改行として扱わない。
+        /// 最後の行の末尾に改行があるかないかは変えない（改行を足したり削ったりしない）。
+        /// 書き込み系の -LineBreak（要素の後ろに付ける改行だけを決める）とは役割が違う。
+        /// </remarks>
+        public static string Normalize(string text, string lineBreak)
+        {
+            var builder = new StringBuilder(text.Length);
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                char c = text[i];
+
+                if (c == '\r')
+                {
+                    if (i + 1 < text.Length && text[i + 1] == '\n')
+                    {
+                        i++;
+                    }
+
+                    builder.Append(lineBreak);
+                }
+                else if (c == '\n')
+                {
+                    builder.Append(lineBreak);
+                }
+                else
+                {
+                    builder.Append(c);
+                }
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// 文字列に含まれる改行の種類を <see cref="LineBreakType"/> で表す（Convert-ProbedContent -PassThru 用）。
+        /// </summary>
+        /// <remarks>
+        /// 値は Resolve-Encoding の LineBreak と同じ体系にそろえる。
+        /// </remarks>
+        public static LineBreakType Classify(string text)
+        {
+            bool crLf = false;
+            bool lf = false;
+            bool cr = false;
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                char c = text[i];
+
+                if (c == '\r')
+                {
+                    if (i + 1 < text.Length && text[i + 1] == '\n')
+                    {
+                        crLf = true;
+                        i++;
+                    }
+                    else
+                    {
+                        cr = true;
+                    }
+                }
+                else if (c == '\n')
+                {
+                    lf = true;
+                }
+            }
+
+            if (lf && cr && crLf)
+            {
+                return LineBreakType.LfAndCrAndCrLf;
+            }
+
+            if (lf && crLf)
+            {
+                return LineBreakType.LfAndCrLf;
+            }
+
+            if (cr && crLf)
+            {
+                return LineBreakType.CrAndCrLf;
+            }
+
+            if (lf && cr)
+            {
+                return LineBreakType.LfAndCr;
+            }
+
+            if (crLf)
+            {
+                return LineBreakType.CrLf;
+            }
+
+            if (lf)
+            {
+                return LineBreakType.Lf;
+            }
+
+            return cr ? LineBreakType.Cr : LineBreakType.None;
         }
 
         /// <summary>

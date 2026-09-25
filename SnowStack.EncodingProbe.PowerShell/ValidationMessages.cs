@@ -148,5 +148,109 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string InvalidStrategy(string strategy)
             => MessageCatalog.Format(MessageKey.InvalidStrategy, strategy);
+
+        /// <summary>
+        /// 書き込み先が読み取り専用で、-Force が指定されていない場合のエラーメッセージ
+        /// </summary>
+        public static string FileIsReadOnly(string path)
+            => MessageCatalog.Format(MessageKey.FileIsReadOnly, path);
+
+        /// <summary>
+        /// -NoClobber が指定され、書き込み先が既に存在する場合のエラーメッセージ
+        /// </summary>
+        public static string NoClobberFileExists(string path)
+            => MessageCatalog.Format(MessageKey.NoClobberFileExists, path);
+
+        /// <summary>
+        /// ワイルドカードを含むパスに一致するファイルが無い場合のエラーメッセージ
+        /// </summary>
+        public static string WildcardMatchedNoFile(string path)
+            => MessageCatalog.Format(MessageKey.WildcardMatchedNoFile, path);
+
+        /// <summary>
+        /// ワイルドカードを含むパスが複数のファイルに一致した場合のエラーメッセージ
+        /// </summary>
+        public static string WildcardMatchedMultipleFiles(string path, int count)
+            => MessageCatalog.Format(MessageKey.WildcardMatchedMultipleFiles, path, count);
+
+        /// <summary>
+        /// 書き込み先の親ディレクトリが存在しない場合のエラーメッセージ
+        /// </summary>
+        public static string ParentDirectoryNotFound(string path)
+            => MessageCatalog.Format(MessageKey.ParentDirectoryNotFound, path);
+
+        /// <summary>
+        /// -Append なしで -AllowEncodingChange が指定された場合の警告メッセージ
+        /// </summary>
+        public static string AllowEncodingChangeWithoutAppend()
+            => MessageCatalog.Get(MessageKey.AllowEncodingChangeWithoutAppend);
+
+        /// <summary>
+        /// Convert-ProbedContent に変換の指定が1つも無い場合のエラーメッセージ
+        /// </summary>
+        public static string NoConversionSpecified()
+            => MessageCatalog.Get(MessageKey.NoConversionSpecified);
+
+        /// <summary>
+        /// Convert-ProbedContent の -Encoding に Auto が指定された場合のエラーメッセージ
+        /// </summary>
+        public static string AutoNotAllowedForConvertContent()
+            => MessageCatalog.Get(MessageKey.AutoNotAllowedForConvertContent);
+
+        /// <summary>
+        /// BOM を明示する指定と -Bom が食い違う場合のエラーメッセージ
+        /// </summary>
+        public static string BomConflictsWithEncoding(string encoding, string bom)
+            => MessageCatalog.Format(MessageKey.BomConflictsWithEncoding, encoding, bom);
+
+        /// <summary>
+        /// BOM を持てない文字エンコーディングに -Bom Add が指定された場合のエラーメッセージ
+        /// </summary>
+        public static string BomNotSupportedByEncoding(string encoding)
+            => MessageCatalog.Format(MessageKey.BomNotSupportedByEncoding, encoding);
+
+        /// <summary>
+        /// -Destination のフォルダーが存在しない場合のエラーメッセージ
+        /// </summary>
+        public static string DestinationFolderNotFound(string path)
+            => MessageCatalog.Format(MessageKey.DestinationFolderNotFound, path);
+
+        /// <summary>
+        /// 変換元に不正なバイト列がある場合のエラーメッセージ
+        /// </summary>
+        public static string InvalidSourceBytes(string path, string encoding, long offset, string bytes)
+            => MessageCatalog.Format(MessageKey.InvalidSourceBytes, path, encoding, offset, bytes);
+
+        /// <summary>
+        /// 変換先で表現できない文字がある場合のエラーメッセージ
+        /// </summary>
+        public static string UnrepresentableCharacter(
+            string path, string encoding, string codePoint, string character, int line, int column)
+            => MessageCatalog.Format(
+                MessageKey.UnrepresentableCharacter, path, encoding, codePoint, character, line, column);
+
+        /// <summary>
+        /// -Destination に同名のファイルがあり、-Force が指定されていない場合のエラーメッセージ
+        /// </summary>
+        public static string DestinationFileExists(string path)
+            => MessageCatalog.Format(MessageKey.DestinationFileExists, path);
+
+        /// <summary>
+        /// 同じ実行の中で -Destination への出力ファイル名が重なった場合のエラーメッセージ
+        /// </summary>
+        public static string DestinationNameConflict(string destination, string source)
+            => MessageCatalog.Format(MessageKey.DestinationNameConflict, destination, source);
+
+        /// <summary>
+        /// 変換元と -Destination の出力先が同じファイルになった場合のエラーメッセージ
+        /// </summary>
+        public static string DestinationIsSource(string path)
+            => MessageCatalog.Format(MessageKey.DestinationIsSource, path);
+
+        /// <summary>
+        /// ディレクトリを変換対象から除いた場合の詳細メッセージ
+        /// </summary>
+        public static string SkippedDirectory(string path)
+            => MessageCatalog.Format(MessageKey.SkippedDirectory, path);
     }
 }

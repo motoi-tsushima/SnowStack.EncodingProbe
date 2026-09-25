@@ -330,14 +330,14 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。決めるのは各要素の後ろに付ける改行だけで、値の中に含まれる改行（"a`nb" など）はそのまま書きます。ファイル内の改行を揃えるには Convert-ProbedContent を使ってください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。</maml:para>
+            <maml:para>読み取り専用属性の付いたファイルへも、属性を一時的に外して書き込みます。属性は書き込み後に（書き込みに失敗した場合も）元に戻します。このスイッチはそれ以外には影響しません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -406,14 +406,14 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。決めるのは各要素の後ろに付ける改行だけで、値の中に含まれる改行（"a`nb" など）はそのまま書きます。ファイル内の改行を揃えるには Convert-ProbedContent を使ってください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。</maml:para>
+            <maml:para>読み取り専用属性の付いたファイルへも、属性を一時的に外して書き込みます。属性は書き込み後に（書き込みに失敗した場合も）元に戻します。このスイッチはそれ以外には影響しません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -494,7 +494,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。</maml:para>
+          <maml:para>読み取り専用属性の付いたファイルへも、属性を一時的に外して書き込みます。属性は書き込み後に（書き込みに失敗した場合も）元に戻します。このスイッチはそれ以外には影響しません。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -505,7 +505,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>LineBreak</maml:name>
         <maml:description>
-          <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+          <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。決めるのは各要素の後ろに付ける改行だけで、値の中に含まれる改行（"a`nb" など）はそのまま書きます。ファイル内の改行を揃えるには Convert-ProbedContent を使ってください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         <dev:type>
@@ -735,14 +735,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。決めるのは各要素の後ろに付ける改行だけで、値の中に含まれる改行（"a`nb" など）はそのまま書きます。ファイル内の改行を揃えるには Convert-ProbedContent を使ってください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。特に、文字エンコーディングの整合性検査を緩めることはありません。そちらは -AllowEncodingChange を使ってください。</maml:para>
+            <maml:para>読み取り専用属性の付いたファイルへも、属性を一時的に外して書き込みます。属性は書き込み後に（書き込みに失敗した場合も）元に戻します。このスイッチはそれ以外には影響しません。特に、文字エンコーディングの整合性検査を緩めることはありません。そちらは -AllowEncodingChange を使ってください。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -817,14 +817,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>LineBreak</maml:name>
           <maml:description>
-            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+            <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。決めるのは各要素の後ろに付ける改行だけで、値の中に含まれる改行（"a`nb" など）はそのまま書きます。ファイル内の改行を揃えるには Convert-ProbedContent を使ってください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。特に、文字エンコーディングの整合性検査を緩めることはありません。そちらは -AllowEncodingChange を使ってください。</maml:para>
+            <maml:para>読み取り専用属性の付いたファイルへも、属性を一時的に外して書き込みます。属性は書き込み後に（書き込みに失敗した場合も）元に戻します。このスイッチはそれ以外には影響しません。特に、文字エンコーディングの整合性検査を緩めることはありません。そちらは -AllowEncodingChange を使ってください。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -922,7 +922,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>読み取り専用属性の付いたファイルへも書き込みます（属性を外してから書き込みます）。このスイッチはそれ以外には影響しません。特に、文字エンコーディングの整合性検査を緩めることはありません。そちらは -AllowEncodingChange を使ってください。</maml:para>
+          <maml:para>読み取り専用属性の付いたファイルへも、属性を一時的に外して書き込みます。属性は書き込み後に（書き込みに失敗した場合も）元に戻します。このスイッチはそれ以外には影響しません。特に、文字エンコーディングの整合性検査を緩めることはありません。そちらは -AllowEncodingChange を使ってください。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -933,7 +933,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>LineBreak</maml:name>
         <maml:description>
-          <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。</maml:para>
+          <maml:para>出力する改行コード: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、-Encoding Auto、-Encoding に渡した EncodingInformation）、無ければ OS 既定の改行を使います。参照元が混在改行の場合は、CR-LF を含むなら CR-LF、含まないなら LF を継承します。この規則は OS に依存しません。決めるのは各要素の後ろに付ける改行だけで、値の中に含まれる改行（"a`nb" など）はそのまま書きます。ファイル内の改行を揃えるには Convert-ProbedContent を使ってください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
         <dev:type>
@@ -1108,6 +1108,969 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:navigationLink>
       <maml:navigationLink>
         <maml:linkText>ConvertTo-DotNetEncoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Out-ProbedFile</command:name>
+      <maml:description>
+        <maml:para>オブジェクトを整形してファイルへ出力します。文字エンコーディング・BOM・改行は統一語彙で指定します。</maml:para>
+      </maml:description>
+      <command:verb>Out</command:verb>
+      <command:noun>ProbedFile</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>受け取ったオブジェクトを標準の Out-File と同じ方法で整形し、ファイルへ書き出します。Out-File のパラメーターをすべて持ち、Set-ProbedContent / Add-ProbedContent 由来のパラメーター（-EncodingFrom、-LineBreak、-AllowEncodingChange、-Culture、-Strategy）を加えています。</maml:para>
+      <maml:para>符号化の層（文字エンコーディング・BOM・改行）は、Windows PowerShell 5.1 と PowerShell 7.x で同じバイト列になります。整形の層（オブジェクトを文字列にする処理）は実行中のホストの Out-String に任せるため、表や一覧の形はホストによって異なることがあります（注意事項を参照）。文字列は整形の影響を受けないため、両ホストで同じ結果になります。</maml:para>
+      <maml:para>ファイルを開く（作成・切り詰める）のは、コマンドの開始時ではなく最初の行を書く直前です。そのため Get-ProbedContent a.txt | Out-ProbedFile a.txt は、a.txt を読み終える前に黙って切り詰めることはなく、エラーとして報告されます。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Out-ProbedFile</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="Path">
+          <maml:name>FilePath</maml:name>
+          <maml:description>
+            <maml:para>出力先のファイルのパス。ワイルドカードは展開され、既存のファイルちょうど 1 件に解決される必要があります。ワイルドカード文字を含まない存在しないパスは新規作成します。別名 -Path は Windows PowerShell 5.1 でも使えます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>書き出すオブジェクト。実行中のホストの Out-String -Stream で整形し、得られた各行の後ろに改行を付けて書きます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>指定した参照ファイルから文字エンコーディング・BOM 方針・改行を継承します。入力どおりに使い、ワイルドカードは展開しません。-LineBreak を明示した場合は、継承した改行よりそちらを優先します。-Encoding とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>各行の後ろに付ける改行: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、明示した -Encoding Auto、-Encoding に渡した EncodingInformation、-Encoding を省略した -Append の追記先）、無ければ OS 既定の改行を使います。文字列の中に含まれる改行は置き換えません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まります。それまでに書いた行は残り、ファイルは一貫したままです。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>既存のファイルを上書きしません。ファイルが存在すれば、触れずに終了エラーで止まります。-Force を付けても解除されません。-Append と同時に指定した場合は、標準の Out-File と同じく -Append が優先されて追記します。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>読み取り専用属性の付いたファイルへも、属性を一時的に外して書き込みます。属性は書き込み後に（書き込みに失敗した場合も）元に戻します。-NoClobber を解除せず、-Append の整合性検査も緩めません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Width</maml:name>
+          <maml:description>
+            <maml:para>整形後の 1 行の文字数。Out-String に渡します。最小値は 2 です。省略時は実行中のホストの Out-String の既定値を使い、PowerShell 5.1 と 7.x で異なることがあります。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>各行を区切りなしで連結して書き、最後にも改行を付けません。空行は何も残しません。-LineBreak も指定した場合は、改行が使われないため警告を出します。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>ファイルの判定が必要なときに使う判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは作成も変更もされません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行する前に確認を求めます。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Out-ProbedFile</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>出力先のファイルのパス。入力どおりに使い、ワイルドカードは展開しません。c[1].txt のように名前にワイルドカード文字を含むファイルを作るときに使います。このパラメーターはパイプラインから値を受け取りません。別名 -PSPath と -LP は Windows PowerShell 5.1 でも使えます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>書き出すオブジェクト。実行中のホストの Out-String -Stream で整形し、得られた各行の後ろに改行を付けて書きます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>指定した参照ファイルから文字エンコーディング・BOM 方針・改行を継承します。入力どおりに使い、ワイルドカードは展開しません。-LineBreak を明示した場合は、継承した改行よりそちらを優先します。-Encoding とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>各行の後ろに付ける改行: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、明示した -Encoding Auto、-Encoding に渡した EncodingInformation、-Encoding を省略した -Append の追記先）、無ければ OS 既定の改行を使います。文字列の中に含まれる改行は置き換えません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まります。それまでに書いた行は残り、ファイルは一貫したままです。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>既存のファイルを上書きしません。ファイルが存在すれば、触れずに終了エラーで止まります。-Force を付けても解除されません。-Append と同時に指定した場合は、標準の Out-File と同じく -Append が優先されて追記します。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>読み取り専用属性の付いたファイルへも、属性を一時的に外して書き込みます。属性は書き込み後に（書き込みに失敗した場合も）元に戻します。-NoClobber を解除せず、-Append の整合性検査も緩めません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Width</maml:name>
+          <maml:description>
+            <maml:para>整形後の 1 行の文字数。Out-String に渡します。最小値は 2 です。省略時は実行中のホストの Out-String の既定値を使い、PowerShell 5.1 と 7.x で異なることがあります。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoNewline</maml:name>
+          <maml:description>
+            <maml:para>各行を区切りなしで連結して書き、最後にも改行を付けません。空行は何も残しません。-LineBreak も指定した場合は、改行が使われないため警告を出します。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>ファイルの判定が必要なときに使う判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは作成も変更もされません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行する前に確認を求めます。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>AllowEncodingChange</maml:name>
+        <maml:description>
+          <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Append</maml:name>
+        <maml:description>
+          <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まります。それまでに書いた行は残り、ファイルは一貫したままです。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>コマンドを実行する前に確認を求めます。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>utf8NoBOM</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>指定した参照ファイルから文字エンコーディング・BOM 方針・改行を継承します。入力どおりに使い、ワイルドカードは展開しません。-LineBreak を明示した場合は、継承した改行よりそちらを優先します。-Encoding とは同時に指定できません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="Path">
+        <maml:name>FilePath</maml:name>
+        <maml:description>
+          <maml:para>出力先のファイルのパス。ワイルドカードは展開され、既存のファイルちょうど 1 件に解決される必要があります。ワイルドカード文字を含まない存在しないパスは新規作成します。別名 -Path は Windows PowerShell 5.1 でも使えます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>読み取り専用属性の付いたファイルへも、属性を一時的に外して書き込みます。属性は書き込み後に（書き込みに失敗した場合も）元に戻します。-NoClobber を解除せず、-Append の整合性検査も緩めません。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+        <maml:name>InputObject</maml:name>
+        <maml:description>
+          <maml:para>書き出すオブジェクト。実行中のホストの Out-String -Stream で整形し、得られた各行の後ろに改行を付けて書きます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>各行の後ろに付ける改行: Auto、CrLf、Lf、Cr。Auto は、参照情報があればそこから継承し（-EncodingFrom、明示した -Encoding Auto、-Encoding に渡した EncodingInformation、-Encoding を省略した -Append の追記先）、無ければ OS 既定の改行を使います。文字列の中に含まれる改行は置き換えません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>出力先のファイルのパス。入力どおりに使い、ワイルドカードは展開しません。c[1].txt のように名前にワイルドカード文字を含むファイルを作るときに使います。このパラメーターはパイプラインから値を受け取りません。別名 -PSPath と -LP は Windows PowerShell 5.1 でも使えます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+        <maml:name>NoClobber</maml:name>
+        <maml:description>
+          <maml:para>既存のファイルを上書きしません。ファイルが存在すれば、触れずに終了エラーで止まります。-Force を付けても解除されません。-Append と同時に指定した場合は、標準の Out-File と同じく -Append が優先されて追記します。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>NoNewline</maml:name>
+        <maml:description>
+          <maml:para>各行を区切りなしで連結して書き、最後にも改行を付けません。空行は何も残しません。-LineBreak も指定した場合は、改行が使われないため警告を出します。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>ファイルの判定が必要なときに使う判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは作成も変更もされません。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Width</maml:name>
+        <maml:description>
+          <maml:para>整形後の 1 行の文字数。Out-String に渡します。最小値は 2 です。省略時は実行中のホストの Out-String の既定値を使い、PowerShell 5.1 と 7.x で異なることがあります。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>このコマンドレットには任意のオブジェクトをパイプで渡せます。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>このコマンドレットは何も出力しません。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>注意事項</maml:title>
+      <maml:alert>
+        <maml:para>このコマンドレットの失敗はすべて終了エラーです（標準の Out-File と同じ）。出力先は常に 1 件であり、非終了エラーにすると上流からレコードが届くたびに同じエラーが繰り返されるためです。Set-ProbedContent は複数のファイルに書けるため、同じ事象（読み取り専用など）でも非終了エラーになるものがあります。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>整形の層はホストに依存します。PowerShell 5.1 と 7.x では次の点が異なることがあります: 表の各行の末尾の空白、表・一覧の前後の空行の数、切り詰めの記号（ピリオド 3 個か省略記号 1 文字か）、全角文字の幅の数え方、-Width を省略したときの幅。文字列は両ホストで同じように書かれます。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Encoding の省略と Auto の指定は意味が異なります。省略: 新規作成・上書きは utf8NoBOM、-Append は追記先から継承。Auto: 出力先の既存ファイルから継承（ファイルが必要）。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-LineBreak が決めるのは各行の後ろに付ける改行だけです。文字列の中に含まれる改行（"a`r`nb" など）は、標準の Out-File / Set-Content と同じくそのまま書きます。ファイル内の改行を揃えるには Convert-ProbedContent を使ってください。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>標準の Out-File との違い: 既定の文字エンコーディングは PowerShell 5.1 と 7.x のどちらでも utf8NoBOM（-Append は追記先から継承）。-Append は文字エンコーディングの一貫性を検査する。ファイルの作成・切り詰めはコマンドの開始時ではなく最初の行を書く直前。$null を 1 個渡すと 0 バイトのファイルになる（Out-File は BOM だけを書く）。別名 -Path / -LP を PowerShell 5.1 でも使える。-LiteralPath はパイプラインから値を受け取らない。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>BOM は 1 行でも書いたときにだけ書きます。入力が 1 件も無い場合、出力先は BOM 無しの 0 バイトで作成（既存なら 0 バイトに切り詰め）します。-Append の場合、既存のファイルには触れません。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-Process | Out-ProbedFile .\processes.txt</dev:code>
+        <dev:remarks>
+          <maml:para>プロセスの一覧を整形し、PowerShell 5.1 と 7.x のどちらでも BOM 無しの UTF-8 で書きます。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem | Out-ProbedFile .\list.txt shift_jis -LineBreak CrLf -Width 200</dev:code>
+        <dev:remarks>
+          <maml:para>改行 CR-LF、1 行 200 文字の Shift_JIS のファイルを書きます。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; 'appended line' | Out-ProbedFile .\log.txt -Append</dev:code>
+        <dev:remarks>
+          <maml:para>log.txt の文字エンコーディングと改行のまま追記します。追記する文字列が同じバイト列で書けない場合は、1 つのファイルに文字エンコーディングを混ぜず、エラーで止まります。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $data | Out-ProbedFile .\out.txt -EncodingFrom .\template.txt</dev:code>
+        <dev:remarks>
+          <maml:para>template.txt の文字エンコーディング・BOM・改行で書きます。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Add-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Convert-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Convert-ProbedContent</command:name>
+      <maml:description>
+        <maml:para>既存のテキストファイルの文字エンコーディング・BOM・改行を変換します。</maml:para>
+      </maml:description>
+      <command:verb>Convert</command:verb>
+      <command:noun>ProbedContent</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>テキストファイルを、別の文字エンコーディング・BOM・改行で書き直します。文字そのものは変えません。対象のファイルは -Path / -LiteralPath で指定するか、Get-ChildItem の出力をパイプで渡します。このコマンドレット自体は -Recurse や絞り込みの機能を持ちません。</maml:para>
+      <maml:para>文字を失うことはありません。変換元の文字エンコーディングとして不正なバイト列や、変換先の文字エンコーディングで表現できない文字を含むファイルは変換せず、そのまま残します。エラーメッセージにその位置を示します。そのような文字を置き換えて変換するオプションはありません。</maml:para>
+      <maml:para>各ファイルは同じフォルダーの一時ファイルに書いてから元のファイルと置き換えるため、途中で失敗しても元のファイルは壊れません。変換結果が元のバイト列と完全に同じなら書き直さず、更新日時も変わりません。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Convert-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>変換するファイル。ワイルドカードを使えます。一致するファイルが無いパスは非終了エラーとして報告します。ディレクトリは飛ばします。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>変換先の文字エンコーディング（と BOM）。省略時は変換元の文字エンコーディングを保ちます。統一語彙、WebName、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。Auto は指定できません。-Bom と組み合わせた場合、Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は系統名として扱い、BOM は -Bom で決めます。-Bom が無い場合はほかの書き込み系コマンドと同じ規則で、裸の utf8 は拒否します。-Bom との組み合わせは注意事項を参照してください。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>指定した参照ファイルの文字エンコーディング・BOM・改行に変換します。入力どおりに使います。継承した BOM と改行は -Bom と -LineBreak で上書きできます。-Encoding とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Bom</maml:name>
+          <maml:description>
+            <maml:para>Add は BOM を付け、Remove は BOM を外します。省略時は、-Encoding に渡した名前が BOM を決めていない限り、BOM を変えません。BOM を持てるのは Unicode 系の 5 系統だけです。それ以外の文字エンコーディングへの Add はエラーになり、Remove は何もしません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>変換先の改行: CrLf、Lf、Cr。ファイル内のすべての改行（CR-LF、LF、CR）を置き換え、最後の行の末尾に改行があるかどうかは保ちます。U+2028、U+2029、U+0085 は改行として扱いません。既定の Auto は改行を保ちます（-EncodingFrom や EncodingInformation があればそこから継承します）。書き込み系コマンドの -LineBreak と違い、ファイル内のすべての改行を揃えます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>SourceEncoding</maml:name>
+          <maml:description>
+            <maml:para>変換元の文字エンコーディング。省略時（または Auto）はファイルごとに判定します。判定の誤りを避けるときに指定します。Get-ProbedContent の -Encoding と同じ値（裸の utf8 を含む）を指定できます。ファイル先頭の BOM は、この文字エンコーディングの BOM と一致すれば読み飛ばします。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>変換元の判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Destination</maml:name>
+          <maml:description>
+            <maml:para>変換したファイルの出力先フォルダー。ファイル名は変換元のものを保ちます。省略時はその場で変換します。フォルダーは存在している必要があり、作成しません。変換元のフォルダー構造は保たず、すべてこのフォルダーの直下に書きます。-Destination の場合は、変換結果が変換元と同じでも書き出します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>読み取り専用のファイルも、属性を一時的に外して変換します。属性は変換後に元に戻します。-Destination の場合は、同名の既存ファイルを上書きします。同じコマンドで既に書いたファイルは上書きしません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>PassThru</maml:name>
+          <maml:description>
+            <maml:para>変換したファイル（変更の必要が無かったものを含む）ごとに、Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed のプロパティを持つオブジェクトを 1 個出力します。既定では何も出力しません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されず、-PassThru でも何も出力しません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>ファイルごとに、変換する前に確認を求めます。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Convert-ProbedContent</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>変換するファイル。入力どおりに使い、ワイルドカードは展開しません。Get-ChildItem の出力は PSPath プロパティでこのパラメーターに束縛されます。ディレクトリは飛ばし、詳細メッセージに記録します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>変換先の文字エンコーディング（と BOM）。省略時は変換元の文字エンコーディングを保ちます。統一語彙、WebName、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。Auto は指定できません。-Bom と組み合わせた場合、Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は系統名として扱い、BOM は -Bom で決めます。-Bom が無い場合はほかの書き込み系コマンドと同じ規則で、裸の utf8 は拒否します。-Bom との組み合わせは注意事項を参照してください。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>指定した参照ファイルの文字エンコーディング・BOM・改行に変換します。入力どおりに使います。継承した BOM と改行は -Bom と -LineBreak で上書きできます。-Encoding とは同時に指定できません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Bom</maml:name>
+          <maml:description>
+            <maml:para>Add は BOM を付け、Remove は BOM を外します。省略時は、-Encoding に渡した名前が BOM を決めていない限り、BOM を変えません。BOM を持てるのは Unicode 系の 5 系統だけです。それ以外の文字エンコーディングへの Add はエラーになり、Remove は何もしません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>変換先の改行: CrLf、Lf、Cr。ファイル内のすべての改行（CR-LF、LF、CR）を置き換え、最後の行の末尾に改行があるかどうかは保ちます。U+2028、U+2029、U+0085 は改行として扱いません。既定の Auto は改行を保ちます（-EncodingFrom や EncodingInformation があればそこから継承します）。書き込み系コマンドの -LineBreak と違い、ファイル内のすべての改行を揃えます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>SourceEncoding</maml:name>
+          <maml:description>
+            <maml:para>変換元の文字エンコーディング。省略時（または Auto）はファイルごとに判定します。判定の誤りを避けるときに指定します。Get-ProbedContent の -Encoding と同じ値（裸の utf8 を含む）を指定できます。ファイル先頭の BOM は、この文字エンコーディングの BOM と一致すれば読み飛ばします。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>変換元の判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Destination</maml:name>
+          <maml:description>
+            <maml:para>変換したファイルの出力先フォルダー。ファイル名は変換元のものを保ちます。省略時はその場で変換します。フォルダーは存在している必要があり、作成しません。変換元のフォルダー構造は保たず、すべてこのフォルダーの直下に書きます。-Destination の場合は、変換結果が変換元と同じでも書き出します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>読み取り専用のファイルも、属性を一時的に外して変換します。属性は変換後に元に戻します。-Destination の場合は、同名の既存ファイルを上書きします。同じコマンドで既に書いたファイルは上書きしません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>PassThru</maml:name>
+          <maml:description>
+            <maml:para>変換したファイル（変更の必要が無かったものを含む）ごとに、Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed のプロパティを持つオブジェクトを 1 個出力します。既定では何も出力しません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されず、-PassThru でも何も出力しません。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>ファイルごとに、変換する前に確認を求めます。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Bom</maml:name>
+        <maml:description>
+          <maml:para>Add は BOM を付け、Remove は BOM を外します。省略時は、-Encoding に渡した名前が BOM を決めていない限り、BOM を変えません。BOM を持てるのは Unicode 系の 5 系統だけです。それ以外の文字エンコーディングへの Add はエラーになり、Remove は何もしません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">BomOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.BomOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>ファイルごとに、変換する前に確認を求めます。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Destination</maml:name>
+        <maml:description>
+          <maml:para>変換したファイルの出力先フォルダー。ファイル名は変換元のものを保ちます。省略時はその場で変換します。フォルダーは存在している必要があり、作成しません。変換元のフォルダー構造は保たず、すべてこのフォルダーの直下に書きます。-Destination の場合は、変換結果が変換元と同じでも書き出します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>変換先の文字エンコーディング（と BOM）。省略時は変換元の文字エンコーディングを保ちます。統一語彙、WebName、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。Auto は指定できません。-Bom と組み合わせた場合、Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は系統名として扱い、BOM は -Bom で決めます。-Bom が無い場合はほかの書き込み系コマンドと同じ規則で、裸の utf8 は拒否します。-Bom との組み合わせは注意事項を参照してください。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>指定した参照ファイルの文字エンコーディング・BOM・改行に変換します。入力どおりに使います。継承した BOM と改行は -Bom と -LineBreak で上書きできます。-Encoding とは同時に指定できません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>読み取り専用のファイルも、属性を一時的に外して変換します。属性は変換後に元に戻します。-Destination の場合は、同名の既存ファイルを上書きします。同じコマンドで既に書いたファイルは上書きしません。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>変換先の改行: CrLf、Lf、Cr。ファイル内のすべての改行（CR-LF、LF、CR）を置き換え、最後の行の末尾に改行があるかどうかは保ちます。U+2028、U+2029、U+0085 は改行として扱いません。既定の Auto は改行を保ちます（-EncodingFrom や EncodingInformation があればそこから継承します）。書き込み系コマンドの -LineBreak と違い、ファイル内のすべての改行を揃えます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>変換するファイル。入力どおりに使い、ワイルドカードは展開しません。Get-ChildItem の出力は PSPath プロパティでこのパラメーターに束縛されます。ディレクトリは飛ばし、詳細メッセージに記録します。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>PassThru</maml:name>
+        <maml:description>
+          <maml:para>変換したファイル（変更の必要が無かったものを含む）ごとに、Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed のプロパティを持つオブジェクトを 1 個出力します。既定では何も出力しません。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>変換するファイル。ワイルドカードを使えます。一致するファイルが無いパスは非終了エラーとして報告します。ディレクトリは飛ばします。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>SourceEncoding</maml:name>
+        <maml:description>
+          <maml:para>変換元の文字エンコーディング。省略時（または Auto）はファイルごとに判定します。判定の誤りを避けるときに指定します。Get-ProbedContent の -Encoding と同じ値（裸の utf8 を含む）を指定できます。ファイル先頭の BOM は、この文字エンコーディングの BOM と一致すれば読み飛ばします。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>変換元の判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されず、-PassThru でも何も出力しません。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>Get-ChildItem の出力のように、PSPath プロパティを持つオブジェクトをパイプで渡せます。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>-PassThru を指定したとき、変換したファイルごとに 1 個のオブジェクト（型名 SnowStack.EncodingProbe.ConvertResult）。文字エンコーディングは統一語彙の名前（utf8BOM、unicodeNoBOM、shift_jis など）で表すため、SourceEncoding をそのまま -Encoding に渡せば元のバイト列に戻せます。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>注意事項</maml:title>
+      <maml:alert>
+        <maml:para>変換元の文字エンコーディングとして不正なバイト列や、変換先の文字エンコーディングで表現できない文字を含むファイルは変換しません。エラーには、最初の不正なバイト列のバイト位置、または最初に表現できなかった文字とその行・桁を示します。文字を置き換えて変換する手段はありません。置き換えてよい場合は、先に文字列を編集してください。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>このコマンドレットの -LineBreak は、ファイル内のすべての改行を置き換えます。Set-ProbedContent / Add-ProbedContent / Out-ProbedFile の -LineBreak は、要素の後ろに付ける改行だけを決め、文字列の中の改行はそのままにします。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Encoding と -Bom の関係: BOM 接尾辞付きの名前（utf8BOM、unicodeNoBOM など）は -Bom と一致する必要があります。Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は BOM を -Bom で決めます。それ以外の文字エンコーディング（shift_jis、932 など）への -Bom Add はエラー、-Bom Remove は許可します。EncodingInformation や -EncodingFrom の BOM は -Bom で上書きできます。System.Text.Encoding インスタンスは -Bom と一致する必要があります。-Encoding を省略した場合は変換元の文字エンコーディングを保ち、BOM を持てない変換元への -Bom Add はそのファイルのエラーとして報告します。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>変換元はファイル全体をメモリに読み込むため、非常に大きなファイルにはそれに見合うメモリが必要です。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Destination はフォルダー構造を保ちません。同じファイル名の変換元が 2 つあると、同じコマンドで書いたファイルを上書きしないよう、-Force があっても 2 つ目はエラーになります。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>私用領域の文字（香港 Big5 の HKSCS 固有字など）は、警告を出さずに符号位置のまま変換します。そのような Big5 のファイルを UTF-8 に変換して Big5 に戻すと、元のバイト列に戻ります。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>パラメーターの誤り（変換の指定が無い、-Encoding Auto、BOM の指定の食い違い、-Destination のフォルダーが無い など）は終了エラーです。1 つのファイルに関する失敗は非終了エラーで、そのファイルは変更せずに残し、ほかのファイルの処理は続けます。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Encoding utf8NoBOM -LineBreak Lf</dev:code>
+        <dev:remarks>
+          <maml:para>現在のフォルダーのテキストファイルを、ファイルごとに文字エンコーディングを判定して、BOM 無しの UTF-8・改行 LF に変換します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Bom Remove</dev:code>
+        <dev:remarks>
+          <maml:para>文字エンコーディングを知らなくても BOM だけを外せます。BOM を持てないファイルはそのまま残ります。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem -Recurse -Filter *.cs | Convert-ProbedContent -Encoding utf8BOM</dev:code>
+        <dev:remarks>
+          <maml:para>現在のフォルダー以下のすべての C# ソースファイルを BOM 付きの UTF-8 に変換します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent *.txt -Encoding utf8NoBOM -Destination .\out -PassThru</dev:code>
+        <dev:remarks>
+          <maml:para>変換したコピーを out フォルダーに書き、ファイルごとの結果を出力します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 5 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Convert-ProbedContent .\legacy.txt -SourceEncoding euc-jp -Encoding shift_jis</dev:code>
+        <dev:remarks>
+          <maml:para>変換元の文字エンコーディングを判定せず、EUC-JP から Shift_JIS に変換します。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Out-ProbedFile</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Set-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
         <maml:uri />
       </maml:navigationLink>
     </maml:relatedLinks>

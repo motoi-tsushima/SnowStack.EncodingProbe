@@ -157,13 +157,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         }
 
         /// <summary>
-        /// コードページとBOM方針から <see cref="Encoding"/> を組み立てる。
+        /// BOM 無しの UTF-8（utf8NoBOM）。Out-ProbedFile の -Encoding 省略時の既定に使う。
         /// </summary>
-        /// <remarks>
-        /// Encoding.GetEncoding("utf-8") および Encoding.UTF8 はBOM付きインスタンスを返すため、
-        /// Unicode系は必ずコンストラクタで組み立ててBOM方針を確定させる。
-        /// UTF-7 も .NET 5 以降では GetEncoding から取得できないためコンストラクタで組み立てる。
-        /// </remarks>
+        public static EncodingSpec Utf8NoBom()
+            => EncodingSpec.Create(BuildEncoding(CodePageUtf8, emitBom: false), emitBom: false);
+
         /// <summary>
         /// コードページとBOM方針から <see cref="Encoding"/> を組み立てる。
         /// 実行環境がそのコードページを提供していない場合は false を返す。
@@ -186,6 +184,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             }
         }
 
+        /// <summary>
+        /// コードページとBOM方針から <see cref="Encoding"/> を組み立てる。
+        /// </summary>
+        /// <remarks>
+        /// Encoding.GetEncoding("utf-8") および Encoding.UTF8 はBOM付きインスタンスを返すため、
+        /// Unicode系は必ずコンストラクタで組み立ててBOM方針を確定させる。
+        /// UTF-7 も .NET 5 以降では GetEncoding から取得できないためコンストラクタで組み立てる。
+        /// </remarks>
         public static Encoding BuildEncoding(int codePage, bool emitBom)
         {
             switch (codePage)
@@ -220,6 +226,99 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 #pragma warning disable SYSLIB0001 // UTF-7 は廃止予定だが、読み取り専用の語彙として提供する必要がある
         private static Encoding CreateUtf7() => new UTF7Encoding();
 #pragma warning restore SYSLIB0001
+
+        /// <summary>
+        /// 不正なバイト列・表現できない文字で例外を投げる <see cref="Encoding"/> を組み立てる。
+        /// BOM は持たない（BOM の読み飛ばし・書き出しは呼び出し側が行う）。
+        /// </summary>
+        /// <remarks>
+        /// Convert-ProbedContent の「変換で文字を失わない」保証に使う。
+        /// 既定の置換フォールバックでは、不正なバイト列が黙って U+FFFD に、
+        /// 表現できない文字が黙って '?' に置き換わってしまう。
+        /// Unicode 系はコンストラクタの throwOnInvalid 引数で、それ以外は
+        /// <see cref="Encoding.GetEncoding(int, EncoderFallback, DecoderFallback)"/> で例外フォールバックを指定する。
+        /// </remarks>
+        /// <exception cref="ArgumentException">実行環境がコードページを提供していない場合</exception>
+        /// <exception cref="NotSupportedException">実行環境がコードページを提供していない場合</exception>
+        public static Encoding BuildStrictEncoding(int codePage)
+        {
+            switch (codePage)
+            {
+                case CodePageUtf7:
+                    // UTF-7 はすべてのバイト列を何らかの文字として受け入れるため、例外フォールバックの意味が薄い。
+                    // 書き込みでは語彙の段階で拒否しており、ここに来るのは変換元の読み取りだけである。
+                    return CreateUtf7();
+                case CodePageUtf8:
+                    return new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+                case CodePageUtf16Le:
+                    return new UnicodeEncoding(bigEndian: false, byteOrderMark: false, throwOnInvalidBytes: true);
+                case CodePageUtf16Be:
+                    return new UnicodeEncoding(bigEndian: true, byteOrderMark: false, throwOnInvalidBytes: true);
+                case CodePageUtf32Le:
+                    return new UTF32Encoding(bigEndian: false, byteOrderMark: false, throwOnInvalidCharacters: true);
+                case CodePageUtf32Be:
+                    return new UTF32Encoding(bigEndian: true, byteOrderMark: false, throwOnInvalidCharacters: true);
+                default:
+                    return Encoding.GetEncoding(
+                        codePage, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
+            }
+        }
+
+        /// <summary>
+        /// コードページと BOM の有無を、統一語彙の名前で表す。
+        /// </summary>
+        /// <remarks>
+        /// Unicode 系は BOM を明示した名前（utf8BOM、unicodeNoBOM など）、それ以外は WebName を返す。
+        /// どちらもそのまま -Encoding に渡せば同じバイト列になる（原則 B）。
+        /// Convert-ProbedContent -PassThru の SourceEncoding / Encoding に使う。
+        /// </remarks>
+        public static string GetUnifiedName(int codePage, bool bom)
+        {
+            foreach (KeyValuePair<string, VocabularyEntry> entry in ExtendedNames)
+            {
+                if (entry.Value.CodePage == codePage && entry.Value.EmitBom == bom)
+                {
+                    return entry.Key;
+                }
+            }
+
+            if (codePage == CodePageUtf7)
+            {
+                // .NET 5 以降では GetEncoding(65000) が使えないため、WebName を直接返す
+                return "utf-7";
+            }
+
+            try
+            {
+                return Encoding.GetEncoding(codePage).WebName;
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is NotSupportedException)
+            {
+                return codePage.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        /// <summary>
+        /// 指定された値が、BOM 接尾辞を持つ独自拡張名（utf8BOM、unicodeNoBOM など）かどうか
+        /// </summary>
+        /// <remarks>
+        /// Convert-ProbedContent では、BOM を明示する名前と -Bom が食い違うとエラーにし、
+        /// BOM を明示しない名前（裸名・WebName）は系統名として扱って BOM を -Bom で決める。
+        /// その区別に使う。
+        /// </remarks>
+        public static bool IsBomSuffixedName(object? value)
+            => UnwrapPSObject(value) is string text && ExtendedNames.ContainsKey(text.Trim());
+
+        /// <summary>
+        /// 書き込み用途で許されない指定かどうかを検査する（パラメータ束縛の後で検査する場合に使う）。
+        /// </summary>
+        /// <remarks>
+        /// Convert-ProbedContent の -Encoding は、-Bom と組み合わせたときだけ裸の utf8 を受け付けるため、
+        /// 束縛の段階では読み取り用途として解決し、-Bom の有無が分かってからこれで検査する。
+        /// </remarks>
+        /// <exception cref="ArgumentTransformationMetadataException">許されない指定の場合</exception>
+        public static void EnsureWritable(EncodingSpec spec, object? original)
+            => ValidateForWrite(spec, Describe(UnwrapPSObject(original)));
 
         /// <summary>
         /// BOM方針をコンストラクタで表現すべきUnicode系コードページかどうか

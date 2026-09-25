@@ -3,10 +3,48 @@
 このファイルは SnowStack.EncodingProbe（NuGet パッケージ）と
 SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更をまとめたものです。
 
-## 1.2.0（開発中）
+## 1.2.0（未リリース）
 
-文字エンコーディング判定を、東アジア以外の言語に対応させました。
-**リリース前の作業中の変更です。** バージョン番号はまだ上げていません。
+文字エンコーディング判定を東アジア以外の言語に対応させ、PowerShell モジュールに
+`Out-ProbedFile` と `Convert-ProbedContent` を追加しました。
+**リリース前の変更です。** バージョン番号は 1.2.0 に更新済みですが、まだリリースしていません。
+
+### 追加したコマンド（PowerShell モジュール）
+
+仕様は `docs/EncodingProbe-1.2.0-仕様書.md`、根拠となった標準コマンドの実測は
+`docs/EncodingProbe-1.2.0-調査-Out-File挙動の実測.md` にあります。
+
+- **`Out-ProbedFile`** … オブジェクトを整形し、統一語彙で指定した文字エンコーディング・BOM・改行でファイルに書き出します。
+  標準の `Out-File` のパラメーターをすべて持ち、`-EncodingFrom` / `-LineBreak` / `-AllowEncodingChange` / `-Culture` / `-Strategy` を加えています
+  - 符号化の層（エンコーディング・BOM・改行）は PowerShell 5.1 と 7.x で同じバイト列になります。
+    整形の層は実行中のホストの `Out-String -Stream` に任せるため、表や一覧の形はホストによって異なります（標準の `Out-File` と同じ）
+  - `-Encoding` を省略すると、上書き・新規作成は `utf8NoBOM`、`-Append` は追記先から継承します。
+    明示的な `Auto` は出力先の既存ファイルから継承します（`Set-ProbedContent` の省略時とは規則が違います）
+  - `-Append` は `Add-ProbedContent` と同じバイト列比較で整合性を検査し、不一致の行の手前で終了エラーにします
+  - ファイルを開く（作成・切り詰める）のは最初の行を書く直前です。
+    `Get-ProbedContent a.txt | Out-ProbedFile a.txt` は、標準の `Out-File` のように a.txt を読む前に消すことはなく、エラーになります
+  - 標準の `Out-File` との差異: 既定のエンコーディング、`-Append` の整合性検査、切り詰める時点、
+    `$null` 1 個で 0 バイト（`Out-File` は BOM だけ）、別名 `-Path` / `-LP` を PowerShell 5.1 でも提供、
+    `-LiteralPath` をパイプラインから受け取らない
+- **`Convert-ProbedContent`** … 既存のテキストファイルの文字エンコーディング・BOM・改行を変換して書き直します
+  - 変換元に不正なバイト列がある、または変換先で表現できない文字があるファイルは変換しません（文字を失わない保証）。
+    エラーメッセージに、不正なバイト列のバイト位置、または表現できない文字とその行・桁を示します
+  - `-Bom Add` / `-Bom Remove` で BOM だけを変えられます。`-Bom` と組み合わせた場合、裸の `utf8` や `utf-8` を系統名として受け付けます
+  - `-LineBreak` は、ファイル内のすべての改行（CR-LF / LF / CR）を揃えます（書き込み系の `-LineBreak` とは役割が違います）
+  - 同じフォルダーの一時ファイルに書いてから置き換えます。変換結果が元と同じなら書き直しません（更新日時が変わりません）
+  - `-Destination`（フォルダー構造は保たない）、`-SourceEncoding`、`-PassThru`、`-WhatIf` / `-Confirm` に対応します
+- 両コマンドのメッセージを 5 言語で、ヘルプ（MAML）を 5 言語（と香港・マカオ向けの複製）で追加しました
+
+### 既存コマンドの変更（PowerShell モジュール）
+
+- **不具合の修正（標準コマンドとの食い違い）: `Set-ProbedContent` / `Add-ProbedContent` の `-Force` が、
+  書き込み後に読み取り専用の属性を元に戻すようになりました。** 1.1.0 は属性を外したままにしていました。
+  標準の `Set-Content` / `Add-Content` / `Out-File` はいずれも元に戻します。書き込みが途中で失敗した場合も戻します。
+  読み取り専用で `-Force` なしの場合が非終了エラーであることは変えていません
+- **`-LineBreak` の範囲を明文化しました（挙動は変えていません）。** `-LineBreak` が決めるのは要素の後ろに付ける改行だけで、
+  値の文字列の中に含まれる改行は置き換えません。標準の `Set-Content` / `Out-File` と同じです。ヘルプ（5 言語）に明記しました
+- `docs/EncodingProbe-1.1.0-仕様書.md` の 5.3 節（`-Encoding Auto` で対象が無い場合を「非終了エラー」に訂正）と
+  5.6 節（`-LineBreak` の範囲）を改めました
 
 ### 判定を変えた点
 
@@ -171,6 +209,12 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
 - `UnsupportedEncodingTests`（コア）と `UnsupportedUtfUnknownEncodingTests`（PowerShell 層）が、
   `iso-8859-16` のルーマニア語バイト列で例外が出ないことを検証します。
   修正前のコードでは、前者は 18 件中 17 件、後者は 12 件中 11 件が失敗します
+- `OutProbedFileTests` / `ConvertProbedContentTests` を追加しました。
+  `Out-ProbedFile` の組み合わせ（`-NoClobber` / `-Append` / `-Force` / 読み取り専用）とパスの扱いは、
+  標準の `Out-File` の実測（実測報告の 3-1〜3-10、4-1〜4-9）と同じ結果になることを検証します
+- `SetProbedContentTests` / `AddProbedContentTests` に、`-Force` 後の読み取り専用属性の検査と、
+  文字列の中に改行を含む値のテスト（実測報告の 8-1〜8-6）を追加しました
+- PSCompat に `Out-ProbedFile` / `Convert-ProbedContent` と既存コマンドの変更の節を追加しました
 
 ## 1.1.0
 

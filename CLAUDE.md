@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `SnowStack.EncodingProbe` … NuGet パッケージ（クラスライブラリ）
 - `SnowStack.EncodingProbe.PowerShell` … バイナリモジュール。`Resolve-Encoding` /
   `Get-EncodingProbePlatformInfo` / `Get-ProbedContent` / `Set-ProbedContent` /
-  `Add-ProbedContent` / `ConvertTo-DotNetEncoding` を提供する
+  `Add-ProbedContent` / `ConvertTo-DotNetEncoding` / `Out-ProbedFile` / `Convert-ProbedContent` を提供する
 - `tests/EncodingProbe.Tests` … コアライブラリの xUnit テスト（net10.0 / net48 の両方で動く）
 - `tests/EncodingProbe.PowerShell.Tests` … コマンドレットの xUnit テスト（net10.0 のみ。`Microsoft.PowerShell.SDK` を参照）
 
@@ -228,6 +228,29 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
   この例外のメッセージは .NET Framework と .NET Core で文言が異なり、
   PS 5.1 と 7.x で見えるメッセージが変わってしまうため（PSCompat が検出した）
 
+### 1.2.0 で追加したコマンド（Out-ProbedFile / Convert-ProbedContent）
+
+仕様は `docs/EncodingProbe-1.2.0-仕様書.md`。「標準の挙動」はすべて `docs/EncodingProbe-1.2.0-調査-Out-File挙動の実測.md` の実測に基づく。
+
+- `Cmdlets/OutProbedFileCommand` は `ProbedContentWriterCommandBase` を継承しない（パラメータの形が違う。`-FilePath` は単一の string）。
+  書き込み部品（`ProbedFileWriter`・`LineBreakResolver`・`EncodingInheritance`・`ActiveReadRegistry`・`AppendConsistency`）を共用する
+- 整形は `Microsoft.PowerShell.Utility\Out-String -Stream` のステッパブルパイプラインで行う。
+  **`Begin(this)` ではなく `Begin(expectInput: true)` を使うこと。** コマンドを渡すと Out-String の出力が
+  本コマンドの出力ストリームへ直接流れ（プロキシコマンドの動作）、`Process` / `End` の戻り値が空になる（仕様書 8 章の記述と異なる点）
+- ファイルを開くのは最初の行を書く直前（同一パスの往復を検出するため）。失敗はすべて終了エラー
+- `-Encoding` の省略と明示的な `Auto` は意味が違う（省略は utf8NoBOM、`-Append` の省略は追記先から継承）。`BoundParameters` で区別している
+- `Cmdlets/ConvertProbedContentCommand` の `-Encoding` は `Internal/ConvertEncodingTransformationAttribute` で
+  元の値を保持したまま解決する。`-Bom` と組み合わせたとき、BOM 接尾辞付きの名前と裸名・WebName で扱いが違うため
+  （`EncodingSpec` だけでは `unicode` と `unicodeBOM` を区別できない）。書き込み用途の検証は `BeginProcessing` で行う
+- 変換元・変換先は `EncodingVocabulary.BuildStrictEncoding`（例外フォールバック）で復号・符号化する。
+  **不正なバイト列の位置は `DecoderFallbackException.Index` を使わず自前で求める**（`FindInvalidBytes`）。
+  `Index` の基準が .NET Framework と .NET Core で違い、PS 5.1 と 7.x で異なる位置を報告していた（PSCompat 相当の手動確認で検出）。
+  表現できない文字の位置も `EncoderFallbackException.Index` を使わず、その文字の最初の出現位置から求める
+- `-Force` で外した読み取り専用属性は `Internal/ReadOnlyAttributeScope` で元に戻す。
+  書き込み系の 4 コマンドすべてがこの部品を通る（1.2.0 で Set-/Add-ProbedContent の「外したまま」を修正した）
+- PSCompat の `.GetNewClosure()` 付きのシナリオの中では `$script:` 変数が見えない（動的モジュールのスコープになる）。
+  スクリプトの最上位で `$script:x = ...` と定義した変数は、クロージャの中では `$x` と書いて参照する
+
 ### MAML ヘルプ
 
 `SnowStack.EncodingProbe.PowerShell/` の下の `en-US/` `ja-JP/` `ko-KR/` `zh-TW/` `zh-CN/` `zh-HK/` `zh-MO/` に
@@ -350,8 +373,8 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 
 ## 1.2.0 の作業記録
 
-**修正は完了している（2026-09-23）。リリース作業（バージョン番号の更新・psd1 の ReleaseNotes・master へのマージ）は未実施**のため、
-バージョン番号は 1.1.0 のままである。作業ブランチは `feature/1.2.0-world-language-detection`。
+**開発は完了している（2026-09-25）。バージョン番号（3 か所）と psd1 の ReleaseNotes は 1.2.0 に更新済み。
+リリースと master へのマージは未実施。** 作業ブランチは `feature/1.2.0-world-language-detection`。
 
 1.2.0 で行ったこと（詳細は CHANGELOG.md の 1.2.0 節）:
 
@@ -361,6 +384,9 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 - 第三次修正: 香港・マカオのメッセージとヘルプ（台湾と同じ内容。B 案）、メッセージの言語選択をカルチャーゲートと共通化
 - 緊急修正: UTF.Unknown の `Encoding` が null（iso-8859-16 など）のときの `NullReferenceException`（1.1.0 から存在）
 - 追加作業: 信頼度の測定の文書化、テストデータの追加
+- PowerShell モジュールの新機能: `Out-ProbedFile` / `Convert-ProbedContent` の追加、
+  `Set-` / `Add-ProbedContent` の `-Force` 後の読み取り専用属性の復元、`-LineBreak` の範囲の明文化
+  （`docs/EncodingProbe-1.2.0-仕様書.md`。依頼文は `docs/request.md`）
 
 完了した依頼文はリポジトリから削除した（git の履歴に残っている）。判断の根拠は次の文書に移してある。
 
@@ -383,4 +409,4 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
   **本製品では対応しない（方針）。** 私用領域の内容に干渉しないのが基本方針で、香港固有字の解釈は利用者に任せる。
   対処するとしても別製品・別機能で扱う。HKSCS の対応表や写像を本製品に持ち込まないこと
 
-済んだ変更は CHANGELOG.md の「1.2.0（開発中）」の節にまとめてある。
+済んだ変更は CHANGELOG.md の「1.2.0（未リリース）」の節にまとめてある。

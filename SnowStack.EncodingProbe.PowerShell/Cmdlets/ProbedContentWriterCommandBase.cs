@@ -81,11 +81,16 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// <summary>
     /// 改行として出力する文字。省略時は参照情報があればそれを継承し、無ければOS既定に従う。
     /// </summary>
+    /// <remarks>
+    /// 決めるのは要素の後ろに付ける改行だけであり、要素の文字列の中に含まれる改行は置き換えない
+    /// （標準の Set-Content / Out-File と同じ。1.2.0 で仕様として明文化した）。
+    /// ファイル内の改行を統一する用途は Convert-ProbedContent が担う。
+    /// </remarks>
     [Parameter]
     public LineBreakOption LineBreak { get; set; } = LineBreakOption.Auto;
 
     /// <summary>
-    /// 読み取り専用属性の付いたファイルへも書き込む
+    /// 読み取り専用属性の付いたファイルへも書き込む。属性は書き込み後に元へ戻す（1.2.0）。
     /// </summary>
     [Parameter]
     public SwitchParameter Force { get; set; }
@@ -151,7 +156,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
 
         if (encodingFromBound)
         {
-            this._inheritedSpec = ResolveInheritedSpec();
+            this._inheritedSpec = ResolveEncodingFrom(this.EncodingFrom);
         }
     }
 
@@ -198,38 +203,6 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
 
         this._disposed = true;
         CloseTargets();
-    }
-
-    /// <summary>
-    /// -EncodingFrom で指定された参照ファイルから継承情報を求める
-    /// </summary>
-    private EncodingSpec ResolveInheritedSpec()
-    {
-        string reference = GetUnresolvedProviderPathFromPSPath(this.EncodingFrom);
-
-        if (!File.Exists(reference))
-        {
-            ThrowTerminatingError(CreateError(
-                new FileNotFoundException(ValidationMessages.FileNotFound(reference), reference),
-                "EncodingFromNotFound",
-                ErrorCategory.ObjectNotFound,
-                reference));
-        }
-
-        try
-        {
-            return EncodingInheritance.FromFile(reference, this.DetectorOptions);
-        }
-        catch (EncodingDetectionException exception)
-        {
-            string errorId = exception.ErrorId == EncodingDetectionException.CodePageNotAvailableId
-                ? "EncodingFromCodePageNotAvailable"
-                : "EncodingFromDetectionFailed";
-
-            ThrowTerminatingError(CreateError(exception, errorId, ErrorCategory.InvalidData, reference));
-
-            throw;  // ThrowTerminatingError は戻らないが、コンパイラには分からない
-        }
     }
 
     /// <summary>

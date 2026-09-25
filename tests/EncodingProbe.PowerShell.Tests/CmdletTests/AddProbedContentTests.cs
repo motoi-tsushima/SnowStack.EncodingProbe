@@ -699,7 +699,7 @@ public class AddProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
     }
 
     /// <summary>
-    /// -Force を指定すると読み取り専用ファイルへも追記できること。
+    /// -Force を指定すると読み取り専用ファイルへも追記でき、書き込み後に読み取り専用属性が元に戻ること（1.2.0 仕様書 4.1）。
     /// </summary>
     [Fact]
     public void Append_ReadOnlyFile_WithForce_Succeeds()
@@ -720,11 +720,44 @@ public class AddProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
 
             Assert.Empty(result.Errors);
             Assert.Equal(new byte[] { 0x41, 0x0A, 0x42, 0x0A }, file.ReadBytes());
+            Assert.True(IsReadOnly(file.Path));
         }
         finally
         {
             SetReadOnly(file.Path, false);
         }
+    }
+
+    #endregion
+
+    #region 文字列の中の改行（1.2.0 仕様書 4.2）
+
+    /// <summary>
+    /// -LineBreak は要素の後ろに付ける改行だけを決め、文字列の中の改行は置き換えないこと。
+    /// </summary>
+    /// <remarks>
+    /// 期待値は実測報告 5 章の「Add-ProbedContent -LineBreak Lf（既存 OLD + CRLF に追記）」の列。
+    /// </remarks>
+    [Theory]
+    [InlineData(new[] { "a\nb" }, "OLD\r\na\nb\n")]
+    [InlineData(new[] { "a\r\nb" }, "OLD\r\na\r\nb\n")]
+    [InlineData(new[] { "a\rb" }, "OLD\r\na\rb\n")]
+    [InlineData(new[] { "a\n" }, "OLD\r\na\n\n")]
+    [InlineData(new[] { "a\r\n\r\nb" }, "OLD\r\na\r\n\r\nb\n")]
+    [InlineData(new[] { "a\nb", "c" }, "OLD\r\na\nb\nc\n")]
+    public void Append_LineBreak_DoesNotReplaceLineBreaksInsideValues(string[] values, string expected)
+    {
+        using var file = ByteExactFile.Create(Encoding.ASCII.GetBytes("OLD\r\n"));
+
+        InvocationResult result = Invoke(
+            file.Path, values, new Dictionary<string, object?>
+            {
+                ["Encoding"] = "utf8NoBOM",
+                ["LineBreak"] = LineBreakOption.Lf,
+            });
+
+        Assert.Empty(result.Errors);
+        Assert.Equal(Encoding.ASCII.GetBytes(expected), file.ReadBytes());
     }
 
     #endregion
@@ -748,6 +781,9 @@ public class AddProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
 
         return this._fixture.InvokeCapturingErrors(CommandName, arguments);
     }
+
+    private static bool IsReadOnly(string path)
+        => (new FileInfo(path).Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly;
 
     private static void SetReadOnly(string path, bool readOnly)
     {
