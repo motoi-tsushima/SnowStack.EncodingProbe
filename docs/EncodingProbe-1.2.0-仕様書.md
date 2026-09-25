@@ -7,6 +7,7 @@
 - 前提文書:
   - `docs/EncodingProbe-1.1.0-仕様書.md`（統一語彙、原則 A / B、エラー方針など。本書はこれを土台とし、差分だけを書く）
   - `docs/EncodingProbe-1.2.0-調査-Out-File挙動の実測.md`（本書の「標準の挙動」はすべてこの実測に基づく。以下「実測報告」）
+- 実装記録: `docs/EncodingProbe-1.2.0-実装記録.md`（実装で本書・依頼・当初の想定と異なる結果になった点と、本書に書かれていなかった判断）
 
 > **Claude Code へ:** 作業の進め方（段階の分け方、コミットの単位など）は別途の依頼文で指示する。本書は仕様だけを定める。
 
@@ -322,8 +323,11 @@ PowerShell 層のテストとして追加し、PSCompat で PS 5.1 と 7.x の�
 ## 8. 実装上の留意点
 
 - **ステッパブルパイプライン**: `ScriptBlock.Create("Microsoft.PowerShell.Utility\\Out-String -Stream")` に、指定時だけ ` -Width N` を付けて作る。
-  `BeginProcessing` で `Begin(this)`、`ProcessRecord` で `Process(InputObject)`、`EndProcessing` で `End()`、最後に `Dispose()`。
+  `BeginProcessing` で `Begin(expectInput: true)`、`ProcessRecord` で `Process(InputObject)`、`EndProcessing` で `End()`、最後に `Dispose()`。
   `Process` / `End` が返す要素をその場で行として書く。モジュール修飾名で呼び、利用者が同名の関数を定義していても影響を受けないようにする
+  - `Begin(this)`（コマンドを渡す形）は使わない。この形では Out-String の出力が `Process` / `End` の戻り値にならず、
+    本コマンドの出力ストリームへ直接流れる（プロキシコマンドの動作）ため、ファイルに何も書かれない。
+    当初は `Begin(this)` と記載していたが、実装で判明したため改めた（`docs/EncodingProbe-1.2.0-実装記録.md` 1 章）
 - **書き込み部品の共用**: `Internal/ProbedFileWriter`、`LineBreakResolver`、`EncodingInheritance`、`ActiveReadRegistry` を共用する。
   読み取り専用属性の復元（4.1）は共用部品に入れ、3 コマンドで同じ実装を使う
 - **ファイルを開く時点**: 最初の行を書く直前。入力 0 件なら `EndProcessing`（2.10、2.11）

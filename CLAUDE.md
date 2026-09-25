@@ -230,13 +230,13 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
 
 ### 1.2.0 で追加したコマンド（Out-ProbedFile / Convert-ProbedContent）
 
-仕様は `docs/EncodingProbe-1.2.0-仕様書.md`。「標準の挙動」はすべて `docs/EncodingProbe-1.2.0-調査-Out-File挙動の実測.md` の実測に基づく。
+仕様は `docs/EncodingProbe-1.2.0-仕様書.md`。仕様と異なった点・実装で決めた点は `docs/EncodingProbe-1.2.0-実装記録.md`。「標準の挙動」はすべて `docs/EncodingProbe-1.2.0-調査-Out-File挙動の実測.md` の実測に基づく。
 
 - `Cmdlets/OutProbedFileCommand` は `ProbedContentWriterCommandBase` を継承しない（パラメータの形が違う。`-FilePath` は単一の string）。
   書き込み部品（`ProbedFileWriter`・`LineBreakResolver`・`EncodingInheritance`・`ActiveReadRegistry`・`AppendConsistency`）を共用する
 - 整形は `Microsoft.PowerShell.Utility\Out-String -Stream` のステッパブルパイプラインで行う。
   **`Begin(this)` ではなく `Begin(expectInput: true)` を使うこと。** コマンドを渡すと Out-String の出力が
-  本コマンドの出力ストリームへ直接流れ（プロキシコマンドの動作）、`Process` / `End` の戻り値が空になる（仕様書 8 章の記述と異なる点）
+  本コマンドの出力ストリームへ直接流れ（プロキシコマンドの動作）、`Process` / `End` の戻り値が空になる
 - ファイルを開くのは最初の行を書く直前（同一パスの往復を検出するため）。失敗はすべて終了エラー
 - `-Encoding` の省略と明示的な `Auto` は意味が違う（省略は utf8NoBOM、`-Append` の省略は追記先から継承）。`BoundParameters` で区別している
 - `Cmdlets/ConvertProbedContentCommand` の `-Encoding` は `Internal/ConvertEncodingTransformationAttribute` で
