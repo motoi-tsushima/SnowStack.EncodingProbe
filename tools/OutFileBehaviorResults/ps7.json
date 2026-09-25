@@ -1,0 +1,4311 @@
+{
+  "Environment": {
+    "PSVersion": "7.6.6",
+    "PSEdition": "Core",
+    "OS": "Microsoft Windows 10.0.26200",
+    "HostName": "ConsoleHost",
+    "IsOutputRedirected": true,
+    "BufferSize": "120x9001",
+    "WindowSize": "120x30",
+    "CurrentCulture": "ja-JP",
+    "CurrentUICulture": "ja-JP",
+    "PSStyleOutputRendering": "Host",
+    "NewLineHex": "0D 0A",
+    "ModuleDll": "SnowStack.EncodingProbe.PowerShell\\bin\\Debug\\net10.0\\SnowStack.EncodingProbe.PowerShell.dll",
+    "ModuleFileVersion": "1.1.0.0"
+  },
+  "Section3_Combinations": {
+    "3-1": {
+      "Parameters": "-NoClobber",
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4E 00 45 00 57 00 0D 00 0A 00",
+        "Text": "NEW\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "3-2": {
+      "Parameters": "-NoClobber",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "NoClobber,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.IO.IOException",
+        "InnerExceptionType": null,
+        "Category": "ResourceExists",
+        "Message": "The file 'C:\\Users\\motoi\\AppData\\Local\\Temp\\OutFileBehavior_66a97694351b42fda0c6c14c357acb50\\c002\\target.txt' already exists."
+      },
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00",
+        "Text": "OLD\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "3-3": {
+      "Parameters": "-Append NoClobber",
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 22,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00 4E 00 45 00 57 00 0D 00 0A 00",
+        "Text": "OLD\\r\\nNEW\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "3-4": {
+      "Parameters": "-Append NoClobber",
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4E 00 45 00 57 00 0D 00 0A 00",
+        "Text": "NEW\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "3-5": {
+      "Parameters": "-Force NoClobber",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "NoClobber,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.IO.IOException",
+        "InnerExceptionType": null,
+        "Category": "ResourceExists",
+        "Message": "The file 'C:\\Users\\motoi\\AppData\\Local\\Temp\\OutFileBehavior_66a97694351b42fda0c6c14c357acb50\\c005\\target.txt' already exists."
+      },
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00",
+        "Text": "OLD\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "3-6": {
+      "Parameters": "-",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "FileOpenFailure,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.UnauthorizedAccessException",
+        "InnerExceptionType": null,
+        "Category": "OpenError",
+        "Message": "Access to the path 'C:\\Users\\motoi\\AppData\\Local\\Temp\\OutFileBehavior_66a97694351b42fda0c6c14c357acb50\\c006\\target.txt' is denied."
+      },
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00",
+        "Text": "OLD\\r\\n",
+        "ReadOnly": true
+      }
+    },
+    "3-7": {
+      "Parameters": "-Force",
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4E 00 45 00 57 00 0D 00 0A 00",
+        "Text": "NEW\\r\\n",
+        "ReadOnly": true
+      }
+    },
+    "3-8": {
+      "Parameters": "-Force NoClobber",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "NoClobber,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.IO.IOException",
+        "InnerExceptionType": null,
+        "Category": "ResourceExists",
+        "Message": "The file 'C:\\Users\\motoi\\AppData\\Local\\Temp\\OutFileBehavior_66a97694351b42fda0c6c14c357acb50\\c008\\target.txt' already exists."
+      },
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00",
+        "Text": "OLD\\r\\n",
+        "ReadOnly": true
+      }
+    },
+    "3-9": {
+      "Parameters": "-Append",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "FileOpenFailure,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.UnauthorizedAccessException",
+        "InnerExceptionType": null,
+        "Category": "OpenError",
+        "Message": "Access to the path 'C:\\Users\\motoi\\AppData\\Local\\Temp\\OutFileBehavior_66a97694351b42fda0c6c14c357acb50\\c009\\target.txt' is denied."
+      },
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00",
+        "Text": "OLD\\r\\n",
+        "ReadOnly": true
+      }
+    },
+    "3-10": {
+      "Parameters": "-Append Force",
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 22,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00 4E 00 45 00 57 00 0D 00 0A 00",
+        "Text": "OLD\\r\\nNEW\\r\\n",
+        "ReadOnly": true
+      }
+    }
+  },
+  "Section3_2_ErrorTiming": {
+    "3-2": {
+      "Log": [
+        "upstream-begin"
+      ],
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "NoClobber,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.IO.IOException",
+        "InnerExceptionType": null,
+        "Category": "ResourceExists",
+        "Message": "The file 'C:\\Users\\motoi\\AppData\\Local\\Temp\\OutFileBehavior_66a97694351b42fda0c6c14c357acb50\\c011\\target.txt' already exists."
+      },
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00",
+        "Text": "OLD\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "3-6": {
+      "Log": [
+        "upstream-begin"
+      ],
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "FileOpenFailure,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.UnauthorizedAccessException",
+        "InnerExceptionType": null,
+        "Category": "OpenError",
+        "Message": "Access to the path 'C:\\Users\\motoi\\AppData\\Local\\Temp\\OutFileBehavior_66a97694351b42fda0c6c14c357acb50\\c012\\target.txt' is denied."
+      },
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00",
+        "Text": "OLD\\r\\n",
+        "ReadOnly": true
+      }
+    }
+  },
+  "Section3_3_ModuleReadOnly": {
+    "Set-ProbedContent -Force": {
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4E 00 45 00 57 00 0D 00 0A 00",
+        "Text": "NEW\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "Set-ProbedContent (no -Force)": {
+      "ErrorKind": "non-terminating",
+      "Terminating": null,
+      "NonTerminating": [
+        {
+          "FullyQualifiedErrorId": "WriteAccessDenied,SnowStack.EncodingProbe.PowerShell.Cmdlets.SetProbedContentCommand",
+          "ExceptionType": "System.UnauthorizedAccessException",
+          "InnerExceptionType": null,
+          "Category": "PermissionDenied",
+          "Message": "Access to the path 'C:\\Users\\motoi\\AppData\\Local\\Temp\\OutFileBehavior_66a97694351b42fda0c6c14c357acb50\\c014\\target.txt' is denied."
+        }
+      ],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00",
+        "Text": "OLD\\r\\n",
+        "ReadOnly": true
+      }
+    },
+    "Add-ProbedContent -Force": {
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 22,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00 4E 00 45 00 57 00 0D 00 0A 00",
+        "Text": "OLD\\r\\nNEW\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "Add-ProbedContent (no -Force)": {
+      "ErrorKind": "non-terminating",
+      "Terminating": null,
+      "NonTerminating": [
+        {
+          "FullyQualifiedErrorId": "WriteAccessDenied,SnowStack.EncodingProbe.PowerShell.Cmdlets.AddProbedContentCommand",
+          "ExceptionType": "System.UnauthorizedAccessException",
+          "InnerExceptionType": null,
+          "Category": "PermissionDenied",
+          "Message": "Access to the path 'C:\\Users\\motoi\\AppData\\Local\\Temp\\OutFileBehavior_66a97694351b42fda0c6c14c357acb50\\c016\\target.txt' is denied."
+        }
+      ],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00",
+        "Text": "OLD\\r\\n",
+        "ReadOnly": true
+      }
+    },
+    "Set-Content -Force": {
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 12,
+        "Hex": "FF FE 4E 00 45 00 57 00 0D 00 0A 00",
+        "Text": "NEW\\r\\n",
+        "ReadOnly": true
+      }
+    },
+    "Add-Content -Force": {
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "Length": 22,
+        "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00 4E 00 45 00 57 00 0D 00 0A 00",
+        "Text": "OLD\\r\\nNEW\\r\\n",
+        "ReadOnly": true
+      }
+    }
+  },
+  "Section4_1_Metadata": {
+    "Out-File": {
+      "DefaultParameterSet": "ByPath",
+      "ParameterSetNames": [
+        "ByLiteralPath",
+        "ByPath"
+      ],
+      "Parameters": {
+        "Append": {
+          "Type": "System.Management.Automation.SwitchParameter",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Encoding": {
+          "Type": "System.Text.Encoding",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [
+            "ValidateNotNullOrEmptyAttribute"
+          ],
+          "OtherAttributes": [
+            "ArgumentEncodingCompletionsAttribute",
+            "ArgumentToEncodingTransformationAttribute"
+          ],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": 1,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "FilePath": {
+          "Type": "System.String",
+          "Aliases": [
+            "Path"
+          ],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "ByPath",
+              "Position": 0,
+              "Mandatory": true,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Force": {
+          "Type": "System.Management.Automation.SwitchParameter",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "InputObject": {
+          "Type": "System.Management.Automation.PSObject",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": true,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "LiteralPath": {
+          "Type": "System.String",
+          "Aliases": [
+            "LP",
+            "PSPath"
+          ],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "ByLiteralPath",
+              "Position": null,
+              "Mandatory": true,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": true,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "NoClobber": {
+          "Type": "System.Management.Automation.SwitchParameter",
+          "Aliases": [
+            "NoOverwrite"
+          ],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "NoNewline": {
+          "Type": "System.Management.Automation.SwitchParameter",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Width": {
+          "Type": "System.Int32",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [
+            "ValidateRange(2, 2147483647)"
+          ],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        }
+      }
+    },
+    "Set-Content": {
+      "DefaultParameterSet": "Path",
+      "ParameterSetNames": [
+        "LiteralPath",
+        "Path"
+      ],
+      "Parameters": {
+        "AsByteStream": {
+          "Type": "System.Management.Automation.SwitchParameter",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Credential": {
+          "Type": "System.Management.Automation.PSCredential",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [
+            "CredentialAttribute"
+          ],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": true,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Encoding": {
+          "Type": "System.Text.Encoding",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [
+            "ValidateNotNullOrEmptyAttribute"
+          ],
+          "OtherAttributes": [
+            "ArgumentEncodingCompletionsAttribute",
+            "ArgumentToEncodingTransformationAttribute"
+          ],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Exclude": {
+          "Type": "System.String[]",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Filter": {
+          "Type": "System.String",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Force": {
+          "Type": "System.Management.Automation.SwitchParameter",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Include": {
+          "Type": "System.String[]",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "LiteralPath": {
+          "Type": "System.String[]",
+          "Aliases": [
+            "LP",
+            "PSPath"
+          ],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "LiteralPath",
+              "Position": null,
+              "Mandatory": true,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": true,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "NoNewline": {
+          "Type": "System.Management.Automation.SwitchParameter",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "PassThru": {
+          "Type": "System.Management.Automation.SwitchParameter",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Path": {
+          "Type": "System.String[]",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "Path",
+              "Position": 0,
+              "Mandatory": true,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": true,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Stream": {
+          "Type": "System.String",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": null,
+              "Mandatory": false,
+              "ValueFromPipeline": false,
+              "ValueFromPipelineByPropertyName": false,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        },
+        "Value": {
+          "Type": "System.Object[]",
+          "Aliases": [],
+          "SupportsWildcards": false,
+          "Validation": [],
+          "OtherAttributes": [
+            "AllowEmptyCollectionAttribute",
+            "AllowNullAttribute"
+          ],
+          "ParameterSets": [
+            {
+              "Set": "__AllParameterSets",
+              "Position": 1,
+              "Mandatory": true,
+              "ValueFromPipeline": true,
+              "ValueFromPipelineByPropertyName": true,
+              "ValueFromRemainingArguments": false
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Section4_2_Wildcard": {
+    "4-1": {
+      "Existing": [
+        "a1.txt"
+      ],
+      "Parameter": "-FilePath 'a?.txt'",
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "FilesAfter": {
+        "a1.txt": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 4E 00 45 00 57 00 0D 00 0A 00",
+          "Text": "NEW\\r\\n",
+          "ReadOnly": false
+        }
+      }
+    },
+    "4-2": {
+      "Existing": [
+        "a1.txt",
+        "a2.txt"
+      ],
+      "Parameter": "-FilePath 'a?.txt'",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "ReadWriteMultipleFilesNotSupported,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.Management.Automation.PSInvalidOperationException",
+        "InnerExceptionType": null,
+        "Category": "InvalidArgument",
+        "Message": "操作 \"ReportMultipleFilesNotSupported\" が無効なため、操作を実行できません。操作 \"ReportMultipleFilesNotSupported\" を削除するか、無効な理由を確認してください。"
+      },
+      "NonTerminating": [],
+      "FilesAfter": {
+        "a1.txt": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00",
+          "Text": "OLD\\r\\n",
+          "ReadOnly": false
+        },
+        "a2.txt": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00",
+          "Text": "OLD\\r\\n",
+          "ReadOnly": false
+        }
+      }
+    },
+    "4-3": {
+      "Existing": [],
+      "Parameter": "-FilePath 'b*.txt'",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "FileOpenFailure,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.IO.FileNotFoundException",
+        "InnerExceptionType": null,
+        "Category": "OpenError",
+        "Message": "Unable to find the specified file."
+      },
+      "NonTerminating": [],
+      "FilesAfter": {}
+    },
+    "4-4": {
+      "Existing": [],
+      "Parameter": "-FilePath 'c[1].txt'",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "FileOpenFailure,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.IO.FileNotFoundException",
+        "InnerExceptionType": null,
+        "Category": "OpenError",
+        "Message": "Unable to find the specified file."
+      },
+      "NonTerminating": [],
+      "FilesAfter": {}
+    },
+    "4-5": {
+      "Existing": [],
+      "Parameter": "-LiteralPath 'c[1].txt'",
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "FilesAfter": {
+        "c[1].txt": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 4E 00 45 00 57 00 0D 00 0A 00",
+          "Text": "NEW\\r\\n",
+          "ReadOnly": false
+        }
+      }
+    },
+    "4-6": {
+      "Existing": [
+        "c1.txt"
+      ],
+      "Parameter": "-FilePath 'c[1].txt'",
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "FilesAfter": {
+        "c1.txt": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 4E 00 45 00 57 00 0D 00 0A 00",
+          "Text": "NEW\\r\\n",
+          "ReadOnly": false
+        }
+      }
+    }
+  },
+  "Section4_3_RelativePath": {
+    "Out-File": {
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "WrittenToPSLocation": true,
+      "WrittenToProcessDir": false
+    },
+    "Set-Content": {
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "WrittenToPSLocation": true,
+      "WrittenToProcessDir": false
+    },
+    "Set-ProbedContent": {
+      "ErrorKind": "none",
+      "Terminating": null,
+      "NonTerminating": [],
+      "WrittenToPSLocation": true,
+      "WrittenToProcessDir": false
+    }
+  },
+  "Section4_4_AbnormalPath": {
+    "4-7": {
+      "Case": "parent directory does not exist",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "FileOpenFailure,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.IO.DirectoryNotFoundException",
+        "InnerExceptionType": null,
+        "Category": "OpenError",
+        "Message": "Could not find a part of the path 'C:\\Users\\motoi\\AppData\\Local\\Temp\\OutFileBehavior_66a97694351b42fda0c6c14c357acb50\\c031\\nosuchdir\\x.txt'."
+      },
+      "NonTerminating": [],
+      "After": {
+        "Exists": false
+      }
+    },
+    "4-8": {
+      "Case": "path is an existing directory",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "FileOpenFailure,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.UnauthorizedAccessException",
+        "InnerExceptionType": null,
+        "Category": "OpenError",
+        "Message": "Access to the path 'C:\\Users\\motoi\\AppData\\Local\\Temp\\OutFileBehavior_66a97694351b42fda0c6c14c357acb50\\c032\\sub' is denied."
+      },
+      "NonTerminating": [],
+      "After": {
+        "Exists": true,
+        "IsDirectory": true
+      }
+    },
+    "4-9": {
+      "Case": "empty string",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "ParameterArgumentValidationErrorEmptyStringNotAllowed,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.Management.Automation.ParameterBindingValidationException",
+        "InnerExceptionType": null,
+        "Category": "InvalidData",
+        "Message": "パラメーター 'FilePath' は空の文字列であるため、引数をバインドできません。"
+      },
+      "NonTerminating": []
+    },
+    "4-9-null": {
+      "Case": "$null (added)",
+      "ErrorKind": "terminating",
+      "Terminating": {
+        "FullyQualifiedErrorId": "ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.OutFileCommand",
+        "ExceptionType": "System.Management.Automation.ParameterBindingValidationException",
+        "InnerExceptionType": null,
+        "Category": "InvalidData",
+        "Message": "パラメーター 'FilePath' は null 値であるため、引数をバインドできません。"
+      },
+      "NonTerminating": []
+    }
+  },
+  "Section5_2_FormatPaths": {
+    "5-1": {
+      "default": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "alpha\\r\\nbeta\\r\\ngamma\\r\\n",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 5,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 42
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 3,
+          "Joined": "alpha\\r\\nbeta\\r\\ngamma",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 5,
+            "CrLfCount": 2,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 3,
+          "Joined": "alpha\\r\\nbeta\\r\\ngamma",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 5,
+            "CrLfCount": 2,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w40": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "alpha\\r\\nbeta\\r\\ngamma\\r\\n",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 5,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 42
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 3,
+          "Joined": "alpha\\r\\nbeta\\r\\ngamma",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 5,
+            "CrLfCount": 2,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 3,
+          "Joined": "alpha\\r\\nbeta\\r\\ngamma",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 5,
+            "CrLfCount": 2,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w80": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "alpha\\r\\nbeta\\r\\ngamma\\r\\n",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 5,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 42
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 3,
+          "Joined": "alpha\\r\\nbeta\\r\\ngamma",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 5,
+            "CrLfCount": 2,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 3,
+          "Joined": "alpha\\r\\nbeta\\r\\ngamma",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 5,
+            "CrLfCount": 2,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w200": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "alpha\\r\\nbeta\\r\\ngamma\\r\\n",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 5,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 42
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 3,
+          "Joined": "alpha\\r\\nbeta\\r\\ngamma",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 5,
+            "CrLfCount": 2,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 3,
+          "Joined": "alpha\\r\\nbeta\\r\\ngamma",
+          "Shape": {
+            "LineCount": 3,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 5,
+            "CrLfCount": 2,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      }
+    },
+    "5-2": {
+      "default": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 11,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 66
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 4,
+          "Joined": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 11,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 4,
+          "Joined": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 11,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w40": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 11,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 66
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 4,
+          "Joined": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 11,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 4,
+          "Joined": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 11,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w80": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 11,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 66
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 4,
+          "Joined": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 11,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 4,
+          "Joined": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 11,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w200": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 11,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 66
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 4,
+          "Joined": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 11,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 4,
+          "Joined": "42\\r\\n3.14159\\r\\n-0.5\\r\\n1234567.891",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 11,
+            "CrLfCount": 3,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      }
+    },
+    "5-3": {
+      "default": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 210
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 7,
+          "Joined": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 7,
+          "Joined": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w40": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 210
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 7,
+          "Joined": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 7,
+          "Joined": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w80": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 210
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 7,
+          "Joined": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 7,
+          "Joined": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w200": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 210
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 7,
+          "Joined": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 7,
+          "Joined": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 21,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      }
+    },
+    "5-4": {
+      "default": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 8,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 8,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 138
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 8,
+          "Joined": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 8,
+          "Joined": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w40": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 8,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 8,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 138
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 8,
+          "Joined": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 8,
+          "Joined": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w80": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 8,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 8,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 138
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 8,
+          "Joined": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 8,
+          "Joined": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w200": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 8,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 8,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 138
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 8,
+          "Joined": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 8,
+          "Joined": "\\r\\nP1 : one\\r\\nP2 : two\\r\\nP3 : three\\r\\nP4 : four\\r\\nP5 : five\\r\\nP6 : six\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 10,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      }
+    },
+    "5-5": {
+      "default": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345…\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 5,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 120,
+            "CrLfCount": 5,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 290
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 5,
+          "Joined": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345…\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 120,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 5,
+          "Joined": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345…\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 120,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w40": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 012345678901234567890123456789012345…\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 5,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 40,
+            "CrLfCount": 5,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 130
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 5,
+          "Joined": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 012345678901234567890123456789012345…\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 40,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 5,
+          "Joined": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 012345678901234567890123456789012345…\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 40,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w80": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 0123456789012345678901234567890123456789012345678901234567890123456789012345…\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 5,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 80,
+            "CrLfCount": 5,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 210
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 5,
+          "Joined": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 0123456789012345678901234567890123456789012345678901234567890123456789012345…\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 80,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 5,
+          "Joined": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 0123456789012345678901234567890123456789012345678901234567890123456789012345…\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 80,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w200": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345…\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 5,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 200,
+            "CrLfCount": 5,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 450
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 5,
+          "Joined": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345…\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 200,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 5,
+          "Joined": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345…\\r\\n",
+          "Shape": {
+            "LineCount": 4,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 200,
+            "CrLfCount": 4,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      }
+    },
+    "5-6": {
+      "default": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND\\r\\n",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 253,
+            "CrLfCount": 1,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 512
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 1,
+          "Joined": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 253,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 1,
+          "Joined": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 253,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w40": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND\\r\\n",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 253,
+            "CrLfCount": 1,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 512
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 1,
+          "Joined": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 253,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 1,
+          "Joined": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 253,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w80": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND\\r\\n",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 253,
+            "CrLfCount": 1,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 512
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 1,
+          "Joined": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 253,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 1,
+          "Joined": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 253,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w200": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND\\r\\n",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 253,
+            "CrLfCount": 1,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 512
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 1,
+          "Joined": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 253,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 1,
+          "Joined": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijEND",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 253,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      }
+    },
+    "5-7-null": {
+      "default": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 2
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B",
+        "BEqualsC": true
+      },
+      "w40": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 2
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B",
+        "BEqualsC": true
+      },
+      "w80": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 2
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B",
+        "BEqualsC": true
+      },
+      "w200": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 2
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B",
+        "BEqualsC": true
+      }
+    },
+    "5-7-empty": {
+      "default": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\n",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 0,
+            "CrLfCount": 1,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 6
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 1,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 1,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w40": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\n",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 0,
+            "CrLfCount": 1,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 6
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 1,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 1,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w80": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\n",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 0,
+            "CrLfCount": 1,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 6
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 1,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 1,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w200": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\n",
+          "Shape": {
+            "LineCount": 1,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 0,
+            "CrLfCount": 1,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 6
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 1,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 1,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      }
+    },
+    "5-7-array": {
+      "default": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 0
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B",
+        "BEqualsC": true
+      },
+      "w40": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 0
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B",
+        "BEqualsC": true
+      },
+      "w80": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 0
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B",
+        "BEqualsC": true
+      },
+      "w200": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 0
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 0,
+          "Joined": "",
+          "Shape": {
+            "LineCount": 0,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 0,
+            "CrLfCount": 0,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B",
+        "BEqualsC": true
+      }
+    },
+    "5-8": {
+      "default": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6\\r\\n",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 23,
+            "CrLfCount": 14,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 386
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 14,
+          "Joined": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 23,
+            "CrLfCount": 13,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 14,
+          "Joined": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 23,
+            "CrLfCount": 13,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w40": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6\\r\\n",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 23,
+            "CrLfCount": 14,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 386
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 14,
+          "Joined": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 23,
+            "CrLfCount": 13,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 14,
+          "Joined": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 23,
+            "CrLfCount": 13,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w80": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6\\r\\n",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 23,
+            "CrLfCount": 14,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 386
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 14,
+          "Joined": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 23,
+            "CrLfCount": 13,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 14,
+          "Joined": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 23,
+            "CrLfCount": 13,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w200": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6\\r\\n",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 23,
+            "CrLfCount": 14,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 386
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 14,
+          "Joined": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 23,
+            "CrLfCount": 13,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 14,
+          "Joined": "1\\r\\n2\\r\\n3\\r\\n\\r\\nLength         : 2\\r\\nLongLength     : 2\\r\\nRank           : 1\\r\\nSyncRoot       : {4, 5}\\r\\nIsReadOnly     : False\\r\\nIsFixedSize    : True\\r\\nIsSynchronized : False\\r\\nCount          : 2\\r\\n\\r\\n6",
+          "Shape": {
+            "LineCount": 14,
+            "LeadingBlank": 0,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": false,
+            "MaxLineLength": 23,
+            "CrLfCount": 13,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      }
+    },
+    "5-9": {
+      "default": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 170
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 7,
+          "Joined": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 7,
+          "Joined": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w40": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 170
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 7,
+          "Joined": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 7,
+          "Joined": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w80": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 170
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 7,
+          "Joined": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 7,
+          "Joined": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      },
+      "w200": {
+        "A": {
+          "ErrorKind": "none",
+          "Error": null,
+          "Text": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n\\r\\n",
+          "Shape": {
+            "LineCount": 7,
+            "LeadingBlank": 1,
+            "TrailingBlank": 1,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 7,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          },
+          "FileLength": 170
+        },
+        "B": {
+          "ErrorKind": "none",
+          "Error": null,
+          "ElementCount": 7,
+          "Joined": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "C": {
+          "ElementCount": 7,
+          "Joined": "\\r\\n名前       Code\\r\\n----       ----\\r\\n日本語の値 AB\\r\\nｶﾀｶﾅ       CDEFGH\\r\\nx          全角全角全角\\r\\n",
+          "Shape": {
+            "LineCount": 6,
+            "LeadingBlank": 1,
+            "TrailingBlank": 0,
+            "EndsWithNewLine": true,
+            "MaxLineLength": 17,
+            "CrLfCount": 6,
+            "LoneLfCount": 0,
+            "LoneCrCount": 0,
+            "ContainsEscape": false
+          }
+        },
+        "AvsB": "A == B + NewLine",
+        "BEqualsC": true
+      }
+    }
+  },
+  "Section5_4_WidthValidation": {
+    "0": {
+      "OutFile": {
+        "ErrorKind": "terminating",
+        "Terminating": {
+          "FullyQualifiedErrorId": "ParameterArgumentValidationError,Microsoft.PowerShell.Commands.OutFileCommand",
+          "ExceptionType": "System.Management.Automation.ParameterBindingValidationException",
+          "InnerExceptionType": "System.Management.Automation.ValidationMetadataException",
+          "Category": "InvalidData",
+          "Message": "パラメーター 'Width' の引数を検証できません。0 引数が 2の最小許容範囲を下回っています。2 以上の引数を指定してから、コマンドを再試行してください。"
+        },
+        "Text": "",
+        "Shape": {
+          "LineCount": 0,
+          "LeadingBlank": 0,
+          "TrailingBlank": 0,
+          "EndsWithNewLine": false,
+          "MaxLineLength": 0,
+          "CrLfCount": 0,
+          "LoneLfCount": 0,
+          "LoneCrCount": 0,
+          "ContainsEscape": false
+        }
+      },
+      "OutString": {
+        "ErrorKind": "terminating",
+        "Terminating": {
+          "FullyQualifiedErrorId": "ParameterArgumentValidationError,Microsoft.PowerShell.Commands.OutStringCommand",
+          "ExceptionType": "System.Management.Automation.ParameterBindingValidationException",
+          "InnerExceptionType": "System.Management.Automation.ValidationMetadataException",
+          "Category": "InvalidData",
+          "Message": "パラメーター 'Width' の引数を検証できません。0 引数が 2の最小許容範囲を下回っています。2 以上の引数を指定してから、コマンドを再試行してください。"
+        },
+        "Joined": "",
+        "Shape": {
+          "LineCount": 0,
+          "LeadingBlank": 0,
+          "TrailingBlank": 0,
+          "EndsWithNewLine": false,
+          "MaxLineLength": 0,
+          "CrLfCount": 0,
+          "LoneLfCount": 0,
+          "LoneCrCount": 0,
+          "ContainsEscape": false
+        }
+      }
+    },
+    "1": {
+      "OutFile": {
+        "ErrorKind": "terminating",
+        "Terminating": {
+          "FullyQualifiedErrorId": "ParameterArgumentValidationError,Microsoft.PowerShell.Commands.OutFileCommand",
+          "ExceptionType": "System.Management.Automation.ParameterBindingValidationException",
+          "InnerExceptionType": "System.Management.Automation.ValidationMetadataException",
+          "Category": "InvalidData",
+          "Message": "パラメーター 'Width' の引数を検証できません。1 引数が 2の最小許容範囲を下回っています。2 以上の引数を指定してから、コマンドを再試行してください。"
+        },
+        "Text": "",
+        "Shape": {
+          "LineCount": 0,
+          "LeadingBlank": 0,
+          "TrailingBlank": 0,
+          "EndsWithNewLine": false,
+          "MaxLineLength": 0,
+          "CrLfCount": 0,
+          "LoneLfCount": 0,
+          "LoneCrCount": 0,
+          "ContainsEscape": false
+        }
+      },
+      "OutString": {
+        "ErrorKind": "terminating",
+        "Terminating": {
+          "FullyQualifiedErrorId": "ParameterArgumentValidationError,Microsoft.PowerShell.Commands.OutStringCommand",
+          "ExceptionType": "System.Management.Automation.ParameterBindingValidationException",
+          "InnerExceptionType": "System.Management.Automation.ValidationMetadataException",
+          "Category": "InvalidData",
+          "Message": "パラメーター 'Width' の引数を検証できません。1 引数が 2の最小許容範囲を下回っています。2 以上の引数を指定してから、コマンドを再試行してください。"
+        },
+        "Joined": "",
+        "Shape": {
+          "LineCount": 0,
+          "LeadingBlank": 0,
+          "TrailingBlank": 0,
+          "EndsWithNewLine": false,
+          "MaxLineLength": 0,
+          "CrLfCount": 0,
+          "LoneLfCount": 0,
+          "LoneCrCount": 0,
+          "ContainsEscape": false
+        }
+      }
+    },
+    "-1": {
+      "OutFile": {
+        "ErrorKind": "terminating",
+        "Terminating": {
+          "FullyQualifiedErrorId": "ParameterArgumentValidationError,Microsoft.PowerShell.Commands.OutFileCommand",
+          "ExceptionType": "System.Management.Automation.ParameterBindingValidationException",
+          "InnerExceptionType": "System.Management.Automation.ValidationMetadataException",
+          "Category": "InvalidData",
+          "Message": "パラメーター 'Width' の引数を検証できません。-1 引数が 2の最小許容範囲を下回っています。2 以上の引数を指定してから、コマンドを再試行してください。"
+        },
+        "Text": "",
+        "Shape": {
+          "LineCount": 0,
+          "LeadingBlank": 0,
+          "TrailingBlank": 0,
+          "EndsWithNewLine": false,
+          "MaxLineLength": 0,
+          "CrLfCount": 0,
+          "LoneLfCount": 0,
+          "LoneCrCount": 0,
+          "ContainsEscape": false
+        }
+      },
+      "OutString": {
+        "ErrorKind": "terminating",
+        "Terminating": {
+          "FullyQualifiedErrorId": "ParameterArgumentValidationError,Microsoft.PowerShell.Commands.OutStringCommand",
+          "ExceptionType": "System.Management.Automation.ParameterBindingValidationException",
+          "InnerExceptionType": "System.Management.Automation.ValidationMetadataException",
+          "Category": "InvalidData",
+          "Message": "パラメーター 'Width' の引数を検証できません。-1 引数が 2の最小許容範囲を下回っています。2 以上の引数を指定してから、コマンドを再試行してください。"
+        },
+        "Joined": "",
+        "Shape": {
+          "LineCount": 0,
+          "LeadingBlank": 0,
+          "TrailingBlank": 0,
+          "EndsWithNewLine": false,
+          "MaxLineLength": 0,
+          "CrLfCount": 0,
+          "LoneLfCount": 0,
+          "LoneCrCount": 0,
+          "ContainsEscape": false
+        }
+      }
+    },
+    "2147483647": {
+      "OutFile": {
+        "ErrorKind": "none",
+        "Terminating": null,
+        "Text": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n\\r\\n",
+        "Shape": {
+          "LineCount": 7,
+          "LeadingBlank": 1,
+          "TrailingBlank": 1,
+          "EndsWithNewLine": true,
+          "MaxLineLength": 21,
+          "CrLfCount": 7,
+          "LoneLfCount": 0,
+          "LoneCrCount": 0,
+          "ContainsEscape": false
+        }
+      },
+      "OutString": {
+        "ErrorKind": "none",
+        "Terminating": null,
+        "Joined": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+        "Shape": {
+          "LineCount": 6,
+          "LeadingBlank": 1,
+          "TrailingBlank": 0,
+          "EndsWithNewLine": true,
+          "MaxLineLength": 21,
+          "CrLfCount": 6,
+          "LoneLfCount": 0,
+          "LoneCrCount": 0,
+          "ContainsEscape": false
+        }
+      }
+    }
+  },
+  "Section5_4_DefaultWidth": {
+    "OutFileTableMaxLine": 120,
+    "OutStringTableMaxLine": 120,
+    "OutFileListMaxLine": 1007,
+    "OutFileTable": "\\r\\nId Long\\r\\n-- ----\\r\\n 1 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…\\r\\n\\r\\n"
+  },
+  "Section5_5_NoNewline": {
+    "5-1": {
+      "ErrorKind": "none",
+      "Error": null,
+      "Text": "alphabetagamma",
+      "Hex": "FF FE 61 00 6C 00 70 00 68 00 61 00 62 00 65 00 74 00 61 00 67 00 61 00 6D 00 6D 00 61 00"
+    },
+    "5-3": {
+      "ErrorKind": "none",
+      "Error": null,
+      "Text": "Name   Count Note----   ----- ----Apple      1 redBanana    22 yellowCherry   333 dark red",
+      "Hex": "FF FE 4E 00 61 00 6D 00 65 00 20 00 20 00 20 00 43 00 6F 00 75 00 6E 00 74 00 20 00 4E 00 6F 00 74 00 65 00 2D 00 2D 00 2D 00 2D 00 20 00 20 00 20 00 2D 00 2D 00 2D 00 2D 00 2D 00 20 00 2D 00 2D 00 2D 00 2D 00 41 00 70 00 70 00 6C 00 65 00 20 00 20 00 20 00 20 00 20 00 20 00 31 00 20 00 72 00 65 00 64 00 42 00 61 00 6E 00 61 00 6E 00 61 00 20 00 20 00 20 00 20 00 32 00 32 00 20 00 79 00 65 00 6C 00 6C 00 6F 00 77 00 43 00 68 00 65 00 72 00 72 00 79 00 20 00 20 00 20 00 33 00 33 00 33 00 20 00 64 00 61 00 72 00 6B 00 20 00 72 00 65 00 64 00"
+    },
+    "5-4": {
+      "ErrorKind": "none",
+      "Error": null,
+      "Text": "P1 : oneP2 : twoP3 : threeP4 : fourP5 : fiveP6 : six",
+      "Hex": "FF FE 50 00 31 00 20 00 3A 00 20 00 6F 00 6E 00 65 00 50 00 32 00 20 00 3A 00 20 00 74 00 77 00 6F 00 50 00 33 00 20 00 3A 00 20 00 74 00 68 00 72 00 65 00 65 00 50 00 34 00 20 00 3A 00 20 00 66 00 6F 00 75 00 72 00 50 00 35 00 20 00 3A 00 20 00 66 00 69 00 76 00 65 00 50 00 36 00 20 00 3A 00 20 00 73 00 69 00 78 00"
+    }
+  },
+  "Section5_6_Ansi": {
+    "Host": {
+      "escape-string": {
+        "A_ContainsEscape": true,
+        "B_ContainsEscape": true,
+        "C_ContainsEscape": true,
+        "A": "\\e[31mred\\e[0m\\r\\n",
+        "B": "\\e[31mred\\e[0m",
+        "C": "\\e[31mred\\e[0m"
+      },
+      "5-3-table": {
+        "A_ContainsEscape": false,
+        "B_ContainsEscape": false,
+        "C_ContainsEscape": false,
+        "A": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n\\r\\n",
+        "B": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+        "C": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n"
+      }
+    },
+    "PlainText": {
+      "escape-string": {
+        "A_ContainsEscape": true,
+        "B_ContainsEscape": true,
+        "C_ContainsEscape": true,
+        "A": "\\e[31mred\\e[0m\\r\\n",
+        "B": "\\e[31mred\\e[0m",
+        "C": "\\e[31mred\\e[0m"
+      },
+      "5-3-table": {
+        "A_ContainsEscape": false,
+        "B_ContainsEscape": false,
+        "C_ContainsEscape": false,
+        "A": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n\\r\\n",
+        "B": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+        "C": "\\r\\nName   Count Note\\r\\n----   ----- ----\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n"
+      }
+    },
+    "Ansi": {
+      "escape-string": {
+        "A_ContainsEscape": true,
+        "B_ContainsEscape": true,
+        "C_ContainsEscape": true,
+        "A": "\\e[31mred\\e[0m\\r\\n",
+        "B": "\\e[31mred\\e[0m",
+        "C": "\\e[31mred\\e[0m"
+      },
+      "5-3-table": {
+        "A_ContainsEscape": true,
+        "B_ContainsEscape": true,
+        "C_ContainsEscape": true,
+        "A": "\\r\\n\\e[32;1mName  \\e[0m\\e[32;1m Count\\e[0m\\e[32;1m Note\\e[0m\\r\\n\\e[32;1m----  \\e[0m \\e[32;1m-----\\e[0m \\e[32;1m----\\e[0m\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n\\r\\n",
+        "B": "\\r\\n\\e[32;1mName  \\e[0m\\e[32;1m Count\\e[0m\\e[32;1m Note\\e[0m\\r\\n\\e[32;1m----  \\e[0m \\e[32;1m-----\\e[0m \\e[32;1m----\\e[0m\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n",
+        "C": "\\r\\n\\e[32;1mName  \\e[0m\\e[32;1m Count\\e[0m\\e[32;1m Note\\e[0m\\r\\n\\e[32;1m----  \\e[0m \\e[32;1m-----\\e[0m \\e[32;1m----\\e[0m\\r\\nApple      1 red\\r\\nBanana    22 yellow\\r\\nCherry   333 dark red\\r\\n"
+      }
+    }
+  },
+  "Section6_EmbeddedNewline": {
+    "8-1": {
+      "Input": [
+        "a\\nb"
+      ],
+      "Out-File": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 61 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Out-String -Stream": {
+        "ElementCount": 1,
+        "Elements": [
+          "a\\nb"
+        ]
+      },
+      "Set-Content": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 61 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak (omitted)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 61 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak CrLf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 61 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Lf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 10,
+          "Hex": "FF FE 61 00 0A 00 62 00 0A 00",
+          "Text": "a\\nb\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Cr": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 10,
+          "Hex": "FF FE 61 00 0A 00 62 00 0D 00",
+          "Text": "a\\nb\\r",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -NoNewline": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 8,
+          "Hex": "FF FE 61 00 0A 00 62 00",
+          "Text": "a\\nb",
+          "ReadOnly": false
+        }
+      },
+      "Add-ProbedContent -LineBreak Lf (existing CRLF)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 20,
+          "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00 61 00 0A 00 62 00 0A 00",
+          "Text": "OLD\\r\\na\\nb\\n",
+          "ReadOnly": false
+        }
+      }
+    },
+    "8-2": {
+      "Input": [
+        "a\\r\\nb"
+      ],
+      "Out-File": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 14,
+          "Hex": "FF FE 61 00 0D 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\r\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Out-String -Stream": {
+        "ElementCount": 1,
+        "Elements": [
+          "a\\r\\nb"
+        ]
+      },
+      "Set-Content": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 14,
+          "Hex": "FF FE 61 00 0D 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\r\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak (omitted)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 14,
+          "Hex": "FF FE 61 00 0D 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\r\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak CrLf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 14,
+          "Hex": "FF FE 61 00 0D 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\r\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Lf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 61 00 0D 00 0A 00 62 00 0A 00",
+          "Text": "a\\r\\nb\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Cr": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 61 00 0D 00 0A 00 62 00 0D 00",
+          "Text": "a\\r\\nb\\r",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -NoNewline": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 10,
+          "Hex": "FF FE 61 00 0D 00 0A 00 62 00",
+          "Text": "a\\r\\nb",
+          "ReadOnly": false
+        }
+      },
+      "Add-ProbedContent -LineBreak Lf (existing CRLF)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 22,
+          "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00 61 00 0D 00 0A 00 62 00 0A 00",
+          "Text": "OLD\\r\\na\\r\\nb\\n",
+          "ReadOnly": false
+        }
+      }
+    },
+    "8-3": {
+      "Input": [
+        "a\\rb"
+      ],
+      "Out-File": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 61 00 0D 00 62 00 0D 00 0A 00",
+          "Text": "a\\rb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Out-String -Stream": {
+        "ElementCount": 1,
+        "Elements": [
+          "a\\rb"
+        ]
+      },
+      "Set-Content": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 61 00 0D 00 62 00 0D 00 0A 00",
+          "Text": "a\\rb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak (omitted)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 61 00 0D 00 62 00 0D 00 0A 00",
+          "Text": "a\\rb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak CrLf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 12,
+          "Hex": "FF FE 61 00 0D 00 62 00 0D 00 0A 00",
+          "Text": "a\\rb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Lf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 10,
+          "Hex": "FF FE 61 00 0D 00 62 00 0A 00",
+          "Text": "a\\rb\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Cr": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 10,
+          "Hex": "FF FE 61 00 0D 00 62 00 0D 00",
+          "Text": "a\\rb\\r",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -NoNewline": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 8,
+          "Hex": "FF FE 61 00 0D 00 62 00",
+          "Text": "a\\rb",
+          "ReadOnly": false
+        }
+      },
+      "Add-ProbedContent -LineBreak Lf (existing CRLF)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 20,
+          "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00 61 00 0D 00 62 00 0A 00",
+          "Text": "OLD\\r\\na\\rb\\n",
+          "ReadOnly": false
+        }
+      }
+    },
+    "8-4": {
+      "Input": [
+        "a\\n"
+      ],
+      "Out-File": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 10,
+          "Hex": "FF FE 61 00 0A 00 0D 00 0A 00",
+          "Text": "a\\n\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Out-String -Stream": {
+        "ElementCount": 1,
+        "Elements": [
+          "a\\n"
+        ]
+      },
+      "Set-Content": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 10,
+          "Hex": "FF FE 61 00 0A 00 0D 00 0A 00",
+          "Text": "a\\n\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak (omitted)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 10,
+          "Hex": "FF FE 61 00 0A 00 0D 00 0A 00",
+          "Text": "a\\n\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak CrLf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 10,
+          "Hex": "FF FE 61 00 0A 00 0D 00 0A 00",
+          "Text": "a\\n\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Lf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 8,
+          "Hex": "FF FE 61 00 0A 00 0A 00",
+          "Text": "a\\n\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Cr": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 8,
+          "Hex": "FF FE 61 00 0A 00 0D 00",
+          "Text": "a\\n\\r",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -NoNewline": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 6,
+          "Hex": "FF FE 61 00 0A 00",
+          "Text": "a\\n",
+          "ReadOnly": false
+        }
+      },
+      "Add-ProbedContent -LineBreak Lf (existing CRLF)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 18,
+          "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00 61 00 0A 00 0A 00",
+          "Text": "OLD\\r\\na\\n\\n",
+          "ReadOnly": false
+        }
+      }
+    },
+    "8-5": {
+      "Input": [
+        "a\\r\\n\\r\\nb"
+      ],
+      "Out-File": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 18,
+          "Hex": "FF FE 61 00 0D 00 0A 00 0D 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\r\\n\\r\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Out-String -Stream": {
+        "ElementCount": 1,
+        "Elements": [
+          "a\\r\\n\\r\\nb"
+        ]
+      },
+      "Set-Content": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 18,
+          "Hex": "FF FE 61 00 0D 00 0A 00 0D 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\r\\n\\r\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak (omitted)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 18,
+          "Hex": "FF FE 61 00 0D 00 0A 00 0D 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\r\\n\\r\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak CrLf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 18,
+          "Hex": "FF FE 61 00 0D 00 0A 00 0D 00 0A 00 62 00 0D 00 0A 00",
+          "Text": "a\\r\\n\\r\\nb\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Lf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 16,
+          "Hex": "FF FE 61 00 0D 00 0A 00 0D 00 0A 00 62 00 0A 00",
+          "Text": "a\\r\\n\\r\\nb\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Cr": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 16,
+          "Hex": "FF FE 61 00 0D 00 0A 00 0D 00 0A 00 62 00 0D 00",
+          "Text": "a\\r\\n\\r\\nb\\r",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -NoNewline": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 14,
+          "Hex": "FF FE 61 00 0D 00 0A 00 0D 00 0A 00 62 00",
+          "Text": "a\\r\\n\\r\\nb",
+          "ReadOnly": false
+        }
+      },
+      "Add-ProbedContent -LineBreak Lf (existing CRLF)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 26,
+          "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00 61 00 0D 00 0A 00 0D 00 0A 00 62 00 0A 00",
+          "Text": "OLD\\r\\na\\r\\n\\r\\nb\\n",
+          "ReadOnly": false
+        }
+      }
+    },
+    "8-6": {
+      "Input": [
+        "a\\nb",
+        "c"
+      ],
+      "Out-File": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 18,
+          "Hex": "FF FE 61 00 0A 00 62 00 0D 00 0A 00 63 00 0D 00 0A 00",
+          "Text": "a\\nb\\r\\nc\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Out-String -Stream": {
+        "ElementCount": 2,
+        "Elements": [
+          "a\\nb",
+          "c"
+        ]
+      },
+      "Set-Content": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 18,
+          "Hex": "FF FE 61 00 0A 00 62 00 0D 00 0A 00 63 00 0D 00 0A 00",
+          "Text": "a\\nb\\r\\nc\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak (omitted)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 18,
+          "Hex": "FF FE 61 00 0A 00 62 00 0D 00 0A 00 63 00 0D 00 0A 00",
+          "Text": "a\\nb\\r\\nc\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak CrLf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 18,
+          "Hex": "FF FE 61 00 0A 00 62 00 0D 00 0A 00 63 00 0D 00 0A 00",
+          "Text": "a\\nb\\r\\nc\\r\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Lf": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 14,
+          "Hex": "FF FE 61 00 0A 00 62 00 0A 00 63 00 0A 00",
+          "Text": "a\\nb\\nc\\n",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -LineBreak Cr": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 14,
+          "Hex": "FF FE 61 00 0A 00 62 00 0D 00 63 00 0D 00",
+          "Text": "a\\nb\\rc\\r",
+          "ReadOnly": false
+        }
+      },
+      "Set-ProbedContent -NoNewline": {
+        "ErrorKind": "none",
+        "After": {
+          "Exists": true,
+          "Length": 10,
+          "Hex": "FF FE 61 00 0A 00 62 00 63 00",
+          "Text": "a\\nbc",
+          "ReadOnly": false
+        }
+      },
+      "Add-ProbedContent -LineBreak Lf (existing CRLF)": {
+        "ErrorKind": "none",
+        "NonTerminating": [],
+        "After": {
+          "Exists": true,
+          "Length": 24,
+          "Hex": "FF FE 4F 00 4C 00 44 00 0D 00 0A 00 61 00 0A 00 62 00 0A 00 63 00 0A 00",
+          "Text": "OLD\\r\\na\\nb\\nc\\n",
+          "ReadOnly": false
+        }
+      }
+    }
+  },
+  "Section7_1_TruncateTiming": {
+    "Out-File / existing OLD": {
+      "Log": [
+        "upstream-begin: 12",
+        "upstream-process: 0",
+        "upstream-end (before first output): 0",
+        "upstream-end (after first output): 8",
+        "upstream-end (after second output): 14"
+      ],
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 14,
+        "Hex": "FF FE 78 00 0D 00 0A 00 79 00 0D 00 0A 00",
+        "Text": "x\\r\\ny\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "Out-File / absent": {
+      "Log": [
+        "upstream-begin: absent",
+        "upstream-process: 0",
+        "upstream-end (before first output): 0",
+        "upstream-end (after first output): 8",
+        "upstream-end (after second output): 14"
+      ],
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 14,
+        "Hex": "FF FE 78 00 0D 00 0A 00 79 00 0D 00 0A 00",
+        "Text": "x\\r\\ny\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "Set-ProbedContent / existing OLD": {
+      "Log": [
+        "upstream-begin: 12",
+        "upstream-process: 12",
+        "upstream-end (before first output): 12",
+        "upstream-end (after first output): 0",
+        "upstream-end (after second output): 0"
+      ],
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 14,
+        "Hex": "FF FE 78 00 0D 00 0A 00 79 00 0D 00 0A 00",
+        "Text": "x\\r\\ny\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "Set-ProbedContent / absent": {
+      "Log": [
+        "upstream-begin: absent",
+        "upstream-process: absent",
+        "upstream-end (before first output): absent",
+        "upstream-end (after first output): 0",
+        "upstream-end (after second output): 0"
+      ],
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 14,
+        "Hex": "FF FE 78 00 0D 00 0A 00 79 00 0D 00 0A 00",
+        "Text": "x\\r\\ny\\r\\n",
+        "ReadOnly": false
+      }
+    }
+  },
+  "Section7_2_EmptyInput": {
+    "7-1 (-Encoding omitted)": {
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 0,
+        "Hex": "",
+        "Text": "",
+        "ReadOnly": false
+      }
+    },
+    "7-1 (-Encoding unicode)": {
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 0,
+        "Hex": "",
+        "Text": "",
+        "ReadOnly": false
+      }
+    },
+    "7-1 (-Encoding utf8)": {
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 0,
+        "Hex": "",
+        "Text": "",
+        "ReadOnly": false
+      }
+    },
+    "7-2": {
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 2,
+        "Hex": "FF FE",
+        "Text": "",
+        "ReadOnly": false
+      }
+    },
+    "7-2 (-Encoding omitted)": {
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 0,
+        "Hex": "",
+        "Text": "",
+        "ReadOnly": false
+      }
+    },
+    "7-3": {
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 0,
+        "Hex": "",
+        "Text": "",
+        "ReadOnly": false
+      }
+    },
+    "7-3 (-Encoding omitted)": {
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 0,
+        "Hex": "",
+        "Text": "",
+        "ReadOnly": false
+      }
+    },
+    "7-4": {
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 0,
+        "Hex": "",
+        "Text": "",
+        "ReadOnly": false
+      }
+    },
+    "7-4 (-Encoding omitted)": {
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 0,
+        "Hex": "",
+        "Text": "",
+        "ReadOnly": false
+      }
+    }
+  },
+  "Section8_DefaultEncoding": {
+    "Out-File (-Encoding omitted)": {
+      "ErrorKind": "none",
+      "After": {
+        "Exists": true,
+        "Length": 6,
+        "Hex": "61 E3 81 82 0D 0A",
+        "Text": "aあ\\r\\n",
+        "ReadOnly": false
+      }
+    },
+    "Out-File -Append onto UTF-8 (no BOM) Japanese": {
+      "ErrorKind": "none",
+      "Before": {
+        "Exists": true,
+        "Length": 11,
+        "Hex": "E6 97 A5 E6 9C AC E8 AA 9E 0D 0A",
+        "Text": "日本語\\r\\n",
+        "ReadOnly": false
+      },
+      "After": {
+        "Exists": true,
+        "Length": 19,
+        "Hex": "E6 97 A5 E6 9C AC E8 AA 9E 0D 0A E8 BF BD E8 A8 98 0D 0A",
+        "Text": "日本語\\r\\n追記\\r\\n",
+        "ReadOnly": false
+      }
+    }
+  }
+}
