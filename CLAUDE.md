@@ -386,7 +386,7 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 - 追加作業: 信頼度の測定の文書化、テストデータの追加
 - PowerShell モジュールの新機能: `Out-ProbedFile` / `Convert-ProbedContent` の追加、
   `Set-` / `Add-ProbedContent` の `-Force` 後の読み取り専用属性の復元、`-LineBreak` の範囲の明文化
-  （`docs/EncodingProbe-1.2.0-仕様書.md`。依頼文は `docs/request.md`）
+  （`docs/EncodingProbe-1.2.0-仕様書.md`、実装記録は `docs/EncodingProbe-1.2.0-実装記録.md`。完了した依頼文は削除した）
 
 完了した依頼文はリポジトリから削除した（git の履歴に残っている）。判断の根拠は次の文書に移してある。
 
