@@ -150,7 +150,7 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
 
 ### 手動確認後の修正（2026-09-29）
 
-依頼は `docs/EncodingProbe-1.2.0-修正依頼-手動確認後.md`、実装の記録は `docs/EncodingProbe-1.2.0-実装記録.md` 4 章にあります。
+依頼（`docs/EncodingProbe-1.2.0-修正依頼-手動確認後.md`。完了後に削除。コミット `4c5b1b3` までの git の履歴に残っている）の内容と、実装の記録は `docs/EncodingProbe-1.2.0-実装記録.md` 4 章にあります。
 
 - **不具合の修正: PowerShell 7.x の `Resolve-Encoding` などが返す `PSEncodingName` に、`I do not know.` という文字列が入っていたのを直しました。**
   独自判定の対象外のコードページ（UTF.Unknown が判定した windows-1252 / iso-8859-1 / windows-1251 など）で起きていました。
