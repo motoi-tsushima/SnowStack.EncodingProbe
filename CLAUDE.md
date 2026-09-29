@@ -170,7 +170,9 @@ zh-CN の Big5+HKSCS が 54936 のまま残るのは既知の限界。
 
 `EncodingInformation.PSEncodingName` / `UsePSName` は **TFM ごとに意味が違う**。`EncodingDetector.cs` の `#if NETFRAMEWORK` 分岐で実装が分かれている：
 
-- net10.0 ビルド … PS 6.2+ の登録済みフレンドリ名（`utf8BOM` 等）。無ければ WebName を入れ、`UsePSName = false`（`-Encoding` に直接渡せない）
+- net10.0 ビルド … PS 6.2+ の登録済みフレンドリ名（`utf8BOM` 等）。無ければ WebName を入れ、`UsePSName = false`（`-Encoding` に直接渡せない）。
+  WebName は独自判定の表（`EncodingDetector.EncodingName`）から引くため、表に無いコードページ（UTF.Unknown の 1252 / 28591 など）は **null**
+  （1.2.0 より前はここに `I do not know.` が入っていた。20932 / 950 などを null にしないこと。利用者の判断済み）
 - net48 ビルド … PS 5.1 の固定 `-Encoding` 列挙値（`Ascii` / `Unicode` / `UTF32` 等）に一致する場合のみその値。一致しなければ `null` かつ `UsePSName = false`
 
 この差異は仕様であってバグではない。`PS51EncodingNameTests` が両 TFM でこのマッピングを検証している。**片方の TFM だけでテストを通しても意味がない。**
@@ -248,6 +250,10 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
   表現できない文字の位置も `EncoderFallbackException.Index` を使わず、その文字の最初の出現位置から求める
 - `-Force` で外した読み取り専用属性は `Internal/ReadOnlyAttributeScope` で元に戻す。
   書き込み系の 4 コマンドすべてがこの部品を通る（1.2.0 で Set-/Add-ProbedContent の「外したまま」を修正した）
+- **ファイルを変更しない検査は `ShouldProcess` より前に置く**（1.2.0 手動確認後の方針）。`-WhatIf` でも、実行すれば失敗するエラーを
+  `-WhatIf` なしと同じ ID で報告するため。`Convert-ProbedContent` の N8 は、書いた名前ではなく**検査を通った時点で書く予定の名前**を記録する
+- `Convert-ProbedContent -PassThru` の往復は、Unicode 系は `SourceEncoding`、それ以外は `SourceCodePage`（`euc-jp` は 51932 に解決されるため）。
+  `EncodingVocabulary.GetUnifiedName` は WebName を小文字にそろえる（.NET Framework は 20932 を `EUC-JP` と返す）
 - PSCompat の `.GetNewClosure()` 付きのシナリオの中では `$script:` 変数が見えない（動的モジュールのスコープになる）。
   スクリプトの最上位で `$script:x = ...` と定義した変数は、クロージャの中では `$x` と書いて参照する
 
@@ -408,5 +414,9 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 - `docs/EncodingProbe-課題-香港Big5段階3_HKSCS復号.md` … HKSCS の復号・符号化。
   **本製品では対応しない（方針）。** 私用領域の内容に干渉しないのが基本方針で、香港固有字の解釈は利用者に任せる。
   対処するとしても別製品・別機能で扱う。HKSCS の対応表や写像を本製品に持ち込まないこと
+
+2026-09-29 に手動確認後の修正（`docs/EncodingProbe-1.2.0-修正依頼-手動確認後.md`）を行った。
+内容と判断は `docs/EncodingProbe-1.2.0-実装記録.md` 4 章。カルチャーによるシングルバイトの推定
+（`docs/EncodingProbe-課題-カルチャーによるシングルバイトの推定.md`）と、変換元が 0 バイトのときの `SourceEncoding` の見直しは 1.3.0 以降で検討する（未着手）。
 
 済んだ変更は CHANGELOG.md の「1.2.0（未リリース）」の節にまとめてある。

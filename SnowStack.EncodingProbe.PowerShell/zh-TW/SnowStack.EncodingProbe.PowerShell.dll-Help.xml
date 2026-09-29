@@ -224,6 +224,9 @@
       <maml:alert>
         <maml:para>在同一個管線中讀寫同一個檔案會被拒絕，因為下游命令會在讀完之前把檔案截斷。請先把內容接到變數中。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請以 -Encoding 明確指定字碼頁。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -343,7 +346,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。</maml:para>
+            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -419,7 +422,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。</maml:para>
+            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -575,7 +578,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。</maml:para>
+          <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -628,6 +631,9 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       </maml:alert>
       <maml:alert>
         <maml:para>寫入目標雖然存在但為 0 位元組時無法判斷，因此使用執行中 .NET 執行階段的預設編碼（不含 BOM）與作業系統預設的換行。在 Windows PowerShell 5.1 是 ANSI 字碼頁，在 PowerShell 7.x 是 UTF-8。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請不要從寫入目標或 -EncodingFrom 的參照檔案繼承，而以 -Encoding 明確指定字碼頁。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -748,7 +754,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。</maml:para>
+            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -830,7 +836,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。</maml:para>
+            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1003,7 +1009,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。</maml:para>
+          <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1068,6 +1074,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>對 ISO-2022-JP 這類具有狀態的字元編碼也能安全地附加: 附加的區塊會以自己的逸出序列開始，並在結尾回到 ASCII，因此該區塊本身是完整的。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請不要從寫入目標或 -EncodingFrom 的參照檔案繼承，而以 -Encoding 明確指定字碼頁。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1219,7 +1228,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>顯示執行命令時會發生什麼事。不會建立或變更檔案。</maml:para>
+            <maml:para>顯示執行命令時會發生什麼事。不會建立或變更檔案。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1320,7 +1329,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>顯示執行命令時會發生什麼事。不會建立或變更檔案。</maml:para>
+            <maml:para>顯示執行命令時會發生什麼事。不會建立或變更檔案。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1497,7 +1506,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>顯示執行命令時會發生什麼事。不會建立或變更檔案。</maml:para>
+          <maml:para>顯示執行命令時會發生什麼事。不會建立或變更檔案。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1559,6 +1568,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>只有在至少寫入一行時才寫入 BOM。完全沒有輸入時，輸出目標會以不含 BOM 的 0 位元組建立（既有檔案則截斷為 0 位元組）。指定 -Append 時不會碰觸既有檔案。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請不要使用 Auto 或 -Append 的繼承，而以 -Encoding 明確指定字碼頁。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1700,13 +1712,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>PassThru</maml:name>
           <maml:description>
-            <maml:para>每個轉換的檔案（包括不需要變更的檔案）輸出一個具有 Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed 屬性的物件。預設不輸出任何內容。</maml:para>
+            <maml:para>每個轉換的檔案（包括不需要變更的檔案）輸出一個具有 Path、Destination、SourceEncoding、SourceCodePage、Encoding、SourceLineBreak、LineBreak、Changed 屬性的物件。預設不輸出任何內容。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更，-PassThru 也不會輸出任何內容。</maml:para>
+            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更，-PassThru 也不會輸出任何內容。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1790,13 +1802,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>PassThru</maml:name>
           <maml:description>
-            <maml:para>每個轉換的檔案（包括不需要變更的檔案）輸出一個具有 Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed 屬性的物件。預設不輸出任何內容。</maml:para>
+            <maml:para>每個轉換的檔案（包括不需要變更的檔案）輸出一個具有 Path、Destination、SourceEncoding、SourceCodePage、Encoding、SourceLineBreak、LineBreak、Changed 屬性的物件。預設不輸出任何內容。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更，-PassThru 也不會輸出任何內容。</maml:para>
+            <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更，-PassThru 也不會輸出任何內容。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1917,7 +1929,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>PassThru</maml:name>
         <maml:description>
-          <maml:para>每個轉換的檔案（包括不需要變更的檔案）輸出一個具有 Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed 屬性的物件。預設不輸出任何內容。</maml:para>
+          <maml:para>每個轉換的檔案（包括不需要變更的檔案）輸出一個具有 Path、Destination、SourceEncoding、SourceCodePage、Encoding、SourceLineBreak、LineBreak、Changed 屬性的物件。預設不輸出任何內容。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1964,7 +1976,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更，-PassThru 也不會輸出任何內容。</maml:para>
+          <maml:para>顯示執行命令時會發生什麼事。檔案不會被變更，-PassThru 也不會輸出任何內容。不變更檔案的檢查（唯讀等）仍會執行，並回報其錯誤。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1991,7 +2003,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
           <maml:uri />
         </dev:type>
         <maml:description>
-          <maml:para>指定 -PassThru 時，每個轉換的檔案輸出一個物件（類型名稱 SnowStack.EncodingProbe.ConvertResult）。字元編碼以統一詞彙的名稱表示（utf8BOM、unicodeNoBOM、shift_jis 等），因此把 SourceEncoding 原樣傳給 -Encoding 即可還原為原本的位元組序列。</maml:para>
+          <maml:para>指定 -PassThru 時，每個轉換的檔案輸出一個物件（類型名稱 SnowStack.EncodingProbe.ConvertResult）。SourceCodePage 是來源的字碼頁。若要還原為原本的位元組序列，Unicode 系列請將 SourceEncoding（utf8BOM 等表示有無 BOM 的名稱）傳給 -Encoding，其他編碼請傳 SourceCodePage。Unicode 系列以外的 SourceEncoding 為 WebName，可能解析為不同的字碼頁（euc-jp 會成為 51932，但判斷結果為 20932），因此傳入後可能無法還原。</maml:para>
         </maml:description>
       </command:returnValue>
     </command:returnValues>
@@ -2017,6 +2029,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>參數錯誤（未指定轉換內容、-Encoding Auto、BOM 指定互相矛盾、-Destination 資料夾不存在等）是終止錯誤。與單一檔案有關的失敗是非終止錯誤，該檔案保持不變，其他檔案的處理會繼續。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請以 -SourceEncoding 明確指定字碼頁。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>即使使用 -WhatIf / -Confirm，也會執行不變更檔案的檢查（唯讀、-Destination 中已有同名檔案、同一次執行中檔名重複、輸出目標與來源相同、無效的位元組序列、無法表示的字元），並以錯誤回報。-WhatIf / -Confirm 的訊息是在求得轉換結果之後、寫入之前顯示，因此轉換結果與原檔相同而不重寫的檔案也會顯示。這是為了在指定 -Confirm 時不省略確認而有意設計的行為。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -2053,6 +2071,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <dev:code>PS C:\&gt; Convert-ProbedContent .\legacy.txt -SourceEncoding euc-jp -Encoding shift_jis</dev:code>
         <dev:remarks>
           <maml:para>不判斷來源的字元編碼，直接從 EUC-JP 轉換為 Shift_JIS。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 範例 6 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $r = Convert-ProbedContent .\a.txt -Encoding utf8NoBOM -PassThru
+PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
+        <dev:remarks>
+          <maml:para>將 a.txt 轉換為 UTF-8，再還原為原本的字元編碼。來源不是 Unicode 系列時，請傳 SourceCodePage 而非 SourceEncoding。</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -2346,6 +2372,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>PSEncodingName 屬性在兩個主機上的意義並不相同: 在 PowerShell 7.x 是像 utf8BOM 這樣已註冊的易記名稱，而在 Windows PowerShell 5.1 只有在結果剛好符合 5.1 固定的 -Encoding 值時才會填入，否則為 null。UsePSName 表示該值是否可以直接傳給內建 Cmdlet 的 -Encoding 參數。Get-ProbedContent / Set-ProbedContent / Add-ProbedContent 的統一詞彙沒有這個問題。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。Resolve-Encoding 沒有明確指定的方法，請在讀寫命令中指定 -Encoding（Convert-ProbedContent 為 -SourceEncoding）。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>

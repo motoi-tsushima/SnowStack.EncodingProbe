@@ -290,7 +290,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             try
             {
-                return Encoding.GetEncoding(codePage).WebName;
+                // .NET Framework は 20932 の WebName を "EUC-JP" と大文字で返す（.NET Core は "euc-jp"）。
+                // PowerShell 5.1 と 7.x で同じ名前を返すため小文字にそろえる（名前の照合は大文字小文字を区別しない）
+                return Encoding.GetEncoding(codePage).WebName.ToLowerInvariant();
             }
             catch (Exception exception) when (exception is ArgumentException || exception is NotSupportedException)
             {

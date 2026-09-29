@@ -902,6 +902,24 @@ foreach ($utf8Probe in $script:utf8Probes) {
     }.GetNewClosure()
 }
 
+# フレンドリ名の無いシングルバイト系の PSEncodingName は null (1.2.0 手動確認後の修正)。
+# 1.2.0 より前は PS 7.x (net10.0 ビルド) でだけ "I do not know." が入っていた。
+# shift_jis などの独自判定の結果は、PS 5.1 (null) と 7.x (WebName) で違うのが仕様なので対象にしない。
+$script:psNameSamples = @(
+    [PSCustomObject]@{ Name = 'it_cp1252'; Culture = 'it-IT'; Bytes = [System.Text.Encoding]::GetEncoding(1252).GetBytes("Italiano`nPranzo d'acqua fa volti sghembi.`nPerch$([char]0xE9) $([char]0xE8) cos$([char]0xEC)? Qual $([char]0xE8) la citt$([char]0xE0) pi$([char]0xF9) bella? Niente po' po' di meno!`nPrezzo: 1.234,56 $([char]0x20AC) $([char]0x2014) .`n") }
+    [PSCustomObject]@{ Name = 'de_latin1'; Culture = 'de-DE'; Bytes = [System.Text.Encoding]::GetEncoding(28591).GetBytes('Grüße aus München. Die Straße ist für Fußgänger. Schöne Grüße, Herr Müller.' + "`n") }
+    [PSCustomObject]@{ Name = 'ru_cp1251'; Culture = 'ja-JP'; Bytes = [System.Text.Encoding]::GetEncoding(1251).GetBytes('Русский язык. Съешь ещё этих мягких французских булок, да выпей чаю.' + "`n") }
+)
+
+foreach ($psNameSample in $script:psNameSamples) {
+    Add-Scenario ("World/PSEncodingName/{0}" -f $psNameSample.Name) {
+        $path = New-ByteFile ("psname_{0}.txt" -f $psNameSample.Name) $psNameSample.Bytes
+        $info = Resolve-Encoding -Path $path -Culture $psNameSample.Culture
+        $psName = if ($null -eq $info.PSEncodingName) { '(null)' } else { "'" + $info.PSEncodingName + "'" }
+        'cp={0} PSEncodingName={1} UsePSName={2}' -f $info.CodePage, $psName, $info.UsePSName
+    }.GetNewClosure()
+}
+
 # ---------------------------------------------------------------------------
 # 香港 Big5 (1.2.0 第二次修正)
 #
@@ -1295,7 +1313,7 @@ function Format-ConvertResult {
     param([object[]]$Results)
 
     return (($Results | ForEach-Object {
-        '{0}|{1}|{2}|{3}|{4}|{5}|{6}' -f $_.PSObject.TypeNames[0], $_.SourceEncoding, $_.Encoding, $_.SourceLineBreak, $_.LineBreak, $_.Changed, ($_.Destination -eq $_.Path)
+        '{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}' -f $_.PSObject.TypeNames[0], $_.SourceEncoding, $_.SourceCodePage, $_.Encoding, $_.SourceLineBreak, $_.LineBreak, $_.Changed, ($_.Destination -eq $_.Path)
     }) -join ' / ')
 }
 
@@ -1445,11 +1463,101 @@ Add-Scenario 'ConvertProbedContent/passthru/WhatIf-outputs-nothing' {
     '{0} | {1}' -f $results.Count, (Format-FileBytes $path)
 }
 
+# ---------------------------------------------------------------------------
+# -WhatIf で、実行すれば失敗するエラーを報告する (1.2.0 手動確認後の修正)
+#
+# ファイルを変更しない検査は ShouldProcess より前に置いた。-WhatIf の有無で同じエラーになり、
+# どちらの場合もファイルは変わらないことを確かめる。
+# ---------------------------------------------------------------------------
+foreach ($whatIfMode in @('normal', 'WhatIf')) {
+    $whatIfSplat = if ($whatIfMode -eq 'WhatIf') { @{ WhatIf = $true } } else { @{} }
+
+    Add-Scenario ("WhatIf/{0}/Set/読み取り専用" -f $whatIfMode) {
+        $path = New-ByteFile ("wi_set_ro_{0}.txt" -f $whatIfMode) ([byte[]](0x41, 0x0A))
+        Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $true
+        try {
+            Set-ProbedContent -LiteralPath $path -Value 'X' -Encoding utf8NoBOM @whatIfSplat -ErrorVariable errors -ErrorAction SilentlyContinue 6>$null
+            '{0} | {1}' -f (Format-ErrorRecords $errors), (Format-FileBytes $path)
+        }
+        finally { Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $false }
+    }.GetNewClosure()
+
+    Add-Scenario ("WhatIf/{0}/Add/読み取り専用" -f $whatIfMode) {
+        $path = New-ByteFile ("wi_add_ro_{0}.txt" -f $whatIfMode) ([byte[]](0x41, 0x0A))
+        Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $true
+        try {
+            Add-ProbedContent -LiteralPath $path -Value 'X' -Encoding utf8NoBOM @whatIfSplat -ErrorVariable errors -ErrorAction SilentlyContinue 6>$null
+            '{0} | {1}' -f (Format-ErrorRecords $errors), (Format-FileBytes $path)
+        }
+        finally { Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $false }
+    }.GetNewClosure()
+
+    Add-Scenario ("WhatIf/{0}/Set/親ディレクトリなし" -f $whatIfMode) {
+        $path = Join-Path $WorkRoot ("wi_missing_{0}\a.txt" -f $whatIfMode)
+        Set-ProbedContent -LiteralPath $path -Value 'X' -Encoding utf8NoBOM @whatIfSplat -ErrorVariable errors -ErrorAction SilentlyContinue 6>$null
+        '{0} | {1}' -f (Format-ErrorRecords $errors), (Test-Path -LiteralPath (Split-Path -Parent $path))
+    }.GetNewClosure()
+
+    Add-Scenario ("WhatIf/{0}/Out/NoClobber" -f $whatIfMode) {
+        $path = Join-Path $outDir ("wi_noclobber_{0}.txt" -f $whatIfMode)
+        [IO.File]::WriteAllText($path, 'OLD')
+        $result = Get-TerminatingError { 'A' | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM -NoClobber @whatIfSplat -ErrorAction Stop 6>$null }
+        '{0} | {1}' -f $result, (Format-FileBytes $path)
+    }.GetNewClosure()
+
+    Add-Scenario ("WhatIf/{0}/Out/読み取り専用" -f $whatIfMode) {
+        $path = Join-Path $outDir ("wi_ro_{0}.txt" -f $whatIfMode)
+        [IO.File]::WriteAllText($path, 'OLD')
+        Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $true
+        try {
+            $result = Get-TerminatingError { 'A' | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM @whatIfSplat -ErrorAction Stop 6>$null }
+            '{0} | {1}' -f $result, (Format-FileBytes $path)
+        }
+        finally { Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $false }
+    }.GetNewClosure()
+
+    Add-Scenario ("WhatIf/{0}/Convert/N6-N9" -f $whatIfMode) {
+        $root = Join-Path $convertDir ("whatif_{0}" -f $whatIfMode)
+        foreach ($sub in @('x', 'y', 'out7', 'out8')) { $null = New-Item -ItemType Directory -Path (Join-Path $root $sub) }
+        $ro = Join-Path $root 'ro.txt'
+        [IO.File]::WriteAllBytes($ro, [byte[]](0x61, 0x0D, 0x0A))
+        [IO.File]::WriteAllBytes((Join-Path $root 'out7\ro.txt'), [byte[]](0x4F))
+        [IO.File]::WriteAllBytes((Join-Path $root 'x\b.txt'), [byte[]](0x62, 0x0D, 0x0A))
+        [IO.File]::WriteAllBytes((Join-Path $root 'y\b.txt'), [byte[]](0x63, 0x0D, 0x0A))
+        Set-ItemProperty -LiteralPath $ro -Name IsReadOnly -Value $true
+        try {
+            Convert-ProbedContent -LiteralPath $ro -LineBreak Lf @whatIfSplat -ErrorVariable n6 -ErrorAction SilentlyContinue 6>$null
+        }
+        finally { Set-ItemProperty -LiteralPath $ro -Name IsReadOnly -Value $false }
+        Convert-ProbedContent -LiteralPath $ro -LineBreak Lf -Destination (Join-Path $root 'out7') @whatIfSplat -ErrorVariable n7 -ErrorAction SilentlyContinue 6>$null
+        Get-ChildItem -LiteralPath (Join-Path $root 'x'), (Join-Path $root 'y') -File |
+            Convert-ProbedContent -LineBreak Lf -Destination (Join-Path $root 'out8') -Force @whatIfSplat -ErrorVariable n8 -ErrorAction SilentlyContinue 6>$null
+        Convert-ProbedContent -LiteralPath $ro -LineBreak Lf -Destination $root @whatIfSplat -ErrorVariable n9 -ErrorAction SilentlyContinue 6>$null
+        'N6={0} | N7={1} | N8={2} | N9={3} | ro={4} | out7={5}' -f (Format-ErrorRecords $n6), (Format-ErrorRecords $n7), (Format-ErrorRecords $n8), (Format-ErrorRecords $n9),
+            (Format-FileBytes $ro), (Format-FileBytes (Join-Path $root 'out7\ro.txt'))
+    }.GetNewClosure()
+}
+
 Add-Scenario 'ConvertProbedContent/passthru/name-restores-original' {
     $path = New-ConvertFile 'restore.txt' ([byte[]](0xEF, 0xBB, 0xBF, 0x41, 0x0D, 0x0A))
     $first = Convert-ProbedContent -LiteralPath $path -Encoding bigendianutf32NoBOM -PassThru
     $second = Convert-ProbedContent -LiteralPath $path -Encoding $first.SourceEncoding -SourceEncoding bigendianutf32NoBOM -PassThru
     '{0} | {1} | {2}' -f $first.SourceEncoding, $second.Changed, (Format-FileBytes $path)
+}
+
+# 元に戻すには、Unicode 系以外は SourceCodePage を渡す (1.2.0 手動確認後の修正)。
+# EUC-JP の判定結果は 20932 だが、SourceEncoding の euc-jp を渡すと 51932 に解決される
+foreach ($restoreSample in @(
+    @{ Name = 'euc-jp'; Bytes = [System.Text.Encoding]::GetEncoding(20932).GetBytes("日本語のテキスト`n"); Culture = 'ja-JP' },
+    @{ Name = 'shift_jis'; Bytes = [System.Text.Encoding]::GetEncoding(932).GetBytes("日本語のテキスト`r`n"); Culture = 'ja-JP' },
+    @{ Name = 'big5hkscs'; Bytes = $script:hkHkscs; Culture = 'zh-HK' })) {
+    Add-Scenario ("ConvertProbedContent/passthru/SourceCodePage-restores/{0}" -f $restoreSample.Name) {
+        $path = New-ConvertFile ("restore_cp_{0}.txt" -f $restoreSample.Name) $restoreSample.Bytes
+        $first = Convert-ProbedContent -LiteralPath $path -Encoding utf8NoBOM -Culture $restoreSample.Culture -PassThru
+        Convert-ProbedContent -LiteralPath $path -Encoding $first.SourceCodePage -Culture $restoreSample.Culture
+        $restored = if ((Format-FileBytes $path) -eq (($restoreSample.Bytes | ForEach-Object { $_.ToString('X2') }) -join ' ')) { '元のバイト列に一致' } else { Format-FileBytes $path }
+        '{0} | {1} | {2}' -f $first.SourceEncoding, $first.SourceCodePage, $restored
+    }.GetNewClosure()
 }
 
 # 私用領域（HKSCS 固有字）は符号位置のまま往復する

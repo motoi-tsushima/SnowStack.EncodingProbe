@@ -736,6 +736,71 @@ public class SetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
     }
 
     /// <summary>
+    /// 読み取り専用で -Force なしのエラーは、-WhatIf でも同じエラー ID で報告し、ファイルを変えないこと
+    /// （1.2.0 手動確認後の修正。検査を ShouldProcess より前に置いた）。
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Write_ReadOnlyFile_WithoutForce_IsReportedEvenWithWhatIf(bool whatIf)
+    {
+        byte[] original = { 0x41, 0x0A };
+
+        using var file = ByteExactFile.Create(original);
+
+        SetReadOnly(file.Path, true);
+
+        try
+        {
+            InvocationResult result = Invoke(
+                file.Path, "X", new Dictionary<string, object?>
+                {
+                    ["Encoding"] = "utf8NoBOM",
+                    ["WhatIf"] = whatIf,
+                });
+
+            Assert.Equal(
+                "WriteAccessDenied", Assert.Single(result.Errors).FullyQualifiedErrorId.Split(',')[0]);
+            Assert.Equal(original, file.ReadBytes());
+            Assert.True(IsReadOnly(file.Path));
+        }
+        finally
+        {
+            SetReadOnly(file.Path, false);
+        }
+    }
+
+    /// <summary>
+    /// 書き込み先の親ディレクトリが無いエラーは、-WhatIf でも同じエラー ID で報告すること。
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Write_MissingParentDirectory_IsReportedEvenWithWhatIf(bool whatIf)
+    {
+        string directory = CreateWorkDirectory();
+
+        try
+        {
+            string path = Path.Combine(directory, "missing", "a.txt");
+
+            InvocationResult result = Invoke(
+                path, "X", new Dictionary<string, object?>
+                {
+                    ["Encoding"] = "utf8NoBOM",
+                    ["WhatIf"] = whatIf,
+                });
+
+            Assert.Equal("WriteFailed", Assert.Single(result.Errors).FullyQualifiedErrorId.Split(',')[0]);
+            Assert.False(Directory.Exists(Path.Combine(directory, "missing")));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    /// <summary>
     /// -Force を指定すると読み取り専用ファイルへも書き込め、書き込み後に読み取り専用属性が元に戻ること（1.2.0 仕様書 4.1）。
     /// </summary>
     /// <remarks>

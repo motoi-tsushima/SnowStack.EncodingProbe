@@ -447,6 +447,58 @@ public class OutProbedFileTests : IClassFixture<ProbedCommandRunspaceFixture>
     }
 
     /// <summary>
+    /// -NoClobber・読み取り専用・-EncodingFrom の参照先の失敗は、-WhatIf でも同じ終了エラーとして報告し、
+    /// ファイルに触れないこと（1.2.0 手動確認後の修正。検査を ShouldProcess より前に置いた）。
+    /// </summary>
+    [Theory]
+    [InlineData("NoClobber", false, "-NoClobber")]
+    [InlineData("NoClobber", false, "-NoClobber -WhatIf")]
+    [InlineData("WriteAccessDenied", true, "")]
+    [InlineData("WriteAccessDenied", true, "-WhatIf")]
+    [InlineData("WriteAccessDenied", true, "-Append -WhatIf")]
+    public void WhatIf_ReportsFailingChecks(string expectedError, bool readOnly, string parameters)
+    {
+        using var directory = new TemporaryDirectory();
+        string path = directory.Write("target.txt", Encoding.ASCII.GetBytes("OLD\r\n"));
+
+        if (readOnly)
+        {
+            File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.ReadOnly);
+        }
+
+        try
+        {
+            Assert.Equal(expectedError, Run($"'NEW' | Out-ProbedFile -LiteralPath '{path}' utf8NoBOM {parameters}"));
+            Assert.Equal(Encoding.ASCII.GetBytes("OLD\r\n"), File.ReadAllBytes(path));
+            Assert.Equal(readOnly, ReadOnlyAttributeScope.IsReadOnly(path));
+        }
+        finally
+        {
+            ClearReadOnly(path);
+        }
+    }
+
+    /// <summary>
+    /// -EncodingFrom の参照先が無い場合も、-WhatIf で同じエラーを報告すること。
+    /// </summary>
+    [Theory]
+    [InlineData("")]
+    [InlineData("-WhatIf")]
+    public void WhatIf_ReportsMissingEncodingFrom(string parameters)
+    {
+        using var directory = new TemporaryDirectory();
+        string path = directory.Combine("out.txt");
+        string missing = directory.Combine("missing.txt");
+
+        string withWhatIf = Run($"'A' | Out-ProbedFile -LiteralPath '{path}' -EncodingFrom '{missing}' {parameters}");
+        string without = Run($"'A' | Out-ProbedFile -LiteralPath '{path}' -EncodingFrom '{missing}'");
+
+        Assert.NotEqual(NoError, withWhatIf);
+        Assert.Equal(without, withWhatIf);
+        Assert.False(File.Exists(path));
+    }
+
+    /// <summary>
     /// -Force で外した読み取り専用属性は、書き込みが途中で失敗しても元に戻ること。
     /// </summary>
     [Fact]

@@ -556,6 +556,56 @@ public class ConvertProbedContentTests : IClassFixture<ProbedCommandRunspaceFixt
         Assert.Equal(Encoding.ASCII.GetBytes("a\r\n"), File.ReadAllBytes(source));
     }
 
+    /// <summary>
+    /// N6〜N9 は -WhatIf でも、-WhatIf なしと同じエラー ID で報告すること（1.2.0 手動確認後の修正）。
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void WhatIf_ReportsN6ToN9(bool whatIf)
+    {
+        string suffix = whatIf ? " -WhatIf" : string.Empty;
+        using var directory = new TemporaryDirectory();
+
+        // N6: 読み取り専用で -Force なし
+        string readOnly = directory.Write("ro.txt", Encoding.ASCII.GetBytes("a\r\n"));
+        File.SetAttributes(readOnly, FileAttributes.ReadOnly);
+
+        try
+        {
+            InvocationResult n6 = Invoke($"Convert-ProbedContent -LiteralPath '{readOnly}' -LineBreak Lf{suffix}");
+            Assert.Equal("WriteAccessDenied", ErrorId(Assert.Single(n6.Errors)));
+            Assert.Equal(Encoding.ASCII.GetBytes("a\r\n"), File.ReadAllBytes(readOnly));
+        }
+        finally
+        {
+            File.SetAttributes(readOnly, FileAttributes.Normal);
+        }
+
+        // N7: -Destination に同名のファイル
+        string source = directory.Write("a.txt", Encoding.ASCII.GetBytes("a\r\n"));
+        string existing = directory.Write(Path.Combine("out7", "a.txt"), Encoding.ASCII.GetBytes("OLD"));
+        InvocationResult n7 = Invoke($"Convert-ProbedContent -LiteralPath '{source}' -LineBreak Lf -Destination '{directory.Combine("out7")}'{suffix}");
+        Assert.Equal("DestinationExists", ErrorId(Assert.Single(n7.Errors)));
+        Assert.Equal(Encoding.ASCII.GetBytes("OLD"), File.ReadAllBytes(existing));
+
+        // N8: 同じ実行の中でファイル名が重なる。-WhatIf で何も書かなくても 2 件目を報告する
+        directory.Write(Path.Combine("x", "b.txt"), Encoding.ASCII.GetBytes("first\r\n"));
+        directory.Write(Path.Combine("y", "b.txt"), Encoding.ASCII.GetBytes("second\r\n"));
+        string output = directory.Combine("out8");
+        Directory.CreateDirectory(output);
+        InvocationResult n8 = Invoke(
+            $"Get-ChildItem -LiteralPath '{directory.Combine("x")}', '{directory.Combine("y")}' -File | "
+            + $"Convert-ProbedContent -LineBreak Lf -Destination '{output}' -Force{suffix}");
+        Assert.Equal("DestinationNameConflict", ErrorId(Assert.Single(n8.Errors)));
+        Assert.Equal(whatIf ? 0 : 1, Directory.GetFiles(output).Length);
+
+        // N9: 出力先が変換元と同じ
+        InvocationResult n9 = Invoke($"Convert-ProbedContent -LiteralPath '{source}' -LineBreak Lf -Destination '{directory.Path}'{suffix}");
+        Assert.Equal("DestinationIsSource", ErrorId(Assert.Single(n9.Errors)));
+        Assert.Equal(Encoding.ASCII.GetBytes("a\r\n"), File.ReadAllBytes(source));
+    }
+
     #endregion
 
     #region パイプラインとパス（仕様書 11 章）
@@ -664,10 +714,122 @@ public class ConvertProbedContentTests : IClassFixture<ProbedCommandRunspaceFixt
         Assert.Equal(path, item.Properties["Path"].Value);
         Assert.Equal(path, item.Properties["Destination"].Value);
         Assert.Equal("shift_jis", item.Properties["SourceEncoding"].Value);
+        Assert.Equal(932, item.Properties["SourceCodePage"].Value);
         Assert.Equal("unicodeBOM", item.Properties["Encoding"].Value);
         Assert.Equal("LfAndCrLf", item.Properties["SourceLineBreak"].Value);
         Assert.Equal("Lf", item.Properties["LineBreak"].Value);
         Assert.Equal(true, item.Properties["Changed"].Value);
+
+        // SourceCodePage は SourceEncoding の直後に置く（1.2.0 手動確認後の修正）
+        Assert.Equal(
+            new[] { "Path", "Destination", "SourceEncoding", "SourceCodePage", "Encoding", "SourceLineBreak", "LineBreak", "Changed" },
+            item.Properties.Select(property => property.Name).ToArray());
+    }
+
+    /// <summary>
+    /// EUC-JP は SourceEncoding（euc-jp）では元に戻らず、SourceCodePage（20932）で戻ること（1.2.0 手動確認後の修正）。
+    /// </summary>
+    /// <remarks>
+    /// 判定結果は 20932 だが、WebName の euc-jp を Encoding.GetEncoding に渡すと 51932 が返る。
+    /// 往復を保証するのは CodePage であり、WebName ではない（1.1.0 仕様書 4.4 節）。
+    /// </remarks>
+    [Fact]
+    public void PassThru_EucJp_SourceCodePage_RestoresOriginal()
+    {
+        byte[] original = File.ReadAllBytes(TestDataHelper.GetPath("Japanese", "sample_eucjp.txt"));
+        using var directory = new TemporaryDirectory();
+        string path = directory.Write("a.txt", original);
+
+        PSObject item = Assert.Single(Invoke(
+            $"Convert-ProbedContent -LiteralPath '{path}' -Encoding utf8NoBOM -Culture ja-JP -PassThru").Output);
+
+        Assert.Equal("euc-jp", item.Properties["SourceEncoding"].Value);
+        Assert.Equal(20932, item.Properties["SourceCodePage"].Value);
+
+        Assert.Equal(NoError, Run($"Convert-ProbedContent -LiteralPath '{path}' -Encoding {item.Properties["SourceCodePage"].Value} -Culture ja-JP"));
+        Assert.Equal(original, File.ReadAllBytes(path));
+    }
+
+    /// <summary>
+    /// Unicode 系以外は SourceCodePage を -Encoding に渡せば元に戻ること。
+    /// </summary>
+    [Theory]
+    [InlineData("Japanese", "sample_shiftjis.txt", "ja-JP", 932)]
+    [InlineData("Chinese_HongKong", "sample_big5hkscs.txt", "zh-HK", 950)]
+    [InlineData("Italian", "cp1252", "it-IT", 1252)]
+    public void PassThru_SourceCodePage_RestoresOriginal(string language, string fileName, string culture, int expectedCodePage)
+    {
+        byte[] original = language == "Italian" ? ItalianCp1252Bytes() : File.ReadAllBytes(TestDataHelper.GetPath(language, fileName));
+        using var directory = new TemporaryDirectory();
+        string path = directory.Write("a.txt", original);
+
+        PSObject item = Assert.Single(Invoke(
+            $"Convert-ProbedContent -LiteralPath '{path}' -Encoding utf8NoBOM -Culture {culture} -PassThru").Output);
+
+        Assert.Equal(expectedCodePage, item.Properties["SourceCodePage"].Value);
+
+        Assert.Equal(NoError, Run($"Convert-ProbedContent -LiteralPath '{path}' -Encoding {expectedCodePage} -Culture {culture}"));
+        Assert.Equal(original, File.ReadAllBytes(path));
+    }
+
+    /// <summary>
+    /// Unicode 系は SourceEncoding（BOM の有無まで表す明示形）を -Encoding に渡せば元に戻ること。
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void PassThru_Unicode_SourceEncoding_RestoresOriginal(bool utf8Bom)
+    {
+        byte[] original = utf8Bom
+            ? ByteExactFile.Concat(new byte[] { 0xEF, 0xBB, 0xBF }, Encoding.UTF8.GetBytes("日本語テキスト\r\n"))
+            : Encoding.Unicode.GetBytes("日本語テキスト。Grüße aus München.\r\n");
+        using var directory = new TemporaryDirectory();
+        string path = directory.Write("a.txt", original);
+
+        PSObject item = Assert.Single(Invoke(
+            $"Convert-ProbedContent -LiteralPath '{path}' -Encoding utf32BOM -Culture ja-JP -PassThru").Output);
+        string name = (string)item.Properties["SourceEncoding"].Value;
+
+        Assert.Equal(utf8Bom ? "utf8BOM" : "unicodeNoBOM", name);
+        Assert.Equal(utf8Bom ? 65001 : 1200, item.Properties["SourceCodePage"].Value);
+
+        Assert.Equal(NoError, Run($"Convert-ProbedContent -LiteralPath '{path}' -Encoding {name} -Culture ja-JP"));
+        Assert.Equal(original, File.ReadAllBytes(path));
+    }
+
+    /// <summary>
+    /// 変換元が 0 バイトのときの SourceCodePage は、変換元とみなしたエンコーディング（変換先、無ければ UTF-8）のもの。
+    /// </summary>
+    [Theory]
+    [InlineData("-Encoding shift_jis", "shift_jis", 932)]
+    [InlineData("-LineBreak Lf", "utf8NoBOM", 65001)]
+    public void PassThru_EmptySource_SourceCodePage(string parameters, string expectedName, int expectedCodePage)
+    {
+        using var directory = new TemporaryDirectory();
+        string path = directory.Write("a.txt", Array.Empty<byte>());
+
+        PSObject item = Assert.Single(Invoke($"Convert-ProbedContent -LiteralPath '{path}' {parameters} -PassThru").Output);
+
+        Assert.Equal(expectedName, item.Properties["SourceEncoding"].Value);
+        Assert.Equal(expectedCodePage, item.Properties["SourceCodePage"].Value);
+    }
+
+    /// <summary>
+    /// UTF.Unknown が windows-1252 と判定するイタリア語の文（修正依頼 4.1 の表の 3 行目）
+    /// </summary>
+    private static byte[] ItalianCp1252Bytes()
+    {
+        var map = new Dictionary<char, byte>
+        {
+            ['à'] = 0xE0, ['è'] = 0xE8, ['é'] = 0xE9, ['ì'] = 0xEC, ['ù'] = 0xF9, ['€'] = 0x80, ['—'] = 0x97,
+        };
+        const string text =
+            "Italiano\n" +
+            "Pranzo d'acqua fa volti sghembi.\n" +
+            "Perché è così? Qual è la città più bella? Niente po' po' di meno!\n" +
+            "Prezzo: 1.234,56 € — .\n";
+
+        return text.Select(c => c < 0x80 ? (byte)c : map[c]).ToArray();
     }
 
     /// <summary>

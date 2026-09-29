@@ -224,6 +224,9 @@
       <maml:alert>
         <maml:para>같은 파일을 하나의 파이프라인에서 읽고 쓰는 것은 거부됩니다. 다 읽기 전에 아래쪽 명령이 파일을 잘라내 버리기 때문입니다. 내용을 먼저 변수에 받으십시오.</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>싱글바이트 문자 인코딩(windows-1252, ISO-8859 등)은 바이트열의 구조로는 구별할 수 없어 문장의 통계로 추정합니다. 따라서 판정의 성패는 길이보다 내용에 좌우됩니다. 문자 목록, 기호·숫자가 많은 줄, 그 언어에서 보통 쓰지 않는 문자를 포함한 텍스트는 수백 바이트가 있어도 판정하지 못할(CodePage가 -1) 수 있습니다. 이 경우 -Encoding으로 코드 페이지를 명시하십시오.</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -343,7 +346,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다.</maml:para>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -419,7 +422,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다.</maml:para>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -575,7 +578,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다.</maml:para>
+          <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -628,6 +631,9 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       </maml:alert>
       <maml:alert>
         <maml:para>쓰기 대상이 존재하더라도 0바이트인 경우에는 판정할 수 없으므로, 실행 중인 .NET 런타임의 기본 인코딩(BOM 없음)과 운영 체제 기본 줄 바꿈을 사용합니다. Windows PowerShell 5.1에서는 ANSI 코드 페이지, PowerShell 7.x에서는 UTF-8입니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>싱글바이트 문자 인코딩(windows-1252, ISO-8859 등)은 바이트열의 구조로는 구별할 수 없어 문장의 통계로 추정합니다. 따라서 판정의 성패는 길이보다 내용에 좌우됩니다. 문자 목록, 기호·숫자가 많은 줄, 그 언어에서 보통 쓰지 않는 문자를 포함한 텍스트는 수백 바이트가 있어도 판정하지 못할(CodePage가 -1) 수 있습니다. 이 경우 쓰기 대상이나 -EncodingFrom의 참조 파일에서 상속하지 말고 -Encoding으로 코드 페이지를 명시하십시오.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -748,7 +754,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다.</maml:para>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -830,7 +836,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다.</maml:para>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1003,7 +1009,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다.</maml:para>
+          <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1068,6 +1074,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>ISO-2022-JP처럼 상태를 가지는 문자 인코딩에도 안전하게 추가할 수 있습니다. 추가한 블록은 자신의 이스케이프 시퀀스로 시작하고 끝에서 ASCII로 돌아가므로, 그 블록만으로 완결됩니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>싱글바이트 문자 인코딩(windows-1252, ISO-8859 등)은 바이트열의 구조로는 구별할 수 없어 문장의 통계로 추정합니다. 따라서 판정의 성패는 길이보다 내용에 좌우됩니다. 문자 목록, 기호·숫자가 많은 줄, 그 언어에서 보통 쓰지 않는 문자를 포함한 텍스트는 수백 바이트가 있어도 판정하지 못할(CodePage가 -1) 수 있습니다. 이 경우 쓰기 대상이나 -EncodingFrom의 참조 파일에서 상속하지 말고 -Encoding으로 코드 페이지를 명시하십시오.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1219,7 +1228,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다.</maml:para>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1320,7 +1329,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다.</maml:para>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1497,7 +1506,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다.</maml:para>
+          <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1559,6 +1568,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>BOM은 한 줄이라도 썼을 때만 씁니다. 입력이 하나도 없으면 출력 대상은 BOM 없이 0바이트로 만들어집니다(기존 파일이면 0바이트로 자름). -Append이면 기존 파일은 건드리지 않습니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>싱글바이트 문자 인코딩(windows-1252, ISO-8859 등)은 바이트열의 구조로는 구별할 수 없어 문장의 통계로 추정합니다. 따라서 판정의 성패는 길이보다 내용에 좌우됩니다. 문자 목록, 기호·숫자가 많은 줄, 그 언어에서 보통 쓰지 않는 문자를 포함한 텍스트는 수백 바이트가 있어도 판정하지 못할(CodePage가 -1) 수 있습니다. 이 경우 Auto나 -Append의 상속을 사용하지 말고 -Encoding으로 코드 페이지를 명시하십시오.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1700,13 +1712,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>PassThru</maml:name>
           <maml:description>
-            <maml:para>변환한 파일(변경할 필요가 없었던 것 포함)마다 Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak, Changed 속성을 가진 개체를 1개 출력합니다. 기본적으로는 아무것도 출력하지 않습니다.</maml:para>
+            <maml:para>변환한 파일(변경할 필요가 없었던 것 포함)마다 Path, Destination, SourceEncoding, SourceCodePage, Encoding, SourceLineBreak, LineBreak, Changed 속성을 가진 개체를 1개 출력합니다. 기본적으로는 아무것도 출력하지 않습니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않으며 -PassThru로도 아무것도 출력하지 않습니다.</maml:para>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않으며 -PassThru로도 아무것도 출력하지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1790,13 +1802,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>PassThru</maml:name>
           <maml:description>
-            <maml:para>변환한 파일(변경할 필요가 없었던 것 포함)마다 Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak, Changed 속성을 가진 개체를 1개 출력합니다. 기본적으로는 아무것도 출력하지 않습니다.</maml:para>
+            <maml:para>변환한 파일(변경할 필요가 없었던 것 포함)마다 Path, Destination, SourceEncoding, SourceCodePage, Encoding, SourceLineBreak, LineBreak, Changed 속성을 가진 개체를 1개 출력합니다. 기본적으로는 아무것도 출력하지 않습니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않으며 -PassThru로도 아무것도 출력하지 않습니다.</maml:para>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않으며 -PassThru로도 아무것도 출력하지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1917,7 +1929,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>PassThru</maml:name>
         <maml:description>
-          <maml:para>변환한 파일(변경할 필요가 없었던 것 포함)마다 Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak, Changed 속성을 가진 개체를 1개 출력합니다. 기본적으로는 아무것도 출력하지 않습니다.</maml:para>
+          <maml:para>변환한 파일(변경할 필요가 없었던 것 포함)마다 Path, Destination, SourceEncoding, SourceCodePage, Encoding, SourceLineBreak, LineBreak, Changed 속성을 가진 개체를 1개 출력합니다. 기본적으로는 아무것도 출력하지 않습니다.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1964,7 +1976,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않으며 -PassThru로도 아무것도 출력하지 않습니다.</maml:para>
+          <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 변경되지 않으며 -PassThru로도 아무것도 출력하지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1991,7 +2003,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
           <maml:uri />
         </dev:type>
         <maml:description>
-          <maml:para>-PassThru를 지정하면 변환한 파일마다 개체 1개(형식 이름 SnowStack.EncodingProbe.ConvertResult). 문자 인코딩은 통합 어휘의 이름(utf8BOM, unicodeNoBOM, shift_jis 등)으로 나타내므로 SourceEncoding을 그대로 -Encoding에 전달하면 원래 바이트열로 되돌릴 수 있습니다.</maml:para>
+          <maml:para>-PassThru를 지정하면 변환한 파일마다 개체 1개(형식 이름 SnowStack.EncodingProbe.ConvertResult). SourceCodePage는 원본의 코드 페이지입니다. 원래 바이트열로 되돌리려면 Unicode 계열은 SourceEncoding(utf8BOM 등 BOM 유무까지 나타내는 이름)을, 그 외에는 SourceCodePage를 -Encoding에 전달합니다. Unicode 계열 이외의 SourceEncoding은 WebName이며 다른 코드 페이지로 해석될 수 있으므로(euc-jp는 51932가 되지만 판정 결과는 20932) 전달해도 원래대로 되돌아가지 않을 수 있습니다.</maml:para>
         </maml:description>
       </command:returnValue>
     </command:returnValues>
@@ -2017,6 +2029,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>매개 변수의 오류(변환 지정 없음, -Encoding Auto, BOM 지정의 불일치, -Destination 폴더 없음 등)는 종료 오류입니다. 한 파일에 관한 실패는 종료되지 않는 오류이며, 그 파일은 변경하지 않고 남기고 다른 파일의 처리는 계속합니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>싱글바이트 문자 인코딩(windows-1252, ISO-8859 등)은 바이트열의 구조로는 구별할 수 없어 문장의 통계로 추정합니다. 따라서 판정의 성패는 길이보다 내용에 좌우됩니다. 문자 목록, 기호·숫자가 많은 줄, 그 언어에서 보통 쓰지 않는 문자를 포함한 텍스트는 수백 바이트가 있어도 판정하지 못할(CodePage가 -1) 수 있습니다. 이 경우 -SourceEncoding으로 코드 페이지를 명시하십시오.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-WhatIf / -Confirm에서도 파일을 변경하지 않는 검사(읽기 전용, -Destination에 이름이 같은 파일이 있음, 같은 실행에서 파일 이름이 겹침, 출력 대상이 원본과 같음, 잘못된 바이트열, 표현할 수 없는 문자)는 수행하며 오류로 보고합니다. -WhatIf / -Confirm의 메시지는 변환 결과를 구한 후 쓰기 전에 표시하므로, 변환 결과가 원본과 같아 다시 쓰지 않는 파일에도 표시됩니다. -Confirm을 지정했을 때 확인을 생략하지 않기 위한 의도된 동작입니다.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -2053,6 +2071,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <dev:code>PS C:\&gt; Convert-ProbedContent .\legacy.txt -SourceEncoding euc-jp -Encoding shift_jis</dev:code>
         <dev:remarks>
           <maml:para>원본 문자 인코딩을 판정하지 않고 EUC-JP에서 Shift_JIS로 변환합니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 6 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $r = Convert-ProbedContent .\a.txt -Encoding utf8NoBOM -PassThru
+PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
+        <dev:remarks>
+          <maml:para>a.txt를 UTF-8로 변환한 후 원래 문자 인코딩으로 되돌립니다. 원본이 Unicode 계열이 아니면 SourceEncoding이 아니라 SourceCodePage를 전달합니다.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -2346,6 +2372,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>PSEncodingName 속성의 의미는 호스트에 따라 다릅니다. PowerShell 7.x에서는 utf8BOM 같은 등록된 친숙한 이름이지만, Windows PowerShell 5.1에서는 5.1의 고정된 -Encoding 값과 일치하는 경우에만 값이 들어가고 그 밖에는 null이 됩니다. UsePSName은 그 값을 기본 제공 cmdlet의 -Encoding에 그대로 전달할 수 있는지를 나타냅니다. Get-ProbedContent / Set-ProbedContent / Add-ProbedContent의 통합 어휘에는 이 문제가 없습니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>싱글바이트 문자 인코딩(windows-1252, ISO-8859 등)은 바이트열의 구조로는 구별할 수 없어 문장의 통계로 추정합니다. 따라서 판정의 성패는 길이보다 내용에 좌우됩니다. 문자 목록, 기호·숫자가 많은 줄, 그 언어에서 보통 쓰지 않는 문자를 포함한 텍스트는 수백 바이트가 있어도 판정하지 못할(CodePage가 -1) 수 있습니다. Resolve-Encoding에는 명시하는 방법이 없으므로 읽기·쓰기 명령에서 -Encoding(Convert-ProbedContent에서는 -SourceEncoding)을 지정하십시오.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>

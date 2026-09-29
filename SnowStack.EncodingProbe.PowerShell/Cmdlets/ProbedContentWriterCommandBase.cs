@@ -268,6 +268,13 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
             return null;
         }
 
+        // ファイルを開かずに分かる失敗は、ShouldProcess より前に報告する。
+        // -WhatIf でも、実行すれば失敗することが分かるようにするため（1.2.0 手動確認後の修正）
+        if (!CheckWritable(file))
+        {
+            return null;
+        }
+
         if (!ShouldProcess(file, this.OperationName))
         {
             return null;
@@ -291,6 +298,43 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// ファイルを開かずに判定できる書き込みの失敗を検査する。失敗なら非終了エラーを報告して false を返す。
+    /// </summary>
+    /// <remarks>
+    /// エラー ID は、検査しなかった場合にファイルを開いた時点で報告していたものと同じにする
+    /// （読み取り専用は WriteAccessDenied、親ディレクトリが無い場合は WriteFailed）。
+    /// 読み取り専用以外の理由で書き込めない場合（ACL など）は、実際に開くまで分からないため対象外。
+    /// </remarks>
+    private bool CheckWritable(string file)
+    {
+        if (!this.Force.IsPresent && ReadOnlyAttributeScope.IsReadOnly(file))
+        {
+            WriteError(CreateError(
+                new UnauthorizedAccessException(ValidationMessages.FileIsReadOnly(file)),
+                "WriteAccessDenied",
+                ErrorCategory.PermissionDenied,
+                file));
+
+            return false;
+        }
+
+        string? parent = System.IO.Path.GetDirectoryName(file);
+
+        if (!string.IsNullOrEmpty(parent) && !Directory.Exists(parent))
+        {
+            WriteError(CreateError(
+                new DirectoryNotFoundException(ValidationMessages.ParentDirectoryNotFound(file)),
+                "WriteFailed",
+                ErrorCategory.WriteError,
+                file));
+
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>

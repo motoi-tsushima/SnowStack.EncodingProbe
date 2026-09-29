@@ -7,7 +7,8 @@
 - 前提文書:
   - `docs/EncodingProbe-1.1.0-仕様書.md`（統一語彙、原則 A / B、エラー方針など。本書はこれを土台とし、差分だけを書く）
   - `docs/EncodingProbe-1.2.0-調査-Out-File挙動の実測.md`（本書の「標準の挙動」はすべてこの実測に基づく。以下「実測報告」）
-- 実装記録: `docs/EncodingProbe-1.2.0-実装記録.md`（実装で本書・依頼・当初の想定と異なる結果になった点と、本書に書かれていなかった判断）
+- 実装記録: `docs/EncodingProbe-1.2.0-実装記録.md`（実装で本書・依頼・当初の想定と異なる結果になった点と、本書に書かれていなかった判断）。
+  手動確認後の修正（`docs/EncodingProbe-1.2.0-修正依頼-手動確認後.md`、2026-09-29）で行ったことも実装記録 4 章に追記した
 
 > **Claude Code へ:** 作業の進め方（段階の分け方、コミットの単位など）は別途の依頼文で指示する。本書は仕様だけを定める。
 
@@ -30,6 +31,7 @@
 
 - 統一語彙（1.1.0 仕様書 3 章）、解決順序、BOM 方針の決定規則
 - `Resolve-Encoding` / `ConvertTo-DotNetEncoding` / `Get-EncodingProbePlatformInfo`
+  （ただし、手動確認後の不具合修正で、PowerShell 7.x の `PSEncodingName` に `I do not know.` が入っていたのを null に直した。実装記録 4.1）
 - `EncodingInformation` 型
 
 ---
@@ -148,12 +150,19 @@
 
 1. パラメータの検証（`-Culture` / `-Strategy`、`-Encoding` と `-EncodingFrom` の競合）
 2. パスの解決（2.12）
-3. `ShouldProcess`（2.14）
-4. `-NoClobber`（`-Append` なし）で出力先が存在するか
-5. 読み取り専用で `-Force` が無いか
-6. `-EncodingFrom` の参照先の判定
+3. `-NoClobber`（`-Append` なし）で出力先が存在するか
+4. 読み取り専用で `-Force` が無いか
+5. `-EncodingFrom` の参照先の判定
+6. 出力先の既存ファイルの判定（明示的な `Auto`、`-Append` での継承と整合性検査の準備）
+7. `ShouldProcess`（2.14）
 
-出力先の既存ファイルの判定（明示的な `Auto`、`-Append` での継承と整合性検査の準備）も、この時点で行ってよい。判定は読み取りだけで、ファイルを変更しないためである。
+3〜6 はファイルを変更しない検査なので、`ShouldProcess` より前に置く。`-WhatIf` でも、実行すれば失敗することを報告するためである。
+
+> **改めた経緯（2026-09-29）:** 当初は `ShouldProcess` を 3 番目（`-NoClobber`・読み取り専用の検査より前）に置いていた。
+> そのため `-WhatIf`（または `-Confirm` で拒否）のときは、`-NoClobber` や読み取り専用のエラーが報告されなかった（実装記録 2.6）。
+> 手動確認の結果、「ファイルを変更しない検査で失敗するものは `-WhatIf` のときにも報告する」方針に改め、`ShouldProcess` を検査の後ろに移した。
+> `-EncodingFrom` の参照先と出力先の既存ファイルの判定も読み取りだけなので、同じ理由で `ShouldProcess` の前に置いた。
+> `-Append` の整合性検査（バイト列比較）は入力が届くまで判定できないため、従来どおり `ShouldProcess` の後になる。
 
 ### 2.11 空の入力と BOM
 
@@ -192,6 +201,10 @@
 
 `SupportsShouldProcess` を有効にし、`BeginProcessing` で出力先 1 件につき 1 回だけ `ShouldProcess` を呼ぶ。
 拒否された場合は、入力を受け取って捨て、ファイルには一切触れない。
+
+`ShouldProcess` は、`-NoClobber`・読み取り専用・`-EncodingFrom` の参照先・出力先の既存ファイルの判定の**後**に呼ぶ（2.10）。
+これらで失敗する場合は、`-WhatIf` のときも `-WhatIf` なしと同じ終了エラー（同じ `FullyQualifiedErrorId`）になる。
+`-Confirm` のときは、検査で失敗する出力先について確認を求めない（検査が先に失敗するため）。
 
 ---
 
@@ -244,6 +257,18 @@
 ### 4.3 1.1.0 仕様書の記述の修正
 
 1.1.0 仕様書 5.3 節の表で、`-Encoding Auto` で対象が存在しない場合が「Error 終了」となっているが、8 章の表と実装は「非終了エラー」である。5.3 節の表現を 8 章に合わせる。
+
+### 4.4 `-WhatIf` でも、ファイルを変更しない検査のエラーを報告する（手動確認後の修正、2026-09-29）
+
+対象: `Set-ProbedContent` / `Add-ProbedContent`
+
+- 読み取り専用で `-Force` なし、書き込み先の親ディレクトリが無い、の 2 つの検査を `ShouldProcess` より前に置く。
+  1.1.0 ではファイルを開く時点（`ShouldProcess` の後）で失敗していたため、`-WhatIf` では報告されなかった
+- エラーの分類（非終了エラー）と `FullyQualifiedErrorId`（`WriteAccessDenied` / `WriteFailed`）は変えない。
+  メッセージは .NET の例外の文言から本モジュールの文言（5 言語）に変わる
+- 読み取り専用以外の理由で書き込めない場合（ACL など）は、実際に開くまで分からないため、従来どおり `ShouldProcess` の後で報告する
+- 判定の失敗（`EncodingDetectionFailed` など）・継承元が無い（`AutoEncodingRequiresExistingFile`）・同一パスの往復（`SamePathRoundTrip`）は、
+  1.1.0 から `ShouldProcess` より前にあり、変えていない
 
 ---
 
@@ -471,6 +496,9 @@ BOM を持てるのは Unicode 系 5 系統だけである。変換先が Unicod
 - `-SourceEncoding` を明示した場合は検出しない。検出の誤判定を回避する手段である。受け付ける値は `Get-ProbedContent -Encoding` と同じ（裸の `utf8` も可）
 - 変換元の BOM の有無は、ファイル先頭のバイト列が変換元のエンコーディングの BOM と一致するかで決める。一致すれば読み飛ばす（原則 A）
 - 変換元が 0 バイトの場合は、変換結果も 0 バイトとし、書き直さない（`Changed = false`）。BOM は 1 文字でも書くときにだけ書く（`Out-ProbedFile` 2.11 と同じ規則）
+- 変換元が 0 バイトの場合、`-SourceEncoding` が無ければ、変換先のエンコーディング（無ければ `utf8NoBOM`）を変換元とみなす。
+  `-PassThru` の `SourceEncoding` / `SourceCodePage` もその値になる（実装記録 2.4）。
+  書き出す内容は 0 バイトのままで、どちらを選んでも変わらない。**1.3.0 以降で見直すかどうかを検討中（保留）**
 
 ### 13.2 変換元の不正なバイト列
 
@@ -515,6 +543,11 @@ BOM を持てるのは Unicode 系 5 系統だけである。変換先が Unicod
 - 更新日時は保たない（内容の変更であるため新しい日時になる）。作成日時・属性・ACL は `File.Replace` の挙動に従う
 - 読み取り専用で `-Force` なしは非終了エラー。`-Force` ありは属性を外して書き込み、書き込み後に元に戻す（4.1 と同じ共用部品）
 - `-WhatIf` / `-Confirm` はファイルごとに効く。`ConfirmImpact` は `Medium`（既定では確認を出さない）
+- `ShouldProcess` は、変換結果を求めた後・書き込みの前に呼ぶ。そのため `-WhatIf` / `-Confirm` のメッセージは、
+  **変換結果が元と同一で書き直さないファイルにも出る**。利用者が `-Confirm` を指定した場合に確認を省かないための意図した挙動である（実装記録 2.5）
+- `-WhatIf` のときも、ファイルを変更しない検査は行い、`-WhatIf` なしと同じ非終了エラーを報告する。
+  N3（不正なバイト列）・N4（表現できない文字）は当初から報告していた。加えて N6（読み取り専用・書き込み権限）・N7〜N9（16 章）も報告する
+  （手動確認後の修正、2026-09-29）。書き込み権限は、読み取り専用以外の理由（ACL など）で書けない場合は実際に書くまで分からないため対象外
 
 ### 15.2 同じファイルの読み書き
 
@@ -531,6 +564,9 @@ BOM を持てるのは Unicode 系 5 系統だけである。変換先が Unicod
 - 出力先に同名のファイルが既にある場合は非終了エラー（N7）。`-Force` を付ければ上書きする（読み取り専用なら外して書き、元に戻す）
 - 同じ実行の中でファイル名が重なった場合、2 件目以降は非終了エラー（N8）。`-Force` があっても上書きしない（同じ実行で書いたファイルを消さないため）
 - 変換元と出力先が同じファイルになった場合は非終了エラー（N9）。その場で変換したい場合は `-Destination` を付けない
+- N7〜N9 は `ShouldProcess` より前に検査し、`-WhatIf` でも報告する（15.1）。N8 のために、検査を通った時点で**書く予定のファイル名**を記録する。
+  `-WhatIf` で実際には何も書かれない場合も、通常の実行と同じく 2 件目以降が N8 になる。
+  `-Confirm` で拒否したファイル・書き込みに失敗したファイルも、名前は記録済みとして扱う（同じ実行での名前の重なりは利用者の指定の誤りであるため）
 - `-Destination` の場合は、変換結果が変換元と同一でも**出力先には書く**（`Changed` は「変換結果が変換元と異なるか」を表す）
 - 書き込みは出力先のフォルダーに一時ファイルを作ってから移す（上書き時は `File.Replace`）
 
@@ -546,12 +582,27 @@ BOM を持てるのは Unicode 系 5 系統だけである。変換先が Unicod
 | `Path` | `string` | 変換元の絶対パス |
 | `Destination` | `string` | 書き込み先の絶対パス（その場での変換は `Path` と同じ） |
 | `SourceEncoding` | `string` | 変換元の統一語彙名 |
+| `SourceCodePage` | `int` | 変換元のコードページ番号（判定結果の `CodePage`、または `-SourceEncoding` で指定したもののコードページ）。手動確認後の修正（2026-09-29）で追加 |
 | `Encoding` | `string` | 変換先の統一語彙名 |
 | `SourceLineBreak` | `string` | 変換元の改行（`Resolve-Encoding` の `LineBreak` と同じ値。混在なら `LfAndCrLf` など） |
 | `LineBreak` | `string` | 変換先の改行（改行を保った場合は `SourceLineBreak` と同じ） |
 | `Changed` | `bool` | 変換結果が変換元と異なるか |
 
-- 統一語彙名は、Unicode 系なら明示形（`utf8BOM`、`unicodeNoBOM` など）、それ以外は WebName（`shift_jis`、`euc-jp` など）とする。出力された名前をそのまま `-Encoding` に渡せば元に戻せる（原則 B）
+- 統一語彙名は、Unicode 系なら明示形（`utf8BOM`、`unicodeNoBOM` など）、それ以外は WebName（`shift_jis`、`euc-jp` など）とする。
+  WebName は小文字にそろえる（.NET Framework は 20932 の WebName を `EUC-JP` と返すため）
+- **元に戻すには、Unicode 系は `SourceEncoding`**（BOM の有無まで表す明示形）、**それ以外は `SourceCodePage`** を `-Encoding` に渡す
+- `SourceEncoding` の WebName は、別のコードページに解決される場合がある（判定結果が 20932 のとき `SourceEncoding` は `euc-jp` になるが、
+  `euc-jp` を `Encoding.GetEncoding` に渡すと 51932 が返る）。Unicode 系以外で `SourceEncoding` を渡すと、元に戻らないことがある。
+  往復を保証するのは `CodePage` であり、WebName ではない（1.1.0 仕様書 4.4 節）
+- 変換元が 0 バイトの場合の `SourceEncoding` / `SourceCodePage` は、変換元とみなしたエンコーディングのもの（13.1）
+
+```powershell
+$r = Convert-ProbedContent .\a.txt -Encoding utf8NoBOM -PassThru
+Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage    # Unicode 系以外の場合
+```
+
+> **改めた経緯（2026-09-29）:** 当初は「出力された名前（`SourceEncoding`）をそのまま `-Encoding` に渡せば元に戻せる（原則 B）」としていた。
+> これは EUC-JP で成り立たず、1.1.0 仕様書 4.4 節の「往復を保証するのは `CodePage`」と矛盾していたため、`SourceCodePage` を追加して改めた。
 - 公開型にはしない。`PSTypeNames` の先頭に `SnowStack.EncodingProbe.ConvertResult` を入れる（将来のフォーマットファイルや公開型への昇格に備える）
 
 ---
@@ -632,6 +683,11 @@ PSCompat で PS 5.1 と 7.x の結果が一致することを確認する。
 ### 19.3 実装上の留意点
 
 - 変換元はファイル全体を読み、例外フォールバック付きの `Encoding` で復号・符号化する（`Encoding.GetEncoding(codePage, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback)`。Unicode 系はコンストラクタの `throwOnInvalidBytes` を使う）
-- 例外から位置を得るには `DecoderFallbackException.Index` / `EncoderFallbackException.Index` を使い、行・桁に換算する
+- 位置は `DecoderFallbackException.Index` / `EncoderFallbackException.Index` を**使わずに**求める。
+  不正なバイト列は、復号器に 1 バイトずつ与えて例外になった位置から、例外が報告したバイト列（`BytesUnknown`）の先頭まで逆にたどる。
+  表現できない文字は、その文字の最初の出現位置から行・桁に換算する
+  - 当初は「`DecoderFallbackException.Index` / `EncoderFallbackException.Index` を使い、行・桁に換算する」と記載していた。
+    `Index` の基準が .NET Framework と .NET Core で異なり（UTF-8 の `61 E9 62 0A` で PowerShell 7.x は 1、5.1 は 0）、
+    両ホストで違う位置を報告したため改めた（`docs/EncodingProbe-1.2.0-実装記録.md` 1.2）
 - 書き込み部品（読み取り専用の復元、BOM の出力）は `Out-ProbedFile` と共用する
 - 変換の順序は「復号 → 改行の変換 → 符号化（BOM 付加）→ 元のバイト列との比較 → 一時ファイルに書き込み → 置き換え」とする

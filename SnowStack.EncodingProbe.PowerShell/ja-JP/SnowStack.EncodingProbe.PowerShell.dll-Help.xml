@@ -224,6 +224,9 @@
       <maml:alert>
         <maml:para>同一のファイルを 1 つのパイプラインで読み書きすることは拒否されます。読み終える前に下流のコマンドがファイルを切り詰めてしまうためです。いったん変数に受けてください。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>シングルバイト系の文字エンコーディング（windows-1252、ISO-8859 など）はバイト列の構造からは判別できず、文章の統計で推定しています。そのため判定の成否は長さよりも内容に左右されます。文字の一覧、記号・数字の多い行、その言語で通常使わない文字を含むテキストでは、数百バイトあっても判定できない（CodePage が -1）ことがあります。その場合は -Encoding でコードページを明示してください。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -343,7 +346,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -419,7 +422,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -575,7 +578,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -628,6 +631,9 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       </maml:alert>
       <maml:alert>
         <maml:para>書き込み先が存在しても 0 バイトの場合は判定できないため、稼働している .NET ランタイムの既定エンコーディング（BOM 無し）と OS 既定の改行を使います。Windows PowerShell 5.1 では ANSI コードページ、PowerShell 7.x では UTF-8 です。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>シングルバイト系の文字エンコーディング（windows-1252、ISO-8859 など）はバイト列の構造からは判別できず、文章の統計で推定しています。そのため判定の成否は長さよりも内容に左右されます。文字の一覧、記号・数字の多い行、その言語で通常使わない文字を含むテキストでは、数百バイトあっても判定できない（CodePage が -1）ことがあります。その場合は、書き込み先や -EncodingFrom の参照先から継承せず、-Encoding でコードページを明示してください。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -748,7 +754,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -830,7 +836,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1003,7 +1009,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。</maml:para>
+          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1068,6 +1074,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>ISO-2022-JP のような状態を持つ文字エンコーディングにも安全に追記できます。追記した部分は自身のエスケープシーケンスで始まり、末尾で ASCII に戻るため、その部分だけで完結します。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>シングルバイト系の文字エンコーディング（windows-1252、ISO-8859 など）はバイト列の構造からは判別できず、文章の統計で推定しています。そのため判定の成否は長さよりも内容に左右されます。文字の一覧、記号・数字の多い行、その言語で通常使わない文字を含むテキストでは、数百バイトあっても判定できない（CodePage が -1）ことがあります。その場合は、書き込み先や -EncodingFrom の参照先から継承せず、-Encoding でコードページを明示してください。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1219,7 +1228,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは作成も変更もされません。</maml:para>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは作成も変更もされません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1320,7 +1329,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは作成も変更もされません。</maml:para>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは作成も変更もされません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1497,7 +1506,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは作成も変更もされません。</maml:para>
+          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは作成も変更もされません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1559,6 +1568,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>BOM は 1 行でも書いたときにだけ書きます。入力が 1 件も無い場合、出力先は BOM 無しの 0 バイトで作成（既存なら 0 バイトに切り詰め）します。-Append の場合、既存のファイルには触れません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>シングルバイト系の文字エンコーディング（windows-1252、ISO-8859 など）はバイト列の構造からは判別できず、文章の統計で推定しています。そのため判定の成否は長さよりも内容に左右されます。文字の一覧、記号・数字の多い行、その言語で通常使わない文字を含むテキストでは、数百バイトあっても判定できない（CodePage が -1）ことがあります。その場合は、Auto や -Append の継承を使わず、-Encoding でコードページを明示してください。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1700,13 +1712,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>PassThru</maml:name>
           <maml:description>
-            <maml:para>変換したファイル（変更の必要が無かったものを含む）ごとに、Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed のプロパティを持つオブジェクトを 1 個出力します。既定では何も出力しません。</maml:para>
+            <maml:para>変換したファイル（変更の必要が無かったものを含む）ごとに、Path、Destination、SourceEncoding、SourceCodePage、Encoding、SourceLineBreak、LineBreak、Changed のプロパティを持つオブジェクトを 1 個出力します。既定では何も出力しません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されず、-PassThru でも何も出力しません。</maml:para>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されず、-PassThru でも何も出力しません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1790,13 +1802,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>PassThru</maml:name>
           <maml:description>
-            <maml:para>変換したファイル（変更の必要が無かったものを含む）ごとに、Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed のプロパティを持つオブジェクトを 1 個出力します。既定では何も出力しません。</maml:para>
+            <maml:para>変換したファイル（変更の必要が無かったものを含む）ごとに、Path、Destination、SourceEncoding、SourceCodePage、Encoding、SourceLineBreak、LineBreak、Changed のプロパティを持つオブジェクトを 1 個出力します。既定では何も出力しません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されず、-PassThru でも何も出力しません。</maml:para>
+            <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されず、-PassThru でも何も出力しません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1917,7 +1929,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>PassThru</maml:name>
         <maml:description>
-          <maml:para>変換したファイル（変更の必要が無かったものを含む）ごとに、Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed のプロパティを持つオブジェクトを 1 個出力します。既定では何も出力しません。</maml:para>
+          <maml:para>変換したファイル（変更の必要が無かったものを含む）ごとに、Path、Destination、SourceEncoding、SourceCodePage、Encoding、SourceLineBreak、LineBreak、Changed のプロパティを持つオブジェクトを 1 個出力します。既定では何も出力しません。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1964,7 +1976,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されず、-PassThru でも何も出力しません。</maml:para>
+          <maml:para>コマンドを実行した場合に何が起きるかを表示します。ファイルは変更されず、-PassThru でも何も出力しません。ファイルを変更しない検査（読み取り専用など）は行い、そのエラーは報告します。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1991,7 +2003,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
           <maml:uri />
         </dev:type>
         <maml:description>
-          <maml:para>-PassThru を指定したとき、変換したファイルごとに 1 個のオブジェクト（型名 SnowStack.EncodingProbe.ConvertResult）。文字エンコーディングは統一語彙の名前（utf8BOM、unicodeNoBOM、shift_jis など）で表すため、SourceEncoding をそのまま -Encoding に渡せば元のバイト列に戻せます。</maml:para>
+          <maml:para>-PassThru を指定したとき、変換したファイルごとに 1 個のオブジェクト（型名 SnowStack.EncodingProbe.ConvertResult）。SourceCodePage は変換元のコードページです。元のバイト列に戻すには、Unicode 系は SourceEncoding（utf8BOM など、BOM の有無まで表す名前）を、それ以外は SourceCodePage を -Encoding に渡します。Unicode 系以外の SourceEncoding は WebName で、別のコードページに解決される場合がある（euc-jp は 51932 になるが、判定結果は 20932）ため、渡しても元に戻らないことがあります。</maml:para>
         </maml:description>
       </command:returnValue>
     </command:returnValues>
@@ -2017,6 +2029,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>パラメーターの誤り（変換の指定が無い、-Encoding Auto、BOM の指定の食い違い、-Destination のフォルダーが無い など）は終了エラーです。1 つのファイルに関する失敗は非終了エラーで、そのファイルは変更せずに残し、ほかのファイルの処理は続けます。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>シングルバイト系の文字エンコーディング（windows-1252、ISO-8859 など）はバイト列の構造からは判別できず、文章の統計で推定しています。そのため判定の成否は長さよりも内容に左右されます。文字の一覧、記号・数字の多い行、その言語で通常使わない文字を含むテキストでは、数百バイトあっても判定できない（CodePage が -1）ことがあります。その場合は -SourceEncoding でコードページを明示してください。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-WhatIf / -Confirm でも、ファイルを変更しない検査（読み取り専用、-Destination に同名のファイルがある、同じ実行でファイル名が重なる、出力先が変換元と同じ、不正なバイト列、表現できない文字）は行い、エラーとして報告します。-WhatIf / -Confirm のメッセージは変換結果を求めた後・書き込みの前に出すため、変換結果が元と同じで書き直さないファイルにも出ます。-Confirm を指定したときに確認を省かないための意図した動作です。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -2053,6 +2071,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <dev:code>PS C:\&gt; Convert-ProbedContent .\legacy.txt -SourceEncoding euc-jp -Encoding shift_jis</dev:code>
         <dev:remarks>
           <maml:para>変換元の文字エンコーディングを判定せず、EUC-JP から Shift_JIS に変換します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 6 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $r = Convert-ProbedContent .\a.txt -Encoding utf8NoBOM -PassThru
+PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
+        <dev:remarks>
+          <maml:para>a.txt を UTF-8 に変換し、元の文字エンコーディングに戻します。変換元が Unicode 系以外の場合は、SourceEncoding ではなく SourceCodePage を渡します。</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -2346,6 +2372,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>PSEncodingName プロパティの意味はホストによって異なります。PowerShell 7.x では 'utf8BOM' のような登録済みのフレンドリ名ですが、Windows PowerShell 5.1 では 5.1 の固定の -Encoding 値に一致した場合だけ値が入り、それ以外は null になります。UsePSName は、その値を標準コマンドの -Encoding にそのまま渡せるかどうかを表します。Get-ProbedContent / Set-ProbedContent / Add-ProbedContent の統一語彙にはこの問題はありません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>シングルバイト系の文字エンコーディング（windows-1252、ISO-8859 など）はバイト列の構造からは判別できず、文章の統計で推定しています。そのため判定の成否は長さよりも内容に左右されます。文字の一覧、記号・数字の多い行、その言語で通常使わない文字を含むテキストでは、数百バイトあっても判定できない（CodePage が -1）ことがあります。Resolve-Encoding には明示する手段が無いため、読み書きのコマンドで -Encoding（Convert-ProbedContent では -SourceEncoding）を指定してください。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>

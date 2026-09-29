@@ -14,7 +14,8 @@ public sealed record EncodingInformation
     /// <summary>
     /// PowerShell -Encoding用のエンコーディング名。
     /// net10.0ビルド（PS6.2+向け）では登録済みフレンドリ名（"utf8BOM"等）または
-    /// フレンドリ名が存在しない場合はWebName。
+    /// フレンドリ名が存在しない場合はWebName。ただし、独自判定の対象外のコードページ
+    /// （UTF.Unknown が返す windows-1252 / ISO-8859-x など）は null。
     /// net48ビルド（PS5.1向け）では、PS5.1の固定-Encoding列挙値一覧に一致する場合のみ
     /// その値（"Ascii"等）を返し、一致しない場合はnullになる。
     /// </summary>

@@ -196,12 +196,8 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
 
         this._path = ResolveOutputPath();
 
-        if (!ShouldProcess(this._path, OperationName))
-        {
-            this._discard = true;
-            return;
-        }
-
+        // ファイルを変更しない検査（-NoClobber・読み取り専用・文字エンコーディングの決定）は、
+        // ShouldProcess より前に行う。-WhatIf でも、実行すれば失敗することを報告するため（1.2.0 手動確認後の修正）
         bool exists = File.Exists(this._path);
 
         if (exists && this.NoClobber.IsPresent && !this.Append.IsPresent)
@@ -226,6 +222,12 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
         EncodingSpec? inherited = encodingFromBound ? ResolveEncodingFrom(this.EncodingFrom) : null;
 
         ResolveEncoding(inherited, encodingBound, exists);
+
+        if (!ShouldProcess(this._path, OperationName))
+        {
+            this._discard = true;
+            return;
+        }
 
         this._lineBreak = LineBreakResolver.Resolve(this.LineBreak, this._spec.LineBreak);
         this._formatter = CreateFormatter();

@@ -183,8 +183,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "The file '{0}' already exists. Specify -Force to overwrite it.",
 
                 [MessageKey.DestinationNameConflict] =
-                    "'{1}' was not converted because '{0}' has already been written by this command from "
-                    + "another file with the same name. -Destination does not keep the folder structure.",
+                    "'{1}' was not converted because '{0}' is already the destination of another file with the same name "
+                    + "in this command. -Destination does not keep the folder structure.",
 
                 [MessageKey.DestinationIsSource] =
                     "'{0}' was not converted because the destination is the source file itself. To convert "
@@ -329,7 +329,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "ファイル '{0}' は既に存在します。上書きするには -Force を指定してください。",
 
                 [MessageKey.DestinationNameConflict] =
-                    "同じ名前の別のファイルから '{0}' を既に書き込んだため、'{1}' は変換しませんでした。-Destination はフォルダー構造を保ちません。",
+                    "'{0}' は同じ名前の別のファイルの書き込み先として既に使われているため、'{1}' は変換しませんでした。-Destination はフォルダー構造を保ちません。",
 
                 [MessageKey.DestinationIsSource] =
                     "出力先が変換元のファイル自身であるため、'{0}' は変換しませんでした。その場で変換する場合は -Destination を省略してください。",
@@ -474,8 +474,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "파일 '{0}'이(가) 이미 있습니다. 덮어쓰려면 -Force를 지정하십시오.",
 
                 [MessageKey.DestinationNameConflict] =
-                    "이름이 같은 다른 파일에서 '{0}'을(를) 이미 썼으므로 '{1}'은(는) 변환하지 않았습니다. -Destination은 폴더 구조를 유지하지 "
-                    + "않습니다.",
+                    "'{0}'은(는) 이름이 같은 다른 파일의 출력 대상으로 이미 사용되었으므로 '{1}'은(는) 변환하지 않았습니다. -Destination은 폴더 구조를 "
+                    + "유지하지 않습니다.",
 
                 [MessageKey.DestinationIsSource] =
                     "대상이 원본 파일 자체이므로 '{0}'은(는) 변환하지 않았습니다. 그 자리에서 변환하려면 -Destination을 생략하십시오.",
@@ -615,7 +615,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "檔案 '{0}' 已存在。若要覆寫，請指定 -Force。",
 
                 [MessageKey.DestinationNameConflict] =
-                    "已從另一個同名檔案寫入 '{0}'，因此未轉換 '{1}'。-Destination 不會保留資料夾結構。",
+                    "'{0}' 已作為另一個同名檔案的輸出目標，因此未轉換 '{1}'。-Destination 不會保留資料夾結構。",
 
                 [MessageKey.DestinationIsSource] =
                     "目的地就是來源檔案本身，因此未轉換 '{0}'。若要就地轉換，請省略 -Destination。",
@@ -755,7 +755,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "文件 '{0}' 已存在。若要覆盖，请指定 -Force。",
 
                 [MessageKey.DestinationNameConflict] =
-                    "已从另一个同名文件写入 '{0}'，因此未转换 '{1}'。-Destination 不会保留文件夹结构。",
+                    "'{0}' 已作为另一个同名文件的输出目标，因此未转换 '{1}'。-Destination 不会保留文件夹结构。",
 
                 [MessageKey.DestinationIsSource] =
                     "目标就是源文件本身，因此未转换 '{0}'。若要就地转换，请省略 -Destination。",

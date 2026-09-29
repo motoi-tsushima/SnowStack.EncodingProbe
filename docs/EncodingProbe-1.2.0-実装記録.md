@@ -4,6 +4,7 @@
 - 作成日: 2026-09-25
 - 目的: 実装の過程で、仕様書・依頼（完了後に削除。git の履歴に残っている）・当初の想定と異なる結果になった点と、
   仕様書に書かれていなかったため実装側で決めた点を残す
+- 追記: 2026-09-29 の手動確認後の修正（`docs/EncodingProbe-1.2.0-修正依頼-手動確認後.md`）は 4 章にまとめた
 
 ---
 
@@ -103,6 +104,10 @@ E4 / E5 は `BeginProcessing` の終了エラーにした。どちらもファ�
 仕様書 2.10 の順序どおり、`ShouldProcess` は `-NoClobber` と読み取り専用の検査より前にある。
 そのため `-WhatIf`（または `-Confirm` で拒否）のときは、`-NoClobber` や読み取り専用のエラーは報告されない。
 
+**追記（2026-09-29）: 手動確認の結果、方針を改めた。** 「ファイルを変更しない検査で失敗するものは、`-WhatIf` のときにも報告する」。
+`ShouldProcess` を `-NoClobber`・読み取り専用・`-EncodingFrom` の参照先・出力先の既存ファイルの判定の後ろに移した。
+4 コマンドの調査と修正の内容は 4.2 にある。仕様書 2.10 / 2.14 も改めた。
+
 ### 2.7 ワイルドカードが 0 件に解決された `Convert-ProbedContent -Path`
 
 共通の基底クラスのパス解決（`ProbedContentCommandBase.ResolveOne`）は、ワイルドカードが 0 件のとき何も返さない
@@ -117,3 +122,91 @@ E4 / E5 は `BeginProcessing` の終了エラーにした。どちらもファ�
 - PSCompat のシナリオで `.GetNewClosure()` を付けたスクリプトブロックの中では、`$script:` 付きの変数が見えない
   （クロージャは動的モジュールのスコープで動くため）。スクリプトの最上位で定義した変数は、クロージャの中では `$` だけで参照する
 - ASCII だけのファイルの `-PassThru` の `SourceEncoding` は `us-ascii` になる（判定結果が ASCII のため。仕様書 17 章の「それ以外は WebName」のとおり）
+
+---
+
+## 4. 手動確認後の修正（2026-09-29）
+
+依頼: `docs/EncodingProbe-1.2.0-修正依頼-手動確認後.md`。判定ロジック（クラスライブラリの判定処理）は変えていない。
+課題文書 `docs/EncodingProbe-課題-カルチャーによるシングルバイトの推定.md` の提案（1.3.0 以降）は実装していない。
+
+### 4.1 `PSEncodingName` の `I do not know.`（依頼 1 章）
+
+- **発生箇所:** `SnowStack.EncodingProbe/EncodingDetector.cs` の `EncodingDetector.EncodingName(int)`（private static）。
+  独自判定のコードページとエンコーディング名の表で、表に無いコードページに既定値 `"I do not know."` を返していた。
+  net10.0 ビルドの `EncodingDetector.PSEncodingName(int, bool)` が、フレンドリ名の無いコードページについてこの表から WebName を引くため、
+  UTF.Unknown の結果（`EncodingProbe.ApplyUtfUnknownResult` で `PSEncodingName` を設定する経路）が
+  1252 / 28591 / 1251 / 1250 / 874 など表に無いコードページだと、この文字列が `PSEncodingName` に入っていた
+- **影響範囲:** net10.0 ビルド（PowerShell 7.x）だけ。net48 ビルド（PowerShell 5.1）は固定名の表に一致しなければ null を返すため起きない。
+  独自判定のコードページ（932 / 20932 / 950 など）はすべて表にあり、影響しない
+- **公開済みの版:** 1.0.0 から存在した（`v1.0.0` タグの時点で同じコード）。1.1.0 にも含まれる
+- **修正:** 表の既定値を null にした（`EncodingName` の戻り値を `string?` にした）。`UsePSName` は従来どおり false。
+  文字列 `I do not know.` はほかに無かった（ヘルプ・サンプル・テストの期待値を含めて検索した）
+- **依頼と異なる判断:** 依頼 1.4 のテストは 20932・950 でも `PSEncodingName` が null であることを求めていたが、
+  net10.0 ビルドはフレンドリ名が無いとき WebName を入れる設計（`EncodingInformation` の XML ドキュメント、CLAUDE.md、既存テスト）で、
+  1.1.0 でも 932 → `shift_jis`、20932 → `euc-jp`、950 → `big5` を返している。
+  利用者に確認し、**表に無い（従来 `I do not know.` が入っていた）場合だけ null にする**ことにした。
+  20932・950 の net10.0 での値は従来どおり WebName で、テストもその値を期待している
+- テスト: `tests/EncodingProbe.Tests/DetectorTests/PSEncodingNameUnknownCodePageTests.cs`（両 TFM）、
+  PSCompat `World/PSEncodingName/*`（1252 / 28591 / 1251 が両ホストで null）
+
+### 4.2 `-WhatIf` で、実行すれば失敗するエラーを報告する（依頼 2 章）
+
+修正前の順序の調査結果:
+
+| コマンド | 修正前 | 修正 |
+|---|---|---|
+| `Out-ProbedFile` | パス解決 → **`ShouldProcess`** → `-NoClobber` → 読み取り専用 → `-EncodingFrom` → 既存ファイルの判定 | `ShouldProcess` を既存ファイルの判定の後ろへ移した |
+| `Set-ProbedContent` / `Add-ProbedContent` | 同一パスの往復 → 既存ファイルの判定・継承元の有無 → **`ShouldProcess`** → ファイルを開く（読み取り専用・親ディレクトリ無しはここで失敗） | 読み取り専用・親ディレクトリ無しの検査を `ShouldProcess` の前に足した |
+| `Convert-ProbedContent` | 読み取り → 判定 → 復号・符号化（N3 / N4）→ N9 → N8 → N7 → N6 → **`ShouldProcess`** → 書き込み | N6〜N9 は既に前にあった。N8 だけ `-WhatIf` で検出できなかったので直した |
+
+- **`Set-` / `Add-ProbedContent`:** 読み取り専用で `-Force` なしは `WriteAccessDenied`（`PermissionDenied`）、親ディレクトリが無い場合は `WriteFailed`（`WriteError`）。
+  いずれも修正前にファイルを開いた時点で出ていたのと同じ ID・分類にした。例外の型も同じ（`UnauthorizedAccessException` / `DirectoryNotFoundException`）。
+  メッセージは .NET の例外の文言（実行環境で変わりうる）から、本モジュールのメッセージ（`FileIsReadOnly` / `ParentDirectoryNotFound`、5 言語）に変わった。
+  **挙動が変わったため CHANGELOG に記載した**
+- **`Out-ProbedFile`:** 依頼は `-NoClobber`・読み取り専用の後ろへの移動だったが、`-EncodingFrom` の参照先の判定と出力先の既存ファイルの判定
+  （明示的な `Auto`、`-Append` の継承と整合性検査の準備）も読み取りだけなので、同じ方針で `ShouldProcess` の前に置いた。
+  `Set-` / `Add-ProbedContent` は 1.1.0 から判定を `ShouldProcess` の前で行っており、これと揃う。
+  結果として、`-WhatIf` でも出力先の既存ファイルを判定する（ファイル全体を読む）ようになった
+- **`Convert-ProbedContent` の N8:** 同じ実行で書いたファイル名の記録（`_writtenDestinations`）は、実際に書いた後にだけ追加していたため、
+  `-WhatIf` では 2 件目が N8 にならなかった。検査（N6〜N9）を通った時点で**書く予定のファイル名**を記録するようにした（`_plannedDestinations`）。
+  その結果、`-Confirm` で拒否したファイル・書き込みに失敗したファイルの名前も記録済みとして扱い、2 件目は N8 になる。
+  同じ実行での名前の重なりは利用者の指定の誤りなので、書いたかどうかに関係なく報告するのが一貫していると判断した
+- **N8 のメッセージ:** 「同じ名前の別のファイルから既に書き込んだ」は `-WhatIf` では事実と異なるため、
+  「同じ名前の別のファイルの書き込み先として既に使われている」に改めた（5 言語）
+- テスト: 各コマンドのテストクラスに `-WhatIf` の有無で同じ ID になることの検査を足した。PSCompat `WhatIf/{normal,WhatIf}/*`
+
+### 4.3 `Convert-ProbedContent -PassThru` の `SourceCodePage`（依頼 3 章）
+
+- `SourceEncoding` の直後に `SourceCodePage`（int）を追加した。変換元が 0 バイトの場合は、2.4 の「変換元とみなしたエンコーディング」のコードページ
+- **PSCompat で見つかった食い違い:** EUC-JP の `SourceEncoding` が PowerShell 5.1 で `EUC-JP`、7.x で `euc-jp` だった。
+  .NET Framework は 20932 の WebName を大文字で返す。1.2.0 の新機能（`Convert-ProbedContent -PassThru`）の不具合なので、
+  `EncodingVocabulary.GetUnifiedName` で WebName を小文字にそろえた（語彙の照合は大文字小文字を区別しないため、`-Encoding` に渡す用途に影響しない）
+- 1.1.0 から、エラーメッセージの中の WebName（`Add-ProbedContent` の `EncodingChangeOnAppend` など）にも同じ大文字小文字の差がありうる。
+  本依頼の範囲外のため直していない
+- ヘルプ（5 言語）の `-PassThru` の説明・OUTPUTS・例 6 に、往復には Unicode 系以外は `SourceCodePage` を使うことを書いた
+
+### 4.4 シングルバイト系の判定の限界（依頼 4 章）
+
+- 1.1.0 仕様書 4.4 節に「シングルバイト系の判定の限界（1.2.0）」を設け、「短文での既知の限界」の 170 バイトの記述が上書き経路だけの話であることを明記した
+- ヘルプ（5 言語）の NOTES に、判定を行う 6 コマンドぶん追記した。明示指定に使うパラメータ名はコマンドごとに合わせた
+  （`Convert-ProbedContent` は `-SourceEncoding`、`Resolve-Encoding` は読み書きのコマンドの `-Encoding` を案内）
+- README.md（NuGet パッケージの説明にも使われる）に追記した。PowerShell モジュール専用の README は無い
+
+### 4.5 文書（依頼 5 章）
+
+- 仕様書 19.3（`Index` を使わない）、13.1（0 バイトの変換元）、15.1（書き直さないファイルにも `-WhatIf` / `-Confirm` のメッセージが出る、`-WhatIf` で報告するエラー）、
+  16 章（N7〜N9 と `-WhatIf`）、17 章（`SourceCodePage` と往復の案内）、2.10 / 2.14（検査の順序）、4.4（`Set-` / `Add-ProbedContent` の変更）を改めた
+- `Convert-ProbedContent` のヘルプの NOTES に、`-WhatIf` / `-Confirm` で報告するエラーと、書き直さないファイルにもメッセージが出ることを書いた。
+  `Set-` / `Add-` / `Out-` / `Convert-` の `-WhatIf` の説明に、ファイルを変更しない検査は行うことを足した
+- ヘルプは `zh-TW` を `zh-HK` / `zh-MO` へ複製し、手元の `publish/` の `core\` / `desktop\` の 7 フォルダーずつ（計 14 か所）にもコピーした
+  （`publish/` のヘルプと DLL は git の管理外。DLL は更新していない）
+
+### 4.6 テストの件数（2026-09-29 時点）
+
+| 対象 | 件数 |
+|---|---|
+| コア net10.0 | 1179 |
+| コア net48 | 1189 |
+| PowerShell 層（net10.0） | 707 |
+| PSCompat（PS 5.1 / 7.x） | 489 シナリオ、完全に一致 |

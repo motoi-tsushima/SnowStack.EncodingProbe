@@ -264,8 +264,13 @@ namespace SnowStack.EncodingProbe
         /// コードページからエンコーディング名を取得する
         /// </summary>
         /// <param name="codePage">コードページ</param>
-        /// <returns>エンコーディング名</returns>
-        private static string EncodingName(int codePage) =>
+        /// <returns>エンコーディング名。表に無いコードページは null</returns>
+        /// <remarks>
+        /// 独自判定が返すコードページはすべて表にある。表に無いのは UTF.Unknown の結果
+        /// （1252 / 28591 など）を <see cref="PSEncodingName(int, bool)"/> に渡した場合だけで、
+        /// 1.2.0 より前はここで "I do not know." を返し、net10.0 ビルドの PSEncodingName に入っていた
+        /// </remarks>
+        private static string? EncodingName(int codePage) =>
             codePage switch
             {
                 20127 => "us-ascii",
@@ -287,7 +292,7 @@ namespace SnowStack.EncodingProbe
                  1201 => "unicodeFFFE",
                 12000 => "utf-32",
                 12001 => "utf-32BE",
-                    _ => "I do not know.",
+                    _ => null,
             };
 
 #if !NETFRAMEWORK
@@ -342,16 +347,17 @@ namespace SnowStack.EncodingProbe
         /// -Encoding に渡せるフレンドリ名を返す(net10.0 ビルド、PS6.2+ 向け)。
         /// フレンドリ名が存在しない場合は .NET の WebName
         /// (<see cref="EncodingInformation.EncodingWebName"/> と同じ値)を返す。
+        /// 独自判定の対象外のコードページ(windows-1252 / ISO-8859-x など)は null を返す。
         /// </summary>
         /// <param name="codePage">エンコーディングのコードページ番号(例: 65001, 932)。</param>
         /// <param name="bom">BOM を伴うか。UTF-8 でのみ名前に反映される。</param>
-        /// <returns>-Encoding に渡せるフレンドリ名、またはフレンドリ名が存在しない場合は WebName。</returns>
-        internal static string PSEncodingName(int codePage, bool bom)
+        /// <returns>-Encoding に渡せるフレンドリ名、フレンドリ名が存在しない場合は WebName、独自判定の対象外なら null。</returns>
+        internal static string? PSEncodingName(int codePage, bool bom)
         {
             if (codePage <= 0)
                 throw new ArgumentOutOfRangeException(nameof(codePage), codePage, "コードページ番号が不正です。");
 
-            string psEncodingName = string.Empty;
+            string? psEncodingName = string.Empty;
             psEncodingName = codePage switch
             {
                 // UTF-8: PowerShell が名前で BOM 有無を区別する唯一のケース
@@ -367,9 +373,10 @@ namespace SnowStack.EncodingProbe
                 20127 => "ascii",            // US-ASCII (7-bit)
                 65000 => "utf7",             // 非推奨(.NET 側の生成は net48 のみ可)
 
-                // フレンドリ名なし: Shift-JIS, EUC-JP, ISO-2022-JP, GB2312, Big5, EUC-KR,
-                // ISO-8859-x など。PowerShell の -Encoding フレンドリ名としては渡せないため、
+                // フレンドリ名なし: Shift-JIS, EUC-JP, ISO-2022-JP, GB2312, Big5, EUC-KR など。
+                // PowerShell の -Encoding フレンドリ名としては渡せないため、
                 // 代わりに .NET の WebName を返す(数値コードページは EncodingInformation.CodePage 側で取得可能)。
+                // 独自判定の表に無いコードページ(UTF.Unknown が返す windows-1252 / ISO-8859-x など)は null
                 _ => EncodingName(codePage),
             };
             return psEncodingName;

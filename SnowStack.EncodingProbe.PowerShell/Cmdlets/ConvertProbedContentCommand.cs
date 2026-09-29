@@ -40,8 +40,12 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     /// <summary>コードページ：UTF-8（変換元が空で、変換元の文字エンコーディングを決めようがない場合に使う）</summary>
     private const int CodePageUtf8 = 65001;
 
-    /// <summary>-Destination への出力で、この実行の中で書いたファイル（ファイル名の重なりの検出に使う）</summary>
-    private readonly HashSet<string> _writtenDestinations = new HashSet<string>(PathComparison.Comparer);
+    /// <summary>
+    /// -Destination への出力で、この実行の中で書き込み先として決めたファイル（ファイル名の重なりの検出に使う）。
+    /// 実際に書いたかどうかではなく、検査を通った時点で記録する。-WhatIf で何も書かない場合も、
+    /// 通常の実行と同じ N8 を報告するため（1.2.0 手動確認後の修正）
+    /// </summary>
+    private readonly HashSet<string> _plannedDestinations = new HashSet<string>(PathComparison.Comparer);
 
     /// <summary>変換先の文字エンコーディング。変換元を保つ場合は null。</summary>
     private EncodingSpec? _targetSpec;
@@ -399,9 +403,15 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
             ? file
             : System.IO.Path.Combine(this._destination, System.IO.Path.GetFileName(file));
 
+        // N6〜N9 はファイルを変更しない検査なので、ShouldProcess より前に行う（-WhatIf でも報告する）
         if (!CanWrite(file, target, result))
         {
             return;
+        }
+
+        if (this._destination != null)
+        {
+            this._plannedDestinations.Add(target);
         }
 
         if (!ShouldProcess(target, OperationName))
@@ -414,11 +424,6 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
         if ((this._destination != null || result.Changed) && !WriteAtomically(target, result.Bytes))
         {
             return;
-        }
-
-        if (this._destination != null)
-        {
-            this._writtenDestinations.Add(target);
         }
 
         if (this.PassThru.IsPresent)
@@ -482,6 +487,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
             bytes,
             !BytesAreEqual(original, bytes),
             EncodingVocabulary.GetUnifiedName(sourceCodePage, sourceBom),
+            sourceCodePage,
             EncodingVocabulary.GetUnifiedName(targetCodePage, targetBom),
             LineBreakResolver.Classify(text),
             LineBreakResolver.Classify(converted));
@@ -785,9 +791,9 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
                 return false;
             }
 
-            if (this._writtenDestinations.Contains(target))
+            if (this._plannedDestinations.Contains(target))
             {
-                // N8: 同じ実行で書いたファイルは -Force があっても消さない
+                // N8: 同じ実行で書いた（-WhatIf では書くはずだった）ファイルは -Force があっても消さない
                 ReportWriteRejection(new IOException(ValidationMessages.DestinationNameConflict(target, file)),
                     "DestinationNameConflict", ErrorCategory.ResourceExists, file);
                 return false;
@@ -898,6 +904,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
         output.Properties.Add(new PSNoteProperty("Path", file));
         output.Properties.Add(new PSNoteProperty("Destination", target));
         output.Properties.Add(new PSNoteProperty("SourceEncoding", result.SourceEncoding));
+        output.Properties.Add(new PSNoteProperty("SourceCodePage", result.SourceCodePage));
         output.Properties.Add(new PSNoteProperty("Encoding", result.Encoding));
         output.Properties.Add(new PSNoteProperty("SourceLineBreak", result.SourceLineBreak.ToString()));
         output.Properties.Add(new PSNoteProperty("LineBreak", result.LineBreak.ToString()));
@@ -986,6 +993,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
             byte[] bytes,
             bool changed,
             string sourceEncoding,
+            int sourceCodePage,
             string encoding,
             LineBreakType sourceLineBreak,
             LineBreakType lineBreak)
@@ -993,6 +1001,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
             this.Bytes = bytes;
             this.Changed = changed;
             this.SourceEncoding = sourceEncoding;
+            this.SourceCodePage = sourceCodePage;
             this.Encoding = encoding;
             this.SourceLineBreak = sourceLineBreak;
             this.LineBreak = lineBreak;
@@ -1006,6 +1015,12 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
 
         /// <summary>変換元の統一語彙名</summary>
         public string SourceEncoding { get; }
+
+        /// <summary>
+        /// 変換元のコードページ。Unicode 系以外は、これを -Encoding に渡せば元に戻せる
+        /// （WebName は別のコードページに解決される場合がある。euc-jp は 51932 になるが、判定結果は 20932）
+        /// </summary>
+        public int SourceCodePage { get; }
 
         /// <summary>変換先の統一語彙名</summary>
         public string Encoding { get; }

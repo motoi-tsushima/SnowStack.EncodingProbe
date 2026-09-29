@@ -224,6 +224,9 @@
       <maml:alert>
         <maml:para>Reading and writing the same file in one pipeline is rejected, because the downstream command would truncate the file before it has been read. Receive the content into a variable first.</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>Single-byte character encodings (windows-1252, ISO-8859-x, ...) cannot be distinguished by their byte structure and are estimated from text statistics. Whether detection succeeds therefore depends more on the content than on the length: text containing a list of characters, lines full of symbols and digits, or characters rarely used in the language may not be detected (CodePage -1) even when it is several hundred bytes long. In that case, specify the code page with -Encoding.</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -343,7 +346,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs. The file is not modified.</maml:para>
+            <maml:para>Shows what would happen if the cmdlet runs. The file is not modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -419,7 +422,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs. The file is not modified.</maml:para>
+            <maml:para>Shows what would happen if the cmdlet runs. The file is not modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -575,7 +578,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>Shows what would happen if the cmdlet runs. The file is not modified.</maml:para>
+          <maml:para>Shows what would happen if the cmdlet runs. The file is not modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -628,6 +631,9 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       </maml:alert>
       <maml:alert>
         <maml:para>If the destination exists but is empty, there is nothing to detect, so the default encoding of the running .NET runtime (without a BOM) and the operating system default line break are used. That is the ANSI code page on Windows PowerShell 5.1 and UTF-8 on PowerShell 7.x.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Single-byte character encodings (windows-1252, ISO-8859-x, ...) cannot be distinguished by their byte structure and are estimated from text statistics. Whether detection succeeds therefore depends more on the content than on the length: text containing a list of characters, lines full of symbols and digits, or characters rarely used in the language may not be detected (CodePage -1) even when it is several hundred bytes long. In that case, specify the code page with -Encoding instead of inheriting it from the target file or from -EncodingFrom.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -748,7 +754,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs. The file is not modified.</maml:para>
+            <maml:para>Shows what would happen if the cmdlet runs. The file is not modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -830,7 +836,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs. The file is not modified.</maml:para>
+            <maml:para>Shows what would happen if the cmdlet runs. The file is not modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1003,7 +1009,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>Shows what would happen if the cmdlet runs. The file is not modified.</maml:para>
+          <maml:para>Shows what would happen if the cmdlet runs. The file is not modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1068,6 +1074,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>Stateful character encodings such as ISO-2022-JP are appended safely: the appended block starts with its own escape sequence and returns to ASCII at the end, so it is complete on its own.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Single-byte character encodings (windows-1252, ISO-8859-x, ...) cannot be distinguished by their byte structure and are estimated from text statistics. Whether detection succeeds therefore depends more on the content than on the length: text containing a list of characters, lines full of symbols and digits, or characters rarely used in the language may not be detected (CodePage -1) even when it is several hundred bytes long. In that case, specify the code page with -Encoding instead of inheriting it from the target file or from -EncodingFrom.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1219,7 +1228,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified.</maml:para>
+            <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1320,7 +1329,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified.</maml:para>
+            <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1497,7 +1506,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified.</maml:para>
+          <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1559,6 +1568,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>A BOM is written only when at least one line is written. When no input arrives, the output file is created empty (or truncated to 0 bytes) without a BOM; with -Append an existing file is left untouched.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Single-byte character encodings (windows-1252, ISO-8859-x, ...) cannot be distinguished by their byte structure and are estimated from text statistics. Whether detection succeeds therefore depends more on the content than on the length: text containing a list of characters, lines full of symbols and digits, or characters rarely used in the language may not be detected (CodePage -1) even when it is several hundred bytes long. In that case, specify the code page with -Encoding instead of using Auto or inheriting it with -Append.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1700,13 +1712,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>PassThru</maml:name>
           <maml:description>
-            <maml:para>Outputs one object per converted file, including files that did not need to change, with the properties Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak and Changed. By default the cmdlet outputs nothing.</maml:para>
+            <maml:para>Outputs one object per converted file, including files that did not need to change, with the properties Path, Destination, SourceEncoding, SourceCodePage, Encoding, SourceLineBreak, LineBreak and Changed. By default the cmdlet outputs nothing.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs. No file is modified, and nothing is output with -PassThru.</maml:para>
+            <maml:para>Shows what would happen if the cmdlet runs. No file is modified, and nothing is output with -PassThru. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1790,13 +1802,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>PassThru</maml:name>
           <maml:description>
-            <maml:para>Outputs one object per converted file, including files that did not need to change, with the properties Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak and Changed. By default the cmdlet outputs nothing.</maml:para>
+            <maml:para>Outputs one object per converted file, including files that did not need to change, with the properties Path, Destination, SourceEncoding, SourceCodePage, Encoding, SourceLineBreak, LineBreak and Changed. By default the cmdlet outputs nothing.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>Shows what would happen if the cmdlet runs. No file is modified, and nothing is output with -PassThru.</maml:para>
+            <maml:para>Shows what would happen if the cmdlet runs. No file is modified, and nothing is output with -PassThru. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1917,7 +1929,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>PassThru</maml:name>
         <maml:description>
-          <maml:para>Outputs one object per converted file, including files that did not need to change, with the properties Path, Destination, SourceEncoding, Encoding, SourceLineBreak, LineBreak and Changed. By default the cmdlet outputs nothing.</maml:para>
+          <maml:para>Outputs one object per converted file, including files that did not need to change, with the properties Path, Destination, SourceEncoding, SourceCodePage, Encoding, SourceLineBreak, LineBreak and Changed. By default the cmdlet outputs nothing.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1964,7 +1976,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>Shows what would happen if the cmdlet runs. No file is modified, and nothing is output with -PassThru.</maml:para>
+          <maml:para>Shows what would happen if the cmdlet runs. No file is modified, and nothing is output with -PassThru. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1991,7 +2003,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
           <maml:uri />
         </dev:type>
         <maml:description>
-          <maml:para>With -PassThru, one object per converted file, whose type name is SnowStack.EncodingProbe.ConvertResult. Character encodings are named in the unified vocabulary (utf8BOM, unicodeNoBOM, shift_jis, ...), so passing SourceEncoding back to -Encoding restores the original bytes.</maml:para>
+          <maml:para>With -PassThru, one object per converted file, whose type name is SnowStack.EncodingProbe.ConvertResult. SourceCodePage is the code page of the source. To restore the original bytes, pass SourceEncoding to -Encoding for a Unicode encoding (the name states whether a BOM is present, such as utf8BOM), and SourceCodePage for any other encoding. For other encodings SourceEncoding is a WebName, which can resolve to a different code page (euc-jp resolves to 51932, while the detected code page is 20932), so passing it may not restore the original bytes.</maml:para>
         </maml:description>
       </command:returnValue>
     </command:returnValues>
@@ -2017,6 +2029,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>Errors in the parameters (nothing to convert, -Encoding Auto, conflicting BOM requests, a missing -Destination folder, ...) are terminating errors. Failures that concern one file are non-terminating errors; that file is left unchanged and the other files are still processed.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Single-byte character encodings (windows-1252, ISO-8859-x, ...) cannot be distinguished by their byte structure and are estimated from text statistics. Whether detection succeeds therefore depends more on the content than on the length: text containing a list of characters, lines full of symbols and digits, or characters rarely used in the language may not be detected (CodePage -1) even when it is several hundred bytes long. In that case, specify the code page with -SourceEncoding.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>With -WhatIf and -Confirm, checks that do not modify files (a read-only file, an existing file in -Destination, a file name used twice in the same run, a destination that is the source itself, invalid bytes and unrepresentable characters) are still performed and reported as errors. The -WhatIf and -Confirm message is shown after the conversion result has been computed and before writing, so it also appears for a file whose conversion result is identical to the original and which is therefore not rewritten. This is intended, so that a confirmation requested with -Confirm is never skipped.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -2053,6 +2071,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <dev:code>PS C:\&gt; Convert-ProbedContent .\legacy.txt -SourceEncoding euc-jp -Encoding shift_jis</dev:code>
         <dev:remarks>
           <maml:para>Converts from EUC-JP to Shift_JIS without detecting the source character encoding.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 6 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $r = Convert-ProbedContent .\a.txt -Encoding utf8NoBOM -PassThru
+PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
+        <dev:remarks>
+          <maml:para>Converts a.txt to UTF-8 and then restores the original character encoding. For a source other than Unicode, pass SourceCodePage rather than SourceEncoding.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -2346,6 +2372,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>The PSEncodingName property means different things on the two hosts: on PowerShell 7.x it is a registered friendly name such as 'utf8BOM', while on Windows PowerShell 5.1 it is only filled in when the result happens to match one of the fixed -Encoding values of 5.1, and is otherwise null. UsePSName says whether the value can be passed to the -Encoding parameter of the built-in cmdlets. The unified vocabulary of Get-ProbedContent, Set-ProbedContent and Add-ProbedContent does not have this problem.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Single-byte character encodings (windows-1252, ISO-8859-x, ...) cannot be distinguished by their byte structure and are estimated from text statistics. Whether detection succeeds therefore depends more on the content than on the length: text containing a list of characters, lines full of symbols and digits, or characters rarely used in the language may not be detected (CodePage -1) even when it is several hundred bytes long. Resolve-Encoding has no way to specify the character encoding; specify -Encoding in the reading and writing cmdlets (-SourceEncoding for Convert-ProbedContent).</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>

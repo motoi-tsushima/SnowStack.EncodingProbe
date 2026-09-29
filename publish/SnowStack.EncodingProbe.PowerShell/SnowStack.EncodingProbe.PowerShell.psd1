@@ -45,6 +45,11 @@
 - Set-ProbedContent / Add-ProbedContent の -Force は、書き込み後に読み取り専用の属性を元に戻すように
   なりました（標準の Set-Content / Add-Content と同じ）。
 - -LineBreak が決めるのは要素の後ろに付ける改行だけで、文字列の中の改行は置き換えないことを明文化しました。
+- Set-ProbedContent / Add-ProbedContent は、-WhatIf のときも読み取り専用などのエラーを報告するようになりました。
+
+不具合の修正:
+- PowerShell 7.x で、フレンドリ名の無い文字エンコーディング（windows-1252 など）の PSEncodingName に
+  "I do not know." が入っていたのを null に直しました（1.0.0 から存在した不具合）。
 
 判定の変更:
 - 東アジア以外のカルチャーでは、Shift_JIS などの東アジアの旧マルチバイトの判定を行わなくなりました。

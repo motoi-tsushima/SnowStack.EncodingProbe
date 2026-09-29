@@ -148,6 +148,32 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
 - 同じ扱いになる名前は、ほかに `iso-8859-10` / `viscii` / `euc-tw` / `X-ISO-10646-UCS-4-3412` / `X-ISO-10646-UCS-4-2143`、
   および .NET 10 ビルドの `utf-7` です（UTF.Unknown がこれらを返した場合）
 
+### 手動確認後の修正（2026-09-29）
+
+依頼は `docs/EncodingProbe-1.2.0-修正依頼-手動確認後.md`、実装の記録は `docs/EncodingProbe-1.2.0-実装記録.md` 4 章にあります。
+
+- **不具合の修正: PowerShell 7.x の `Resolve-Encoding` などが返す `PSEncodingName` に、`I do not know.` という文字列が入っていたのを直しました。**
+  独自判定の対象外のコードページ（UTF.Unknown が判定した windows-1252 / iso-8859-1 / windows-1251 など）で起きていました。
+  これらはフレンドリ名が無いため、`PSEncodingName` は **null**、`UsePSName` は false になります。
+  **1.0.0 から存在した不具合です**（net10.0 ビルドだけ。PowerShell 5.1 向けの net48 ビルドは従来から null）。
+  独自判定のコードページ（`shift_jis` / `euc-jp` / `big5` など）の値は変わりません
+- **`-WhatIf` のときも、実行すれば失敗するエラーを報告するようになりました。** ファイルを変更しない検査を `ShouldProcess` より前に置きました。
+  エラーの分類（終了 / 非終了）と `FullyQualifiedErrorId` は `-WhatIf` の有無で同じです
+  - `Set-ProbedContent` / `Add-ProbedContent`（**1.1.0 からの挙動の変更**）: 読み取り専用で `-Force` なし（`WriteAccessDenied`）、
+    書き込み先の親ディレクトリが無い（`WriteFailed`）。エラー ID は従来と同じですが、メッセージは .NET の文言から本モジュールの文言（5 言語）になりました
+  - `Out-ProbedFile`: `-NoClobber`、読み取り専用、`-EncodingFrom` の参照先の判定、出力先の既存ファイルの判定
+  - `Convert-ProbedContent`: 同じ実行の中でのファイル名の重なり（N8）が `-WhatIf` でも報告されるようになりました
+    （読み取り専用・出力先の同名ファイル・出力先が変換元と同じ、は従来から報告していました）
+- **`Convert-ProbedContent -PassThru` に `SourceCodePage`（変換元のコードページ）を追加しました。**
+  元に戻すには、Unicode 系は `SourceEncoding`、それ以外は `SourceCodePage` を `-Encoding` に渡します。
+  `SourceEncoding` の WebName は別のコードページに解決される場合があり（判定結果 20932 の `euc-jp` は 51932 になる）、元に戻らないことがありました
+- `Convert-ProbedContent -PassThru` の `SourceEncoding` / `Encoding` の WebName を小文字にそろえました。
+  PowerShell 5.1 では EUC-JP が `EUC-JP` になり、7.x の `euc-jp` と食い違っていました
+- シングルバイト系（windows-1252、ISO-8859 など）の判定の限界を、ヘルプ（判定を行う 6 コマンド、5 言語）・README・
+  1.1.0 仕様書 4.4 節に明記しました。判定の成否は長さよりも内容に左右され、数百バイトあっても判定できない（`CodePage = -1`）ことがあります。
+  その場合は `-Encoding` / `-SourceEncoding` で明示してください
+- `Convert-ProbedContent` のヘルプに、`-WhatIf` / `-Confirm` のメッセージが変換結果が元と同じで書き直さないファイルにも出ることを明記しました（挙動は変えていません）
+
 ### 変えていない点
 
 - BOM・ISO-2022・ASCII・UTF-32・UTF-16・UTF-8 の判定は、**カルチャーに関わらず**実行します。

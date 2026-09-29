@@ -224,6 +224,9 @@
       <maml:alert>
         <maml:para>在同一个管道中读写同一个文件会被拒绝，因为下游命令会在读完之前把文件截断。请先把内容接收到变量中。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>单字节字符编码（windows-1252、ISO-8859 等）无法从字节序列的结构判别，而是根据文章的统计进行推测。因此判断成功与否更多取决于内容而非长度。包含字符列表、大量符号和数字的行，或该语言通常不使用的字符的文本，即使有数百字节也可能无法判断（CodePage 为 -1）。此时请用 -Encoding 明确指定代码页。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -343,7 +346,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+            <maml:para>显示执行命令时会发生什么。文件不会被更改。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -419,7 +422,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+            <maml:para>显示执行命令时会发生什么。文件不会被更改。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -575,7 +578,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+          <maml:para>显示执行命令时会发生什么。文件不会被更改。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -628,6 +631,9 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       </maml:alert>
       <maml:alert>
         <maml:para>写入目标虽然存在但为 0 字节时无法判定，因此使用正在运行的 .NET 运行时的默认编码（不带 BOM）与操作系统默认的换行。在 Windows PowerShell 5.1 是 ANSI 代码页，在 PowerShell 7.x 是 UTF-8。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>单字节字符编码（windows-1252、ISO-8859 等）无法从字节序列的结构判别，而是根据文章的统计进行推测。因此判断成功与否更多取决于内容而非长度。包含字符列表、大量符号和数字的行，或该语言通常不使用的字符的文本，即使有数百字节也可能无法判断（CodePage 为 -1）。此时请不要从写入目标或 -EncodingFrom 的参照文件继承，而用 -Encoding 明确指定代码页。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -748,7 +754,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+            <maml:para>显示执行命令时会发生什么。文件不会被更改。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -830,7 +836,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+            <maml:para>显示执行命令时会发生什么。文件不会被更改。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1003,7 +1009,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>显示执行命令时会发生什么。文件不会被更改。</maml:para>
+          <maml:para>显示执行命令时会发生什么。文件不会被更改。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1068,6 +1074,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>对 ISO-2022-JP 这类带状态的字符编码也能安全地追加: 追加的块会以自己的转义序列开始，并在末尾回到 ASCII，因此该块本身是完整的。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>单字节字符编码（windows-1252、ISO-8859 等）无法从字节序列的结构判别，而是根据文章的统计进行推测。因此判断成功与否更多取决于内容而非长度。包含字符列表、大量符号和数字的行，或该语言通常不使用的字符的文本，即使有数百字节也可能无法判断（CodePage 为 -1）。此时请不要从写入目标或 -EncodingFrom 的参照文件继承，而用 -Encoding 明确指定代码页。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1219,7 +1228,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>显示执行命令时会发生什么。不会创建或更改文件。</maml:para>
+            <maml:para>显示执行命令时会发生什么。不会创建或更改文件。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1320,7 +1329,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>显示执行命令时会发生什么。不会创建或更改文件。</maml:para>
+            <maml:para>显示执行命令时会发生什么。不会创建或更改文件。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1497,7 +1506,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>显示执行命令时会发生什么。不会创建或更改文件。</maml:para>
+          <maml:para>显示执行命令时会发生什么。不会创建或更改文件。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1559,6 +1568,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>只有在至少写入一行时才写入 BOM。完全没有输入时，输出目标会以不含 BOM 的 0 字节创建（已有文件则截断为 0 字节）。指定 -Append 时不会触碰已有文件。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>单字节字符编码（windows-1252、ISO-8859 等）无法从字节序列的结构判别，而是根据文章的统计进行推测。因此判断成功与否更多取决于内容而非长度。包含字符列表、大量符号和数字的行，或该语言通常不使用的字符的文本，即使有数百字节也可能无法判断（CodePage 为 -1）。此时请不要使用 Auto 或 -Append 的继承，而用 -Encoding 明确指定代码页。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1700,13 +1712,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>PassThru</maml:name>
           <maml:description>
-            <maml:para>每个转换的文件（包括不需要更改的文件）输出一个具有 Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed 属性的对象。默认不输出任何内容。</maml:para>
+            <maml:para>每个转换的文件（包括不需要更改的文件）输出一个具有 Path、Destination、SourceEncoding、SourceCodePage、Encoding、SourceLineBreak、LineBreak、Changed 属性的对象。默认不输出任何内容。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>显示执行命令时会发生什么。文件不会被更改，-PassThru 也不会输出任何内容。</maml:para>
+            <maml:para>显示执行命令时会发生什么。文件不会被更改，-PassThru 也不会输出任何内容。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1790,13 +1802,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>PassThru</maml:name>
           <maml:description>
-            <maml:para>每个转换的文件（包括不需要更改的文件）输出一个具有 Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed 属性的对象。默认不输出任何内容。</maml:para>
+            <maml:para>每个转换的文件（包括不需要更改的文件）输出一个具有 Path、Destination、SourceEncoding、SourceCodePage、Encoding、SourceLineBreak、LineBreak、Changed 属性的对象。默认不输出任何内容。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>WhatIf</maml:name>
           <maml:description>
-            <maml:para>显示执行命令时会发生什么。文件不会被更改，-PassThru 也不会输出任何内容。</maml:para>
+            <maml:para>显示执行命令时会发生什么。文件不会被更改，-PassThru 也不会输出任何内容。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -1917,7 +1929,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>PassThru</maml:name>
         <maml:description>
-          <maml:para>每个转换的文件（包括不需要更改的文件）输出一个具有 Path、Destination、SourceEncoding、Encoding、SourceLineBreak、LineBreak、Changed 属性的对象。默认不输出任何内容。</maml:para>
+          <maml:para>每个转换的文件（包括不需要更改的文件）输出一个具有 Path、Destination、SourceEncoding、SourceCodePage、Encoding、SourceLineBreak、LineBreak、Changed 属性的对象。默认不输出任何内容。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1964,7 +1976,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>WhatIf</maml:name>
         <maml:description>
-          <maml:para>显示执行命令时会发生什么。文件不会被更改，-PassThru 也不会输出任何内容。</maml:para>
+          <maml:para>显示执行命令时会发生什么。文件不会被更改，-PassThru 也不会输出任何内容。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1991,7 +2003,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
           <maml:uri />
         </dev:type>
         <maml:description>
-          <maml:para>指定 -PassThru 时，每个转换的文件输出一个对象（类型名称 SnowStack.EncodingProbe.ConvertResult）。字符编码以统一词汇的名称表示（utf8BOM、unicodeNoBOM、shift_jis 等），因此把 SourceEncoding 原样传给 -Encoding 即可还原为原来的字节序列。</maml:para>
+          <maml:para>指定 -PassThru 时，每个转换的文件输出一个对象（类型名称 SnowStack.EncodingProbe.ConvertResult）。SourceCodePage 是源的代码页。若要还原为原来的字节序列，Unicode 系列请将 SourceEncoding（utf8BOM 等表示有无 BOM 的名称）传给 -Encoding，其他编码请传 SourceCodePage。Unicode 系列以外的 SourceEncoding 为 WebName，可能解析为不同的代码页（euc-jp 会成为 51932，但判断结果为 20932），因此传入后可能无法还原。</maml:para>
         </maml:description>
       </command:returnValue>
     </command:returnValues>
@@ -2017,6 +2029,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>参数错误（未指定转换内容、-Encoding Auto、BOM 指定相互矛盾、-Destination 文件夹不存在等）是终止错误。与单个文件有关的失败是非终止错误，该文件保持不变，其他文件的处理会继续。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>单字节字符编码（windows-1252、ISO-8859 等）无法从字节序列的结构判别，而是根据文章的统计进行推测。因此判断成功与否更多取决于内容而非长度。包含字符列表、大量符号和数字的行，或该语言通常不使用的字符的文本，即使有数百字节也可能无法判断（CodePage 为 -1）。此时请用 -SourceEncoding 明确指定代码页。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>即使使用 -WhatIf / -Confirm，也会执行不更改文件的检查（只读、-Destination 中已有同名文件、同一次执行中文件名重复、输出目标与源相同、无效的字节序列、无法表示的字符），并作为错误报告。-WhatIf / -Confirm 的消息是在求得转换结果之后、写入之前显示的，因此转换结果与原文件相同而不重写的文件也会显示。这是为了在指定 -Confirm 时不省略确认而有意设计的行为。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -2053,6 +2071,14 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <dev:code>PS C:\&gt; Convert-ProbedContent .\legacy.txt -SourceEncoding euc-jp -Encoding shift_jis</dev:code>
         <dev:remarks>
           <maml:para>不判定源的字符编码，直接从 EUC-JP 转换为 Shift_JIS。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 6 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $r = Convert-ProbedContent .\a.txt -Encoding utf8NoBOM -PassThru
+PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
+        <dev:remarks>
+          <maml:para>将 a.txt 转换为 UTF-8，再还原为原来的字符编码。源不是 Unicode 系列时，请传 SourceCodePage 而不是 SourceEncoding。</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
@@ -2346,6 +2372,9 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>PSEncodingName 属性在两个主机上的含义并不相同: 在 PowerShell 7.x 是像 utf8BOM 这样已注册的友好名称，而在 Windows PowerShell 5.1 只有在结果恰好匹配 5.1 固定的 -Encoding 值时才会填入，否则为 null。UsePSName 表示该值是否可以直接传给内置 Cmdlet 的 -Encoding 参数。Get-ProbedContent / Set-ProbedContent / Add-ProbedContent 的统一词汇没有这个问题。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>单字节字符编码（windows-1252、ISO-8859 等）无法从字节序列的结构判别，而是根据文章的统计进行推测。因此判断成功与否更多取决于内容而非长度。包含字符列表、大量符号和数字的行，或该语言通常不使用的字符的文本，即使有数百字节也可能无法判断（CodePage 为 -1）。Resolve-Encoding 没有明确指定的方法，请在读写命令中指定 -Encoding（Convert-ProbedContent 为 -SourceEncoding）。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
