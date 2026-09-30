@@ -144,7 +144,7 @@ Get-ProbedContent .\german.txt -Strategy UtfUnknownOnly
 
 NuGet.org より SnowStack.EncodingProbe を公開しました。
 
-1.2.0 をリリースしました（クラスライブラリ・PowerShell モジュールとも）。
+2026年9月30日に 1.2.0 をリリースしました（クラスライブラリ・PowerShell モジュールとも）。
 
 以下の記事で使い方の解説を行っています。
 
