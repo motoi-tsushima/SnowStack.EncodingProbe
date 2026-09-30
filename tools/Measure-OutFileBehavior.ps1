@@ -4,7 +4,7 @@
     標準の Out-File の挙動と、Set-ProbedContent / Add-ProbedContent の改行処理を実測し、JSON に書き出す。
 
 .DESCRIPTION
-    docs/EncodingProbe-1.2.0-実測依頼-Out-File挙動.md の依頼に基づく測定スクリプト。
+    docs/EncodingProbe-1.2.0-実測依頼-Out-File挙動.md（完了後に削除。git の履歴に残っている）の依頼に基づく測定スクリプト。
     Out-ProbedFile（1.2.0 で追加予定）の仕様を決めるための事実を集める。製品コードには触れない。
 
     1 回の実行で 1 ホスト分の結果を 1 つの JSON に書き出す。

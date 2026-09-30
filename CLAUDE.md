@@ -379,8 +379,8 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 
 ## 1.2.0 の作業記録
 
-**開発は完了している（2026-09-25）。バージョン番号（3 か所）と psd1 の ReleaseNotes は 1.2.0 に更新済み。
-リリースと master へのマージは未実施。** 作業ブランチは `feature/1.2.0-world-language-detection`。
+**リリース済み。** クラスライブラリ（NuGet）と PowerShell モジュールの両方を公開し、
+作業ブランチ `feature/1.2.0-world-language-detection` を master へマージした（2026-09-30）。
 
 1.2.0 で行ったこと（詳細は CHANGELOG.md の 1.2.0 節）:
 
@@ -419,4 +419,8 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 内容と判断は `docs/EncodingProbe-1.2.0-実装記録.md` 4 章。カルチャーによるシングルバイトの推定
 （`docs/EncodingProbe-課題-カルチャーによるシングルバイトの推定.md`）と、変換元が 0 バイトのときの `SourceEncoding` の見直しは 1.3.0 以降で検討する（未着手）。
 
-済んだ変更は CHANGELOG.md の「1.2.0（未リリース）」の節にまとめてある。
+済んだ変更は CHANGELOG.md の「1.2.0」の節にまとめてある。
+
+マージ前に、完了した実測依頼（`docs/EncodingProbe-1.2.0-実測依頼-Out-File挙動.md`）と、
+手動確認後の修正の説明文書 2 件（`docs/EncodingProbe-1.2.0-説明-手動確認後の修正_ClaudeDesktop向け.md` / `_ブログ向け.md`）を
+削除した（git の履歴に残っている）。

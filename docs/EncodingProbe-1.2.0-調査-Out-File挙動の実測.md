@@ -1,7 +1,7 @@
 # EncodingProbe.PowerShell 1.2.0 — 調査：`Out-File` の挙動と `Set-ProbedContent` の改行処理の実測
 
 - 作成日: 2026-09-24
-- 依頼書: `docs/EncodingProbe-1.2.0-実測依頼-Out-File挙動.md`
+- 依頼書: `docs/EncodingProbe-1.2.0-実測依頼-Out-File挙動.md`（完了後に削除。git の履歴に残っている）
 - 作業の性質: 調査のみ。製品コードは変更していない。仕様の判断もしていない
 
 ---

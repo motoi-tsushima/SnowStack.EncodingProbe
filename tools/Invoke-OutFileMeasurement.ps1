@@ -4,7 +4,7 @@
     Measure-OutFileBehavior.ps1 を PowerShell 5.1 と 7.x の両方で実行し、ホストごとの JSON を書き出す。
 
 .DESCRIPTION
-    docs/EncodingProbe-1.2.0-実測依頼-Out-File挙動.md の測定を両ホストで行う。
+    docs/EncodingProbe-1.2.0-実測依頼-Out-File挙動.md（完了後に削除。git の履歴に残っている）の測定を両ホストで行う。
     結果の読み方は docs/EncodingProbe-1.2.0-調査-Out-File挙動の実測.md を参照。
 
     Set-ProbedContent / Add-ProbedContent の参照測定にビルド済みの DLL を使うため、

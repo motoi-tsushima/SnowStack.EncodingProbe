@@ -3,11 +3,10 @@
 このファイルは SnowStack.EncodingProbe（NuGet パッケージ）と
 SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更をまとめたものです。
 
-## 1.2.0（未リリース）
+## 1.2.0
 
 文字エンコーディング判定を東アジア以外の言語に対応させ、PowerShell モジュールに
 `Out-ProbedFile` と `Convert-ProbedContent` を追加しました。
-**リリース前の変更です。** バージョン番号は 1.2.0 に更新済みですが、まだリリースしていません。
 
 ### 追加したコマンド（PowerShell モジュール）
 
