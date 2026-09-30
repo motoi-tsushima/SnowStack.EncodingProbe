@@ -736,8 +736,76 @@ public class SetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
     }
 
     /// <summary>
-    /// -Force を指定すると読み取り専用ファイルへも書き込めること。
+    /// 読み取り専用で -Force なしのエラーは、-WhatIf でも同じエラー ID で報告し、ファイルを変えないこと
+    /// （1.2.0 手動確認後の修正。検査を ShouldProcess より前に置いた）。
     /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Write_ReadOnlyFile_WithoutForce_IsReportedEvenWithWhatIf(bool whatIf)
+    {
+        byte[] original = { 0x41, 0x0A };
+
+        using var file = ByteExactFile.Create(original);
+
+        SetReadOnly(file.Path, true);
+
+        try
+        {
+            InvocationResult result = Invoke(
+                file.Path, "X", new Dictionary<string, object?>
+                {
+                    ["Encoding"] = "utf8NoBOM",
+                    ["WhatIf"] = whatIf,
+                });
+
+            Assert.Equal(
+                "WriteAccessDenied", Assert.Single(result.Errors).FullyQualifiedErrorId.Split(',')[0]);
+            Assert.Equal(original, file.ReadBytes());
+            Assert.True(IsReadOnly(file.Path));
+        }
+        finally
+        {
+            SetReadOnly(file.Path, false);
+        }
+    }
+
+    /// <summary>
+    /// 書き込み先の親ディレクトリが無いエラーは、-WhatIf でも同じエラー ID で報告すること。
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Write_MissingParentDirectory_IsReportedEvenWithWhatIf(bool whatIf)
+    {
+        string directory = CreateWorkDirectory();
+
+        try
+        {
+            string path = Path.Combine(directory, "missing", "a.txt");
+
+            InvocationResult result = Invoke(
+                path, "X", new Dictionary<string, object?>
+                {
+                    ["Encoding"] = "utf8NoBOM",
+                    ["WhatIf"] = whatIf,
+                });
+
+            Assert.Equal("WriteFailed", Assert.Single(result.Errors).FullyQualifiedErrorId.Split(',')[0]);
+            Assert.False(Directory.Exists(Path.Combine(directory, "missing")));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// -Force を指定すると読み取り専用ファイルへも書き込め、書き込み後に読み取り専用属性が元に戻ること（1.2.0 仕様書 4.1）。
+    /// </summary>
+    /// <remarks>
+    /// 1.1.0 は属性を外したままにしていた。標準の Set-Content / Add-Content / Out-File は元に戻す。
+    /// </remarks>
     [Fact]
     public void Write_ReadOnlyFile_WithForce_Succeeds()
     {
@@ -757,6 +825,7 @@ public class SetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
 
             Assert.Empty(result.Errors);
             Assert.Equal(new byte[] { 0x58, 0x0A }, file.ReadBytes());
+            Assert.True(IsReadOnly(file.Path));
         }
         finally
         {
@@ -783,6 +852,66 @@ public class SetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
 
         Assert.Empty(result.Errors);
         Assert.Equal(original, file.ReadBytes());
+    }
+
+    #endregion
+
+    #region 文字列の中の改行（1.2.0 仕様書 4.2）
+
+    /// <summary>
+    /// -LineBreak は要素の後ろに付ける改行だけを決め、文字列の中の改行は置き換えないこと。
+    /// </summary>
+    /// <remarks>
+    /// 期待値は実測報告 5 章の 8-1〜8-6。-LineBreak 省略時は OS 既定の改行になるため、
+    /// 省略の列は Environment.NewLine で組み立てる（Windows では実測の CRLF と一致する）。
+    /// </remarks>
+    [Theory]
+    [MemberData(nameof(LineBreakInsideValueCases))]
+    public void Write_LineBreak_DoesNotReplaceLineBreaksInsideValues(
+        string[] values, LineBreakOption? option, bool noNewline, string expected)
+    {
+        using var file = ByteExactFile.CreateMissing();
+
+        var parameters = new Dictionary<string, object?> { ["Encoding"] = "utf8NoBOM" };
+
+        if (option.HasValue)
+        {
+            parameters["LineBreak"] = option.Value;
+        }
+
+        if (noNewline)
+        {
+            parameters["NoNewline"] = true;
+        }
+
+        InvocationResult result = Invoke(file.Path, values, parameters);
+
+        Assert.Empty(result.Errors);
+        Assert.Equal(Encoding.ASCII.GetBytes(expected), file.ReadBytes());
+    }
+
+    public static IEnumerable<object?[]> LineBreakInsideValueCases()
+    {
+        string nl = Environment.NewLine;
+
+        var inputs = new[]
+        {
+            new[] { "a\nb" },
+            new[] { "a\r\nb" },
+            new[] { "a\rb" },
+            new[] { "a\n" },
+            new[] { "a\r\n\r\nb" },
+            new[] { "a\nb", "c" },
+        };
+
+        foreach (string[] values in inputs)
+        {
+            yield return new object?[] { values, null, false, string.Concat(values.Select(v => v + nl)) };
+            yield return new object?[] { values, LineBreakOption.CrLf, false, string.Concat(values.Select(v => v + "\r\n")) };
+            yield return new object?[] { values, LineBreakOption.Lf, false, string.Concat(values.Select(v => v + "\n")) };
+            yield return new object?[] { values, LineBreakOption.Cr, false, string.Concat(values.Select(v => v + "\r")) };
+            yield return new object?[] { values, null, true, string.Concat(values) };
+        }
     }
 
     #endregion
@@ -842,6 +971,9 @@ public class SetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
 
         return this._fixture.InvokeCapturingErrors(CommandName, arguments);
     }
+
+    private static bool IsReadOnly(string path)
+        => (new FileInfo(path).Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly;
 
     private static void SetReadOnly(string path, bool readOnly)
     {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -264,8 +264,13 @@ namespace SnowStack.EncodingProbe
         /// コードページからエンコーディング名を取得する
         /// </summary>
         /// <param name="codePage">コードページ</param>
-        /// <returns>エンコーディング名</returns>
-        private static string EncodingName(int codePage) =>
+        /// <returns>エンコーディング名。表に無いコードページは null</returns>
+        /// <remarks>
+        /// 独自判定が返すコードページはすべて表にある。表に無いのは UTF.Unknown の結果
+        /// （1252 / 28591 など）を <see cref="PSEncodingName(int, bool)"/> に渡した場合だけで、
+        /// 1.2.0 より前はここで "I do not know." を返し、net10.0 ビルドの PSEncodingName に入っていた
+        /// </remarks>
+        private static string? EncodingName(int codePage) =>
             codePage switch
             {
                 20127 => "us-ascii",
@@ -287,7 +292,7 @@ namespace SnowStack.EncodingProbe
                  1201 => "unicodeFFFE",
                 12000 => "utf-32",
                 12001 => "utf-32BE",
-                    _ => "I do not know.",
+                    _ => null,
             };
 
 #if !NETFRAMEWORK
@@ -342,16 +347,17 @@ namespace SnowStack.EncodingProbe
         /// -Encoding に渡せるフレンドリ名を返す(net10.0 ビルド、PS6.2+ 向け)。
         /// フレンドリ名が存在しない場合は .NET の WebName
         /// (<see cref="EncodingInformation.EncodingWebName"/> と同じ値)を返す。
+        /// 独自判定の対象外のコードページ(windows-1252 / ISO-8859-x など)は null を返す。
         /// </summary>
         /// <param name="codePage">エンコーディングのコードページ番号(例: 65001, 932)。</param>
         /// <param name="bom">BOM を伴うか。UTF-8 でのみ名前に反映される。</param>
-        /// <returns>-Encoding に渡せるフレンドリ名、またはフレンドリ名が存在しない場合は WebName。</returns>
-        internal static string PSEncodingName(int codePage, bool bom)
+        /// <returns>-Encoding に渡せるフレンドリ名、フレンドリ名が存在しない場合は WebName、独自判定の対象外なら null。</returns>
+        internal static string? PSEncodingName(int codePage, bool bom)
         {
             if (codePage <= 0)
                 throw new ArgumentOutOfRangeException(nameof(codePage), codePage, "コードページ番号が不正です。");
 
-            string psEncodingName = string.Empty;
+            string? psEncodingName = string.Empty;
             psEncodingName = codePage switch
             {
                 // UTF-8: PowerShell が名前で BOM 有無を区別する唯一のケース
@@ -367,9 +373,10 @@ namespace SnowStack.EncodingProbe
                 20127 => "ascii",            // US-ASCII (7-bit)
                 65000 => "utf7",             // 非推奨(.NET 側の生成は net48 のみ可)
 
-                // フレンドリ名なし: Shift-JIS, EUC-JP, ISO-2022-JP, GB2312, Big5, EUC-KR,
-                // ISO-8859-x など。PowerShell の -Encoding フレンドリ名としては渡せないため、
+                // フレンドリ名なし: Shift-JIS, EUC-JP, ISO-2022-JP, GB2312, Big5, EUC-KR など。
+                // PowerShell の -Encoding フレンドリ名としては渡せないため、
                 // 代わりに .NET の WebName を返す(数値コードページは EncodingInformation.CodePage 側で取得可能)。
+                // 独自判定の表に無いコードページ(UTF.Unknown が返す windows-1252 / ISO-8859-x など)は null
                 _ => EncodingName(codePage),
             };
             return psEncodingName;
@@ -552,7 +559,19 @@ namespace SnowStack.EncodingProbe
             }
 
             // カルチャー情報を取得して判定順序を決定
-            bool isChineseSimplified = IsChineseSimplifiedCulture();
+            EastAsianLegacyRegion region = GetEastAsianLegacyRegion();
+
+            if (region == EastAsianLegacyRegion.None)
+            {
+                // 独自判定が扱えるのは東アジアの旧マルチバイト文字エンコーディングだけなので、
+                // それ以外のカルチャーではここで判定を終える。
+                // 以降の EUC 系・CPxxx 系はバイト構造の妥当性しか見ておらず、
+                // 欧米のシングルバイトのテキストがそのまま通ってしまうため、実行してはいけない。
+                // BOM・ISO-2022・ASCII・UTF-32・UTF-16・UTF-8 はカルチャーに関わらず判定済みである。
+                return encInfo;
+            }
+
+            bool isChineseSimplified = (region == EastAsianLegacyRegion.ChineseSimplified);
 
             if (isChineseSimplified)
             {
@@ -620,7 +639,8 @@ namespace SnowStack.EncodingProbe
                         return encInfo;
                     }
 
-                    // 台湾・香港カルチャーの場合、EUC-TW と CP950 の両方に該当するか確認する
+                    // 台湾カルチャーの場合、EUC-TW と CP950 の両方に該当するか確認する
+                    // （香港カルチャーは EUC-TW を候補にしないので、ここには来ない）
                     if (eucCodePage == CodePageEucTw && !CP950_Detection())
                     {
                         // 両方に該当 → CP950 を優先
@@ -662,33 +682,146 @@ namespace SnowStack.EncodingProbe
         }
 
         /// <summary>
-        /// 現在のカルチャーが中国簡体字かどうかを判定
+        /// 独自判定が旧マルチバイト文字エンコーディングを解析できるカルチャー圏
         /// </summary>
-        /// <returns>true=中国簡体字、false=それ以外</returns>
-        private bool IsChineseSimplifiedCulture()
+        /// <remarks>
+        /// 独自判定が担当するのは東アジア漢字文化圏のマルチバイトだけである。
+        /// <see cref="None"/> のカルチャーでは Unicode 系・ASCII・ISO-2022 以外の判定を行わず、
+        /// シングルバイトの判定は UTF.Unknown に委ねる。
+        /// </remarks>
+        internal enum EastAsianLegacyRegion
         {
-            try
-            {
-                if (_cultureName == null)
-                {
-                    CultureInfo currentCulture = CultureInfo.CurrentCulture;
-                    _cultureName = currentCulture.Name;
-                }
+            /// <summary>独自判定が非対応（欧米・ロシア・タイなど）</summary>
+            None,
+            /// <summary>日本語（Shift_JIS / EUC-JP）</summary>
+            Japanese,
+            /// <summary>韓国語（CP949 / EUC-KR）</summary>
+            Korean,
+            /// <summary>中国語 簡体字（GB2312 / GBK / GB18030）</summary>
+            ChineseSimplified,
+            /// <summary>中国語 繁体字・台湾（Big5 / EUC-TW）</summary>
+            ChineseTraditional,
+            /// <summary>
+            /// 中国語 繁体字・香港・マカオ、広東語（Big5）。
+            /// EUC-TW（CNS 11643、台湾の規格）を候補に含めない点だけが <see cref="ChineseTraditional"/> と異なる。
+            /// 台湾 Big5 と香港 Big5（HKSCS）はバイト列から区別しない
+            /// </summary>
+            ChineseHongKong,
+        }
 
-                // 中国語（簡体字）のカルチャー
-                if (_cultureName.Equals("zh-CN", StringComparison.OrdinalIgnoreCase) ||
-                    _cultureName.Equals("zh-Hans", StringComparison.OrdinalIgnoreCase) ||
-                    _cultureName.Equals("zh-SG", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                return false;
-            }
-            catch
+        /// <summary>
+        /// カルチャー名から、独自判定が担当するカルチャー圏を求める
+        /// </summary>
+        /// <remarks>
+        /// 判定対象のコードページを決める箇所（EUC 系・CPxxx 系）は必ずこの結果で分岐すること。
+        /// </remarks>
+        /// <returns>カルチャー圏（該当なしの場合は <see cref="EastAsianLegacyRegion.None"/>）</returns>
+        private EastAsianLegacyRegion GetEastAsianLegacyRegion()
+        {
+            if (_cultureName == null)
             {
-                return false;
+                _cultureName = CultureInfo.CurrentCulture.Name;
             }
+
+            return ResolveEastAsianLegacyRegion(_cultureName);
+        }
+
+        /// <summary>
+        /// カルチャー名から、独自判定が担当するカルチャー圏を求める
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// カルチャー名と判定対象の対応表はここに集約している。表を増やさないこと。
+        /// カルチャー名は <see cref="CultureNameSubtags"/> でサブタグに分解してから引く。
+        /// 完全一致で引いていた頃は <c>zh-Hant-HK</c> や <c>zh-Hans-CN</c> が判定不能になっていた。
+        /// </para>
+        /// <para>
+        /// 中国語（<c>zh</c>）と広東語（<c>yue</c>）は次の順で決める。
+        /// </para>
+        /// <list type="number">
+        /// <item>用字サブタグがあればそれで繁簡を決める（<c>Hans</c> → 簡体字、<c>Hant</c> → 繁体字）</item>
+        /// <item>無ければ地域サブタグから決める（<c>TW</c> / <c>HK</c> / <c>MO</c> → 繁体字、<c>CN</c> / <c>SG</c> → 簡体字）</item>
+        /// <item>どちらも無ければ言語の既定（<c>zh</c> → 簡体字、<c>yue</c> → 繁体字）</item>
+        /// <item>繁体字の中では、地域が <c>HK</c> / <c>MO</c> なら香港、それ以外は台湾。
+        /// 地域が無い場合は <c>zh</c> → 台湾、<c>yue</c> → 香港</item>
+        /// </list>
+        /// <para>
+        /// 日本語（<c>ja</c>）・韓国語（<c>ko</c>）も言語サブタグの完全一致で判定する。
+        /// 1.2.0 より前は前方一致だったため、<c>kok</c>（コンカニ語）を韓国語と判定していた。
+        /// </para>
+        /// </remarks>
+        /// <param name="cultureName">カルチャー名（例: <c>zh-Hant-HK</c>）</param>
+        /// <returns>カルチャー圏（該当なしの場合は <see cref="EastAsianLegacyRegion.None"/>）</returns>
+        internal static EastAsianLegacyRegion ResolveEastAsianLegacyRegion(string? cultureName)
+        {
+            if (string.IsNullOrEmpty(cultureName))
+            {
+                return EastAsianLegacyRegion.None;
+            }
+
+            CultureNameSubtags subtags = CultureNameSubtags.Parse(cultureName);
+
+            // 日本語
+            if (subtags.Language == "ja")
+            {
+                return EastAsianLegacyRegion.Japanese;
+            }
+            // 韓国語
+            // 言語サブタグの完全一致で判定する。前方一致では kok（コンカニ語）まで韓国語になっていた
+            if (subtags.Language == "ko")
+            {
+                return EastAsianLegacyRegion.Korean;
+            }
+
+            bool isCantonese = (subtags.Language == "yue");
+
+            if (subtags.Language != "zh" && !isCantonese)
+            {
+                // 該当なし
+                return EastAsianLegacyRegion.None;
+            }
+
+            bool isHongKongRegion = (subtags.Region == "HK" || subtags.Region == "MO");
+
+            // 1. 用字サブタグ → 2. 地域サブタグ → 3. 言語の既定 の順で用字を決める
+            string? script = subtags.Script;
+            if (script == null)
+            {
+                switch (subtags.Region)
+                {
+                    case "TW":
+                    case "HK":
+                    case "MO":
+                        script = "Hant";
+                        break;
+                    case "CN":
+                    case "SG":
+                        script = "Hans";
+                        break;
+                    default:
+                        script = isCantonese ? "Hant" : "Hans";
+                        break;
+                }
+            }
+
+            // 中国語（簡体字）
+            if (script == "Hans")
+            {
+                return EastAsianLegacyRegion.ChineseSimplified;
+            }
+
+            // 中国語（繁体字）。4. 香港・マカオと台湾を分ける
+            if (script == "Hant")
+            {
+                if (isHongKongRegion || (subtags.Region == null && isCantonese))
+                {
+                    return EastAsianLegacyRegion.ChineseHongKong;
+                }
+                return EastAsianLegacyRegion.ChineseTraditional;
+            }
+
+            // 該当なし（zh-Latn など）
+            return EastAsianLegacyRegion.None;
         }
 
 
@@ -1247,166 +1380,99 @@ namespace SnowStack.EncodingProbe
         /// <summary>
         /// UTF8であるか判定する
         /// </summary>
+        /// <remarks>
+        /// RFC 3629 の「整形式 UTF-8 バイト列」の表どおりに検証する。
+        /// 後続バイトが足りないまま ASCII に戻る／ファイルが終わるという途切れ方、
+        /// 冗長な符号化、サロゲート符号位置、U+10FFFF を超える符号位置は、いずれも規格外とする。
+        /// ここを緩くすると、欧米のシングルバイトのテキストを UTF-8 と誤判定する。
+        /// </remarks>
         /// <returns>true=UTF8では無い</returns>
         private bool Utf8_Detection()
         {
-            bool outOfSpecification;
-
-            outOfSpecification = false;
-            uint[] byteChar = new uint[6];
-            int byteCharCount = 0;
-
             for (int i = 0; i < this.BufferSize; i++)
             {
-                //２バイト文字以上である
-                if ((uint)0x80 <= (uint)this._buffer[i])
+                byte leadByte = this._buffer[i];
+
+                // 1バイト文字 (U+0000〜U+007F)
+                if (leadByte <= 0x7F)
                 {
-                    //２バイト文字
-                    uint char2byte = (uint)0b11100000 & (uint)this._buffer[i];
-                    if (char2byte == 0b11000000)
-                    {
-                        //セカンドコード数が規格より少なければ規格外
-                        outOfSpecification = Utf8OutOfSpecification(byteChar[0], byteCharCount, false);
-                        if (outOfSpecification)
-                        {
-                            break;
-                        }
+                    continue;
+                }
 
-                        byteChar[0] = char2byte;
-                        byteCharCount = 1;
-                        continue;
-                    }
+                // 先頭バイトから、後続バイト数と2バイト目に許される範囲を求める
+                int trailByteCount;
+                byte secondByteMin;
+                byte secondByteMax;
 
-                    //3バイト文字
-                    uint char3byte = (uint)0b11110000 & (uint)this._buffer[i];
-                    if (char3byte == 0b11100000)
-                    {
-                        //セカンドコード数が規格より少なければ規格外
-                        outOfSpecification = Utf8OutOfSpecification(byteChar[0], byteCharCount, false);
-                        if (outOfSpecification)
-                        {
-                            break;
-                        }
-
-                        byteChar[0] = char3byte;
-                        byteCharCount = 1;
-                        continue;
-                    }
-
-                    //4バイト文字
-                    uint char4byte = (uint)0b11111000 & (uint)this._buffer[i];
-                    if (char4byte == 0b11110000)
-                    {
-                        //セカンドコード数が規格より少なければ規格外
-                        outOfSpecification = Utf8OutOfSpecification(byteChar[0], byteCharCount, false);
-                        if (outOfSpecification)
-                        {
-                            break;
-                        }
-
-                        byteChar[0] = char4byte;
-                        byteCharCount = 1;
-                        continue;
-                    }
-
-                    //２バイト目以降のコード
-                    uint charSecond = (uint)0b11000000 & (uint)this._buffer[i];
-                    if (charSecond == 0b10000000)
-                    {
-                        // 文字の先頭がセカンドコードなら規格外
-                        if (byteCharCount < 1)
-                        {
-                            outOfSpecification = true;
-                            break;
-                        }
-                        // 1文字が4バイトを超えるなら規格外
-                        if (4 < byteCharCount)
-                        {
-                            outOfSpecification = true;
-                            break;
-                        }
-
-                        //セカンドコードを保存
-                        byteChar[byteCharCount] = charSecond;
-                        byteCharCount++;
-
-                        //セカンドコード数が規格より多ければ規格外
-                        outOfSpecification = Utf8OutOfSpecification(byteChar[0], byteCharCount, true);
-                        if (outOfSpecification)
-                        {
-                            break;
-                        }
-
-                        continue;
-                    }
-
-                    //どれにも当てはまらない
-                    outOfSpecification = true;
-                    break;
+                if (0xC2 <= leadByte && leadByte <= 0xDF)
+                {
+                    // 2バイト文字 (U+0080〜U+07FF)
+                    trailByteCount = 1; secondByteMin = 0x80; secondByteMax = 0xBF;
+                }
+                else if (leadByte == 0xE0)
+                {
+                    // 3バイト文字の下限。0xE0 0x80〜0x9F は冗長な符号化
+                    trailByteCount = 2; secondByteMin = 0xA0; secondByteMax = 0xBF;
+                }
+                else if (leadByte == 0xED)
+                {
+                    // 0xED 0xA0〜0xBF はサロゲート符号位置 (U+D800〜U+DFFF)
+                    trailByteCount = 2; secondByteMin = 0x80; secondByteMax = 0x9F;
+                }
+                else if ((0xE1 <= leadByte && leadByte <= 0xEC) || leadByte == 0xEE || leadByte == 0xEF)
+                {
+                    // 3バイト文字 (U+0800〜U+FFFF)
+                    trailByteCount = 2; secondByteMin = 0x80; secondByteMax = 0xBF;
+                }
+                else if (leadByte == 0xF0)
+                {
+                    // 4バイト文字の下限。0xF0 0x80〜0x8F は冗長な符号化
+                    trailByteCount = 3; secondByteMin = 0x90; secondByteMax = 0xBF;
+                }
+                else if (0xF1 <= leadByte && leadByte <= 0xF3)
+                {
+                    // 4バイト文字 (U+40000〜U+FFFFF)
+                    trailByteCount = 3; secondByteMin = 0x80; secondByteMax = 0xBF;
+                }
+                else if (leadByte == 0xF4)
+                {
+                    // 4バイト文字の上限。0xF4 0x90 以降は U+10FFFF を超える
+                    trailByteCount = 3; secondByteMin = 0x80; secondByteMax = 0x8F;
                 }
                 else
                 {
-                    // 7bit文字
-                    byteChar[0] = 0;
-                    byteChar[1] = 0;
-                    byteChar[2] = 0;
-                    byteChar[3] = 0;
-                    byteChar[4] = 0;
-                    byteChar[5] = 0;
-                    byteCharCount = 0;
+                    // 0x80〜0xC1（後続バイトで文字が始まる／冗長な2バイト文字）と
+                    // 0xF5〜0xFF（U+10FFFF を超える／5〜6バイト文字）は規格外
+                    return true;
                 }
+
+                // バッファの終端で文字が途切れていれば規格外
+                if (this.BufferSize <= i + trailByteCount)
+                {
+                    return true;
+                }
+
+                // 2バイト目
+                byte secondByte = this._buffer[i + 1];
+                if (secondByte < secondByteMin || secondByteMax < secondByte)
+                {
+                    return true;
+                }
+
+                // 3バイト目以降
+                for (int trailIndex = 2; trailIndex <= trailByteCount; trailIndex++)
+                {
+                    byte trailByte = this._buffer[i + trailIndex];
+                    if (trailByte < 0x80 || 0xBF < trailByte)
+                    {
+                        return true;
+                    }
+                }
+
+                i += trailByteCount;
             }
 
-            return outOfSpecification;
-        }
-
-        /// <summary>
-        /// UTF8セカンドコード規格判定
-        /// </summary>
-        /// <param name="topByteChar"></param>
-        /// <param name="byteCharCount"></param>
-        /// <param name="checkBig"></param>
-        /// <returns>true=UTF-8では無い</returns>
-        private bool Utf8OutOfSpecification(uint topByteChar, int byteCharCount, bool checkBig)
-        {
-            bool outOfSpecification = false;
-
-            //セカンドコード数が規格より多ければ規格外
-            if (topByteChar == 0b11000000)
-            {
-                if (checkBig == true)
-                {
-                    if (byteCharCount > 2) outOfSpecification = true;
-                }
-                else
-                {
-                    if (byteCharCount < 2) outOfSpecification = true;
-                }
-            }
-            else if (topByteChar == 0b11100000)
-            {
-                if (checkBig == true)
-                {
-                    if (byteCharCount > 3) outOfSpecification = true;
-                }
-                else
-                {
-                    if (byteCharCount < 3) outOfSpecification = true;
-                }
-            }
-            else if (topByteChar == 0b11110000)
-            {
-                if (checkBig == true)
-                {
-                    if (byteCharCount > 4) outOfSpecification = true;
-                }
-                else
-                {
-                    if (byteCharCount < 4) outOfSpecification = true;
-                }
-            }
-
-            return outOfSpecification;
+            return false;
         }
 
         /// <summary>
@@ -1587,44 +1653,29 @@ namespace SnowStack.EncodingProbe
         /// <returns>EUCコードページ（該当なしの場合は-1）</returns>
         private int GetEucCodePageFromCulture()
         {
-            try
+            switch (GetEastAsianLegacyRegion())
             {
-                string cultureName = _cultureName ?? CultureInfo.CurrentCulture.Name;
-
-                // カルチャー名から判定
                 // 日本語 -> EUC-JP
-                if (cultureName.StartsWith("ja", StringComparison.OrdinalIgnoreCase))
-                {
+                case EastAsianLegacyRegion.Japanese:
                     return CodePageEucJp;
-                }
                 // 韓国語 -> EUC-KR
-                else if (cultureName.StartsWith("ko", StringComparison.OrdinalIgnoreCase))
-                {
+                case EastAsianLegacyRegion.Korean:
                     return CodePageEucKr;
-                }
                 // 中国語（簡体字） -> EUC-CN
-                else if (cultureName.Equals("zh-CN", StringComparison.OrdinalIgnoreCase) ||
-                         cultureName.Equals("zh-Hans", StringComparison.OrdinalIgnoreCase) ||
-                         cultureName.Equals("zh-SG", StringComparison.OrdinalIgnoreCase))
-                {
+                case EastAsianLegacyRegion.ChineseSimplified:
                     return CodePageEucCn;
-                }
-                // 中国語（繁体字・台湾・香港） -> EUC-TW
-                else if (cultureName.Equals("zh-TW", StringComparison.OrdinalIgnoreCase) ||
-                         cultureName.Equals("zh-Hant", StringComparison.OrdinalIgnoreCase) ||
-                         cultureName.Equals("zh-HK", StringComparison.OrdinalIgnoreCase) ||
-                         cultureName.Equals("zh-MO", StringComparison.OrdinalIgnoreCase))
-                {
+                // 中国語（繁体字・台湾） -> EUC-TW
+                case EastAsianLegacyRegion.ChineseTraditional:
                     return CodePageEucTw;
-                }
-                
+                // 中国語（繁体字・香港） -> なし
+                // EUC-TW は CNS 11643（台湾の規格）であり、香港では使われない。
+                // EUC-TW のバイト列は構造上つねに Big5 としても成立し、両方成立時は CP950 を優先するため、
+                // 候補から外しても判定結果は変わらない
+                case EastAsianLegacyRegion.ChineseHongKong:
+                    return -1;
                 // 該当なし
-                return -1;
-            }
-            catch
-            {
-                // エラーが発生した場合は判定不可
-                return -1;
+                default:
+                    return -1;
             }
         }
 
@@ -1745,61 +1796,49 @@ namespace SnowStack.EncodingProbe
         {
             codePage = -1;
             bool outOfSpecification = true;
-            
+
             try
             {
-                string cultureName = _cultureName ?? CultureInfo.CurrentCulture.Name;
-
                 // カルチャー別に対応するCPxxxを判定
-                if (cultureName.StartsWith("ja", StringComparison.OrdinalIgnoreCase))
+                switch (GetEastAsianLegacyRegion())
                 {
-                    // 日本 -> CP932 (Shift_JIS)
-                    outOfSpecification = SJIS_Detection();
-                    if (!outOfSpecification)
-                    {
-                        codePage = CodePageShiftJis;
-                    }
-                }
-                else if (cultureName.StartsWith("ko", StringComparison.OrdinalIgnoreCase))
-                {
-                    // 韓国 -> CP949
-                    outOfSpecification = CP949_Detection();
-                    if (!outOfSpecification)
-                    {
-                        codePage = CodePageCp949;
-                    }
-                }
-                else if (cultureName.Equals("zh-CN", StringComparison.OrdinalIgnoreCase) ||
-                         cultureName.Equals("zh-Hans", StringComparison.OrdinalIgnoreCase) ||
-                         cultureName.Equals("zh-SG", StringComparison.OrdinalIgnoreCase))
-                {
-                    // 中国（簡体字） -> GB2312 / GB18030
-                    outOfSpecification = GB_Detection(out codePage);
-                }
-                else if (cultureName.Equals("zh-TW", StringComparison.OrdinalIgnoreCase) ||
-                         cultureName.Equals("zh-Hant", StringComparison.OrdinalIgnoreCase))
-                {
-                    // 台湾（繁体字） -> CP950
-                    outOfSpecification = CP950_Detection();
-                    if (!outOfSpecification)
-                    {
-                        codePage = CodePageCp950;
-                    }
-                }
-                else if (cultureName.Equals("zh-HK", StringComparison.OrdinalIgnoreCase) ||
-                         cultureName.Equals("zh-MO", StringComparison.OrdinalIgnoreCase))
-                {
-                    // 香港（繁体字） -> CP950
-                    outOfSpecification = CP950_Detection();
-                    if (!outOfSpecification)
-                    {
-                        codePage = CodePageCp950;
-                    }
-                }
-                else
-                {
-                    // 該当するカルチャーなし
-                    outOfSpecification = true;
+                    case EastAsianLegacyRegion.Japanese:
+                        // 日本 -> CP932 (Shift_JIS)
+                        outOfSpecification = SJIS_Detection();
+                        if (!outOfSpecification)
+                        {
+                            codePage = CodePageShiftJis;
+                        }
+                        break;
+
+                    case EastAsianLegacyRegion.Korean:
+                        // 韓国 -> CP949
+                        outOfSpecification = CP949_Detection();
+                        if (!outOfSpecification)
+                        {
+                            codePage = CodePageCp949;
+                        }
+                        break;
+
+                    case EastAsianLegacyRegion.ChineseSimplified:
+                        // 中国（簡体字） -> GB2312 / GB18030
+                        outOfSpecification = GB_Detection(out codePage);
+                        break;
+
+                    case EastAsianLegacyRegion.ChineseTraditional:
+                    case EastAsianLegacyRegion.ChineseHongKong:
+                        // 台湾・香港（繁体字） -> CP950
+                        outOfSpecification = CP950_Detection();
+                        if (!outOfSpecification)
+                        {
+                            codePage = CodePageCp950;
+                        }
+                        break;
+
+                    default:
+                        // 該当するカルチャーなし
+                        outOfSpecification = true;
+                        break;
                 }
             }
             catch
@@ -1808,6 +1847,62 @@ namespace SnowStack.EncodingProbe
             }
 
             return outOfSpecification;
+        }
+
+        /// <summary>
+        /// カルチャーゲートを通らずに、中国語の旧マルチバイト（GB 系または Big5 系）として判定し直す
+        /// </summary>
+        /// <remarks>
+        /// 統合層の繁簡の系統クロスチェック（<see cref="EncodingProbe"/>）で使う。
+        /// UTF.Unknown が「独自判定とは反対の系統だ」と高い信頼度で言ったとき、
+        /// その系統の独自判定をカルチャーに関係なく実行し直すためのものである。
+        /// UTF.Unknown のコードページをそのまま使わないのは、GB 系のどれ（936 / 54936 など）かを
+        /// 既存の判別規則で決めるためである。
+        /// GB 系・Big5 系の判定関数はバイト構造だけを見ており、カルチャーに依存しない。
+        /// </remarks>
+        /// <param name="region">
+        /// <see cref="EastAsianLegacyRegion.ChineseSimplified"/>（GB 系）または
+        /// <see cref="EastAsianLegacyRegion.ChineseTraditional"/>（Big5 系）
+        /// </param>
+        /// <param name="nativeInfo">元の独自判定の結果（改行コードやカルチャーを引き継ぐ）</param>
+        /// <returns>成立すればその判定結果。成立しなければ null</returns>
+        internal EncodingInformation? RedetectChineseLegacy(EastAsianLegacyRegion region, EncodingInformation nativeInfo)
+        {
+            int codePage;
+            bool outOfSpecification;
+
+            switch (region)
+            {
+                case EastAsianLegacyRegion.ChineseSimplified:
+                    // GB2312 / GBK / GB18030 の判別規則
+                    outOfSpecification = GB_Detection(out codePage);
+                    break;
+
+                case EastAsianLegacyRegion.ChineseTraditional:
+                case EastAsianLegacyRegion.ChineseHongKong:
+                    // EUC-TW と CP950 の両方に該当する場合は CP950 を優先する規則があるため、CP950 だけを見ればよい
+                    outOfSpecification = CP950_Detection();
+                    codePage = outOfSpecification ? -1 : CodePageCp950;
+                    break;
+
+                default:
+                    return null;
+            }
+
+            if (outOfSpecification)
+            {
+                return null;
+            }
+
+            string psEncodingName = EncodingDetector.PSEncodingName(codePage, false);
+            return nativeInfo with
+            {
+                CodePage = codePage,
+                EncodingWebName = EncodingName(codePage),
+                Bom = false,
+                PSEncodingName = psEncodingName,
+                UsePSName = EncodingDetector.SetUsePSName(psEncodingName),
+            };
         }
 
         /// <summary>
@@ -2126,9 +2221,10 @@ namespace SnowStack.EncodingProbe
                     currentByteType = CP950_BYTECODE.TwoByteBefore;
                 }
                 else if (beforeByte == CP950_BYTECODE.TwoByteBefore &&
-                        ((b >= 0x40 && b <= 0x7E) || (b >= 0x80 && b <= 0xFE)))
+                        ((b >= 0x40 && b <= 0x7E) || (b >= 0xA1 && b <= 0xFE)))
                 {
                     // 2バイト文字の2バイト目
+                    // Big5 / HKSCS とも 0x80–0xA0 は後続バイトに存在しない
                     currentByteType = CP950_BYTECODE.TwoByteAfter;
                 }
                 else if (b == 0x80 || b == 0xFF)

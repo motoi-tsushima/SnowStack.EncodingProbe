@@ -143,6 +143,42 @@ public abstract class ProbedContentCommandBase : PSCmdlet
     }
 
     /// <summary>
+    /// -EncodingFrom で指定された参照ファイルから継承情報を求める
+    /// </summary>
+    /// <remarks>
+    /// 書き込み系の Set-ProbedContent / Add-ProbedContent / Out-ProbedFile と Convert-ProbedContent が共用する。
+    /// 参照先が無い・判定できない場合は終了エラーとする（1 ファイルも処理できないため）。
+    /// </remarks>
+    private protected EncodingSpec ResolveEncodingFrom(string encodingFrom)
+    {
+        string reference = GetUnresolvedProviderPathFromPSPath(encodingFrom);
+
+        if (!File.Exists(reference))
+        {
+            ThrowTerminatingError(CreateError(
+                new FileNotFoundException(ValidationMessages.FileNotFound(reference), reference),
+                "EncodingFromNotFound",
+                ErrorCategory.ObjectNotFound,
+                reference));
+        }
+
+        try
+        {
+            return EncodingInheritance.FromFile(reference, this.DetectorOptions);
+        }
+        catch (EncodingDetectionException exception)
+        {
+            string errorId = exception.ErrorId == EncodingDetectionException.CodePageNotAvailableId
+                ? "EncodingFromCodePageNotAvailable"
+                : "EncodingFromDetectionFailed";
+
+            ThrowTerminatingError(CreateError(exception, errorId, ErrorCategory.InvalidData, reference));
+
+            throw;  // ThrowTerminatingError は戻らないが、コンパイラには分からない
+        }
+    }
+
+    /// <summary>
     /// 入力されたパスを解決し、実在するファイルの絶対パスを列挙する。
     /// 解決できないものは非終了エラーとして報告し、残りの処理は続行する。
     /// </summary>
@@ -219,7 +255,7 @@ public abstract class ProbedContentCommandBase : PSCmdlet
     /// <summary>
     /// 1つのパス指定を解決する。ワイルドカードは複数のパスに展開されうる。
     /// </summary>
-    private IEnumerable<string> ResolveOne(string path, bool literal)
+    private protected IEnumerable<string> ResolveOne(string path, bool literal)
     {
         if (literal)
         {

@@ -70,5 +70,60 @@
 
         /// <summary>-Strategy に解釈できない判定方式が指定された</summary>
         InvalidStrategy,
+
+        // ---- 1.2.0: Out-ProbedFile ----
+
+        /// <summary>書き込み先が読み取り専用で、-Force が指定されていない</summary>
+        FileIsReadOnly,
+
+        /// <summary>-NoClobber が指定され、書き込み先が既に存在する</summary>
+        NoClobberFileExists,
+
+        /// <summary>ワイルドカードを含むパスに一致するファイルが無い</summary>
+        WildcardMatchedNoFile,
+
+        /// <summary>ワイルドカードを含むパスが複数のファイルに一致した</summary>
+        WildcardMatchedMultipleFiles,
+
+        /// <summary>書き込み先の親ディレクトリが存在しない</summary>
+        ParentDirectoryNotFound,
+
+        /// <summary>-Append なしで -AllowEncodingChange が指定された（警告）</summary>
+        AllowEncodingChangeWithoutAppend,
+
+        // ---- 1.2.0: Convert-ProbedContent ----
+
+        /// <summary>変換の指定（-Encoding / -EncodingFrom / -Bom / -LineBreak）が1つも無い</summary>
+        NoConversionSpecified,
+
+        /// <summary>Convert-ProbedContent の -Encoding に Auto が指定された</summary>
+        AutoNotAllowedForConvertContent,
+
+        /// <summary>BOM を明示する指定と -Bom が食い違う</summary>
+        BomConflictsWithEncoding,
+
+        /// <summary>BOM を持てない文字エンコーディングに -Bom Add が指定された</summary>
+        BomNotSupportedByEncoding,
+
+        /// <summary>-Destination のフォルダーが存在しない</summary>
+        DestinationFolderNotFound,
+
+        /// <summary>変換元に、その文字エンコーディングとして不正なバイト列がある</summary>
+        InvalidSourceBytes,
+
+        /// <summary>変換先の文字エンコーディングで表現できない文字がある</summary>
+        UnrepresentableCharacter,
+
+        /// <summary>-Destination に同名のファイルがあり、-Force が指定されていない</summary>
+        DestinationFileExists,
+
+        /// <summary>同じ実行の中で -Destination への出力ファイル名が重なった</summary>
+        DestinationNameConflict,
+
+        /// <summary>変換元と -Destination の出力先が同じファイルになった</summary>
+        DestinationIsSource,
+
+        /// <summary>ディレクトリを変換対象から除いた（詳細メッセージ）</summary>
+        SkippedDirectory,
     }
 }

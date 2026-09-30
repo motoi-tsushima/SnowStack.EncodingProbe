@@ -21,11 +21,18 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         private readonly FileStream _stream;
         private readonly StreamWriter _writer;
 
-        private ProbedFileWriter(FileStream stream, StreamWriter writer, Encoding encoding)
+        /// <summary>-Force で外した読み取り専用属性。閉じるときに元へ戻す。外していなければ null。</summary>
+        private readonly ReadOnlyAttributeScope? _readOnlyScope;
+
+        private bool _disposed;
+
+        private ProbedFileWriter(
+            FileStream stream, StreamWriter writer, Encoding encoding, ReadOnlyAttributeScope? readOnlyScope)
         {
             this._stream = stream;
             this._writer = writer;
             this.Encoding = encoding;
+            this._readOnlyScope = readOnlyScope;
         }
 
         /// <summary>符号化に使用している文字エンコーディング（BOM を持たないインスタンス）</summary>
@@ -54,14 +61,50 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             => Open(path, spec, force, FileMode.Append, emitBom: false);
 
         /// <summary>
+        /// BOM を書くかどうかを呼び出し側が決めてファイルを開く（Out-ProbedFile 用）。
+        /// </summary>
+        /// <remarks>
+        /// Out-ProbedFile は -Append でも、追記先が無い・0 バイトなら新規作成と同じく BOM を書く。
+        /// また入力が 0 件のときは BOM を書かずに 0 バイトのファイルを作る。
+        /// どちらも <see cref="Create"/> / <see cref="Append"/> の規則では表せないため、ここで明示させる。
+        /// </remarks>
+        /// <param name="path">書き込み先の絶対パス</param>
+        /// <param name="spec">使用する文字エンコーディング</param>
+        /// <param name="force">読み取り専用属性を外してから書き込む場合は true</param>
+        /// <param name="append">追記するなら true、新規作成（既存なら切り詰め）なら false</param>
+        /// <param name="emitBom">ファイル先頭に BOM を書くなら true</param>
+        public static ProbedFileWriter Open(string path, EncodingSpec spec, bool force, bool append, bool emitBom)
+            => Open(path, spec, force, append ? FileMode.Append : FileMode.Create, emitBom);
+
+        /// <summary>
         /// 文字列を書き込む
         /// </summary>
         public void Write(string text) => this._writer.Write(text);
 
+        /// <summary>
+        /// ファイルを閉じ、-Force で外した読み取り専用属性を元に戻す。
+        /// </summary>
+        /// <remarks>
+        /// 書き出しに失敗して例外になった場合も、属性は必ず戻す。
+        /// </remarks>
         public void Dispose()
         {
-            this._writer.Dispose();
-            this._stream.Dispose();
+            if (this._disposed)
+            {
+                return;
+            }
+
+            this._disposed = true;
+
+            try
+            {
+                this._writer.Dispose();
+                this._stream.Dispose();
+            }
+            finally
+            {
+                this._readOnlyScope?.Dispose();
+            }
         }
 
         /// <summary>
@@ -72,21 +115,19 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         {
             CodePagesProviderRegistration.EnsureRegistered();
 
-            if (force)
-            {
-                ClearReadOnly(path);
-            }
-
-            var stream = new FileStream(
-                path,
-                mode,
-                FileAccess.Write,
-                FileShare.Read,
-                WriteBufferSize,
-                FileOptions.SequentialScan);
+            ReadOnlyAttributeScope? readOnlyScope = force ? ReadOnlyAttributeScope.ClearIfReadOnly(path) : null;
+            FileStream? stream = null;
 
             try
             {
+                stream = new FileStream(
+                    path,
+                    mode,
+                    FileAccess.Write,
+                    FileShare.Read,
+                    WriteBufferSize,
+                    FileOptions.SequentialScan);
+
                 int codePage = spec.Encoding!.CodePage;
 
                 if (emitBom)
@@ -99,25 +140,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 var writer = new StreamWriter(stream, body, WriteBufferSize, leaveOpen: true);
 
-                return new ProbedFileWriter(stream, writer, body);
+                return new ProbedFileWriter(stream, writer, body, readOnlyScope);
             }
             catch
             {
-                stream.Dispose();
+                stream?.Dispose();
+                readOnlyScope?.Dispose();
                 throw;
-            }
-        }
-
-        /// <summary>
-        /// 読み取り専用属性が付いている場合に外す（-Force の実体）
-        /// </summary>
-        private static void ClearReadOnly(string path)
-        {
-            var info = new FileInfo(path);
-
-            if (info.Exists && (info.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-            {
-                info.Attributes &= ~FileAttributes.ReadOnly;
             }
         }
     }

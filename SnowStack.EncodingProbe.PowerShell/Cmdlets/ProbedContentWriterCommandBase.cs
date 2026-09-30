@@ -81,11 +81,16 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// <summary>
     /// 改行として出力する文字。省略時は参照情報があればそれを継承し、無ければOS既定に従う。
     /// </summary>
+    /// <remarks>
+    /// 決めるのは要素の後ろに付ける改行だけであり、要素の文字列の中に含まれる改行は置き換えない
+    /// （標準の Set-Content / Out-File と同じ。1.2.0 で仕様として明文化した）。
+    /// ファイル内の改行を統一する用途は Convert-ProbedContent が担う。
+    /// </remarks>
     [Parameter]
     public LineBreakOption LineBreak { get; set; } = LineBreakOption.Auto;
 
     /// <summary>
-    /// 読み取り専用属性の付いたファイルへも書き込む
+    /// 読み取り専用属性の付いたファイルへも書き込む。属性は書き込み後に元へ戻す（1.2.0）。
     /// </summary>
     [Parameter]
     public SwitchParameter Force { get; set; }
@@ -151,7 +156,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
 
         if (encodingFromBound)
         {
-            this._inheritedSpec = ResolveInheritedSpec();
+            this._inheritedSpec = ResolveEncodingFrom(this.EncodingFrom);
         }
     }
 
@@ -198,38 +203,6 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
 
         this._disposed = true;
         CloseTargets();
-    }
-
-    /// <summary>
-    /// -EncodingFrom で指定された参照ファイルから継承情報を求める
-    /// </summary>
-    private EncodingSpec ResolveInheritedSpec()
-    {
-        string reference = GetUnresolvedProviderPathFromPSPath(this.EncodingFrom);
-
-        if (!File.Exists(reference))
-        {
-            ThrowTerminatingError(CreateError(
-                new FileNotFoundException(ValidationMessages.FileNotFound(reference), reference),
-                "EncodingFromNotFound",
-                ErrorCategory.ObjectNotFound,
-                reference));
-        }
-
-        try
-        {
-            return EncodingInheritance.FromFile(reference, this.DetectorOptions);
-        }
-        catch (EncodingDetectionException exception)
-        {
-            string errorId = exception.ErrorId == EncodingDetectionException.CodePageNotAvailableId
-                ? "EncodingFromCodePageNotAvailable"
-                : "EncodingFromDetectionFailed";
-
-            ThrowTerminatingError(CreateError(exception, errorId, ErrorCategory.InvalidData, reference));
-
-            throw;  // ThrowTerminatingError は戻らないが、コンパイラには分からない
-        }
     }
 
     /// <summary>
@@ -295,6 +268,13 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
             return null;
         }
 
+        // ファイルを開かずに分かる失敗は、ShouldProcess より前に報告する。
+        // -WhatIf でも、実行すれば失敗することが分かるようにするため（1.2.0 手動確認後の修正）
+        if (!CheckWritable(file))
+        {
+            return null;
+        }
+
         if (!ShouldProcess(file, this.OperationName))
         {
             return null;
@@ -318,6 +298,43 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// ファイルを開かずに判定できる書き込みの失敗を検査する。失敗なら非終了エラーを報告して false を返す。
+    /// </summary>
+    /// <remarks>
+    /// エラー ID は、検査しなかった場合にファイルを開いた時点で報告していたものと同じにする
+    /// （読み取り専用は WriteAccessDenied、親ディレクトリが無い場合は WriteFailed）。
+    /// 読み取り専用以外の理由で書き込めない場合（ACL など）は、実際に開くまで分からないため対象外。
+    /// </remarks>
+    private bool CheckWritable(string file)
+    {
+        if (!this.Force.IsPresent && ReadOnlyAttributeScope.IsReadOnly(file))
+        {
+            WriteError(CreateError(
+                new UnauthorizedAccessException(ValidationMessages.FileIsReadOnly(file)),
+                "WriteAccessDenied",
+                ErrorCategory.PermissionDenied,
+                file));
+
+            return false;
+        }
+
+        string? parent = System.IO.Path.GetDirectoryName(file);
+
+        if (!string.IsNullOrEmpty(parent) && !Directory.Exists(parent))
+        {
+            WriteError(CreateError(
+                new DirectoryNotFoundException(ValidationMessages.ParentDirectoryNotFound(file)),
+                "WriteFailed",
+                ErrorCategory.WriteError,
+                file));
+
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>

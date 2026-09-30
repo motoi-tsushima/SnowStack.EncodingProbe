@@ -827,6 +827,822 @@ Add-Scenario 'Culture/追記継承/ko-KR' {
 
 Add-Scenario 'Culture/CP949期待値' { ($script:koCp949 | ForEach-Object { $_.ToString('X2') }) -join ' ' }
 
+
+# ---------------------------------------------------------------------------
+# 世界言語の判定 (1.2.0)
+#
+# 独自判定が担当するのは東アジア漢字文化圏の旧マルチバイトだけである。
+# それ以外の言語のシングルバイトのテキストは UTF.Unknown が判定するため、
+# 実行環境のカルチャーが何であっても同じ結果にならなければならない。
+#
+# とくに windows-1252 のドイツ語は Shift_JIS としても構造が成立してしまう
+# (FC DF = "üß" が Shift_JIS の外字領域の 2 バイト文字になる) ため、
+# 日本語カルチャーで Shift_JIS と誤判定していた。ここで回帰を固定する。
+# ---------------------------------------------------------------------------
+$script:worldSamples = @(
+    [PSCustomObject]@{ Name = 'de_cp1252'; CodePage = 1252; Text = 'Grüße aus München. Die Straße ist für Fußgänger. Schöne Grüße, Herr Müller.' }
+    [PSCustomObject]@{ Name = 'ru_cp1251'; CodePage = 1251; Text = 'Русский язык. Съешь ещё этих мягких французских булок, да выпей чаю.' }
+    [PSCustomObject]@{ Name = 'pl_cp1250'; CodePage = 1250; Text = 'Zażółć gęślą jaźń. Pchnąć w tę łódź jeża lub ośm skrzyń fig.' }
+    [PSCustomObject]@{ Name = 'th_cp874';  CodePage = 874;  Text = 'ภาษาไทย เป็นภาษาราชการของประเทศไทย และเป็นภาษาประจำชาติ' }
+)
+
+foreach ($worldSample in $script:worldSamples) {
+    foreach ($worldCulture in @('de-DE', 'ru-RU', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW', 'zh-HK', 'kok-IN')) {
+
+        # 判定したコードページ。カルチャーが変わっても同じ値でなければならない。
+        Add-Scenario ("World/{0}/{1}/CodePage" -f $worldSample.Name, $worldCulture) {
+            $bytes = [System.Text.Encoding]::GetEncoding($worldSample.CodePage).GetBytes($worldSample.Text + "`n")
+            $path = New-ByteFile ("world_{0}_{1}.txt" -f $worldSample.Name, $worldCulture) $bytes
+            (Resolve-Encoding -Path $path -Culture $worldCulture).CodePage
+        }.GetNewClosure()
+
+        # 復号した本文。誤判定していれば文字化けするので、元の文字列と一致しなくなる。
+        Add-Scenario ("World/{0}/{1}/復号" -f $worldSample.Name, $worldCulture) {
+            $bytes = [System.Text.Encoding]::GetEncoding($worldSample.CodePage).GetBytes($worldSample.Text + "`n")
+            $path = New-ByteFile ("world_dec_{0}_{1}.txt" -f $worldSample.Name, $worldCulture) $bytes
+            $decoded = Get-ProbedContent -LiteralPath $path -Culture $worldCulture -Raw
+            if ($decoded.TrimEnd("`r", "`n") -ceq $worldSample.Text) { '元の本文と一致' } else { Format-Text $decoded }
+        }.GetNewClosure()
+    }
+}
+
+# Unicode の判定はカルチャーに関わらず実行する。
+# UTF.Unknown は BOM 無しの UTF-16 / UTF-32 に対応していないため、
+# 「東アジア以外では独自判定を一切動かさない」という作りにはできない。
+foreach ($unicodeCulture in @('de-DE', 'ru-RU', 'th-TH', 'ja-JP')) {
+    Add-Scenario ("World/BOM無しUTF-16LE/{0}" -f $unicodeCulture) {
+        $bytes = [System.Text.Encoding]::Unicode.GetBytes('Grüße aus München.' + "`n")
+        $path = New-ByteFile ("world_u16_{0}.txt" -f $unicodeCulture) $bytes
+        (Resolve-Encoding -Path $path -Culture $unicodeCulture).CodePage
+    }.GetNewClosure()
+
+    Add-Scenario ("World/BOM無しUTF-16BE/{0}" -f $unicodeCulture) {
+        $bytes = [System.Text.Encoding]::BigEndianUnicode.GetBytes('Grüße aus München.' + "`n")
+        $path = New-ByteFile ("world_u16be_{0}.txt" -f $unicodeCulture) $bytes
+        (Resolve-Encoding -Path $path -Culture $unicodeCulture).CodePage
+    }.GetNewClosure()
+}
+
+# UTF-8 判定は RFC 3629 の整形式バイト列だけを受け入れる。
+# 後続バイトが足りないまま ASCII に戻る形 (cp1252 の "Français" など) を
+# UTF-8 と誤判定していたのを 1.2.0 で直した。
+$script:utf8Probes = @(
+    [PSCustomObject]@{ Name = '正しい3バイト文字';       Bytes = [byte[]](0x41, 0xE3, 0x81, 0x82, 0x42, 0x0A) }
+    [PSCustomObject]@{ Name = '後続バイト不足';           Bytes = [byte[]](0x46, 0x72, 0x61, 0x6E, 0xE7, 0x61, 0x69, 0x73, 0x0A) }
+    [PSCustomObject]@{ Name = '終端で途切れる';           Bytes = [byte[]](0x41, 0xE3, 0x81) }
+    [PSCustomObject]@{ Name = '冗長な2バイト文字';        Bytes = [byte[]](0xC0, 0x80, 0x0A) }
+    [PSCustomObject]@{ Name = 'サロゲート符号位置';       Bytes = [byte[]](0xED, 0xA0, 0x80, 0x0A) }
+    [PSCustomObject]@{ Name = 'U+10FFFF を超える';        Bytes = [byte[]](0xF4, 0x90, 0x80, 0x80, 0x0A) }
+)
+
+foreach ($utf8Probe in $script:utf8Probes) {
+    Add-Scenario ("World/UTF-8厳密判定/{0}" -f $utf8Probe.Name) {
+        $path = New-ByteFile ("world_u8_{0}.txt" -f ($utf8Probe.Name -replace '[^0-9A-Za-z]', '_')) $utf8Probe.Bytes
+        (Resolve-Encoding -Path $path -Culture de-DE -Strategy NativeOnly).CodePage
+    }.GetNewClosure()
+}
+
+# フレンドリ名の無いシングルバイト系の PSEncodingName は null (1.2.0 手動確認後の修正)。
+# 1.2.0 より前は PS 7.x (net10.0 ビルド) でだけ "I do not know." が入っていた。
+# shift_jis などの独自判定の結果は、PS 5.1 (null) と 7.x (WebName) で違うのが仕様なので対象にしない。
+$script:psNameSamples = @(
+    [PSCustomObject]@{ Name = 'it_cp1252'; Culture = 'it-IT'; Bytes = [System.Text.Encoding]::GetEncoding(1252).GetBytes("Italiano`nPranzo d'acqua fa volti sghembi.`nPerch$([char]0xE9) $([char]0xE8) cos$([char]0xEC)? Qual $([char]0xE8) la citt$([char]0xE0) pi$([char]0xF9) bella? Niente po' po' di meno!`nPrezzo: 1.234,56 $([char]0x20AC) $([char]0x2014) .`n") }
+    [PSCustomObject]@{ Name = 'de_latin1'; Culture = 'de-DE'; Bytes = [System.Text.Encoding]::GetEncoding(28591).GetBytes('Grüße aus München. Die Straße ist für Fußgänger. Schöne Grüße, Herr Müller.' + "`n") }
+    [PSCustomObject]@{ Name = 'ru_cp1251'; Culture = 'ja-JP'; Bytes = [System.Text.Encoding]::GetEncoding(1251).GetBytes('Русский язык. Съешь ещё этих мягких французских булок, да выпей чаю.' + "`n") }
+)
+
+foreach ($psNameSample in $script:psNameSamples) {
+    Add-Scenario ("World/PSEncodingName/{0}" -f $psNameSample.Name) {
+        $path = New-ByteFile ("psname_{0}.txt" -f $psNameSample.Name) $psNameSample.Bytes
+        $info = Resolve-Encoding -Path $path -Culture $psNameSample.Culture
+        $psName = if ($null -eq $info.PSEncodingName) { '(null)' } else { "'" + $info.PSEncodingName + "'" }
+        'cp={0} PSEncodingName={1} UsePSName={2}' -f $info.CodePage, $psName, $info.UsePSName
+    }.GetNewClosure()
+}
+
+# ---------------------------------------------------------------------------
+# 香港 Big5 (1.2.0 第二次修正)
+#
+# - カルチャー名はサブタグに分解して判定する。zh-Hant-HK は PS 5.1 では
+#   CultureInfo.Name が zh-HK に正規化されるが、判定には渡された名前がそのまま届く
+# - 台湾 Big5 と香港 Big5 はバイト列から区別しない。HKSCS 固有字が入っても 950 / big5
+# - 繁簡の系統が食い違ったら、UTF.Unknown の系統の投票で判定し直す
+#   (香港・台湾カルチャーの簡体字 → 936、大陸カルチャーの繁体字 → 950)
+# - 大陸カルチャーの HKSCS 入り Big5 は救済されない (既知の限界、54936 のまま)
+# - HKSCS 固有字は私用領域として復号され、書き戻すと元のバイト列に戻る
+# ---------------------------------------------------------------------------
+$script:hkHant = '香港是一個國際大都會，粵語是香港人的主要語言。今天天氣很好，我們一起去飲茶吧。中文資訊處理需要正確的文字編碼判斷方法。'
+$script:hkHans = '香港是一个国际大都会，粤语是香港人的主要语言。今天天气很好，我们一起去饮茶吧。中文信息处理需要正确的文字编码判断方法。'
+$script:hkBig5 = [System.Text.Encoding]::GetEncoding(950).GetBytes($script:hkHant + "`r`n")
+$script:hkGbk = [System.Text.Encoding]::GetEncoding(936).GetBytes($script:hkHans + "`r`n")
+# HKSCS 固有領域の 4 文字 (88 62 / 8B F8 / FA 5F / FE 52) を改行の直前に挟む
+$script:hkHkscs = [byte[]]($script:hkBig5[0..($script:hkBig5.Length - 3)] + [byte[]](0x88, 0x62, 0x8B, 0xF8, 0xFA, 0x5F, 0xFE, 0x52) + [byte[]](0x0D, 0x0A))
+
+$script:hkSamples = @(
+    [PSCustomObject]@{ Name = 'big5';  Bytes = $script:hkBig5 }
+    [PSCustomObject]@{ Name = 'hkscs'; Bytes = $script:hkHkscs }
+    [PSCustomObject]@{ Name = 'gbk';   Bytes = $script:hkGbk }
+)
+
+foreach ($hkSample in $script:hkSamples) {
+    foreach ($hkCulture in @('zh-TW', 'zh-HK', 'zh-Hant-HK', 'zh-MO', 'yue-HK', 'zh-CN')) {
+        Add-Scenario ("HongKong/{0}/{1}/Combined" -f $hkSample.Name, $hkCulture) {
+            $path = New-ByteFile ("hk_{0}_{1}.txt" -f $hkSample.Name, $hkCulture) $hkSample.Bytes
+            $info = Resolve-Encoding -Path $path -Culture $hkCulture
+            '{0} / {1}' -f $info.CodePage, $info.EncodingWebName
+        }.GetNewClosure()
+
+        Add-Scenario ("HongKong/{0}/{1}/NativeOnly" -f $hkSample.Name, $hkCulture) {
+            $path = New-ByteFile ("hk_n_{0}_{1}.txt" -f $hkSample.Name, $hkCulture) $hkSample.Bytes
+            (Resolve-Encoding -Path $path -Culture $hkCulture -Strategy NativeOnly).CodePage
+        }.GetNewClosure()
+    }
+}
+
+# kok (コンカニ語) を韓国語と判定しない。1.2.0 より前は前方一致のため cp949 と判定していた
+Add-Scenario 'Culture/kok-IN/韓国語の判定を行わない' {
+    $path = New-ByteFile 'kok_cp949.txt' ([System.Text.Encoding]::GetEncoding(949).GetBytes('안녕하세요. 한국어 문장입니다.' + "`n"))
+    (Resolve-Encoding -Path $path -Culture kok-IN -Strategy NativeOnly).CodePage
+}
+
+# HKSCS 固有字は例外も置換文字も出さずに私用領域へ写される
+Add-Scenario 'HongKong/hkscs/私用領域の符号位置' {
+    $path = New-ByteFile 'hk_pua.txt' $script:hkHkscs
+    $text = Get-ProbedContent -LiteralPath $path -Culture zh-HK -Raw
+    ($text.ToCharArray() | Where-Object { [int]$_ -ge 0xE000 -and [int]$_ -le 0xF8FF } |
+        ForEach-Object { 'U+{0:X4}' -f [int]$_ }) -join ' '
+}
+
+# 加工せずに書き戻すと、私用領域を経由してもバイト列が保存される
+Add-Scenario 'HongKong/hkscs/往復' {
+    $source = New-ByteFile 'hk_rt_src.txt' $script:hkHkscs
+    $destination = Join-Path $script:WorkRoot 'hk_rt_dst.txt'
+    $text = Get-ProbedContent -LiteralPath $source -Culture zh-HK -Raw
+    Set-ProbedContent -LiteralPath $destination -Value $text -EncodingFrom $source -Culture zh-HK -NoNewline -ErrorAction Stop
+    if ((Format-FileBytes $destination) -eq (Format-FileBytes $source)) { 'バイト列が一致' } else { Format-FileBytes $destination }
+}
+
+# ---------------------------------------------------------------------------
+# Out-ProbedFile (1.2.0 仕様書 第 1 部)
+#
+# 符号化の層（エンコーディング・BOM・改行）は両ホストで同じバイト列になることを確かめる。
+# 整形の層（表・一覧）はホストによって異なるのが正しいため、値そのものではなく
+# 「同じホストの Out-String -Stream の各要素 + 改行と一致するか」を記録する。
+# 終了エラーは FullyQualifiedErrorId とメッセージで記録する（PowerShell 自身の文言は含めない）。
+# ---------------------------------------------------------------------------
+
+<#
+.SYNOPSIS
+    スクリプトブロックを実行し、終了エラーなら「ID: メッセージ」、エラーが無ければ NO-ERROR を返す。
+#>
+function Get-TerminatingError {
+    param([scriptblock]$Body)
+
+    try {
+        & $Body
+        return 'NO-ERROR'
+    }
+    catch {
+        return ('{0}: {1}' -f $_.FullyQualifiedErrorId.Split(',')[0], (Get-InnermostMessage $_.Exception))
+    }
+}
+
+<#
+.SYNOPSIS
+    スクリプトブロックを実行し、終了エラーなら ID だけを返す（PowerShell 自身のメッセージを含むもの用）。
+#>
+function Get-TerminatingErrorId {
+    param([scriptblock]$Body)
+
+    try {
+        & $Body
+        return 'NO-ERROR'
+    }
+    catch {
+        return $_.FullyQualifiedErrorId.Split(',')[0]
+    }
+}
+
+function Test-ReadOnly {
+    param([string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) { return 'absent' }
+    return [bool]((Get-Item -LiteralPath $Path -Force).Attributes -band [IO.FileAttributes]::ReadOnly)
+}
+
+function Clear-ReadOnly {
+    param([string]$Path)
+
+    if (Test-Path -LiteralPath $Path) {
+        $item = Get-Item -LiteralPath $Path -Force
+        $item.Attributes = $item.Attributes -band (-bnot [IO.FileAttributes]::ReadOnly)
+    }
+}
+
+$outDir = Join-Path $script:WorkRoot 'out'
+$null = New-Item -ItemType Directory -Path $outDir
+
+foreach ($outName in @(
+    'utf8NoBOM', 'utf8BOM', 'unicodeNoBOM', 'unicodeBOM', 'bigendianunicodeNoBOM', 'bigendianunicodeBOM',
+    'utf32NoBOM', 'utf32BOM', 'bigendianutf32NoBOM', 'bigendianutf32BOM', 'shift_jis', '932', 'euc-jp', 'ascii')) {
+
+    Add-Scenario "OutProbedFile/vocabulary/$outName" {
+        $path = Join-Path $outDir ("vocab_{0}.txt" -f $outName)
+        'Aあ' | Out-ProbedFile -LiteralPath $path -Encoding $outName -LineBreak Lf -ErrorAction Stop
+        Format-FileBytes $path
+    }.GetNewClosure()
+}
+
+foreach ($outName in @('utf8', 'utf-8', '65001', 'utf7', 'utf-16', 'shift_jisBOM')) {
+    Add-Scenario "OutProbedFile/vocabulary/rejected/$outName" {
+        $path = Join-Path $outDir ("rejected_{0}.txt" -f $outName)
+        'A' | Out-ProbedFile -LiteralPath $path -Encoding $outName
+        Format-FileBytes $path
+    }.GetNewClosure()
+}
+
+Add-Scenario 'OutProbedFile/vocabulary/EncodingInstance-UTF8' {
+    $path = Join-Path $outDir 'instance.txt'
+    'A' | Out-ProbedFile -LiteralPath $path -Encoding ([System.Text.Encoding]::UTF8) -LineBreak Lf
+    Format-FileBytes $path
+}
+
+Add-Scenario 'OutProbedFile/vocabulary/EncodingInformation' {
+    $reference = New-ByteFile 'out_ref_lf.txt' ([byte[]](0xFF, 0xFE, 0x78, 0x00, 0x0A, 0x00))
+    $path = Join-Path $outDir 'information.txt'
+    'A', 'B' | Out-ProbedFile -LiteralPath $path -Encoding (Resolve-Encoding -Path $reference)
+    Format-FileBytes $path
+}
+
+# -Encoding の決定（仕様書 2.5 の表）
+$script:outUtf16 = [byte[]](0xFF, 0xFE, 0x41, 0x00, 0x0A, 0x00)
+foreach ($outCase in @(
+    @{ Name = 'omitted/overwrite/missing'; Existing = $null;            Parameters = @{} },
+    @{ Name = 'omitted/overwrite/empty';   Existing = [byte[]]@();      Parameters = @{} },
+    @{ Name = 'omitted/overwrite/utf16';   Existing = $script:outUtf16; Parameters = @{} },
+    @{ Name = 'omitted/append/missing';    Existing = $null;            Parameters = @{ Append = $true } },
+    @{ Name = 'omitted/append/empty';      Existing = [byte[]]@();      Parameters = @{ Append = $true } },
+    @{ Name = 'omitted/append/utf16';      Existing = $script:outUtf16; Parameters = @{ Append = $true } },
+    @{ Name = 'auto/overwrite/missing';    Existing = $null;            Parameters = @{ Encoding = 'Auto' } },
+    @{ Name = 'auto/overwrite/empty';      Existing = [byte[]]@();      Parameters = @{ Encoding = 'Auto'; LineBreak = 'Lf' } },
+    @{ Name = 'auto/overwrite/utf16';      Existing = $script:outUtf16; Parameters = @{ Encoding = 'Auto' } },
+    @{ Name = 'auto/append/missing';       Existing = $null;            Parameters = @{ Encoding = 'Auto'; Append = $true } },
+    @{ Name = 'auto/append/empty';         Existing = [byte[]]@();      Parameters = @{ Encoding = 'Auto'; Append = $true; LineBreak = 'Lf' } },
+    @{ Name = 'auto/append/utf16';         Existing = $script:outUtf16; Parameters = @{ Encoding = 'Auto'; Append = $true } })) {
+
+    Add-Scenario ("OutProbedFile/encoding/{0}" -f $outCase.Name) {
+        $path = Join-Path $outDir (($outCase.Name -replace '/', '_') + '.txt')
+        if ($null -ne $outCase.Existing) { [IO.File]::WriteAllBytes($path, $outCase.Existing) }
+        $parameters = $outCase.Parameters
+        $result = Get-TerminatingError { 'B' | Out-ProbedFile -LiteralPath $path @parameters -ErrorAction Stop }
+        '{0} | {1}' -f $result, (Format-FileBytes $path)
+    }.GetNewClosure()
+}
+
+# 改行（仕様書 2.6。実測報告 5 章の 8-1〜8-6）
+foreach ($outLb in @('CrLf', 'Lf', 'Cr')) {
+    Add-Scenario "OutProbedFile/linebreak/inside-strings/$outLb" {
+        $path = Join-Path $outDir ("inside_{0}.txt" -f $outLb)
+        "a`nb", "a`r`nb", "a`rb", "a`n", "a`r`n`r`nb", 'c' | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM -LineBreak $outLb
+        Format-FileBytes $path
+    }.GetNewClosure()
+}
+
+Add-Scenario 'OutProbedFile/linebreak/NoNewline' {
+    $path = Join-Path $outDir 'nonewline.txt'
+    'a', '', 'b' | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM -NoNewline
+    Format-FileBytes $path
+}
+
+Add-Scenario 'OutProbedFile/linebreak/EncodingFrom-Cr' {
+    $reference = New-ByteFile 'out_ref_cr.txt' ([byte[]](0x78, 0x0D))
+    $path = Join-Path $outDir 'from_cr.txt'
+    'A', 'B' | Out-ProbedFile -LiteralPath $path -EncodingFrom $reference
+    Format-FileBytes $path
+}
+
+# -Append の整合性検査（仕様書 2.8）
+Add-Scenario 'OutProbedFile/append/mismatch-keeps-earlier-lines' {
+    $path = New-ByteFile 'out_append_sjis.txt' ([byte[]](0x82, 0xA0, 0x0A))
+    $result = Get-TerminatingError { 'x', 'い', 'y' | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM -Append -Culture ja-JP -LineBreak Lf -ErrorAction Stop }
+    '{0} | {1}' -f $result, (Format-FileBytes $path)
+}
+
+Add-Scenario 'OutProbedFile/append/AllowEncodingChange' {
+    $path = New-ByteFile 'out_append_allow.txt' ([byte[]](0x82, 0xA0, 0x0A))
+    'い' | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM -Append -AllowEncodingChange -Culture ja-JP -LineBreak Lf
+    Format-FileBytes $path
+}
+
+Add-Scenario 'OutProbedFile/append/AllowEncodingChange-without-Append-warns' {
+    $path = Join-Path $outDir 'allow_warn.txt'
+    'A' | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM -AllowEncodingChange -WarningVariable warnings -WarningAction SilentlyContinue
+    '{0} | {1}' -f ($warnings -join ' / '), (Format-FileBytes $path)
+}
+
+# -NoClobber / -Force / 読み取り専用（実測報告 3-1〜3-10）
+foreach ($outCombo in @(
+    @{ Id = '3-1';  Exists = $false; ReadOnly = $false; Parameters = @{ NoClobber = $true } },
+    @{ Id = '3-2';  Exists = $true;  ReadOnly = $false; Parameters = @{ NoClobber = $true } },
+    @{ Id = '3-3';  Exists = $true;  ReadOnly = $false; Parameters = @{ Append = $true; NoClobber = $true } },
+    @{ Id = '3-4';  Exists = $false; ReadOnly = $false; Parameters = @{ Append = $true; NoClobber = $true } },
+    @{ Id = '3-5';  Exists = $true;  ReadOnly = $false; Parameters = @{ Force = $true; NoClobber = $true } },
+    @{ Id = '3-6';  Exists = $true;  ReadOnly = $true;  Parameters = @{} },
+    @{ Id = '3-7';  Exists = $true;  ReadOnly = $true;  Parameters = @{ Force = $true } },
+    @{ Id = '3-8';  Exists = $true;  ReadOnly = $true;  Parameters = @{ Force = $true; NoClobber = $true } },
+    @{ Id = '3-9';  Exists = $true;  ReadOnly = $true;  Parameters = @{ Append = $true } },
+    @{ Id = '3-10'; Exists = $true;  ReadOnly = $true;  Parameters = @{ Append = $true; Force = $true } })) {
+
+    Add-Scenario ("OutProbedFile/combination/{0}" -f $outCombo.Id) {
+        $path = Join-Path $outDir ("combo_{0}.txt" -f $outCombo.Id)
+        if ($outCombo.Exists) { [IO.File]::WriteAllBytes($path, [byte[]](0xFF, 0xFE, 0x4F, 0x00, 0x4C, 0x00, 0x44, 0x00, 0x0D, 0x00, 0x0A, 0x00)) }
+        if ($outCombo.ReadOnly) { (Get-Item -LiteralPath $path).Attributes = 'ReadOnly' }
+        $parameters = $outCombo.Parameters
+        try {
+            $result = Get-TerminatingError { 'NEW' | Out-ProbedFile -LiteralPath $path -Encoding unicodeBOM -LineBreak CrLf @parameters -ErrorAction Stop }
+            '{0} | {1} | readonly={2}' -f $result, (Format-FileBytes $path), (Test-ReadOnly $path)
+        }
+        finally {
+            Clear-ReadOnly $path
+        }
+    }.GetNewClosure()
+}
+
+# パス（実測報告 4-1〜4-9）
+Add-Scenario 'OutProbedFile/path/4-1-wildcard-one' {
+    $dir = Join-Path $script:WorkRoot 'out_p41'; $null = New-Item -ItemType Directory -Path $dir
+    [IO.File]::WriteAllText((Join-Path $dir 'a1.txt'), 'OLD')
+    'NEW' | Out-ProbedFile -FilePath (Join-Path $dir 'a?.txt') -Encoding utf8NoBOM -LineBreak Lf
+    Format-FileBytes (Join-Path $dir 'a1.txt')
+}
+
+Add-Scenario 'OutProbedFile/path/4-2-wildcard-two' {
+    $dir = Join-Path $script:WorkRoot 'out_p42'; $null = New-Item -ItemType Directory -Path $dir
+    [IO.File]::WriteAllText((Join-Path $dir 'a1.txt'), 'OLD')
+    [IO.File]::WriteAllText((Join-Path $dir 'a2.txt'), 'OLD')
+    Get-TerminatingError { 'NEW' | Out-ProbedFile (Join-Path $dir 'a?.txt') -Encoding utf8NoBOM -ErrorAction Stop }
+}
+
+foreach ($outPattern in @('b*.txt', 'c[1].txt')) {
+    Add-Scenario "OutProbedFile/path/wildcard-none/$outPattern" {
+        $dir = Join-Path $WorkRoot ('out_none_' + ($outPattern -replace '[^a-z]', ''))
+        $null = New-Item -ItemType Directory -Path $dir
+        $result = Get-TerminatingError { 'NEW' | Out-ProbedFile (Join-Path $dir $outPattern) -Encoding utf8NoBOM -ErrorAction Stop }
+        '{0} | files={1}' -f $result, @(Get-ChildItem -LiteralPath $dir).Count
+    }.GetNewClosure()
+}
+
+Add-Scenario 'OutProbedFile/path/4-5-literal-brackets' {
+    $path = Join-Path $outDir 'c[1].txt'
+    'NEW' | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM -LineBreak Lf
+    Format-FileBytes $path
+}
+
+Add-Scenario 'OutProbedFile/path/4-7-missing-parent' {
+    Get-TerminatingError { 'NEW' | Out-ProbedFile -LiteralPath (Join-Path $outDir 'missing\x.txt') -Encoding utf8NoBOM -ErrorAction Stop }
+}
+
+Add-Scenario 'OutProbedFile/path/4-8-directory' {
+    Get-TerminatingError { 'NEW' | Out-ProbedFile -LiteralPath $outDir -Encoding utf8NoBOM -ErrorAction Stop }
+}
+
+Add-Scenario 'OutProbedFile/path/4-9-empty-string' {
+    Get-TerminatingErrorId { 'NEW' | Out-ProbedFile -FilePath '' -Encoding utf8NoBOM -ErrorAction Stop }
+}
+
+foreach ($outAlias in @('Path', 'LP', 'PSPath')) {
+    Add-Scenario "OutProbedFile/path/alias/$outAlias" {
+        $path = Join-Path $outDir ("alias_{0}.txt" -f $outAlias)
+        $parameters = @{ $outAlias = $path }
+        'A' | Out-ProbedFile @parameters -Encoding utf8NoBOM -LineBreak Lf
+        Format-FileBytes $path
+    }.GetNewClosure()
+}
+
+Add-Scenario 'OutProbedFile/path/parameter-metadata' {
+    $command = Get-Command Out-ProbedFile
+    $literal = $command.Parameters['LiteralPath']
+    '{0} | {1} | {2} | {3}' -f `
+        (($command.Parameters['FilePath'].Aliases | Sort-Object) -join ','),
+        (($literal.Aliases | Sort-Object) -join ','),
+        (@($literal.Attributes | Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] -and ($_.ValueFromPipeline -or $_.ValueFromPipelineByPropertyName) }).Count),
+        $command.DefaultParameterSet
+}
+
+# 整形（仕様書 2.2 / 2.3）。文字列は両ホストで同一、表は同じホストの Out-String -Stream と一致
+Add-Scenario 'OutProbedFile/format/strings' {
+    $path = Join-Path $outDir 'strings.txt'
+    'alpha', 'beta', ('x' * 253), 42, 'あいう' | Out-ProbedFile -LiteralPath $path -Encoding utf8BOM -Width 40 -LineBreak Lf
+    Format-FileBytes $path
+}
+
+foreach ($outWidth in @(0, 40, 200)) {
+    Add-Scenario "OutProbedFile/format/table-matches-host-Out-String/$outWidth" {
+        $path = Join-Path $outDir ("table_{0}.txt" -f $outWidth)
+        $data = @(
+            [pscustomobject]@{ Name = 'Apple'; Count = 1; Note = 'red' },
+            [pscustomobject]@{ Name = 'Banana'; Count = 22; Note = ('y' * 300) })
+        $widthParameter = if ($outWidth -gt 0) { @{ Width = $outWidth } } else { @{} }
+        $data | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM @widthParameter
+        $expected = (($data | Out-String -Stream @widthParameter) | ForEach-Object { $_ + [Environment]::NewLine }) -join ''
+        if ([IO.File]::ReadAllText($path) -ceq $expected) { '一致' } else { '不一致' }
+    }.GetNewClosure()
+}
+
+# 空の入力（仕様書 2.11）
+foreach ($outEmpty in @(
+    @{ Name = 'none/overwrite-existing'; Script = { param($p) @() | Out-ProbedFile -LiteralPath $p -Encoding unicodeBOM }; Existing = $true },
+    @{ Name = 'none/append-existing';    Script = { param($p) @() | Out-ProbedFile -LiteralPath $p -Encoding unicodeBOM -Append }; Existing = $true },
+    @{ Name = 'none/append-missing';     Script = { param($p) @() | Out-ProbedFile -LiteralPath $p -Encoding unicodeBOM -Append }; Existing = $false },
+    @{ Name = 'null';                    Script = { param($p) $null | Out-ProbedFile -LiteralPath $p -Encoding unicodeBOM }; Existing = $false },
+    @{ Name = 'null-InputObject';        Script = { param($p) Out-ProbedFile -InputObject $null -LiteralPath $p -Encoding unicodeBOM }; Existing = $false },
+    @{ Name = 'empty-string';            Script = { param($p) '' | Out-ProbedFile -LiteralPath $p -Encoding unicodeBOM -LineBreak CrLf }; Existing = $false })) {
+
+    Add-Scenario ("OutProbedFile/empty/{0}" -f $outEmpty.Name) {
+        $path = Join-Path $outDir (($outEmpty.Name -replace '[/-]', '_') + '.txt')
+        if ($outEmpty.Existing) { [IO.File]::WriteAllText($path, 'OLD') }
+        & $outEmpty.Script $path
+        Format-FileBytes $path
+    }.GetNewClosure()
+}
+
+# タイミング（仕様書 2.10 / 2.14）
+Add-Scenario 'OutProbedFile/timing/same-path-round-trip' {
+    $path = New-ByteFile 'out_roundtrip.txt' ([byte[]](0x61, 0x0A, 0x62, 0x0A))
+    $result = Get-TerminatingError { Get-ProbedContent -LiteralPath $path | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM -ErrorAction Stop }
+    '{0} | {1}' -f $result, (Format-FileBytes $path)
+}
+
+Add-Scenario 'OutProbedFile/timing/WhatIf' {
+    $path = Join-Path $outDir 'whatif.txt'
+    'A' | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM -WhatIf 6>$null
+    Format-FileBytes $path
+}
+
+Add-Scenario 'OutProbedFile/error/Width' {
+    Get-TerminatingErrorId { 'A' | Out-ProbedFile -LiteralPath (Join-Path $outDir 'w.txt') -Encoding utf8NoBOM -Width 1 -ErrorAction Stop }
+}
+
+Add-Scenario 'OutProbedFile/error/EncodingAndEncodingFrom' {
+    Get-TerminatingError { 'A' | Out-ProbedFile -LiteralPath (Join-Path $outDir 'ef.txt') -Encoding utf8NoBOM -EncodingFrom $outDir -ErrorAction Stop }
+}
+
+# ---------------------------------------------------------------------------
+# Convert-ProbedContent (1.2.0 仕様書 第 2 部)
+# ---------------------------------------------------------------------------
+
+<#
+.SYNOPSIS
+    非終了エラーを「ID: メッセージ」の形で連結して返す。
+#>
+function Format-ErrorRecords {
+    param([object[]]$Records)
+
+    if ($null -eq $Records -or $Records.Count -eq 0) { return 'no-errors' }
+    return (($Records | ForEach-Object {
+        if ($_ -is [System.Management.Automation.ErrorRecord]) {
+            '{0}: {1}' -f $_.FullyQualifiedErrorId.Split(',')[0], (Get-InnermostMessage $_.Exception)
+        }
+        else {
+            [string]$_
+        }
+    }) -join ' / ')
+}
+
+function Format-ConvertResult {
+    param([object[]]$Results)
+
+    return (($Results | ForEach-Object {
+        '{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}' -f $_.PSObject.TypeNames[0], $_.SourceEncoding, $_.SourceCodePage, $_.Encoding, $_.SourceLineBreak, $_.LineBreak, $_.Changed, ($_.Destination -eq $_.Path)
+    }) -join ' / ')
+}
+
+$convertDir = Join-Path $script:WorkRoot 'convert'
+$null = New-Item -ItemType Directory -Path $convertDir
+
+function New-ConvertFile {
+    param([string]$Name, [byte[]]$Bytes)
+
+    $path = Join-Path $convertDir $Name
+    [IO.File]::WriteAllBytes($path, $Bytes)
+    return $path
+}
+
+$script:convSjis = [byte[]](0x82, 0xA0, 0x0D, 0x0A, 0x82, 0xA2, 0x0A)
+
+foreach ($convCase in @(
+    @{ Name = 'sjis-to-utf8BOM-lf';     Bytes = $script:convSjis; Parameters = @{ Encoding = 'utf8BOM'; LineBreak = 'Lf'; Culture = 'ja-JP' } },
+    @{ Name = 'sjis-to-unicodeBOM';     Bytes = $script:convSjis; Parameters = @{ Encoding = 'unicodeBOM'; Culture = 'ja-JP' } },
+    @{ Name = 'sjis-to-eucjp-crlf';     Bytes = $script:convSjis; Parameters = @{ Encoding = 'euc-jp'; LineBreak = 'CrLf'; Culture = 'ja-JP' } },
+    @{ Name = 'utf8bom-bom-remove';     Bytes = [byte[]](0xEF, 0xBB, 0xBF, 0x41, 0x0A); Parameters = @{ Bom = 'Remove' } },
+    @{ Name = 'utf8-bom-add';           Bytes = [byte[]](0xE3, 0x81, 0x82, 0x0A); Parameters = @{ Bom = 'Add'; SourceEncoding = 'utf8' } },
+    @{ Name = 'utf16-bom-remove';       Bytes = [byte[]](0xFF, 0xFE, 0x41, 0x00, 0x0A, 0x00); Parameters = @{ Bom = 'Remove' } },
+    @{ Name = 'bare-utf8-with-bom';     Bytes = [byte[]](0x41, 0x0A); Parameters = @{ Encoding = 'utf8'; Bom = 'Add' } },
+    @{ Name = 'webname-utf16-remove';   Bytes = [byte[]](0x41, 0x0A); Parameters = @{ Encoding = 'utf-16'; Bom = 'Remove' } },
+    @{ Name = 'bare-unicode';           Bytes = [byte[]](0x41, 0x0A); Parameters = @{ Encoding = 'unicode' } },
+    @{ Name = 'mixed-linebreaks-lf';    Bytes = [byte[]](0x61, 0x0D, 0x0A, 0x62, 0x0A, 0x63, 0x0D, 0x64); Parameters = @{ LineBreak = 'Lf' } },
+    @{ Name = 'keep-trailing-none';     Bytes = [byte[]](0x61, 0x0A, 0x62); Parameters = @{ LineBreak = 'CrLf' } },
+    @{ Name = 'u2028-not-a-linebreak';  Bytes = [byte[]](0x61, 0xE2, 0x80, 0xA8, 0x62, 0x0A); Parameters = @{ LineBreak = 'CrLf'; SourceEncoding = 'utf8' } },
+    @{ Name = 'sjis-bom-remove-noop';   Bytes = [byte[]](0x82, 0xA0); Parameters = @{ Bom = 'Remove'; SourceEncoding = 'shift_jis' } },
+    @{ Name = 'unchanged';              Bytes = [byte[]](0x61, 0x0A); Parameters = @{ LineBreak = 'Lf' } },
+    @{ Name = 'empty-file';             Bytes = [byte[]]@(); Parameters = @{ Encoding = 'utf8BOM' } })) {
+
+    Add-Scenario ("ConvertProbedContent/convert/{0}" -f $convCase.Name) {
+        $path = New-ConvertFile ($convCase.Name + '.txt') $convCase.Bytes
+        $parameters = $convCase.Parameters
+        $results = @(Convert-ProbedContent -LiteralPath $path @parameters -PassThru -ErrorVariable errors -ErrorAction SilentlyContinue)
+        '{0} | {1} | {2}' -f (Format-FileBytes $path), (Format-ConvertResult $results), (Format-ErrorRecords $errors)
+    }.GetNewClosure()
+}
+
+# 終了エラー（仕様書 18.1）
+foreach ($convError in @(
+    @{ Id = 'E1';  Parameters = @{} },
+    @{ Id = 'E1b'; Parameters = @{ LineBreak = 'Auto' } },
+    @{ Id = 'E2';  Parameters = @{ Encoding = 'Auto' } },
+    @{ Id = 'E4';  Parameters = @{ Encoding = 'utf8' } },
+    @{ Id = 'E4b'; Parameters = @{ Encoding = 'utf-16' } },
+    @{ Id = 'E5';  Parameters = @{ Encoding = 'utf7'; Bom = 'Remove' } },
+    @{ Id = 'E6';  Parameters = @{ Encoding = 'utf8NoBOM'; Bom = 'Add' } },
+    @{ Id = 'E7';  Parameters = @{ Encoding = 'shift_jis'; Bom = 'Add' } },
+    @{ Id = 'E10'; Parameters = @{ LineBreak = 'Lf'; Culture = 'no-such-culture-xx' } })) {
+
+    Add-Scenario ("ConvertProbedContent/error/{0}" -f $convError.Id) {
+        $path = New-ConvertFile ('err_{0}.txt' -f $convError.Id) ([byte[]](0x41, 0x0D, 0x0A))
+        $parameters = $convError.Parameters
+        $result = Get-TerminatingError { Convert-ProbedContent -LiteralPath $path @parameters -ErrorAction Stop }
+        '{0} | {1}' -f $result, (Format-FileBytes $path)
+    }.GetNewClosure()
+}
+
+Add-Scenario 'ConvertProbedContent/error/E3' {
+    $path = New-ConvertFile 'err_E3.txt' ([byte[]](0x41))
+    Get-TerminatingError { Convert-ProbedContent -LiteralPath $path -Encoding utf8NoBOM -EncodingFrom $path -ErrorAction Stop }
+}
+
+Add-Scenario 'ConvertProbedContent/error/E8' {
+    $path = New-ConvertFile 'err_E8.txt' ([byte[]](0x41))
+    Get-TerminatingError { Convert-ProbedContent -LiteralPath $path -Encoding ([System.Text.Encoding]::UTF8) -Bom Remove -ErrorAction Stop }
+}
+
+Add-Scenario 'ConvertProbedContent/error/E9' {
+    $path = New-ConvertFile 'err_E9.txt' ([byte[]](0x41))
+    Get-TerminatingError { Convert-ProbedContent -LiteralPath $path -EncodingFrom (Join-Path $convertDir 'missing.txt') -ErrorAction Stop }
+}
+
+Add-Scenario 'ConvertProbedContent/error/E11' {
+    $path = New-ConvertFile 'err_E11.txt' ([byte[]](0x41))
+    Get-TerminatingError { Convert-ProbedContent -LiteralPath $path -LineBreak Lf -Destination (Join-Path $convertDir 'missing') -ErrorAction Stop }
+}
+
+# 非終了エラー（仕様書 18.2）。そのファイルは変換せず、元のまま残す
+foreach ($convFailure in @(
+    @{ Id = 'N3-invalid-utf8';      Bytes = [byte[]](0x61, 0xE9, 0x62, 0x0A); Parameters = @{ SourceEncoding = 'utf8'; Encoding = 'utf8BOM' } },
+    @{ Id = 'N3-truncated-utf8';    Bytes = [byte[]](0x61, 0x62, 0xE3, 0x81); Parameters = @{ SourceEncoding = 'utf8'; Encoding = 'utf8BOM' } },
+    @{ Id = 'N3-invalid-sjis';      Bytes = [byte[]](0x61, 0x82, 0xA0, 0x82, 0x0A); Parameters = @{ SourceEncoding = 'shift_jis'; LineBreak = 'Lf' } },
+    @{ Id = 'N3-invalid-eucjp';     Bytes = [byte[]](0x61, 0xA4, 0xA2, 0xA4, 0x41); Parameters = @{ SourceEncoding = 'euc-jp'; LineBreak = 'Lf' } },
+    @{ Id = 'N4-emoji-to-sjis';     Bytes = [byte[]](0x61, 0x62, 0x0D, 0x0A, 0x63, 0xF0, 0x9F, 0x98, 0x80, 0x64, 0x0A); Parameters = @{ SourceEncoding = 'utf8'; Encoding = 'shift_jis' } },
+    @{ Id = 'N4-hangul-to-sjis';    Bytes = [byte[]](0xEA, 0xB0, 0x80, 0x0A); Parameters = @{ SourceEncoding = 'utf8'; Encoding = 'shift_jis' } },
+    @{ Id = 'N5-bom-add-sjis';      Bytes = [byte[]](0x82, 0xA0); Parameters = @{ Bom = 'Add'; SourceEncoding = 'shift_jis' } })) {
+
+    Add-Scenario ("ConvertProbedContent/failure/{0}" -f $convFailure.Id) {
+        $path = New-ConvertFile ($convFailure.Id + '.txt') $convFailure.Bytes
+        $parameters = $convFailure.Parameters
+        Convert-ProbedContent -LiteralPath $path @parameters -ErrorVariable errors -ErrorAction SilentlyContinue
+        '{0} | {1}' -f (Format-ErrorRecords $errors), (Format-FileBytes $path)
+    }.GetNewClosure()
+}
+
+Add-Scenario 'ConvertProbedContent/failure/N1-missing-and-wildcard' {
+    Convert-ProbedContent (Join-Path $convertDir 'missing.txt'), (Join-Path $convertDir 'zz*.txt') -LineBreak Lf -ErrorVariable errors -ErrorAction SilentlyContinue
+    Format-ErrorRecords $errors
+}
+
+Add-Scenario 'ConvertProbedContent/failure/N6-readonly' {
+    $path = New-ConvertFile 'n6.txt' ([byte[]](0x61, 0x0D, 0x0A))
+    (Get-Item -LiteralPath $path).Attributes = 'ReadOnly'
+    try {
+        Convert-ProbedContent -LiteralPath $path -LineBreak Lf -ErrorVariable errors -ErrorAction SilentlyContinue
+        $denied = '{0} | {1}' -f (Format-ErrorRecords $errors), (Format-FileBytes $path)
+        Convert-ProbedContent -LiteralPath $path -LineBreak Lf -Force
+        '{0} | forced: {1} readonly={2}' -f $denied, (Format-FileBytes $path), (Test-ReadOnly $path)
+    }
+    finally {
+        Clear-ReadOnly $path
+    }
+}
+
+Add-Scenario 'ConvertProbedContent/destination/N7-N8-N9' {
+    $root = Join-Path $convertDir 'dest'
+    foreach ($sub in 'x', 'y', 'out') { $null = New-Item -ItemType Directory -Path (Join-Path $root $sub) }
+    [IO.File]::WriteAllBytes((Join-Path $root 'x\a.txt'), [byte[]](0x66, 0x0D, 0x0A))
+    [IO.File]::WriteAllBytes((Join-Path $root 'y\a.txt'), [byte[]](0x73, 0x0D, 0x0A))
+    [IO.File]::WriteAllBytes((Join-Path $root 'out\b.txt'), [byte[]](0x4F))
+    [IO.File]::WriteAllBytes((Join-Path $root 'x\b.txt'), [byte[]](0x62, 0x0D, 0x0A))
+
+    $results = @(Get-ChildItem -LiteralPath (Join-Path $root 'x'), (Join-Path $root 'y') -File |
+        Convert-ProbedContent -LineBreak Lf -Destination (Join-Path $root 'out') -PassThru -ErrorVariable errors -ErrorAction SilentlyContinue)
+    $same = @(Convert-ProbedContent -LiteralPath (Join-Path $root 'x\a.txt') -LineBreak Lf -Destination (Join-Path $root 'x') -ErrorVariable sameErrors -ErrorAction SilentlyContinue)
+    '{0} | {1} | {2} | out\a={3} | out\b={4}' -f (Format-ConvertResult $results), (Format-ErrorRecords $errors), (Format-ErrorRecords $sameErrors),
+        (Format-FileBytes (Join-Path $root 'out\a.txt')), (Format-FileBytes (Join-Path $root 'out\b.txt'))
+}
+
+Add-Scenario 'ConvertProbedContent/pipeline/Get-ChildItem-skips-directories' {
+    $root = Join-Path $convertDir 'gci'
+    $null = New-Item -ItemType Directory -Path (Join-Path $root 'sub')
+    [IO.File]::WriteAllBytes((Join-Path $root 'a[1].txt'), [byte[]](0x61, 0x0D, 0x0A))
+    [IO.File]::WriteAllBytes((Join-Path $root 'sub\b.txt'), [byte[]](0x62, 0x0D, 0x0A))
+    $verbose = Get-ChildItem -LiteralPath $root -Recurse | Convert-ProbedContent -LineBreak Lf -Verbose 4>&1 |
+        Where-Object { $_ -is [System.Management.Automation.VerboseRecord] -and $_.Message -notlike '*Convert-ProbedContent*' }
+    '{0} | {1} | {2}' -f (Format-FileBytes (Join-Path $root 'a[1].txt')), (Format-FileBytes (Join-Path $root 'sub\b.txt')), (($verbose | ForEach-Object { ConvertTo-StableText $_.Message }) -join ' / ')
+}
+
+Add-Scenario 'ConvertProbedContent/passthru/WhatIf-outputs-nothing' {
+    $path = New-ConvertFile 'whatif.txt' ([byte[]](0x61, 0x0D, 0x0A))
+    $results = @(Convert-ProbedContent -LiteralPath $path -LineBreak Lf -PassThru -WhatIf 6>$null)
+    '{0} | {1}' -f $results.Count, (Format-FileBytes $path)
+}
+
+# ---------------------------------------------------------------------------
+# -WhatIf で、実行すれば失敗するエラーを報告する (1.2.0 手動確認後の修正)
+#
+# ファイルを変更しない検査は ShouldProcess より前に置いた。-WhatIf の有無で同じエラーになり、
+# どちらの場合もファイルは変わらないことを確かめる。
+# ---------------------------------------------------------------------------
+foreach ($whatIfMode in @('normal', 'WhatIf')) {
+    $whatIfSplat = if ($whatIfMode -eq 'WhatIf') { @{ WhatIf = $true } } else { @{} }
+
+    Add-Scenario ("WhatIf/{0}/Set/読み取り専用" -f $whatIfMode) {
+        $path = New-ByteFile ("wi_set_ro_{0}.txt" -f $whatIfMode) ([byte[]](0x41, 0x0A))
+        Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $true
+        try {
+            Set-ProbedContent -LiteralPath $path -Value 'X' -Encoding utf8NoBOM @whatIfSplat -ErrorVariable errors -ErrorAction SilentlyContinue 6>$null
+            '{0} | {1}' -f (Format-ErrorRecords $errors), (Format-FileBytes $path)
+        }
+        finally { Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $false }
+    }.GetNewClosure()
+
+    Add-Scenario ("WhatIf/{0}/Add/読み取り専用" -f $whatIfMode) {
+        $path = New-ByteFile ("wi_add_ro_{0}.txt" -f $whatIfMode) ([byte[]](0x41, 0x0A))
+        Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $true
+        try {
+            Add-ProbedContent -LiteralPath $path -Value 'X' -Encoding utf8NoBOM @whatIfSplat -ErrorVariable errors -ErrorAction SilentlyContinue 6>$null
+            '{0} | {1}' -f (Format-ErrorRecords $errors), (Format-FileBytes $path)
+        }
+        finally { Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $false }
+    }.GetNewClosure()
+
+    Add-Scenario ("WhatIf/{0}/Set/親ディレクトリなし" -f $whatIfMode) {
+        $path = Join-Path $WorkRoot ("wi_missing_{0}\a.txt" -f $whatIfMode)
+        Set-ProbedContent -LiteralPath $path -Value 'X' -Encoding utf8NoBOM @whatIfSplat -ErrorVariable errors -ErrorAction SilentlyContinue 6>$null
+        '{0} | {1}' -f (Format-ErrorRecords $errors), (Test-Path -LiteralPath (Split-Path -Parent $path))
+    }.GetNewClosure()
+
+    Add-Scenario ("WhatIf/{0}/Out/NoClobber" -f $whatIfMode) {
+        $path = Join-Path $outDir ("wi_noclobber_{0}.txt" -f $whatIfMode)
+        [IO.File]::WriteAllText($path, 'OLD')
+        $result = Get-TerminatingError { 'A' | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM -NoClobber @whatIfSplat -ErrorAction Stop 6>$null }
+        '{0} | {1}' -f $result, (Format-FileBytes $path)
+    }.GetNewClosure()
+
+    Add-Scenario ("WhatIf/{0}/Out/読み取り専用" -f $whatIfMode) {
+        $path = Join-Path $outDir ("wi_ro_{0}.txt" -f $whatIfMode)
+        [IO.File]::WriteAllText($path, 'OLD')
+        Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $true
+        try {
+            $result = Get-TerminatingError { 'A' | Out-ProbedFile -LiteralPath $path -Encoding utf8NoBOM @whatIfSplat -ErrorAction Stop 6>$null }
+            '{0} | {1}' -f $result, (Format-FileBytes $path)
+        }
+        finally { Set-ItemProperty -LiteralPath $path -Name IsReadOnly -Value $false }
+    }.GetNewClosure()
+
+    Add-Scenario ("WhatIf/{0}/Convert/N6-N9" -f $whatIfMode) {
+        $root = Join-Path $convertDir ("whatif_{0}" -f $whatIfMode)
+        foreach ($sub in @('x', 'y', 'out7', 'out8')) { $null = New-Item -ItemType Directory -Path (Join-Path $root $sub) }
+        $ro = Join-Path $root 'ro.txt'
+        [IO.File]::WriteAllBytes($ro, [byte[]](0x61, 0x0D, 0x0A))
+        [IO.File]::WriteAllBytes((Join-Path $root 'out7\ro.txt'), [byte[]](0x4F))
+        [IO.File]::WriteAllBytes((Join-Path $root 'x\b.txt'), [byte[]](0x62, 0x0D, 0x0A))
+        [IO.File]::WriteAllBytes((Join-Path $root 'y\b.txt'), [byte[]](0x63, 0x0D, 0x0A))
+        Set-ItemProperty -LiteralPath $ro -Name IsReadOnly -Value $true
+        try {
+            Convert-ProbedContent -LiteralPath $ro -LineBreak Lf @whatIfSplat -ErrorVariable n6 -ErrorAction SilentlyContinue 6>$null
+        }
+        finally { Set-ItemProperty -LiteralPath $ro -Name IsReadOnly -Value $false }
+        Convert-ProbedContent -LiteralPath $ro -LineBreak Lf -Destination (Join-Path $root 'out7') @whatIfSplat -ErrorVariable n7 -ErrorAction SilentlyContinue 6>$null
+        Get-ChildItem -LiteralPath (Join-Path $root 'x'), (Join-Path $root 'y') -File |
+            Convert-ProbedContent -LineBreak Lf -Destination (Join-Path $root 'out8') -Force @whatIfSplat -ErrorVariable n8 -ErrorAction SilentlyContinue 6>$null
+        Convert-ProbedContent -LiteralPath $ro -LineBreak Lf -Destination $root @whatIfSplat -ErrorVariable n9 -ErrorAction SilentlyContinue 6>$null
+        'N6={0} | N7={1} | N8={2} | N9={3} | ro={4} | out7={5}' -f (Format-ErrorRecords $n6), (Format-ErrorRecords $n7), (Format-ErrorRecords $n8), (Format-ErrorRecords $n9),
+            (Format-FileBytes $ro), (Format-FileBytes (Join-Path $root 'out7\ro.txt'))
+    }.GetNewClosure()
+}
+
+Add-Scenario 'ConvertProbedContent/passthru/name-restores-original' {
+    $path = New-ConvertFile 'restore.txt' ([byte[]](0xEF, 0xBB, 0xBF, 0x41, 0x0D, 0x0A))
+    $first = Convert-ProbedContent -LiteralPath $path -Encoding bigendianutf32NoBOM -PassThru
+    $second = Convert-ProbedContent -LiteralPath $path -Encoding $first.SourceEncoding -SourceEncoding bigendianutf32NoBOM -PassThru
+    '{0} | {1} | {2}' -f $first.SourceEncoding, $second.Changed, (Format-FileBytes $path)
+}
+
+# 元に戻すには、Unicode 系以外は SourceCodePage を渡す (1.2.0 手動確認後の修正)。
+# EUC-JP の判定結果は 20932 だが、SourceEncoding の euc-jp を渡すと 51932 に解決される
+foreach ($restoreSample in @(
+    @{ Name = 'euc-jp'; Bytes = [System.Text.Encoding]::GetEncoding(20932).GetBytes("日本語のテキスト`n"); Culture = 'ja-JP' },
+    @{ Name = 'shift_jis'; Bytes = [System.Text.Encoding]::GetEncoding(932).GetBytes("日本語のテキスト`r`n"); Culture = 'ja-JP' },
+    @{ Name = 'big5hkscs'; Bytes = $script:hkHkscs; Culture = 'zh-HK' })) {
+    Add-Scenario ("ConvertProbedContent/passthru/SourceCodePage-restores/{0}" -f $restoreSample.Name) {
+        $path = New-ConvertFile ("restore_cp_{0}.txt" -f $restoreSample.Name) $restoreSample.Bytes
+        $first = Convert-ProbedContent -LiteralPath $path -Encoding utf8NoBOM -Culture $restoreSample.Culture -PassThru
+        Convert-ProbedContent -LiteralPath $path -Encoding $first.SourceCodePage -Culture $restoreSample.Culture
+        $restored = if ((Format-FileBytes $path) -eq (($restoreSample.Bytes | ForEach-Object { $_.ToString('X2') }) -join ' ')) { '元のバイト列に一致' } else { Format-FileBytes $path }
+        '{0} | {1} | {2}' -f $first.SourceEncoding, $first.SourceCodePage, $restored
+    }.GetNewClosure()
+}
+
+# 私用領域（HKSCS 固有字）は符号位置のまま往復する
+Add-Scenario 'ConvertProbedContent/private-use-area/round-trip' {
+    $path = New-ConvertFile 'hkscs.txt' $script:hkHkscs
+    Convert-ProbedContent -LiteralPath $path -SourceEncoding big5 -Encoding utf8NoBOM
+    $utf8 = [IO.File]::ReadAllBytes($path)
+    Convert-ProbedContent -LiteralPath $path -SourceEncoding utf8 -Encoding big5
+    '{0} | {1}' -f $utf8.Length, $(if ((Format-FileBytes $path) -eq (($script:hkHkscs | ForEach-Object { $_.ToString('X2') }) -join ' ')) { 'バイト列が一致' } else { Format-FileBytes $path })
+}
+
+# ---------------------------------------------------------------------------
+# 既存コマンドの変更（1.2.0 仕様書 4 章）
+# ---------------------------------------------------------------------------
+
+foreach ($writer in @('Set-ProbedContent', 'Add-ProbedContent')) {
+    Add-Scenario "$writer/Force-restores-read-only" {
+        $path = New-ByteFile ("force_{0}.txt" -f $writer) ([byte[]](0x41, 0x0A))
+        (Get-Item -LiteralPath $path).Attributes = 'ReadOnly'
+        try {
+            & $writer -LiteralPath $path -Value 'B' -Encoding utf8NoBOM -LineBreak Lf -Force
+            '{0} | readonly={1}' -f (Format-FileBytes $path), (Test-ReadOnly $path)
+        }
+        finally {
+            Clear-ReadOnly $path
+        }
+    }.GetNewClosure()
+}
+
+Add-Scenario 'Set-ProbedContent/LineBreak-does-not-replace-inside-values' {
+    $path = Join-Path $script:WorkRoot 'set_inside.txt'
+    Set-ProbedContent -LiteralPath $path -Value "a`nb", "a`r`nb", "a`rb", 'c' -Encoding utf8NoBOM -LineBreak Lf
+    Format-FileBytes $path
+}
+
+Add-Scenario 'Add-ProbedContent/LineBreak-does-not-replace-inside-values' {
+    $path = New-ByteFile 'add_inside.txt' ([byte[]](0x4F, 0x4C, 0x44, 0x0D, 0x0A))
+    Add-ProbedContent -LiteralPath $path -Value "a`r`n`r`nb", "a`n" -Encoding utf8NoBOM -LineBreak Lf
+    Format-FileBytes $path
+}
+
+# ---------------------------------------------------------------------------
+# 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
+#
+# UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。
+# ヘルプの言語は Import-Module の前に UI カルチャーを変えないと切り替わらないため。
+# 子プロセスの結果は UTF-8 のファイルで受け取る (標準出力はコンソールのコードページに左右される)。
+#
+# - メッセージは判定のカルチャーゲートと同じ規則で言語を選ぶ。香港・マカオ・広東語は台湾と同じ繁体字 (B 案)
+# - ヘルプは zh-HK / zh-MO フォルダーに zh-TW の複製を置いた。yue 系は en-US (既知の制限)
+# - zh_HK のヘルプは両ホストで異なる (PS 7 は en-US)。ICU がカルチャー名を正規化しないためで、
+#   zh-Hant-HK などと同じ別課題として扱う。ここではメッセージだけを比べる
+# ---------------------------------------------------------------------------
+$script:uiCultureChild = Join-Path $script:WorkRoot 'uiculture_child.ps1'
+[IO.File]::WriteAllText($script:uiCultureChild, @'
+param([string]$Dll, [string]$Culture, [string]$OutFile)
+$ErrorActionPreference = 'Stop'
+[System.Threading.Thread]::CurrentThread.CurrentUICulture = New-Object System.Globalization.CultureInfo($Culture)
+Import-Module $Dll
+try { ConvertTo-DotNetEncoding 'nonexistent-encoding' | Out-Null; $message = '(no error)' }
+catch {
+    $e = $_.Exception
+    while ($null -ne $e.InnerException) { $e = $e.InnerException }
+    $message = $e.Message
+}
+$synopsis = ((Get-Help Get-ProbedContent).Synopsis | Out-String).Trim()
+[IO.File]::WriteAllLines($OutFile, [string[]]@($message, $synopsis), (New-Object System.Text.UTF8Encoding($false)))
+'@, (New-Object System.Text.UTF8Encoding($true)))
+
+$script:hostExecutable = (Get-Process -Id $PID).Path
+$script:dllFullPath = (Resolve-Path -LiteralPath $Dll).Path
+
+# 注意: 変数名は大文字小文字を区別しない。$outFile のような名前はスクリプトの -OutFile を上書きしてしまう
+foreach ($uiCulture in @('zh-HK', 'zh-MO', 'yue-HK', 'zh_HK')) {
+    $uiCultureResult = Join-Path $script:WorkRoot ("uiculture_{0}.txt" -f $uiCulture)
+    & $script:hostExecutable -NoProfile -ExecutionPolicy Bypass -File $script:uiCultureChild `
+        -Dll $script:dllFullPath -Culture $uiCulture -OutFile $uiCultureResult
+    $lines = if (Test-Path -LiteralPath $uiCultureResult) { [IO.File]::ReadAllLines($uiCultureResult) } else { @('(結果なし)', '(結果なし)') }
+
+    $script:Report.Add(("UICulture/{0}/メッセージ`tOK`t{1}" -f $uiCulture, $lines[0]))
+    if ($uiCulture -ne 'zh_HK') {
+        $script:Report.Add(("UICulture/{0}/Get-Help`tOK`t{1}" -f $uiCulture, $lines[1]))
+    }
+}
+
 # ---------------------------------------------------------------------------
 # レポート出力
 # ---------------------------------------------------------------------------

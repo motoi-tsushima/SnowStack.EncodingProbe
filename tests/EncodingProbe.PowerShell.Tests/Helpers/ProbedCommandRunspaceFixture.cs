@@ -26,6 +26,8 @@ public sealed class ProbedCommandRunspaceFixture : IDisposable
         Register(sessionState, "Get-ProbedContent", typeof(GetProbedContentCommand));
         Register(sessionState, "Set-ProbedContent", typeof(SetProbedContentCommand));
         Register(sessionState, "Add-ProbedContent", typeof(AddProbedContentCommand));
+        Register(sessionState, "Out-ProbedFile", typeof(OutProbedFileCommand));
+        Register(sessionState, "Convert-ProbedContent", typeof(ConvertProbedContentCommand));
 
         this.Runspace = RunspaceFactory.CreateRunspace(sessionState);
         this.Runspace.Open();

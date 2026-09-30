@@ -37,8 +37,8 @@ public class MessageCatalogTests
     [InlineData("ko-KR", MessageCatalog.Korean)]
     [InlineData("ko", MessageCatalog.Korean)]
     [InlineData("zh-TW", MessageCatalog.ChineseTraditional)]
-    [InlineData("zh-HK", MessageCatalog.ChineseTraditional)]
-    [InlineData("zh-MO", MessageCatalog.ChineseTraditional)]
+    [InlineData("zh-HK", MessageCatalog.ChineseTraditional)]   // B 案: 香港は台湾と同じ繁体字の文面
+    [InlineData("zh-MO", MessageCatalog.ChineseTraditional)]   // B 案: マカオも同じ
     [InlineData("zh-Hant", MessageCatalog.ChineseTraditional)]
     [InlineData("zh-CN", MessageCatalog.ChineseSimplified)]
     [InlineData("zh-SG", MessageCatalog.ChineseSimplified)]
@@ -51,6 +51,66 @@ public class MessageCatalogTests
         var culture = CultureInfo.GetCultureInfo(cultureName);
 
         Assert.Equal(expected, MessageCatalog.ResolveLanguage(culture));
+    }
+
+    /// <summary>
+    /// 言語の選択が、文字エンコーディング判定のカルチャーゲートと同じ規則に従うこと。
+    /// </summary>
+    /// <remarks>
+    /// 1.2.0 で、TwoLetterISOLanguageName と親カルチャーのチェーンによる判定から、
+    /// サブタグ分解（EncodingDetector.ResolveEastAsianLegacyRegion）に切り替えた。
+    /// 切り替え前は yue（広東語）系が英語になり、zh_HK は PowerShell 7（ICU）では簡体字、
+    /// 5.1（NLS）では繁体字になっていた。
+    /// このテストプロジェクトは net10.0 だけで動くため、zh_HK の両ホストでの一致は
+    /// tests/PSCompat の「MessageCatalog/UICulture」シナリオで確かめている。
+    /// </remarks>
+    [Theory]
+    [InlineData("zh-Hant-TW", MessageCatalog.ChineseTraditional)]
+    [InlineData("zh-Hant-HK", MessageCatalog.ChineseTraditional)]
+    [InlineData("zh-Hant-MO", MessageCatalog.ChineseTraditional)]
+    [InlineData("yue", MessageCatalog.ChineseTraditional)]
+    [InlineData("yue-HK", MessageCatalog.ChineseTraditional)]
+    [InlineData("yue-Hant-HK", MessageCatalog.ChineseTraditional)]
+    [InlineData("yue-CN", MessageCatalog.ChineseSimplified)]
+    [InlineData("yue-Hans-CN", MessageCatalog.ChineseSimplified)]
+    [InlineData("zh_HK", MessageCatalog.ChineseTraditional)]
+    [InlineData("zh-Hans-HK", MessageCatalog.ChineseSimplified)]   // 用字サブタグが地域より優先する
+    [InlineData("zh-Hans-CN", MessageCatalog.ChineseSimplified)]
+    [InlineData("zh-CHS", MessageCatalog.ChineseSimplified)]
+    [InlineData("zh-CHT", MessageCatalog.ChineseTraditional)]
+    [InlineData("ja", MessageCatalog.Japanese)]
+    [InlineData("ko-KP", MessageCatalog.Korean)]
+    [InlineData("kok-IN", MessageCatalog.English)]                 // コンカニ語は韓国語ではない
+    public void ResolveLanguage_FollowsDetectionCultureGate(string cultureName, string expected)
+    {
+        var culture = new CultureInfo(cultureName);
+
+        Assert.Equal(expected, MessageCatalog.ResolveLanguage(culture));
+    }
+
+    /// <summary>
+    /// 香港・マカオ・広東語のメッセージが、台湾と同じ文面であること（B 案による意図的な同一）。
+    /// </summary>
+    /// <remarks>
+    /// 1.2.0 では香港用の文面を作らず、台湾版（zh-TW）と同じ内容を使うと決めた（B 案）。
+    /// Microsoft は Windows の zh-HK 言語パックの提供をやめて zh-TW を案内しており、
+    /// 香港の繁体字 UI で実際に表示されるのは台湾向けの文面であるため。
+    /// 将来、香港用の文面を持つとこのテストは落ちる。そのときは B 案を見直す判断の機会として扱うこと。
+    /// </remarks>
+    [Theory]
+    [InlineData("zh-HK")]
+    [InlineData("zh-MO")]
+    [InlineData("zh-Hant-HK")]
+    [InlineData("yue-HK")]
+    public void HongKongMessages_AreIntentionallySameAsTaiwan_PlanB(string cultureName)
+    {
+        string hongKong = MessageCatalog.ResolveLanguage(new CultureInfo(cultureName));
+        string taiwan = MessageCatalog.ResolveLanguage(new CultureInfo("zh-TW"));
+
+        foreach (MessageKey key in AllKeys)
+        {
+            Assert.Equal(MessageCatalog.Get(key, taiwan), MessageCatalog.Get(key, hongKong));
+        }
     }
 
     /// <summary>

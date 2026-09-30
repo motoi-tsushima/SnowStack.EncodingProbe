@@ -3,6 +3,244 @@
 このファイルは SnowStack.EncodingProbe（NuGet パッケージ）と
 SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更をまとめたものです。
 
+## 1.2.0
+
+文字エンコーディング判定を東アジア以外の言語に対応させ、PowerShell モジュールに
+`Out-ProbedFile` と `Convert-ProbedContent` を追加しました。
+
+### 追加したコマンド（PowerShell モジュール）
+
+仕様は `docs/EncodingProbe-1.2.0-仕様書.md`、根拠となった標準コマンドの実測は
+`docs/EncodingProbe-1.2.0-調査-Out-File挙動の実測.md` にあります。
+
+- **`Out-ProbedFile`** … オブジェクトを整形し、統一語彙で指定した文字エンコーディング・BOM・改行でファイルに書き出します。
+  標準の `Out-File` のパラメーターをすべて持ち、`-EncodingFrom` / `-LineBreak` / `-AllowEncodingChange` / `-Culture` / `-Strategy` を加えています
+  - 符号化の層（エンコーディング・BOM・改行）は PowerShell 5.1 と 7.x で同じバイト列になります。
+    整形の層は実行中のホストの `Out-String -Stream` に任せるため、表や一覧の形はホストによって異なります（標準の `Out-File` と同じ）
+  - `-Encoding` を省略すると、上書き・新規作成は `utf8NoBOM`、`-Append` は追記先から継承します。
+    明示的な `Auto` は出力先の既存ファイルから継承します（`Set-ProbedContent` の省略時とは規則が違います）
+  - `-Append` は `Add-ProbedContent` と同じバイト列比較で整合性を検査し、不一致の行の手前で終了エラーにします
+  - ファイルを開く（作成・切り詰める）のは最初の行を書く直前です。
+    `Get-ProbedContent a.txt | Out-ProbedFile a.txt` は、標準の `Out-File` のように a.txt を読む前に消すことはなく、エラーになります
+  - 標準の `Out-File` との差異: 既定のエンコーディング、`-Append` の整合性検査、切り詰める時点、
+    `$null` 1 個で 0 バイト（`Out-File` は BOM だけ）、別名 `-Path` / `-LP` を PowerShell 5.1 でも提供、
+    `-LiteralPath` をパイプラインから受け取らない
+- **`Convert-ProbedContent`** … 既存のテキストファイルの文字エンコーディング・BOM・改行を変換して書き直します
+  - 変換元に不正なバイト列がある、または変換先で表現できない文字があるファイルは変換しません（文字を失わない保証）。
+    エラーメッセージに、不正なバイト列のバイト位置、または表現できない文字とその行・桁を示します
+  - `-Bom Add` / `-Bom Remove` で BOM だけを変えられます。`-Bom` と組み合わせた場合、裸の `utf8` や `utf-8` を系統名として受け付けます
+  - `-LineBreak` は、ファイル内のすべての改行（CR-LF / LF / CR）を揃えます（書き込み系の `-LineBreak` とは役割が違います）
+  - 同じフォルダーの一時ファイルに書いてから置き換えます。変換結果が元と同じなら書き直しません（更新日時が変わりません）
+  - `-Destination`（フォルダー構造は保たない）、`-SourceEncoding`、`-PassThru`、`-WhatIf` / `-Confirm` に対応します
+- 両コマンドのメッセージを 5 言語で、ヘルプ（MAML）を 5 言語（と香港・マカオ向けの複製）で追加しました
+
+### 既存コマンドの変更（PowerShell モジュール）
+
+- **不具合の修正（標準コマンドとの食い違い）: `Set-ProbedContent` / `Add-ProbedContent` の `-Force` が、
+  書き込み後に読み取り専用の属性を元に戻すようになりました。** 1.1.0 は属性を外したままにしていました。
+  標準の `Set-Content` / `Add-Content` / `Out-File` はいずれも元に戻します。書き込みが途中で失敗した場合も戻します。
+  読み取り専用で `-Force` なしの場合が非終了エラーであることは変えていません
+- **`-LineBreak` の範囲を明文化しました（挙動は変えていません）。** `-LineBreak` が決めるのは要素の後ろに付ける改行だけで、
+  値の文字列の中に含まれる改行は置き換えません。標準の `Set-Content` / `Out-File` と同じです。ヘルプ（5 言語）に明記しました
+- `docs/EncodingProbe-1.1.0-仕様書.md` の 5.3 節（`-Encoding Auto` で対象が無い場合を「非終了エラー」に訂正）と
+  5.6 節（`-LineBreak` の範囲）を改めました
+
+### 判定を変えた点
+
+- **東アジア以外のカルチャーでは、旧マルチバイトの判定を行わなくなりました。**
+  独自判定が担当するのは Shift_JIS / EUC / GB / Big5 など東アジア漢字文化圏のマルチバイトだけです。
+  カルチャーがそれ以外の言語圏のときは、これらの判定を実行せず UTF.Unknown に委ねます。
+  カルチャー名と判定対象の対応表は `EncodingDetector.ResolveEastAsianLegacyRegion()` に集約しました
+- **東アジアのカルチャーであっても、欧米のシングルバイトのテキストを誤判定しなくなりました。**
+  旧マルチバイトの判定はバイト構造の妥当性しか見ていないため、たとえば日本語カルチャーの実行環境で
+  windows-1252 のドイツ語を読むと、`FC DF`（`üß`）が Shift_JIS の外字領域の 2 バイト文字として
+  成立してしまい Shift_JIS と誤判定していました。
+  既定の判定方式（`Combined`）では、独自判定が旧マルチバイトを返したときに UTF.Unknown の結果と
+  突き合わせ、UTF.Unknown がシングルバイト文字エンコーディングと判定していればそちらを採用します
+- **UTF-8 の判定を RFC 3629 の整形式バイト列に厳密化しました。**
+  後続バイトが足りないまま ASCII に戻る形（windows-1252 の `Français` の `E7 61 69` など）、
+  ファイル終端で途切れた多バイト文字、冗長な符号化、サロゲート符号位置、
+  U+10FFFF を超える符号位置を、いずれも UTF-8 ではないと判定します。
+  従来はこれらを UTF-8 として受け入れていました
+
+### 課題 1 の修正（クロスチェックの信頼度下限）
+
+- **UTF.Unknown の信頼度が低いときに、正しい旧マルチバイトの判定が覆らなくなりました。**
+  上記の突き合わせは、コードページの組み合わせ（独自判定＝東アジア旧マルチバイト、
+  UTF.Unknown＝シングルバイト）だけで上書きを決めており、信頼度の条件を持っていませんでした。
+  UTF.Unknown は短い漢字列や HKSCS 入りの Big5 に対して 0.5 前後の信頼度でシングルバイトを返すため、
+  0.5 をわずかに超えただけで正しい判定が覆り、文字化けしていました。
+  たとえば簡体字中国語のカルチャーで GBK の「这是一」（6 バイト）を読むと、
+  UTF.Unknown が tis-620 を信頼度 0.5104… で返すため cp874（タイ語）と判定していました
+- **信頼度の下限を役割で分けました。**
+  UTF.Unknown の結果を答えとして採用する下限（0.5 超）は従来どおりです。
+  独自判定がすでに出した答えをシングルバイトで覆すときは、これより高い下限（**0.55 超**）を要求します。
+  独自判定の答えを覆すには、答えとして採用するより強い根拠を求める、という考え方です
+- **既知の限界（短文）:** 概ね 90 バイト以下の短いシングルバイト系テキストを東アジアのカルチャーで判定すると、
+  誤ったエンコーディングになる、または東アジアの文字エンコーディングのまま残る場合があります。
+  UTF.Unknown の短文での信頼度と精度の限界によるもので、下限の値では解決しません。
+  通常の長さ（約 170 バイト以上）の文では起きないことを、テストデータに無い 17 言語で確認しています
+  （`docs/EncodingProbe-1.2.0-調査-クロスチェック信頼度の測定.md`）
+
+### 香港対応 段階 1（第二次修正）
+
+- **カルチャー名をサブタグに分解して解釈するようになりました。**
+  従来は完全一致で表を引いていたため、.NET 10（ICU）が保持する `zh-Hant-HK` や
+  `zh-Hans-CN`、`zh-Hant-TW` などが判定不能になっていました。
+  大文字小文字を区別せず、`_` は `-` と同じに扱います（`zh_HK` も香港）。
+  中国語（`zh`）と広東語（`yue`）は、用字サブタグ → 地域サブタグ → 言語の既定の順で繁簡を決めます。
+  `zh` だけのカルチャーは簡体字、`yue` は香港の繁体字として扱います
+- **`kok`（コンカニ語）を韓国語と判定しなくなりました。**
+  日本語・韓国語はカルチャー名の前方一致（`ja*` / `ko*`）で判定していたため、
+  `kok` / `kok-IN` を韓国語と扱い、EUC-KR / CP949 の判定にかけていました。
+  日本語・韓国語も言語サブタグの完全一致で判定するようにしました。
+  `ja` / `ja-JP` / `ko` / `ko-KR` / `ko-KP` の結果は変わりません。
+  `ja_JP` や `ja-JP_radstr` のような表記も日本語として扱います
+- **香港・マカオ・広東語のカルチャーを、台湾と分けて扱うようになりました。**
+  香港では EUC-TW（CNS 11643、台湾の規格）を候補にしません。
+  EUC-TW のバイト列は Big5 としても成立し、両方成立時は Big5 を優先するため、判定結果は変わりません
+- **繁体字と簡体字の取り違えを直しました。**
+  台湾・香港カルチャーで GBK の簡体字を読むと `950 / big5`、
+  大陸カルチャーで Big5 の繁体字を読むと `54936 / gb18030` と判定していました。
+  `Combined` では、UTF.Unknown が独自判定と反対の系統（Big5 系 ⇔ GB 系）を
+  信頼度 **0.8 以上**で返したとき、その系統の独自判定をカルチャーに関係なくやり直します
+  （簡体字 → `936 / gbk`、繁体字 → `950 / big5`）。
+  日本語・韓国語のコードページは対象外です
+- **Big5 の後続バイトを厳密化しました。**
+  `0x80–0xA0` を後続バイトとして受け入れなくなりました（Big5 / HKSCS とも存在しない範囲です）
+- 台湾 Big5 と香港 Big5 はバイト列から区別しません。HKSCS 固有字を含んでいても `950 / big5` を返します。
+  HKSCS 固有字は私用領域（U+E000–U+F8FF）として復号され、加工せずに書き戻せば元のバイト列に戻ります
+  （`docs/私用領域の扱い_方針草案.md`）
+- **既知の限界:** 大陸カルチャーで HKSCS 固有字を含む Big5 を読むと、`54936 / gb18030` のままです。
+  UTF.Unknown が HKSCS 固有字の入った文書の系統を判定できないためです
+- 返す値（`950 / big5`）と公開 API は変えていません
+
+### 香港・マカオのメッセージとヘルプ（第三次修正）
+
+- **香港・マカオのカルチャーでも、ヘルプ（`Get-Help`）が繁体字中国語で表示されるようになりました。**
+  従来は `zh-HK` / `zh-MO` のフォルダーが無く、英語のヘルプになっていました（メッセージは繁体字だったため食い違っていました）。
+  `zh-HK` と `zh-MO` のフォルダーに、台湾（`zh-TW`）と同じ内容を置いています
+- **香港・マカオの文面は台湾版と同じ内容です。** Microsoft は Windows の zh-HK 言語パックの提供をやめ、zh-TW を案内しています。
+  香港の Windows で繁体字の UI を使う場合に実際に表示されるのは台湾向けの文面であるため、それに合わせました
+- **メッセージの言語を、文字エンコーディング判定と同じ規則で選ぶようになりました。**
+  カルチャー名をサブタグに分解して判定し、`TwoLetterISOLanguageName` や親カルチャーのチェーンを使わなくなりました。
+  - 広東語（`yue` / `yue-HK` / `yue-Hant-HK`）のメッセージが、英語から繁体字中国語になりました。`yue-CN` などは簡体字中国語です
+  - `zh_HK` のメッセージが、PowerShell 7 でも 5.1 と同じ繁体字中国語になりました（従来は 7 だけ簡体字でした）
+- **既知の制限:**
+  - 広東語のカルチャーでは、ヘルプは英語のままです
+  - PowerShell 7 では、`zh-Hant-TW` / `zh-Hant-HK` / `zh-Hant-MO` / `zh_HK` のヘルプが英語になります
+    （PowerShell 5.1 はこれらの名前を `zh-TW` などに読み替えますが、7 は読み替えないためです）。
+    別の課題として扱います（`docs/EncodingProbe-課題-ヘルプの用字付きカルチャー名.md`）
+- 配布物（`publish/`）へのヘルプのコピー先は、`core\` と `desktop\` の下に 7 言語ぶん、計 14 か所になりました
+
+### 1.1.0 から存在した不具合の修正（緊急修正）
+
+- **ルーマニア語などのテキストを判定すると `NullReferenceException` が発生していたのを直しました。**
+  UTF.Unknown は、.NET が提供していないエンコーディング（ルーマニア語に対する `iso-8859-16` など）を返すことがあり、
+  その場合 UTF.Unknown の `Encoding` は null になります。これを読んで例外が発生し、
+  `Resolve-Encoding` や `Get-ProbedContent` の利用者までそのまま届いていました。
+  判定方式 `Combined` と `UtfUnknownOnly`、すべてのカルチャー、PowerShell 5.1 / 7.x のすべてで発生していました。
+  **リリース済みの 1.1.0 から存在した不具合です。**
+- 修正後は、.NET が非対応のエンコーディングの既存の扱いと同じく、名前（`EncodingWebName`）だけを保存し、
+  `CodePage` を -1 にします。読み書き系のコマンドは判定失敗（`EncodingDetectionFailed`）の非終了エラーを報告し、
+  `-Encoding` による明示指定を案内します
+- 同じ扱いになる名前は、ほかに `iso-8859-10` / `viscii` / `euc-tw` / `X-ISO-10646-UCS-4-3412` / `X-ISO-10646-UCS-4-2143`、
+  および .NET 10 ビルドの `utf-7` です（UTF.Unknown がこれらを返した場合）
+
+### 手動確認後の修正（2026-09-29）
+
+依頼（`docs/EncodingProbe-1.2.0-修正依頼-手動確認後.md`。完了後に削除。コミット `4c5b1b3` までの git の履歴に残っている）の内容と、実装の記録は `docs/EncodingProbe-1.2.0-実装記録.md` 4 章にあります。
+
+- **不具合の修正: PowerShell 7.x の `Resolve-Encoding` などが返す `PSEncodingName` に、`I do not know.` という文字列が入っていたのを直しました。**
+  独自判定の対象外のコードページ（UTF.Unknown が判定した windows-1252 / iso-8859-1 / windows-1251 など）で起きていました。
+  これらはフレンドリ名が無いため、`PSEncodingName` は **null**、`UsePSName` は false になります。
+  **1.0.0 から存在した不具合です**（net10.0 ビルドだけ。PowerShell 5.1 向けの net48 ビルドは従来から null）。
+  独自判定のコードページ（`shift_jis` / `euc-jp` / `big5` など）の値は変わりません
+- **`-WhatIf` のときも、実行すれば失敗するエラーを報告するようになりました。** ファイルを変更しない検査を `ShouldProcess` より前に置きました。
+  エラーの分類（終了 / 非終了）と `FullyQualifiedErrorId` は `-WhatIf` の有無で同じです
+  - `Set-ProbedContent` / `Add-ProbedContent`（**1.1.0 からの挙動の変更**）: 読み取り専用で `-Force` なし（`WriteAccessDenied`）、
+    書き込み先の親ディレクトリが無い（`WriteFailed`）。エラー ID は従来と同じですが、メッセージは .NET の文言から本モジュールの文言（5 言語）になりました
+  - `Out-ProbedFile`: `-NoClobber`、読み取り専用、`-EncodingFrom` の参照先の判定、出力先の既存ファイルの判定
+  - `Convert-ProbedContent`: 同じ実行の中でのファイル名の重なり（N8）が `-WhatIf` でも報告されるようになりました
+    （読み取り専用・出力先の同名ファイル・出力先が変換元と同じ、は従来から報告していました）
+- **`Convert-ProbedContent -PassThru` に `SourceCodePage`（変換元のコードページ）を追加しました。**
+  元に戻すには、Unicode 系は `SourceEncoding`、それ以外は `SourceCodePage` を `-Encoding` に渡します。
+  `SourceEncoding` の WebName は別のコードページに解決される場合があり（判定結果 20932 の `euc-jp` は 51932 になる）、元に戻らないことがありました
+- `Convert-ProbedContent -PassThru` の `SourceEncoding` / `Encoding` の WebName を小文字にそろえました。
+  PowerShell 5.1 では EUC-JP が `EUC-JP` になり、7.x の `euc-jp` と食い違っていました
+- シングルバイト系（windows-1252、ISO-8859 など）の判定の限界を、ヘルプ（判定を行う 6 コマンド、5 言語）・README・
+  1.1.0 仕様書 4.4 節に明記しました。判定の成否は長さよりも内容に左右され、数百バイトあっても判定できない（`CodePage = -1`）ことがあります。
+  その場合は `-Encoding` / `-SourceEncoding` で明示してください
+- `Convert-ProbedContent` のヘルプに、`-WhatIf` / `-Confirm` のメッセージが変換結果が元と同じで書き直さないファイルにも出ることを明記しました（挙動は変えていません）
+
+### 変えていない点
+
+- BOM・ISO-2022・ASCII・UTF-32・UTF-16・UTF-8 の判定は、**カルチャーに関わらず**実行します。
+  UTF.Unknown は BOM 無しの UTF-16 / UTF-32 に対応していないため、
+  Unicode 系の判定を落とすわけにはいきません
+- `-Strategy NativeOnly` は独自判定だけを行います。上記の突き合わせも行いません
+- 日本語・韓国語・繁体字中国語・簡体字中国語のカルチャーにおける、
+  これらの言語のテキストの判定結果は変わりません
+- 公開 API に変更はありません
+
+### 内部の整理
+
+- `EncodingProbe.DetectUtfUnknown` の 3 つのオーバーロードで重複していた処理を
+  `ApplyUtfUnknownResult` にまとめました
+- `EncodingProbe.Detect(Stream)` が、ストリームを一度だけ読んでバイト配列にしてから
+  両方の判定に渡すようになりました。従来は独自判定が読み切ったストリームを
+  そのまま UTF.Unknown にも渡していたため、UTF.Unknown 側が空のストリームを見ていました。
+  PowerShell モジュールはバイト配列とファイルパスのオーバーロードしか使っていないため、
+  影響を受けるのはクラスライブラリを直接使ってストリームを渡していた場合だけです
+
+### テスト
+
+- `tests/EncodingProbe.Tests/TestData/` に German / French / Russian / Polish / Thai を追加しました。
+  生成は `tools/New-EncodingTestData.ps1` で行います
+- `WorldLanguageTests` が、これらのファイルを 12 のカルチャーで判定して結果が変わらないことを検証します
+- `Utf8StrictnessTests` が、UTF-8 判定と .NET の厳格なデコーダーの判断が一致することを検証します
+- `CrossCheckConfidenceTests` が、短い簡体字・繁体字と HKSCS 固有字を含む Big5 が
+  シングルバイトに覆されないことを検証します。
+  テストデータは cp950 / cp936 を解決できない実行環境でも動くよう、
+  また HKSCS 固有字は .NET のエンコーダーで作れないため、バイト列を明示して組み立てています
+- `tests/PSCompat/ProbedCompatScenarios.ps1` に「世界言語の判定」の節を追加しました
+- `TestData/Chinese_HongKong/` を追加しました（Big5、HKSCS 固有字入りの Big5、UTF-8）。
+  HKSCS 固有字は .NET のエンコーダーで作れないため、`tools/New-EncodingTestData.ps1` がバイト列を明示して生成します。
+  同スクリプトは、ヒアドキュメントの改行コードをスクリプト自体の改行コードに依存させず CRLF に揃えるようにしました
+- `CultureGateTests` が、カルチャー名とカルチャー圏の対応表を検証します
+- `ChineseHongKongEncodingTests`（`FutureLanguageTests.cs`）が香港のテストデータを検証します
+- `CrossCheckConfidenceTests` に繁簡の系統クロスチェックのテストを追加しました
+- `WorldLanguageTests` と PSCompat の世界言語の節に `zh-HK` と `kok-IN` を加えました。PSCompat には香港の節と、
+  `kok-IN` で韓国語の判定を行わないことのシナリオも追加しました
+- `PrivateUseAreaRoundTripTests` が、私用領域に写されるバイト列の往復（私用領域方針の付録 A）を検証します
+- コアの csproj に `InternalsVisibleTo("EncodingProbe.Tests")` を追加しました（カルチャーゲートの単体テスト用）
+- `MessageCatalogTests` に、言語の選択が判定のカルチャーゲートと同じ規則に従うことのテストと、
+  香港・マカオ・広東語のメッセージが台湾と同じ文面であることのテスト（B 案による意図的な同一）を追加しました
+- `MamlHelpTests` の対象に `zh-HK` / `zh-MO` を加え、両者が `zh-TW` とバイト単位で一致することのテストを追加しました
+- PSCompat に、UI カルチャーを `zh-HK` / `zh-MO` / `yue-HK` / `zh_HK` にしたときの
+  メッセージとヘルプの言語が PowerShell 5.1 / 7.x で一致することのシナリオを追加しました
+  （`zh_HK` のヘルプは上記の既知の制限により比較の対象外です）
+- テストデータに Spanish / Estonian / Ukrainian / Romanian / Icelandic を追加しました。
+  スペイン語・エストニア語は上書き経路に入って正しく救済されること、ウクライナ語は判定不能になること、
+  ルーマニア語（ISO-8859-16）は名前だけが保存されることを固定します。
+  `*_short_*.txt`（アイスランド語・KOI8-R・KOI8-U の短い行）は短文での既知の限界を固定するもので、
+  `KnownLimitTests` の期待値は**正しい挙動ではありません**（UTF.Unknown の改善に気づくために置いています）
+- 繁体字・簡体字の長めのサンプル（`sample_big5_long.txt` / `sample_gbk_long.txt`、196 バイト）を追加しました。
+  既存の東アジアのテストデータは短く、繁簡の系統クロスチェックが一度も発動していませんでした。
+  `ChineseFamilyCrossCheckTestDataTests` が、zh-CN で繁体字が 950、zh-TW / zh-HK で簡体字が 936 になることを検証します
+- 信頼度の下限の根拠となる測定を `docs/EncodingProbe-1.2.0-調査-クロスチェック信頼度の測定.md` に記録し、
+  測定スクリプト（`tools/Measure-CrossCheckConfidence.ps1` / `tools/Invoke-CrossCheckMeasurement.ps1`）を追加しました。
+  UTF.Unknown を更新したときは再測定してください
+- `UnsupportedEncodingTests`（コア）と `UnsupportedUtfUnknownEncodingTests`（PowerShell 層）が、
+  `iso-8859-16` のルーマニア語バイト列で例外が出ないことを検証します。
+  修正前のコードでは、前者は 18 件中 17 件、後者は 12 件中 11 件が失敗します
+- `OutProbedFileTests` / `ConvertProbedContentTests` を追加しました。
+  `Out-ProbedFile` の組み合わせ（`-NoClobber` / `-Append` / `-Force` / 読み取り専用）とパスの扱いは、
+  標準の `Out-File` の実測（実測報告の 3-1〜3-10、4-1〜4-9）と同じ結果になることを検証します
+- `SetProbedContentTests` / `AddProbedContentTests` に、`-Force` 後の読み取り専用属性の検査と、
+  文字列の中に改行を含む値のテスト（実測報告の 8-1〜8-6）を追加しました
+- PSCompat に `Out-ProbedFile` / `Convert-ProbedContent` と既存コマンドの変更の節を追加しました
+
 ## 1.1.0
 
 PowerShell モジュールにテキストの読み書きコマンドを追加しました。
