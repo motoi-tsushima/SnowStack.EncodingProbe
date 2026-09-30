@@ -47,6 +47,53 @@ UTF.Unknown は欧米などのシングルバイト文字エンコーディン�
 
 
 
+## version 1.2.0 の変更点
+
+### 東アジア以外の言語への対応（クラスライブラリ・PowerShell モジュール共通）
+
+- **東アジア以外のカルチャーでは、旧マルチバイト（Shift_JIS / EUC / GB / Big5 など）の判定を行わず、UTF.Unknown に任せます。**
+- **東アジアのカルチャーでも、欧米のシングルバイトのテキストを誤判定しなくなりました。**
+  たとえば日本語環境で windows-1252 のドイツ語を読むと、従来は Shift_JIS と判定していました。
+  既定の判定方式（`Combined`）では、独自判定が旧マルチバイトを返したときに UTF.Unknown の結果と突き合わせ、
+  UTF.Unknown が十分な信頼度でシングルバイトと判定していればそちらを採用します
+- **UTF-8 の判定を RFC 3629 に厳密化しました。** 欧米のシングルバイトを UTF-8 と誤判定しなくなりました
+- **繁体字と簡体字の取り違えを直しました。** 台湾・香港の環境で GBK を Big5 と、大陸の環境で Big5 を GB18030 と判定することがありました
+- **香港・マカオ・広東語のカルチャーに対応しました。** `zh-Hant-HK` のような用字付きの名前や `zh_HK` も解釈します。
+  香港・マカオのメッセージとヘルプは、台湾と同じ繁体字中国語です
+- ルーマニア語（ISO-8859-16）などを判定すると `NullReferenceException` が発生する不具合を直しました（1.1.0 から存在）
+- PowerShell 7.x で `PSEncodingName` に `I do not know.` が入る不具合を直しました（null になります）
+
+公開 API と、日本語・韓国語・中国語のテキストの判定結果は変わっていません。
+
+### 追加したコマンド（PowerShell モジュール）
+
+| コマンド | 役割 |
+|---|---|
+| `Out-ProbedFile` | オブジェクトを整形し、文字エンコーディング・BOM・改行を指定してファイルに書き出す（`Out-File` の代わり） |
+| `Convert-ProbedContent` | 既存のテキストファイルの文字エンコーディング・BOM・改行を変換する |
+
+```powershell
+# BOM 無しの UTF-8 で書き出す（Out-File と同じ使い方。PowerShell 5.1 でも同じバイト列になる）
+Get-Process | Out-ProbedFile .\processes.txt
+
+# 追記先の文字エンコーディングを保ったまま追記する
+Get-Date | Out-ProbedFile .\log.txt -Append
+
+# 変換元の文字エンコーディングを判定し、BOM 無しの UTF-8、改行 LF に変換する
+Convert-ProbedContent .\*.txt -Encoding utf8NoBOM -LineBreak Lf
+
+# BOM だけを取り除く
+Convert-ProbedContent .\a.txt -Bom Remove
+```
+
+`Convert-ProbedContent` は、変換元に不正なバイト列があるファイルや、変換先で表現できない文字を含むファイルを変換しません（文字を失いません）。
+`-WhatIf` / `-Confirm` / `-PassThru` に対応しています。
+
+このほか、`Set-ProbedContent` / `Add-ProbedContent` の `-Force` で外した読み取り専用属性を、書き込み後に元に戻すようにしました。
+詳細は [CHANGELOG.md](CHANGELOG.md) を参照してください。
+
+
+
 ## version 1.1.0 で追加したコマンド（PowerShell モジュール）
 
 PowerShell モジュールに、テキストファイルの読み書きコマンドを追加しました。既存のコマンドと公開 API に変更はありません。
@@ -96,6 +143,8 @@ Get-ProbedContent .\german.txt -Strategy UtfUnknownOnly
 2026年7月14日に正式版 1.0.0 をリリースしました。
 
 NuGet.org より SnowStack.EncodingProbe を公開しました。
+
+1.2.0 をリリースしました（クラスライブラリ・PowerShell モジュールとも）。
 
 以下の記事で使い方の解説を行っています。
 
