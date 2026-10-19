@@ -1688,6 +1688,171 @@ Add-Scenario 'Resolve/License/PowerShell' {
 }
 
 # ---------------------------------------------------------------------------
+# Import-ProbedCsv (1.3.0 仕様書 第 3 部)
+#
+# 解析は PowerShell 7.x の Import-Csv から移植した処理で行う。5.1 でも 7.x と同じオブジェクトになることを確かめる。
+# 両ホストの結果の一致と、xUnit（ImportProbedCsvTests）での 7.6.7 の Import-Csv との一致を合わせて、
+# 「5.1 でも 7.6.7 と同じ」ことの確認とする（c04 の型名の順序、c06 の W3C、c12 の CR だけの改行は、5.1 の標準とは違う結果が正しい）。
+# ---------------------------------------------------------------------------
+
+function Format-CsvText {
+    # [string] で受けると $null が空文字列になり、値の無い列と空文字列の列を区別できないので、型を付けない
+    param($Text)
+
+    if ($null -eq $Text) { return '<null>' }
+    $escaped = ([string]$Text) -replace "`r", '\r' -replace "`n", '\n'
+
+    # 制御文字（U+0000 など）はレポートを壊すので \uXXXX で表す
+    return [regex]::Replace($escaped, '[\x00-\x1F]', { param($m) '\u{0:X4}' -f [int][char]$m.Value })
+}
+
+<#
+.SYNOPSIS
+    Import-ProbedCsv の出力・警告・非終了エラーを 1 行にする。
+.DESCRIPTION
+    オブジェクトは型名（すべて、順序どおり）と、列名・値の組で表す。値が $null の列は <null> とする。
+    エラーは FullyQualifiedErrorId とメッセージ、警告は件数を記録する（UI カルチャーは en-US に固定している）。
+#>
+function Invoke-ImportProbedCsv {
+    param([scriptblock]$Body)
+
+    # スクリプト全体は ErrorActionPreference = Stop なので、非終了エラーを非終了のまま受け取るために戻す
+    $ErrorActionPreference = 'Continue'
+    $all = @(& $Body 3>&1 2>&1)
+    $warnings = @($all | Where-Object { $_ -is [System.Management.Automation.WarningRecord] })
+    $errors = @($all | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
+    $items = @($all | Where-Object { $_ -isnot [System.Management.Automation.WarningRecord] -and $_ -isnot [System.Management.Automation.ErrorRecord] })
+    $parts = foreach ($item in $items) {
+        $columns = foreach ($property in $item.PSObject.Properties) { '{0}=[{1}]' -f (Format-CsvText $property.Name), (Format-CsvText $property.Value) }
+        'OBJ<{0}> {{{1}}}' -f ($item.PSObject.TypeNames -join ';'), ($columns -join ' | ')
+    }
+    $errorText = foreach ($e in @($errors)) { 'ERROR ' + $e.FullyQualifiedErrorId.Split(',')[0] + ' :: ' + $e.Exception.Message }
+
+    return ('warnings={0} // {1} // {2}' -f @($warnings).Count, ($parts -join ' // '), ($errorText -join ' // '))
+}
+
+# 実測報告 M1 の 15 ケース（tools/Measure-CsvBehavior.ps1 の $m1 と同じ入力。UTF-8、BOM 無し）
+$script:jp3 = "$([char]0x65E5)$([char]0x672C)$([char]0x8A9E)"
+$script:jp2 = "$([char]0x8FFD)$([char]0x8A18)"
+$script:m1 = [ordered]@{
+    'c01' = "Name,Memo`r`n`"a`",`"line1`r`nline2`"`r`n`"b`",`"x`"`r`n"
+    'c02' = "Name,Memo`r`n`"a`",`"line1`nline2`"`r`n"
+    'c03' = "Name,Memo`r`n#1,abc`r`n2,def`r`n"
+    'c04' = "#TYPE Foo.Bar`r`nName,Memo`r`na,b`r`n"
+    'c05' = "# comment`r`nName,Memo`r`na,b`r`n"
+    'c06' = "#Software: x`r`n#Fields: date time`r`n2026 10`r`n"
+    'c07' = "Name,Memo`r`n`r`na,b`r`n`r`n"
+    'c08' = "Name,Memo`r`n  a , `"b`"  `r`n"
+    'c09' = "A,B`r`n1,2,3`r`n4`r`n5,6"
+    'c10' = "A,A`r`n1,2`r`n"
+    'c11' = "A,,C`r`n1,2,3`r`n"
+    'c12' = "A,B`r1,2`r3,4`r"
+    'c13' = "A,B`r`n$($script:jp3),$($script:jp2)`r`n"
+    'c14' = "A,B,`r`n1,2,`r`n"
+    'c15' = "A,B`r`n`"he said `"`"hi`"`"`",x`r`n"
+}
+
+foreach ($key in $script:m1.Keys) {
+    $path = New-ByteFile ("import_m1_{0}.csv" -f $key) ([byte[]](& $script:utf8Bytes $script:m1[$key]))
+    Add-Scenario ("Import/M1/{0}" -f $key) {
+        Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path }
+    }.GetNewClosure()
+}
+
+# パス（仕様書 9 章）。Get-ChildItem からの入力は、標準の 5.1 では CannotSpecifyPathAndLiteralPath で失敗する
+$script:importDir = Join-Path $script:WorkRoot 'import_paths'
+$null = New-Item -ItemType Directory -Path $script:importDir
+[IO.File]::WriteAllBytes((Join-Path $script:importDir 'w1.csv'), [byte[]](& $script:utf8Bytes "A`r`n1`r`n"))
+[IO.File]::WriteAllBytes((Join-Path $script:importDir 'w2.csv'), [byte[]](& $script:utf8Bytes "A`r`n2`r`n"))
+[IO.File]::WriteAllBytes((Join-Path $script:importDir '[x].csv'), [byte[]](& $script:utf8Bytes "A`r`n3`r`n"))
+
+$dir = $script:importDir
+Add-Scenario 'Import/Path/Get-ChildItem' {
+    Invoke-ImportProbedCsv { Get-ChildItem -LiteralPath $dir -Filter 'w*.csv' | Sort-Object Name | Import-ProbedCsv -ErrorAction Continue }
+}.GetNewClosure()
+Add-Scenario 'Import/Path/wildcard-multiple' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -Path (Join-Path $dir 'w*.csv') }
+}.GetNewClosure()
+Add-Scenario 'Import/Path/wildcard-none' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -Path (Join-Path $dir 'zz*.csv') }
+}.GetNewClosure()
+Add-Scenario 'Import/Path/array-with-missing' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -Path (Join-Path $dir 'w1.csv'), (Join-Path $dir 'missing.csv'), $dir, (Join-Path $dir 'w2.csv') }
+}.GetNewClosure()
+Add-Scenario 'Import/Path/LiteralPath-brackets' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LP (Join-Path $dir '[x].csv') }
+}.GetNewClosure()
+
+# 文字エンコーディングの決定（仕様書 10 章）。先頭 2 行が ASCII で、3 行目に「日本,語」がある
+$script:importEncodingFiles = [ordered]@{
+    'shiftjis'     = New-ByteFile 'import_sjis.csv' ([byte[]]((& $script:utf8Bytes $script:asciiHead) + @(0x93, 0xFA, 0x96, 0x7B, 0x2C, 0x8C, 0xEA, 0x0D, 0x0A)))
+    'eucjp'        = New-ByteFile 'import_eucjp.csv' ([byte[]]((& $script:utf8Bytes $script:asciiHead) + @(0xC6, 0xFC, 0xCB, 0xDC, 0x2C, 0xB8, 0xEC, 0x0D, 0x0A)))
+    'utf8'         = New-ByteFile 'import_utf8.csv' ([byte[]](& $script:utf8Bytes ($script:asciiHead + $script:jpTail)))
+    'utf8bom'      = New-ByteFile 'import_utf8bom.csv' ([byte[]](@(0xEF, 0xBB, 0xBF) + (& $script:utf8Bytes ($script:asciiHead + $script:jpTail))))
+    'utf16le'      = New-ByteFile 'import_utf16le.csv' ([byte[]](@(0xFF, 0xFE) + (New-Object System.Text.UnicodeEncoding($false, $false)).GetBytes($script:asciiHead + $script:jpTail)))
+    'utf16le-nobom' = New-ByteFile 'import_utf16le_nobom.csv' ([byte[]](New-Object System.Text.UnicodeEncoding($false, $false)).GetBytes($script:asciiHead + $script:jpTail))
+    'utf32be-nobom' = New-ByteFile 'import_utf32be_nobom.csv' ([byte[]](New-Object System.Text.UTF32Encoding($true, $false)).GetBytes($script:asciiHead + "c,d`r`n"))
+}
+
+foreach ($entry in $script:importEncodingFiles.GetEnumerator()) {
+    $path = $entry.Value
+    Add-Scenario ("Import/Encoding/{0}/whole" -f $entry.Key) {
+        Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -Culture ja-JP }
+    }.GetNewClosure()
+
+    foreach ($lineCount in @(2, 3)) {
+        Add-Scenario ("Import/Encoding/{0}/DetectionLineCount{1}" -f $entry.Key, $lineCount) {
+            Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -DetectionLineCount $lineCount -Culture ja-JP }
+        }.GetNewClosure()
+    }
+}
+
+# -Encoding の明示は、判定も検証も行わない（-DetectionLineCount は無視する）
+$path = $script:importEncodingFiles['shiftjis']
+Add-Scenario 'Import/Encoding/shiftjis/explicit' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -Encoding shift_jis -DetectionLineCount 1 }
+}.GetNewClosure()
+
+# 検証の失敗。位置とバイト列が両ホストで同じであること（指示書 4.2、第一次で後回しにした正式な確認）。
+# 64 KiB を超える位置（複数のバッファにまたがる場合）も確かめる
+$script:largeSjis = New-ByteFile 'import_sjis_large.csv' ([byte[]]((& $script:utf8Bytes ("A,B`r`n" + ("1,2`r`n" * 20000))) + @(0x93, 0xFA, 0x96, 0x7B, 0x2C, 0x8C, 0xEA, 0x0D, 0x0A)))
+$path = $script:largeSjis
+Add-Scenario 'Import/Verification/shiftjis-beyond-64KiB' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -DetectionLineCount 100 }
+}.GetNewClosure()
+
+$path = New-ByteFile 'import_utf8bom_invalid.csv' ([byte[]](@(0xEF, 0xBB, 0xBF) + (& $script:utf8Bytes "A`r`n1`r`n") + @(0xE6, 0x97)))
+Add-Scenario 'Import/Verification/utf8bom-truncated-at-end' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -DetectionLineCount 1 }
+}.GetNewClosure()
+
+# 区切り文字と -Header。-UseCulture は区切り文字、-Culture は判定のカルチャー（別のもの）
+$path = New-ByteFile 'import_semicolon.csv' ([byte[]](& $script:utf8Bytes "A;B`r`n`"x;y`";z`r`n"))
+Add-Scenario 'Import/Delimiter/semicolon' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue $path ';' }
+}.GetNewClosure()
+Add-Scenario 'Import/Header' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -Header X, Y -Delimiter ';' }
+}.GetNewClosure()
+Add-Scenario 'Import/UseCulture/de-DE' {
+    $saved = [System.Threading.Thread]::CurrentThread.CurrentCulture
+    try {
+        [System.Threading.Thread]::CurrentThread.CurrentCulture = [System.Globalization.CultureInfo]::GetCultureInfo('de-DE')
+        Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -UseCulture -Culture ja-JP }
+    }
+    finally {
+        [System.Threading.Thread]::CurrentThread.CurrentCulture = $saved
+    }
+}.GetNewClosure()
+
+# 列名が空のときの警告は、複数のファイルにまたがって 1 回だけ
+$first = New-ByteFile 'import_unnamed1.csv' ([byte[]](& $script:utf8Bytes "A,,C`r`n1,2,3`r`n"))
+$second = New-ByteFile 'import_unnamed2.csv' ([byte[]](& $script:utf8Bytes ",B`r`n4,5`r`n"))
+Add-Scenario 'Import/UnspecifiedHeader/warn-once' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $first, $second }
+}.GetNewClosure()
+
+# ---------------------------------------------------------------------------
 # 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
 #
 # UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。
