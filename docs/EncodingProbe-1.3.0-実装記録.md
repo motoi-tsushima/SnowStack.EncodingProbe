@@ -4,7 +4,7 @@
 - 作成日: 2026-10-19
 - 目的: 実装の過程で、仕様書・依頼・当初の想定と異なる結果になった点と、
   仕様書に書かれていなかったため実装側で決めた点を残す（1.2.0 の実装記録と同じ形式）
-- 章の構成: 第一次（共通の部品と `Resolve-Encoding -DetectionLineCount`）は 1〜5 章、第二次（`Import-ProbedCsv`）は 6 章。第三次は後ろに追記する
+- 章の構成: 第一次（共通の部品と `Resolve-Encoding -DetectionLineCount`）は 1〜5 章、第二次（`Import-ProbedCsv`）は 6 章、第三次（`Export-ProbedCsv` と仕上げ）は 7 章
 
 ---
 
@@ -401,3 +401,111 @@ PSCompat の `Import/M1/*` の結果は、両ホストで同じだった。xUnit
   列名にも値にも U+0000 が混じる。`-DetectionLineCount` を指定すると、読み替えで正しく読める。PSCompat はこの現状の挙動も記録している
 - `-DetectionLineCount` の検証で報告するバイト列は、UTF-8 では不正と分かった 1 バイト（例: Shift_JIS の「日」`93 FA` の `93`）になる。
   `Convert-ProbedContent` の `InvalidSourceBytes` と同じ規則である
+
+---
+
+## 7. 第三次 — `Export-ProbedCsv` と仕上げ（2026-10-19）
+
+### 7.1 利用者の回答と決定
+
+| 事項 | 決定 |
+|---|---|
+| U1（余分なプロパティ） | 標準どおり、黙って書かない（警告しない）。ヘルプの NOTES に書いた |
+| U2（`-EncodingFrom` の参照ファイル） | `-DetectionLineCount` 指定時は全体を検証する |
+| `-Append` で追記先を判定する条件 | **1 バイト以上の追記先は常に判定する。** ヘッダーの読み取り（18.2）と末尾の改行の判定（18.3）に、追記先の文字エンコーディングが要るため。`Out-ProbedFile` は `-Encoding` の明示と `-AllowEncodingChange` の組み合わせで判定しないが、`Export-ProbedCsv` は判定する（失敗すれば終了エラー） |
+| BOM だけの追記先 | ヘッダーの扱いだけ新規と同じにする。ヘッダーは書き、BOM はすでにあるので書かず、追記先の文字エンコーディングを継承する。7.x の `Export-Csv` も BOM の後ろが空なら新規と同じくヘッダーを書く |
+| `Out-ProbedFile` との共通化 | 殻を基底クラス `ProbedFileOutputCommandBase` に切り出し、両コマンドが継承する（7.3） |
+| パラメータセット（7.2） | 標準の `Export-Csv` と同じ 2 つにする |
+
+### 7.2 仕様書と異なった点: `Export-ProbedCsv` のパラメータセット
+
+仕様書 15 章は、`Import-ProbedCsv` と同じ 4 つのセット（`DelimiterPath` / `DelimiterLiteralPath` / `CulturePath` / `CultureLiteralPath`）としていた。
+そのとおりに実装したところ、`$x | Export-ProbedCsv -LiteralPath a.csv` が `AmbiguousParameterSet` で失敗した。
+`-LiteralPath` を指定すると `DelimiterLiteralPath` と `CultureLiteralPath` が候補に残る。`-UseCulture` は必須でも、パイプラインの束縛が終わるまで候補から外れない。
+既定のセット（`DelimiterPath`）は候補に無いため、どちらにも決まらない。
+`Import-ProbedCsv` はパスをパイプラインから受けるので、この問題が無い。
+
+標準の `Export-Csv` を確かめたところ、両ホストとも `Delimiter`（既定）/ `UseCulture` の 2 セットだった。`-Path` / `-LiteralPath` はどちらのセットにもあって必須ではなく、
+「どちらか一方だけ」は実行時に検査している。利用者の決定で、これに合わせた。
+
+- `-Path`（位置 0）と `-LiteralPath` は必須にせず、`BeginProcessing` で「ちょうど一方」を検査する。
+  満たさなければ終了エラー（ID `CannotSpecifyPathAndLiteralPath`、カテゴリ `InvalidData`。標準と同じ。メッセージは 5 言語）
+- `-UseCulture` は `UseCulture` セットのスイッチで、必須ではない（標準と同じ）
+- 仕様書 15 章と 20 章を改め、経緯を 15 章に記した
+
+### 7.3 `Out-ProbedFile` との共通化の範囲
+
+`Cmdlets/ProbedFileOutputCommandBase`（`ProbedContentCommandBase` を継承）に、次を移した。挙動は変えていない（既存のテスト 1040 件と PSCompat 636 シナリオが通ることを、切り出した直後に確かめた）。
+
+- 出力先のパスの解決（ちょうど 1 件。ワイルドカードの 0 件・複数、親ディレクトリが無い、ディレクトリを指す）
+- `-NoClobber` と読み取り専用の検査
+- 出力先の既存ファイルの全体の判定（`DetectExisting`）
+- 最初の行を書く直前にファイルを開く処理（`SamePathRoundTrip` の検出、BOM の判断）と、追記の整合性検査を含む 1 行の書き込み（`WriteChunk`）
+- 入力が 0 件の場合の出力（`CreateEmptyOutput`）と後始末（`Cleanup`、`StopProcessing`、`Dispose`）
+
+文字エンコーディングの決定（`ResolveEncoding`）は各コマンドに残した。判定する条件が違う（7.1）ためである。
+整形のパイプライン（`Out-ProbedFile`）と CSV の書き出し処理（`Export-ProbedCsv`）の後始末は、各コマンドが `Cleanup` を上書きして足す。
+
+あわせて、先頭 N 行の判定・読み替え・検証を `Internal/HeadLineEncodingResolver` にまとめ、`Import-ProbedCsv` もこれを使うようにした（第二次の実装を置き換えた。挙動は同じ）。
+検証の失敗は `DetectionVerificationException`（ID `DetectionVerificationFailed`）で知らせる。
+`-EncodingFrom` の参照ファイルの判定（`ProbedContentCommandBase.ResolveEncodingFrom`）には、行数を受け取る省略可能な引数を足した（省略時の挙動は従来どおり）。
+
+### 7.4 仕様書に書かれていなかったため実装で決めた点
+
+- **追記先のヘッダーに同じ列名が複数ある場合:** 移植した `ReadHeader` が `ExtendedTypeSystemException` を投げる。
+  `Import-ProbedCsv` と同じ ID `AlreadyPresentPSMemberInfoInternalCollectionAdd`（カテゴリ `NotSpecified`、対象は追記先のパス）の終了エラーにした
+- **追記先のヘッダーを読めなかった場合（仕様書 18.2 の最後の項目）:** 移植元のとおり、列の照合をせず、ヘッダー行も書かずに、オブジェクトの列で値の行だけを追記する。
+  空行だけの追記先は、移植元の `ReadHeader` が空の列名 1 個のヘッダーとして読むため、列の照合で `CannotAppendCsvWithMismatchedPropertyNames` になる。
+  実行中のホスト（PowerShell 7.6）の `Export-Csv -Append` と、次のとおり同じ結果になることを確かめ、テストで固定した（`ExportProbedCsvTests.Append_HeaderNotReadable_*` / `Append_BlankLinesOnly_*`）
+
+  | 追記先 | 結果（`Export-ProbedCsv` と 7.6 の `Export-Csv` で同じ） |
+  |---|---|
+  | `# comment only` | `# comment only\r\n"…","…"\r\n`（ヘッダーなしで値の行を追記） |
+  | `#TYPE Foo` / `# comment` | 同上 |
+  | 空行だけ | `CannotAppendCsvWithMismatchedPropertyNames`、ファイルは変わらない |
+
+- **列の照合のエラーのメッセージに示すパス:** 移植元は利用者が指定したパスを示すが、解決した絶対パスを示した（他のエラーと同じ）
+- **`-InputObject` に `$null` が来た場合:** 移植元と同じく、その入力を飛ばす
+
+### 7.5 テスト
+
+- `CmdletTests/ExportProbedCsvTests`（39 件）
+  - M4: 既定の出力を 7.6.7 の `Export-Csv` のバイト列と比べた。`AsNeeded`・`Never`・`-QuoteFields`・`-NoHeader`・`-NoTypeInformation`、`-IncludeTypeInformation`（`CSV:` の除去）も確かめた
+  - 入力の種類と区切り文字: 辞書、混在、`-Delimiter`、`-UseCulture`（`-Culture` と併用）
+  - `Import-ProbedCsv` との往復（3 つの文字エンコーディング）
+  - 16.1 の表の全セル、`-EncodingFrom`、16.2 の 3 か所での検証の失敗（`-WhatIf` を含む）と成功
+  - M5 の a〜l: UTF-16LE の追記先の末尾の改行、`-LineBreak` の明示、読み取り専用の属性の復元を含む
+  - BOM だけの追記先、ヘッダーが読めない追記先（7.6 の `Export-Csv` と比較）
+  - M6: `SamePathRoundTrip`、`-NoClobber`（`-WhatIf` を含む）、`-WhatIf`、空の入力
+  - パスの解決、20 章のエラー、コマンドの形
+- PSCompat: `Export/*` の 55 件。出力先のバイト列と、エラーの ID と本モジュールのメッセージを比べる。
+  値は文字列だけにし、ホストによって形が変わるオブジェクトは使わない（第一次の決定）
+
+### 7.6 テストと確認の結果（2026-10-19）
+
+| テスト | 結果 |
+|---|---|
+| `EncodingProbe.Tests`（コア） | net10.0 1179 件 / net48 1189 件 成功 |
+| `EncodingProbe.PowerShell.Tests` | 1079 件成功 |
+| PSCompat | 691 シナリオで 5.1 と 7.x が完全に一致 |
+| クラスライブラリ | `git diff master -- SnowStack.EncodingProbe/` は空 |
+
+実ホスト（Windows PowerShell 5.1.26100.9711、PowerShell 7.6.7）での手動確認（両ホストで同じ結果）:
+
+| 確認したこと | 結果 |
+|---|---|
+| Shift_JIS の CSV に日本語を `-Append`（M5 g） | Shift_JIS（`92 C7 8B 4C`）のまま追記された（標準は UTF-8 が混ざる） |
+| 最後の行に改行が無い CSV に追記（M5 j） | `1,2` の後ろに CR-LF を補ってから `"x","y"` を追記した（標準は `1,2"x","y"` とつながる） |
+| `Import-ProbedCsv a.csv \| Export-ProbedCsv a.csv`（M6） | `SamePathRoundTrip` で止まり、ファイルは元のまま（標準は 0 バイトになる） |
+| 5.1 で `-Encoding` を省略して日本語を書き出す（M4） | BOM 無しの UTF-8（`E6 97 A5 E6 9C AC E8 AA 9E`）。同じ操作で 5.1 の標準の `Export-Csv` は `#TYPE` 行と `"???"`（`22 3F 3F 3F 22`） |
+| `Get-Help Export-ProbedCsv` | 日本語のヘルプ |
+
+### 7.7 文書とバージョン
+
+- バージョン: モジュールの csproj（`Version` / `AssemblyVersion` / `FileVersion`）と `.psd1`（`ModuleVersion`、`ReleaseNotes`）を 1.3.0 にした。
+  クラスライブラリの csproj は 1.2.0 のまま（指示書 4.9）
+- `CHANGELOG.md` / `README.md` に 1.3.0 の節を書いた。README のリリース日の行は、リリース時に利用者が書く
+- `CLAUDE.md` を指示書 7 節のとおり更新した（コマンドの一覧、1.3.0 で追加したコマンドの節、判定はファイル全体を対象とするの例外、
+  `Resolve-Encoding` の制約の文言、ライセンス上の注意、モジュールだけをリリースする場合の扱い、1.3.0 の作業記録）
+- `docs/EncodingProbe-1.1.0-仕様書.md` に注記を 2 か所入れた（2.2 の `Resolve-Encoding` を変更しない、9 章の `-TotalCount` と判定の範囲）
+- 仕様書は 9.1（ワイルドカード 0 件。第二次）、15 章・20 章（`Export-ProbedCsv` のパラメータセット。第三次）を改めた

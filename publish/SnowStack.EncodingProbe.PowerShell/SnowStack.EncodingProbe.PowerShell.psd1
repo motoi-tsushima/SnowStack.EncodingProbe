@@ -1,6 +1,6 @@
 ﻿@{
     RootModule           = 'SnowStack.EncodingProbe.PowerShell.psm1'
-    ModuleVersion        = '1.2.0'
+    ModuleVersion        = '1.3.0'
     GUID                 = 'c807b12c-ca2a-4964-a3fe-b5f8823f78e8'
     Author               = 'motoi.tsushima'
     CompanyName          = 'motoi.tsushima'
@@ -33,6 +33,26 @@
             LicenseUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe/blob/master/LICENSE.txt'
             ProjectUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe'
             ReleaseNotes = @'
+1.3.0
+CSV の読み書きコマンドを 2 つ追加し、Resolve-Encoding で先頭の行だけを判定できるようにしました。
+PowerShell モジュールだけのリリースです（同梱のクラスライブラリは 1.2.0 のまま）。
+
+- Import-ProbedCsv : 文字エンコーディングを判定して CSV ファイルを読み込みます。解析は PowerShell 7.x の
+  Import-Csv から移植した処理で行うため、PowerShell 5.1 でも 7.x と同じ結果になります（CR だけの改行の
+  CSV も読め、W3C 拡張ログ形式にも対応します）。ワイルドカードで複数のファイルを読め、
+  Get-ChildItem | Import-ProbedCsv も 5.1 で動きます。
+- Export-ProbedCsv : 文字エンコーディング・BOM・改行を指定して CSV ファイルに書き出します。
+  文字列化は PowerShell 7.x の Export-Csv から移植した処理で行うため、5.1 と 7.x でバイト単位まで同じ
+  ファイルになります。-Encoding を省略すると 5.1 でも utf8NoBOM で書きます。-Append では追記先の
+  文字エンコーディングと改行を継承し、最後の行に改行が無ければ補ってから追記します。
+  -UseQuotes / -QuoteFields / -NoHeader は 5.1 でも使えます。
+- -DetectionLineCount : Resolve-Encoding / Import-ProbedCsv / Export-ProbedCsv で、先頭の N 行だけで
+  文字エンコーディングを判定します。Import-ProbedCsv / Export-ProbedCsv では、使う前にファイル全体を
+  厳密に検証し、判定を誤っていれば処理せずに止めます。
+
+CSV の読み書き処理には、PowerShell（Copyright (c) Microsoft Corporation、MIT License）のコードの
+一部を改変して含めています。詳細は THIRD-PARTY-NOTICES.txt を参照してください。
+
 1.2.0
 コマンドを 2 つ追加し、文字エンコーディング判定を東アジア以外の言語に対応させました。
 

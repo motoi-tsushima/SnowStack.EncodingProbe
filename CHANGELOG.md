@@ -3,6 +3,67 @@
 このファイルは SnowStack.EncodingProbe（NuGet パッケージ）と
 SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更をまとめたものです。
 
+## 1.3.0（PowerShell モジュールのみ）
+
+PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv` / `Export-ProbedCsv` を追加し、
+`Resolve-Encoding` に `-DetectionLineCount` を追加しました。
+
+**クラスライブラリ（NuGet パッケージ `SnowStack.EncodingProbe`）は変更していません。** バージョンも 1.2.0 のままで、
+モジュール 1.3.0 はクラスライブラリ 1.2.0 を同梱します。
+
+仕様は `docs/EncodingProbe-1.3.0-仕様書.md`、根拠となった標準の CSV コマンドの実測は
+`docs/EncodingProbe-1.3.0-調査-CSVコマンド挙動の実測.md`、実装の過程で決めたことは `docs/EncodingProbe-1.3.0-実装記録.md` にあります。
+
+### 追加したコマンド
+
+- **`Import-ProbedCsv`** … 文字エンコーディングを判定して CSV ファイルを読み込み、レコードごとにオブジェクトを出力します（標準の `Import-Csv` に対応）
+  - 解析は PowerShell 7.x の `Import-Csv` から移植した処理で行い、ホストの `Import-Csv` は呼びません。
+    **Windows PowerShell 5.1 でも 7.x と同じ結果になります**
+  - 標準の `Import-Csv` との差異:
+    - 文字エンコーディングを判定します（`-Encoding` で統一語彙・WebName・コードページを指定することもできます）
+    - 5.1 でも、CR だけの改行の CSV を読みます（5.1 の標準は、エラーも警告も出さずに 0 件を返します）
+    - 5.1 でも、W3C 拡張ログ形式（`#Fields:`）に対応し、`#TYPE` の型名を 7.x の順序にし、`Get-ChildItem | Import-ProbedCsv` が動きます
+    - ワイルドカードが複数のファイルに一致した場合は、順に読みます（標準はエラー）
+    - 存在しないファイルや列名の重複は非終了エラーとし、残りのファイルを読み続けます（標準は終了エラー）
+    - ワイルドカードが 0 件の場合はエラーにしません（`Get-ProbedContent` と同じ）
+- **`Export-ProbedCsv`** … オブジェクトを CSV の行に変換し、文字エンコーディング・BOM・改行を指定してファイルに書き出します（標準の `Export-Csv` に対応）
+  - 文字列化は PowerShell 7.x の `Export-Csv` から移植した処理で行い、ホストの `Export-Csv` / `ConvertTo-Csv` は呼びません。
+    **5.1 と 7.x でバイト単位まで同じファイルになります**
+  - 文字エンコーディング・BOM・改行・追記・ファイルを開く時点・読み取り専用・`-WhatIf` は `Out-ProbedFile` の規則に従います
+  - 標準の `Export-Csv` との差異:
+    - 5.1 でも、既定の文字エンコーディングは `utf8NoBOM` です（5.1 の標準は ASCII で書くため、日本語が `???` になります）
+    - 既定で `#TYPE` 行を書きません。`-NoTypeInformation` は受け付けるだけで何もしません
+    - `-UseQuotes` / `-QuoteFields` / `-NoHeader` を 5.1 でも使えます。辞書はキーを列として書きます
+    - `-Append` は追記先の文字エンコーディングと改行を継承し、整合性を検査します（標準は文字エンコーディングや改行が混ざります）
+    - **追記先の最後の行に改行が無い場合は、改行を補ってから追記します**（標準は行をつなげてしまいます）
+    - `Import-ProbedCsv a.csv | Export-ProbedCsv a.csv` は `SamePathRoundTrip` で止まり、ファイルを壊しません（標準は 0 バイトになります）
+    - ファイルを切り詰めるのは最初の行を書く直前です（標準は開始時）
+  - 2 件目以降のオブジェクトの、列に無いプロパティは黙って書きません（標準と同じ）
+- 両コマンドとも、`-Culture`（文字エンコーディングの判定のカルチャー）と `-UseCulture`（区切り文字）は別のものです
+
+### `-DetectionLineCount`
+
+- `Resolve-Encoding` / `Import-ProbedCsv` / `Export-ProbedCsv` に、判定に使う先頭の行数を指定する `-DetectionLineCount` を追加しました。
+  巨大なファイルを先頭の N 行だけで判定できます。行数は物理的な行数（CR-LF / LF / CR）で、CSV のレコード数ではありません
+- `Resolve-Encoding -DetectionLineCount` は、先頭 N 行が何に見えるかをそのまま報告します。`Resolve-Encoding` の既存のパラメーターと戻り値は変えていません
+- `Import-ProbedCsv` / `Export-ProbedCsv` では、先頭 N 行が ASCII だけなら BOM 無しの UTF-8 とみなし（改行のバイト列から UTF-16 / UTF-32 と分かればそちら）、
+  **使う前にファイル全体を厳密に復号して検証します。** 判定を誤っていれば（先頭が英数字で後半に日本語がある Shift_JIS など）、
+  何も読み書きせずにエラー `DetectionVerificationFailed` で止まります。検証のためにファイルを 2 回読みます。`-Encoding` を明示すれば、判定も検証も行いません
+
+### 既知の課題（起票のみ）
+
+- BOM 無しの UTF-16 / UTF-32 で英数字だけのファイルを全体で判定すると、`us-ascii` と判定されます（クラスライブラリの判定処理の課題。1.0.0 から存在）。
+  `docs/EncodingProbe-課題-BOM無しUTF-16の英数字だけの判定.md` に起票しました。`Import-ProbedCsv` / `Export-ProbedCsv` で `-DetectionLineCount` を指定した場合は、正しく読み書きできます
+
+### ライセンス
+
+- CSV の読み書き処理に、PowerShell（`PowerShell/PowerShell` の `CsvCommands.cs`、コミット `db1d0a56`。Copyright (c) Microsoft Corporation、MIT License）のコードの一部を改変して含めました。
+  `THIRD-PARTY-NOTICES.txt` に MIT License の全文を載せ、`Resolve-Encoding -License` の出力にも追記しました。このコードは PowerShell モジュールにだけ含まれ、NuGet パッケージには含まれません
+
+### 内部の変更
+
+- `Out-ProbedFile` の殻（パスの解決、事前の検査、ファイルを開く時点、空の入力、後始末）を `Export-ProbedCsv` と共用するため、基底クラスに切り出しました。挙動は変えていません
+
 ## 1.2.0
 
 文字エンコーディング判定を東アジア以外の言語に対応させ、PowerShell モジュールに

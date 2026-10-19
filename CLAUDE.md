@@ -10,7 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `SnowStack.EncodingProbe` … NuGet パッケージ（クラスライブラリ）
 - `SnowStack.EncodingProbe.PowerShell` … バイナリモジュール。`Resolve-Encoding` /
   `Get-EncodingProbePlatformInfo` / `Get-ProbedContent` / `Set-ProbedContent` /
-  `Add-ProbedContent` / `ConvertTo-DotNetEncoding` / `Out-ProbedFile` / `Convert-ProbedContent` を提供する
+  `Add-ProbedContent` / `ConvertTo-DotNetEncoding` / `Out-ProbedFile` / `Convert-ProbedContent` /
+  `Import-ProbedCsv` / `Export-ProbedCsv` を提供する
 - `tests/EncodingProbe.Tests` … コアライブラリの xUnit テスト（net10.0 / net48 の両方で動く）
 - `tests/EncodingProbe.PowerShell.Tests` … コマンドレットの xUnit テスト（net10.0 のみ。`Microsoft.PowerShell.SDK` を参照）
 
@@ -206,7 +207,10 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
 - BOM を書き出すかどうかは `EncodingSpec.EmitBom` だけで決め、`ProbedFileWriter` が自分で書き出す。
   `Encoding.GetPreamble()` 任せにしない（解決経路によって出力が変わってしまうため）
 - 文字エンコーディングの判定は**ファイル全体**を対象とする。先頭の一定量に制限すると、
-  英数字が続いたあとにマルチバイト文字が現れるファイルを誤判定する
+  英数字が続いたあとにマルチバイト文字が現れるファイルを誤判定する。
+  **例外は 1.3.0 の `-DetectionLineCount`**（`Resolve-Encoding` / `Import-ProbedCsv` / `Export-ProbedCsv`）で、
+  先頭 N 行で判定する。`Import-` / `Export-ProbedCsv` は、使う前にファイル全体を厳密に検証して誤判定を止める
+  （`Resolve-Encoding` は検証しない。「先頭 N 行が何に見えるか」を報告するコマンドのため）
 - `Add-ProbedContent` の整合性検査は**実際に書き出されるバイト列の比較**で行う。
   名前の組み合わせ表では判定しない（仕様書 6.1）
 - メッセージは `Internal/MessageCatalog` が英語・日本語・韓国語・繁体字中国語・簡体字中国語で持つ。
@@ -256,6 +260,35 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
   `EncodingVocabulary.GetUnifiedName` は WebName を小文字にそろえる（.NET Framework は 20932 を `EUC-JP` と返す）
 - PSCompat の `.GetNewClosure()` 付きのシナリオの中では `$script:` 変数が見えない（動的モジュールのスコープになる）。
   スクリプトの最上位で `$script:x = ...` と定義した変数は、クロージャの中では `$x` と書いて参照する
+
+### 1.3.0 で追加したコマンド（Import-ProbedCsv / Export-ProbedCsv）と -DetectionLineCount
+
+仕様は `docs/EncodingProbe-1.3.0-仕様書.md`、実装で決めた点は `docs/EncodingProbe-1.3.0-実装記録.md`。「標準の挙動」はすべて
+`docs/EncodingProbe-1.3.0-調査-CSVコマンド挙動の実測.md`（測定は `tools/Measure-CsvBehavior.ps1`、生の結果は `tools/CsvBehaviorResults/`）に基づく。
+
+- **CSV の解析・文字列化は PowerShell 7.x からの移植（`Internal/Csv/`）で行い、ホストの `Import-Csv` / `Export-Csv` / `ConvertTo-Csv` を呼ばない。**
+  そのため 5.1 でも 7.x と同じ結果になる（書き出しはバイト単位）。規則は移植元のとおりとし、独自の改良を加えない。
+  仕様で決めた変更（追記先の末尾の改行を補うなど）は移植したコードの外（コマンド側）で行う
+- 移植元の内部 API の置き換え: `PSObject.GetPropertyCollection` / `PSMemberInfoIntegratingCollection` は `Internal/CsvPropertyViews`
+  （`PSObject.Properties` を種類で選り分け、Property の種類は `psadapted` にあるものだけ残す）、`new PSObject(int)` は `new PSObject()`（5.1 に無い）。
+  `AsSpan()` などの net48 に無い機能も置き換え、`System.Memory` への依存は持ち込んでいない。
+  **FileInfo などホストによって形が違うオブジェクトの列は、両ホストで一致しなくてよい**（入力そのものが違うため。第一次の決定）。
+  PSCompat ではホストによって形が変わらないオブジェクトを使う
+- **`-Culture`（判定のカルチャー。基底クラス）と `-UseCulture`（区切り文字）は別のもの。** コード・コメント・ヘルプで取り違えないこと
+- `Import-ProbedCsv` のパラメータセットは 4 つ（`DelimiterPath` / `DelimiterLiteralPath` / `CulturePath` / `CultureLiteralPath`）。
+  `Export-ProbedCsv` は標準の `Export-Csv` と同じ 2 つ（`Delimiter` / `UseCulture`）で、`-Path` / `-LiteralPath` は必須にせず「ちょうど一方」を検査する。
+  4 つにするとパイプライン入力と `-LiteralPath` の組み合わせで `AmbiguousParameterSet` になる（第三次で改めた）
+- `Export-ProbedCsv` と `Out-ProbedFile` は、殻（パスの解決、`-NoClobber` と読み取り専用の検査、最初の行を書く直前に開く処理、追記の整合性検査、空の入力、後始末）を
+  `Cmdlets/ProbedFileOutputCommandBase` で共用する。文字エンコーディングの決定は各コマンドにある。
+  `Export-ProbedCsv` は、ヘッダーと末尾の改行を読むため、**1 バイト以上の追記先を常に判定する**（`Out-ProbedFile` とはここが違う）。
+  BOM だけの追記先にはヘッダーを書く（BOM は重ねない）
+- **`-DetectionLineCount` の判定は 1 か所に集約している。** 切り出しは `Internal/HeadLineCutter`、判定は `Internal/HeadLineDetection`
+  （`Resolve-Encoding` はここまで）、読み替え（us-ascii を改行の型に応じて UTF-8 / UTF-16 / UTF-32 に）と全体の検証は `Internal/HeadLineEncodingResolver`
+  （`Import-` / `Export-ProbedCsv`、`-EncodingFrom` も含む）。3 つのコマンドの判定結果（読み替え前）が一致することはこの共用で保証している
+- 全体の厳密な検証（`Internal/StrictDecodeVerifier`）は `DecoderFallbackException.Index` を使わない。失敗したときだけ先頭から読み直し、
+  成功済みのバッファを同じ区切りで与えて `Decoder` の状態を再現し、失敗したバッファから 1 バイトずつ与えて位置を求める（ISO-2022 のような状態を持つ文字エンコーディングのため）
+- 検証の失敗は `DetectionVerificationFailed`（`Import-ProbedCsv` は非終了、`Export-ProbedCsv` は `ShouldProcess` より前の終了エラー）。
+  `Import-ProbedCsv` の列名の重複は標準と同じ ID の非終了エラー（24 章 U3）。ワイルドカードが 0 件の場合は `Get-ProbedContent` と同じくエラーにしない
 
 ### MAML ヘルプ
 
@@ -343,9 +376,14 @@ pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1
 
 `CHANGELOG.md` にも追記すること。
 
+**PowerShell モジュールだけをリリースする場合（1.3.0 が該当）は、2 と 3 だけを上げ、1（クラスライブラリ）は据え置く。**
+クラスライブラリに変更が無いのにバージョンを上げると、NuGet パッケージの版と中身が食い違うためである。
+モジュールは、据え置いたクラスライブラリの DLL を同梱する。
+
 新しいコマンドレットを追加したら、次も忘れずに行う:
 
 - `.psd1` の `CmdletsToExport` に追加する
+- `tests/EncodingProbe.PowerShell.Tests/CmdletTests/MamlHelpTests.cs` の `CmdletTypes` に追加する
 - MAML ヘルプ 5 言語（`en-US` / `ja-JP` / `ko-KR` / `zh-TW` / `zh-CN`）すべてに項目を追加し、
   `zh-TW` を `zh-HK` / `zh-MO` へコピーする
   （`MamlHelpTests` が骨格の一致と複製の一致を要求するため、1 言語だけ足すとテストが落ちる）
@@ -356,6 +394,18 @@ pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1
 ## ライセンス上の注意
 
 UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ とのトリプルライセンス）。過去に MIT と誤記して修正したコミットがある。サードパーティ表記は `THIRD-PARTY-NOTICES.txt` と `EncodingProbe.cs` の `License` 定数（`Resolve-Encoding -License` が返す文字列）の 2 か所にあり、内容を揃えること。バージョンは TFM で分かれるため、両方に `2.7.0 (net10.0 build) / 2.6.0 (net48 build)` の形で書く（`LICENSE.txt` は本プロジェクト自身の MIT ライセンス）。
+
+**PowerShell 由来のコード（1.3.0）。** `SnowStack.EncodingProbe.PowerShell/Internal/Csv/` の 4 ファイルは、
+`PowerShell/PowerShell` の `CsvCommands.cs`（コミット `db1d0a56cbe41adf05d0bad90be5190a6655404f`、Copyright (c) Microsoft Corporation、MIT License）からの移植である。
+MIT License の条件（著作権表示と許諾表示）を満たすため、次の 4 か所に表示している。どれかを直したら他も確かめること。
+
+1. 移植したすべてのファイルの冒頭（1.3.0 仕様書 付録 A.1 の文面）
+2. `THIRD-PARTY-NOTICES.txt` の PowerShell の節（ライセンス本文は移植元の `LICENSE.txt` の原文のまま。`*AS IS*` のアスタリスクも変えない）
+3. `LicenseAndHelp.License`（`Resolve-Encoding -License` の出力）
+4. 配布するモジュールのフォルダーに `LICENSE.txt` と `THIRD-PARTY-NOTICES.txt` を同梱する（リリース作業）
+
+このコードはモジュールにだけ含まれ、クラスライブラリには含まれない。そのため `EncodingProbe.License` 定数（クラスライブラリ）には書かない。
+`Internal/Csv/` には移植したコードだけを置く（内部 API の置き換えなど、本プロジェクトで書いたコードは `Internal/CsvPropertyViews.cs` のように外に置く）。
 
 ## 1.1.0 の作業記録
 
@@ -373,7 +423,8 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 
 1.1.0 では次を変更していない（指示書 1 節の制約。今後も維持すること）:
 
-- `Resolve-Encoding` / `Get-EncodingProbePlatformInfo` のパラメータと戻り値
+- `Resolve-Encoding` / `Get-EncodingProbePlatformInfo` の既存のパラメータと戻り値を変更しない
+  （1.3.0 で `Resolve-Encoding -DetectionLineCount` を追加した。利用者が明示的に決定した例外）
 - `EncodingInformation` 型（`DotNetEncoding` プロパティは「追加しない」と決定済み）
 - コアの NuGet パッケージの公開 API
 
@@ -424,3 +475,29 @@ UTF.Unknown は **MIT ではなく MPL 1.1**（または GPL 2.0+ / LGPL 2.1+ �
 マージ前に、完了した実測依頼（`docs/EncodingProbe-1.2.0-実測依頼-Out-File挙動.md`）と、
 手動確認後の修正の説明文書 2 件（`docs/EncodingProbe-1.2.0-説明-手動確認後の修正_ClaudeDesktop向け.md` / `_ブログ向け.md`）を
 削除した（git の履歴に残っている）。
+
+## 1.3.0 の作業記録
+
+**PowerShell モジュールだけのリリース（クラスライブラリは 1.2.0 のまま）。** 作業ブランチは `feature/1.3.0-csv`。
+1.3.0 で行ったこと（詳細は CHANGELOG.md の 1.3.0 節）:
+
+- 第一次: 共通の部品（先頭 N 行の切り出し、全体の厳密な検証、PowerShell 7.x の CSV 処理の移植）と `Resolve-Encoding -DetectionLineCount`
+- 第二次: `Import-ProbedCsv`
+- 第三次: `Export-ProbedCsv`、`Out-ProbedFile` の殻の共通化、バージョン・文書の仕上げ
+
+関連文書:
+
+- `docs/EncodingProbe-1.3.0-仕様書.md` … 機能仕様。実装で改めた点（`Export-ProbedCsv` のパラメータセット、ワイルドカード 0 件）は該当節に経緯を書いてある
+- `docs/EncodingProbe-1.3.0-ClaudeCode指示書.md` … 実装時の制約（移植の方針、参照してはならないもの）
+- `docs/EncodingProbe-1.3.0-調査-CSVコマンド挙動の実測.md` … 標準の CSV コマンドの実測（5.1 と 7.6.7）
+- `docs/EncodingProbe-1.3.0-実装記録.md` … 決定事項とその根拠、仕様書と異なった点。**仕様書に書かれていない判断の理由はここにある**
+- `docs/EncodingProbe-1.3.0-動作確認手順書.md` … 手元の PC で動作を確かめる手順と、リリース前のチェック
+
+依頼文（`docs/EncodingProbe-1.3.0-依頼-第一次.md` など）はリポジトリに入れていない（利用者の指示）。
+
+未着手・未決の課題（1.3.0 で起票、または 1.4.0 で検討すると決めたもの）:
+
+- `docs/EncodingProbe-課題-BOM無しUTF-16の英数字だけの判定.md` … クラスライブラリの判定処理の課題（全体で判定すると us-ascii になる）
+- 既存のコマンド（`Get-` / `Set-` / `Add-ProbedContent`、`Out-ProbedFile`、`Convert-ProbedContent`）への `-DetectionLineCount`、
+  全体で判定した場合の検証、`Out-ProbedFile` / `Add-ProbedContent` の追記での末尾の改行の補完は 1.4.0 で検討する（仕様書 1.4）
+- 改行の無い 2 GB 以上のファイルに `-DetectionLineCount` を指定すると、エラーになるまで 2 GB を 1 バイトずつ走査する（約 20 秒）。正しさを優先して最適化していない

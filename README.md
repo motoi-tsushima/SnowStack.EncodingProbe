@@ -47,6 +47,44 @@ UTF.Unknown は欧米などのシングルバイト文字エンコーディン�
 
 
 
+## version 1.3.0 の変更点（PowerShell モジュール）
+
+PowerShell モジュールに CSV の読み書きコマンドを追加しました。クラスライブラリ（NuGet パッケージ）は 1.2.0 のまま変更していません。
+
+| コマンド | 役割 |
+|---|---|
+| `Import-ProbedCsv` | 文字エンコーディングを判定して CSV ファイルを読み込む（`Import-Csv` の代わり） |
+| `Export-ProbedCsv` | 文字エンコーディング・BOM・改行を指定して CSV ファイルに書き出す（`Export-Csv` の代わり） |
+
+CSV の解析と文字列化は PowerShell 7.x の `Import-Csv` / `Export-Csv` から移植した処理で行うため、
+**Windows PowerShell 5.1 でも PowerShell 7.x と同じ結果（書き出しはバイト単位まで同じファイル）になります。**
+5.1 の標準の `Import-Csv` は CR だけの改行の CSV を黙って 0 件で返し、`Export-Csv` は既定で日本語を `???` にしてしまいますが、
+これらのコマンドではそうなりません。
+
+```powershell
+# 文字エンコーディングを判定して読み込む（Shift_JIS・EUC-JP・UTF-8・UTF-16 など）
+Import-ProbedCsv .\data.csv
+
+# フォルダー内の CSV をまとめて読む（PowerShell 5.1 でも動く）
+Get-ChildItem *.csv | Import-ProbedCsv
+
+# BOM 無しの UTF-8 で書き出す（PowerShell 5.1 でも同じバイト列になる）
+Get-Process | Select-Object Name, Id | Export-ProbedCsv .\processes.csv
+
+# Shift_JIS の CSV に、Shift_JIS のまま追記する（最後の行に改行が無くても行がつながらない）
+$rows | Export-ProbedCsv .\sjis.csv -Append
+
+# 巨大なファイルを先頭 1000 行で判定する（使う前にファイル全体を検証する）
+Import-ProbedCsv .\huge.csv -DetectionLineCount 1000
+```
+
+`Resolve-Encoding` にも、先頭の N 行だけで判定する `-DetectionLineCount` を追加しました。
+
+CSV の読み書き処理には、PowerShell（Copyright (c) Microsoft Corporation、MIT License）のコードの一部を改変して含めています。
+詳細は [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) と [CHANGELOG.md](CHANGELOG.md) を参照してください。
+
+
+
 ## version 1.2.0 の変更点
 
 ### 東アジア以外の言語への対応（クラスライブラリ・PowerShell モジュール共通）

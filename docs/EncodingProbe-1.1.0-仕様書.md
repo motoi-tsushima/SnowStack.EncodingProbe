@@ -42,6 +42,8 @@ PowerShell 5.1 の標準コマンドは、`-Encoding` パラメータが `FileSy
 ### 2.2 変更しないもの
 
 - `Resolve-Encoding` — パラメータ・戻り値ともに変更しない
+  > **1.3.0 での注記:** 1.3.0 で `-DetectionLineCount`（先頭 N 行で判定する）を追加した。利用者が明示的に決定した例外で、
+  > 既存のパラメータと戻り値は変えていない（`docs/EncodingProbe-1.3.0-仕様書.md` 1.3・第 2 部）。
 - `Get-EncodingProbePlatformInfo` — 変更しない
 - `EncodingInformation` 型 — プロパティを追加しない（`DotNetEncoding` は追加しない）
 
@@ -678,6 +680,11 @@ $encobj = Resolve-Encoding file.txt | ConvertTo-DotNetEncoding
 - **CodePagesEncodingProvider**: PS 7.x / .NET で CP932 等を扱うには登録が必要。ホスト側の登録に依存せず、モジュール内で登録する
 - **大容量ファイル**: 標準の `Get-Content` と同様のメモリ挙動を保つため、行単位でストリーミング出力する（`-Raw` を除く）
 - **`-TotalCount` と検出**: 先頭 N 行のみ読む場合でも、検出のためにファイル先頭の一定量を読む必要がある
+  > **1.3.0 での注記:** 実装では、判定は**ファイル全体**を対象としている（先頭の一定量に制限すると、英数字が続いたあとに
+  > マルチバイト文字が現れるファイルを誤判定するため）。`-TotalCount` を指定しても判定は全体で行う。
+  > 先頭 N 行で判定する手段は、1.3.0 で `Resolve-Encoding` / `Import-ProbedCsv` / `Export-ProbedCsv` の `-DetectionLineCount` として追加した
+  > （`Import-` / `Export-ProbedCsv` は使う前に全体を厳密に検証する）。`Get-ProbedContent` などへの追加は 1.4.0 で検討する
+  > （`docs/EncodingProbe-1.3.0-仕様書.md` 1.4・6.1）。
 - **同一ファイルの往復**: `Get-ProbedContent a.txt | Set-ProbedContent a.txt` は、遅延読み込みの場合に書き込み側が先にファイルを切り詰めて破壊する。標準の `Get-Content` も同様だが、本コマンド群は「エンコーディングを保って書き戻す」用途でこの罠を踏みやすい。**同一パスを検出して非終了エラーとした**（`Internal/ActiveReadRegistry`）。ただし `-Raw` は出力前にファイルを閉じるため対象外で、読んで加工して書き戻せる
 - **`EncodingSpec`（内部型）**: 入力を `{ Encoding, EmitBom, LineBreak }` の 3 項に正規化する内部表現。`ArgumentTransformationAttribute` で全コマンド共通に解決する。**公開型としない**
 
