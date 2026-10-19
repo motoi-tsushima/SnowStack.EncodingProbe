@@ -173,11 +173,12 @@ public sealed class ImportProbedCsvCommand : ProbedContentCommandBase
         {
             if (spec.IsAuto && this.MyInvocation.BoundParameters.ContainsKey(nameof(this.DetectionLineCount)))
             {
-                // 先頭 N 行で判定し、全体を検証してから、検証と同じ厳密な Encoding で読む（仕様書 10 章）
-                if (!TryResolveByHeadLines(file, out spec, out verifiedCodePage))
-                {
-                    return;
-                }
+                // 先頭 N 行で判定し、読み替え、全体を検証してから、検証と同じ厳密な Encoding で読む（仕様書 10 章）。
+                // 検証に失敗した場合は、そのファイルのレコードを 1 件も出力しない（仕様書 4.3）
+                HeadLineEncoding resolved = HeadLineEncodingResolver.Resolve(file, this.DetectionLineCount, this.DetectorOptions);
+
+                verifiedCodePage = resolved.CodePage;
+                spec = EncodingSpec.Create(EncodingVocabulary.BuildStrictEncoding(resolved.CodePage), emitBom: false);
             }
             else if (spec.IsAuto && new FileInfo(file).Length > EncodingInheritance.MaxDetectableLength)
             {
@@ -191,6 +192,10 @@ public sealed class ImportProbedCsvCommand : ProbedContentCommandBase
         {
             WriteError(CreateError(exception, exception.ErrorId, ErrorCategory.InvalidData, file));
         }
+        catch (DetectionVerificationException exception)
+        {
+            WriteError(CreateError(exception, DetectionVerificationException.ErrorId, ErrorCategory.InvalidData, file));
+        }
         catch (IOException exception)
         {
             WriteError(CreateError(exception, "ReadFailed", ErrorCategory.ReadError, file));
@@ -199,64 +204,6 @@ public sealed class ImportProbedCsvCommand : ProbedContentCommandBase
         {
             WriteError(CreateError(exception, "ReadAccessDenied", ErrorCategory.PermissionDenied, file));
         }
-    }
-
-    /// <summary>
-    /// 先頭 N 行で判定し、読み替え、全体を検証する。検証に失敗した場合は非終了エラーを報告して false を返す。
-    /// </summary>
-    /// <param name="spec">読み込みに使う厳密な Encoding</param>
-    /// <param name="codePage">読み替えた後のコードページ（解析の途中で失敗したときの報告に使う）</param>
-    /// <exception cref="EncodingDetectionException">判定に失敗した場合、コードページを実行環境が提供していない場合</exception>
-    private bool TryResolveByHeadLines(string file, out EncodingSpec spec, out int codePage)
-    {
-        HeadLineDetectionResult detection = HeadLineDetection.Detect(file, this.DetectionLineCount, this.DetectorOptions);
-        EncodingInformation information = detection.Information;
-
-        if (information.CodePage < 0)
-        {
-            throw new EncodingDetectionException(ValidationMessages.DetectionFailed(file), file);
-        }
-
-        codePage = detection.GetReinterpretedCodePage();
-
-        Encoding strict;
-
-        try
-        {
-            strict = EncodingVocabulary.BuildStrictEncoding(codePage);
-        }
-        catch (Exception exception) when (exception is ArgumentException || exception is NotSupportedException)
-        {
-            // 判定処理は .NET が提供していないコードページを返すことがある（全体の判定と同じ扱い）
-            throw new EncodingDetectionException(
-                ValidationMessages.DetectedCodePageNotAvailable(information.CodePage, information.EncodingWebName),
-                file,
-                EncodingDetectionException.CodePageNotAvailableId);
-        }
-
-        StrictDecodeFailure? failure = StrictDecodeVerifier.Verify(file, codePage);
-
-        if (failure != null)
-        {
-            // そのファイルのレコードは 1 件も出力しない（仕様書 4.3）。
-            // 文字エンコーディング名は、読み替えた後の（実際に検証した）ものを示す
-            WriteError(CreateError(
-                new InvalidDataException(ValidationMessages.DetectionVerificationFailed(
-                    file,
-                    EncodingVocabulary.GetUnifiedName(codePage, information.Bom),
-                    this.DetectionLineCount,
-                    failure.Offset,
-                    ByteSequenceText.Format(failure.Bytes))),
-                "DetectionVerificationFailed",
-                ErrorCategory.InvalidData,
-                file));
-
-            spec = EncodingSpec.Auto;
-            return false;
-        }
-
-        spec = EncodingSpec.Create(strict, emitBom: false);
-        return true;
     }
 
     /// <summary>
