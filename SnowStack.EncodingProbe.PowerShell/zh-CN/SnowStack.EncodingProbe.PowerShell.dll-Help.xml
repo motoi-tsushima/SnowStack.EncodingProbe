@@ -2263,6 +2263,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>判定时使用的开头行数。省略时以整个文件判定（与以往相同）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Resolve-Encoding</maml:name>
@@ -2292,6 +2299,21 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>DetectionLineCount</maml:name>
+        <maml:description>
+          <maml:para>判定时使用的开头行数。省略时以整个文件判定（与以往相同）。</maml:para>
+          <maml:para>行数是物理行数，按换行（CR-LF / LF / CR）计算，并非 CSV 的记录数。CSV 引号中的换行也算作 1 行。</maml:para>
+          <maml:para>结果只反映开头 N 行。只出现在后半部分的字符（ASCII 行之后的日文等）不会反映。开头 N 行只有 ASCII 时，会报告 us-ascii。没有 BOM 的 UTF-16 / UTF-32 在开头 N 行只有字母数字时，也会是 us-ascii。LineBreak 也是只根据开头 N 行判定的结果。</maml:para>
+          <maml:para>没有换行的文件会读取整个文件。判定范围达到 2 GB 以上时无法判定，会产生错误。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -2390,6 +2412,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <dev:code>PS C:\&gt; Resolve-Encoding .\a.txt -Culture ko-KR</dev:code>
         <dev:remarks>
           <maml:para>假定为韩文的区域性进行判定。这会影响 EUC-KR 与 CP949 这类歧义的解决。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Resolve-Encoding .\huge.log -DetectionLineCount 1000</dev:code>
+        <dev:remarks>
+          <maml:para>不读取整个大型文件，只根据开头 1000 行判定字符编码。只出现在第 1000 行之后的字符不会反映在结果中。</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

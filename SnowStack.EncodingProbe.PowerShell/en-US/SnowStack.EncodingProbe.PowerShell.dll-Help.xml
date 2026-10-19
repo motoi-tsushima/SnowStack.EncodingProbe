@@ -2263,6 +2263,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>Number of lines at the beginning of the file used for detection. When omitted, the whole file is used (as before).</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Resolve-Encoding</maml:name>
@@ -2292,6 +2299,21 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>DetectionLineCount</maml:name>
+        <maml:description>
+          <maml:para>Number of lines at the beginning of the file used for detection. When omitted, the whole file is used (as before).</maml:para>
+          <maml:para>The count is of physical lines, separated by CR-LF, LF or CR. It is not the number of CSV records: a line break inside a quoted CSV field also counts as a line.</maml:para>
+          <maml:para>The result reflects only the first N lines. Characters that appear only later in the file (for example Japanese text after ASCII lines) are not taken into account. If the first N lines are ASCII only, the result is us-ascii; this also applies to UTF-16 and UTF-32 files without a BOM whose first N lines contain only alphanumeric characters. LineBreak is also detected from the first N lines only.</maml:para>
+          <maml:para>A file without line breaks is read as a whole. If the range to detect is 2 GB or larger, the character encoding cannot be detected and an error is returned.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -2390,6 +2412,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <dev:code>PS C:\&gt; Resolve-Encoding .\a.txt -Culture ko-KR</dev:code>
         <dev:remarks>
           <maml:para>Detects the file assuming a Korean culture, which decides EUC-KR versus CP949 style ambiguities.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Resolve-Encoding .\huge.log -DetectionLineCount 1000</dev:code>
+        <dev:remarks>
+          <maml:para>Detects the character encoding from the first 1000 lines only, without reading the whole of a very large file. Characters that appear only after line 1000 are not reflected in the result.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

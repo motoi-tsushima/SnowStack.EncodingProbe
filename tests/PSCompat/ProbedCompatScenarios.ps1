@@ -1600,6 +1600,94 @@ Add-Scenario 'Add-ProbedContent/LineBreak-does-not-replace-inside-values' {
 }
 
 # ---------------------------------------------------------------------------
+# Resolve-Encoding -DetectionLineCount (1.3.0 仕様書 第 2 部)
+#
+# 先頭 N 行の切り出しと判定が、両ホストで同じ結果になることを確かめる。
+# PSEncodingName / UsePSName は TFM ごとに意味が違う（仕様）ので記録しない。
+# パラメータ束縛のエラーは PowerShell 自身の文言を含むため、FullyQualifiedErrorId だけを記録する。
+# ---------------------------------------------------------------------------
+
+function Format-DetectionResult {
+    param($Information)
+
+    return ("cp={0} web={1} bom={2} lb={3} culture={4}" -f
+        $Information.CodePage, $Information.EncodingWebName, $Information.Bom, $Information.LineBreak, $Information.Culture)
+}
+
+$script:utf8Bytes = { param([string]$Text) (New-Object System.Text.UTF8Encoding($false)).GetBytes($Text) }
+$script:asciiHead = "Name,Memo`r`na,b`r`n"
+$script:jpTail = "$([char]0x65E5)$([char]0x672C),$([char]0x8A9E)`r`n"
+
+# 先頭だけが ASCII の UTF-8 / Shift_JIS / EUC-JP（後半に「日本,語」）
+$script:dlcFiles = [ordered]@{
+    'utf8'     = New-ByteFile 'dlc_utf8.csv' ([byte[]]((& $script:utf8Bytes ($script:asciiHead + $script:jpTail))))
+    'shiftjis' = New-ByteFile 'dlc_sjis.csv' ([byte[]]((& $script:utf8Bytes $script:asciiHead) + @(0x93, 0xFA, 0x96, 0x7B, 0x2C, 0x8C, 0xEA, 0x0D, 0x0A)))
+    'eucjp'    = New-ByteFile 'dlc_eucjp.csv' ([byte[]]((& $script:utf8Bytes $script:asciiHead) + @(0xC6, 0xFC, 0xCB, 0xDC, 0x2C, 0xB8, 0xEC, 0x0A)))
+    'utf8bom'  = New-ByteFile 'dlc_utf8bom.csv' ([byte[]](@(0xEF, 0xBB, 0xBF) + (& $script:utf8Bytes ($script:asciiHead + $script:jpTail))))
+    'nobreak'  = New-ByteFile 'dlc_nobreak.csv' ([byte[]](& $script:utf8Bytes "A,B,$([char]0x65E5)"))
+    'mixedlb'  = New-ByteFile 'dlc_mixedlb.csv' ([byte[]](& $script:utf8Bytes "a`r`nb`r`nc`nd`n"))
+    'empty'    = New-ByteFile 'dlc_empty.csv' ([byte[]]@())
+}
+
+# UTF-16 / UTF-32（BOM 有無）。先頭が英数字のものと、先頭に日本語があるもの
+foreach ($unicode in @(
+    @('utf16le', (New-Object System.Text.UnicodeEncoding($false, $false)), [byte[]](0xFF, 0xFE)),
+    @('utf16be', (New-Object System.Text.UnicodeEncoding($true, $false)), [byte[]](0xFE, 0xFF)),
+    @('utf32le', (New-Object System.Text.UTF32Encoding($false, $false)), [byte[]](0xFF, 0xFE, 0x00, 0x00)),
+    @('utf32be', (New-Object System.Text.UTF32Encoding($true, $false)), [byte[]](0x00, 0x00, 0xFE, 0xFF)))) {
+
+    $label = $unicode[0]
+    $encoding = $unicode[1]
+    $bom = $unicode[2]
+    $asciiFirst = $encoding.GetBytes($script:asciiHead + $script:jpTail)
+    $jpFirst = $encoding.GetBytes($script:jpTail + $script:asciiHead)
+
+    $script:dlcFiles["$label/ascii-head"] = New-ByteFile "dlc_${label}_a.csv" ([byte[]]$asciiFirst)
+    $script:dlcFiles["$label/jp-head"] = New-ByteFile "dlc_${label}_j.csv" ([byte[]]$jpFirst)
+    $script:dlcFiles["$label/bom"] = New-ByteFile "dlc_${label}_bom.csv" ([byte[]]($bom + $asciiFirst))
+}
+
+foreach ($entry in $script:dlcFiles.GetEnumerator()) {
+    foreach ($lineCount in @(1, 2, 3, 1000)) {
+        $path = $entry.Value
+        Add-Scenario ("Resolve/DetectionLineCount/{0}/{1}" -f $entry.Key, $lineCount) {
+            Format-DetectionResult (Resolve-Encoding -Path $path -DetectionLineCount $lineCount -Culture ja-JP)
+        }.GetNewClosure()
+    }
+
+    $path = $entry.Value
+    Add-Scenario ("Resolve/DetectionLineCount/{0}/whole" -f $entry.Key) {
+        Format-DetectionResult (Resolve-Encoding -Path $path -Culture ja-JP)
+    }.GetNewClosure()
+}
+
+# -Strategy も先頭 N 行の判定に効く
+$path = $script:dlcFiles['shiftjis']
+Add-Scenario 'Resolve/DetectionLineCount/shiftjis/3/UtfUnknownOnly' {
+    Format-DetectionResult (Resolve-Encoding -Path $path -DetectionLineCount 3 -Culture ja-JP -Strategy UtfUnknownOnly)
+}.GetNewClosure()
+
+# 0 以下はパラメータ束縛の段階で拒否する
+foreach ($lineCount in @(0, -1)) {
+    $path = $script:dlcFiles['utf8']
+    Add-Scenario ("Resolve/DetectionLineCount/error/{0}" -f $lineCount) {
+        try {
+            Resolve-Encoding -Path $path -DetectionLineCount $lineCount | Out-Null
+            'no error'
+        }
+        catch {
+            $_.FullyQualifiedErrorId
+        }
+    }.GetNewClosure()
+}
+
+# -License に PowerShell 由来のコードの表示が含まれる
+Add-Scenario 'Resolve/License/PowerShell' {
+    $text = Resolve-Encoding -License
+    ($text -split "`r?`n" | Where-Object { $_ -match 'PowerShell/PowerShell|portions of PowerShell|MIT License\. See' }) -join ' / '
+}
+
+# ---------------------------------------------------------------------------
 # 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
 #
 # UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。

@@ -2263,6 +2263,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>判定に使う先頭の行数。省略時はファイル全体で判定します（従来どおり）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Resolve-Encoding</maml:name>
@@ -2292,6 +2299,21 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>DetectionLineCount</maml:name>
+        <maml:description>
+          <maml:para>判定に使う先頭の行数。省略時はファイル全体で判定します（従来どおり）。</maml:para>
+          <maml:para>行数は物理的な行数で、改行（CR-LF / LF / CR）で数えます。CSV のレコード数ではありません。CSV の引用符の中の改行も 1 行と数えます。</maml:para>
+          <maml:para>結果は先頭 N 行だけを見たものです。後半にだけ現れる文字（ASCII の行の後の日本語など）は反映されません。先頭 N 行が ASCII だけなら us-ascii と報告します。BOM 無しの UTF-16 / UTF-32 で先頭 N 行が英数字だけの場合も us-ascii になります。LineBreak も先頭 N 行だけで判定した結果です。</maml:para>
+          <maml:para>改行の無いファイルでは、ファイル全体を読みます。判定する範囲が 2 GB 以上になる場合は判定できず、エラーになります。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -2390,6 +2412,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <dev:code>PS C:\&gt; Resolve-Encoding .\a.txt -Culture ko-KR</dev:code>
         <dev:remarks>
           <maml:para>韓国語のカルチャーを仮定して判定します。EUC-KR と CP949 のような曖昧さの解決に影響します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Resolve-Encoding .\huge.log -DetectionLineCount 1000</dev:code>
+        <dev:remarks>
+          <maml:para>巨大なファイルの全体を読まずに、先頭 1000 行だけで文字エンコーディングを判定します。1000 行目より後ろにだけ現れる文字は結果に反映されません。</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>

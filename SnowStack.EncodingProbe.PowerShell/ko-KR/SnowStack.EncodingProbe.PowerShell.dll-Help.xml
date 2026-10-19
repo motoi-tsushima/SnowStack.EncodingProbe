@@ -2263,6 +2263,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>판정에 사용할 처음 줄 수. 생략하면 파일 전체로 판정합니다(기존과 동일).</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Resolve-Encoding</maml:name>
@@ -2292,6 +2299,21 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
           <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>DetectionLineCount</maml:name>
+        <maml:description>
+          <maml:para>판정에 사용할 처음 줄 수. 생략하면 파일 전체로 판정합니다(기존과 동일).</maml:para>
+          <maml:para>줄 수는 물리적인 줄 수이며, 줄 바꿈(CR-LF / LF / CR)으로 셉니다. CSV의 레코드 수가 아닙니다. CSV의 따옴표 안의 줄 바꿈도 1줄로 셉니다.</maml:para>
+          <maml:para>결과는 처음 N줄만 본 것입니다. 뒷부분에만 나타나는 문자(ASCII 줄 뒤의 일본어 등)는 반영되지 않습니다. 처음 N줄이 ASCII뿐이면 us-ascii로 보고합니다. BOM이 없는 UTF-16 / UTF-32에서 처음 N줄이 영숫자뿐인 경우에도 us-ascii가 됩니다. LineBreak도 처음 N줄만으로 판정한 결과입니다.</maml:para>
+          <maml:para>줄 바꿈이 없는 파일은 파일 전체를 읽습니다. 판정할 범위가 2GB 이상이 되면 판정할 수 없으며 오류가 발생합니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
           <maml:uri />
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
@@ -2390,6 +2412,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <dev:code>PS C:\&gt; Resolve-Encoding .\a.txt -Culture ko-KR</dev:code>
         <dev:remarks>
           <maml:para>한국어 문화권을 가정하여 판정합니다. EUC-KR과 CP949 같은 모호성의 해소에 영향을 줍니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Resolve-Encoding .\huge.log -DetectionLineCount 1000</dev:code>
+        <dev:remarks>
+          <maml:para>매우 큰 파일을 전체 읽지 않고 처음 1000줄만으로 문자 인코딩을 판정합니다. 1000번째 줄 이후에만 나타나는 문자는 결과에 반영되지 않습니다.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
