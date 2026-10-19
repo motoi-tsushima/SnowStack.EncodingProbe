@@ -2512,7 +2512,677 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:examples>
     <maml:relatedLinks>
       <maml:navigationLink>
+        <maml:linkText>Export-ProbedCsv</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
         <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Export-ProbedCsv</command:name>
+      <maml:description>
+        <maml:para>指定字符编码、BOM 和换行，将对象导出为 CSV 文件。</maml:para>
+      </maml:description>
+      <command:verb>Export</command:verb>
+      <command:noun>ProbedCsv</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>将每个输入对象转换为 CSV 记录并写入文件。列由第一个对象决定。</maml:para>
+      <maml:para>CSV 的字符串化使用从 PowerShell 7.x 的 Export-Csv 移植的处理，因此 Windows PowerShell 5.1 和 PowerShell 7.x 会写出字节完全相同的文件。</maml:para>
+      <maml:para>字符编码、BOM、换行、追加、只读属性以及打开文件的时机，都遵循 Out-ProbedFile 的规则。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Export-ProbedCsv</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>输出文件的路径。通配符会展开，且必须解析为恰好一个现有文件；不含通配符且不存在的路径会新建。-Path 和 -LiteralPath 只能指定其中一个。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Delimiter</maml:name>
+          <maml:description>
+            <maml:para>字段的分隔符。省略时为逗号（,）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>要导出的对象。每个对象成为一条 CSV 记录。只通过管道按值接收。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>输出文件的路径。直接使用输入的值，不展开通配符。-Path 和 -LiteralPath 只能指定其中一个。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>写入时使用的字符编码与 BOM 方针。省略时不查看已有文件，以 utf8NoBOM 写入。指定 -Append 时，会从追加目标文件继承字符编码、BOM 方针与换行（追加目标不存在或为 0 字节时为 utf8NoBOM）。显式指定 Auto 时，会从输出目标的已有文件继承，文件不存在则出错。这与省略 -Encoding 即表示 Auto 的 Set-ProbedContent 规则不同。可指定统一词汇（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、数值代码页、System.Text.Encoding 实例与 EncodingInformation 对象。不能与 -EncodingFrom 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>从指定的参考文件继承字符编码、BOM 方针与换行。按输入原样使用，不展开通配符。显式指定 -LineBreak 时，以其优先于继承的换行。不能与 -Encoding 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>在每一行后面加上的换行: Auto、CrLf、Lf、Cr。Auto 在有参考信息时会继承该信息（-EncodingFrom、显式指定的 -Encoding Auto、传给 -Encoding 的 EncodingInformation、省略 -Encoding 时 -Append 的追加目标），否则使用操作系统默认值。字符串中所含的换行不会被替换。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>追加到已有文件的末尾。对 1 字节以上的已有文件不写入 BOM。不存在或 0 字节的文件视同新建。写入每一行之前，会检查该行是否与以已有文件的字符编码写入时生成相同的字节序列（与 Add-ProbedContent 相同的检查）。不一致时以终止错误停止。之前写入的行会保留，文件仍保持一致。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>跳过 -Append 的一致性检查，即使字节序列与已有文件的字符编码不同也会写入。没有 -Append 时不会生效，并发出警告。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>对设有只读属性的文件，也会暂时去除属性后写入；写入后会恢复属性。在 -Append 时，也接受缺少现有文件某列对应属性的对象，并将该列写为空值。不会解除 -NoClobber。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>不覆盖现有文件。文件存在时，不更改文件并以终止错误停止。-Force 也不会解除。与 -Append 同时指定时，以 -Append 为优先并追加记录。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoHeader</maml:name>
+          <maml:description>
+            <maml:para>不写入标头行。可以与 -Append 同时指定，此时列仍会与现有文件的标头比对。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="ITI">
+          <maml:name>IncludeTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>在标头之前写入 #TYPE 行。类型名称以 CSV: 开头时（用 Import-ProbedCsv 读取的对象），会去掉该前缀后写入。追加到现有文件时不写入。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NTI">
+          <maml:name>NoTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>不执行任何操作。只是为了让为 Windows PowerShell 5.1 编写的脚本能直接运行而接受此参数。#TYPE 行只有在指定 -IncludeTypeInformation 时才会写入。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="UQ">
+          <maml:name>UseQuotes</maml:name>
+          <maml:description>
+            <maml:para>值的引号方式：Always（默认值）、AsNeeded、Never。AsNeeded 只为包含分隔符、LF 或双引号的值加引号。Never 完全不加引号，因此值包含分隔符时 CSV 会损坏。在 Windows PowerShell 5.1 中也可以使用。不能与 -QuoteFields 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">CsvQuoteKind</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="QF">
+          <maml:name>QuoteFields</maml:name>
+          <maml:description>
+            <maml:para>要为值和标头加引号的列名。列名不区分大小写。在 Windows PowerShell 5.1 中也可以使用。不能与 -UseQuotes 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>判定现有文件字符编码时使用的开头行数。对象为 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出文件，以及 -Append 的追加目标文件。省略时以整个文件判定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>需要判定文件时使用的判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>显示执行命令时会发生什么。不会创建或更改文件。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>执行命令前要求确认。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Export-ProbedCsv</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>输出文件的路径。通配符会展开，且必须解析为恰好一个现有文件；不含通配符且不存在的路径会新建。-Path 和 -LiteralPath 只能指定其中一个。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>UseCulture</maml:name>
+          <maml:description>
+            <maml:para>使用当前区域性（CurrentCulture）的列表分隔符作为分隔符。这与判定现有文件字符编码时使用的 -Culture 不同。两者可以同时指定。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>要导出的对象。每个对象成为一条 CSV 记录。只通过管道按值接收。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>输出文件的路径。直接使用输入的值，不展开通配符。-Path 和 -LiteralPath 只能指定其中一个。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>写入时使用的字符编码与 BOM 方针。省略时不查看已有文件，以 utf8NoBOM 写入。指定 -Append 时，会从追加目标文件继承字符编码、BOM 方针与换行（追加目标不存在或为 0 字节时为 utf8NoBOM）。显式指定 Auto 时，会从输出目标的已有文件继承，文件不存在则出错。这与省略 -Encoding 即表示 Auto 的 Set-ProbedContent 规则不同。可指定统一词汇（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、数值代码页、System.Text.Encoding 实例与 EncodingInformation 对象。不能与 -EncodingFrom 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>从指定的参考文件继承字符编码、BOM 方针与换行。按输入原样使用，不展开通配符。显式指定 -LineBreak 时，以其优先于继承的换行。不能与 -Encoding 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>在每一行后面加上的换行: Auto、CrLf、Lf、Cr。Auto 在有参考信息时会继承该信息（-EncodingFrom、显式指定的 -Encoding Auto、传给 -Encoding 的 EncodingInformation、省略 -Encoding 时 -Append 的追加目标），否则使用操作系统默认值。字符串中所含的换行不会被替换。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>追加到已有文件的末尾。对 1 字节以上的已有文件不写入 BOM。不存在或 0 字节的文件视同新建。写入每一行之前，会检查该行是否与以已有文件的字符编码写入时生成相同的字节序列（与 Add-ProbedContent 相同的检查）。不一致时以终止错误停止。之前写入的行会保留，文件仍保持一致。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>跳过 -Append 的一致性检查，即使字节序列与已有文件的字符编码不同也会写入。没有 -Append 时不会生效，并发出警告。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>对设有只读属性的文件，也会暂时去除属性后写入；写入后会恢复属性。在 -Append 时，也接受缺少现有文件某列对应属性的对象，并将该列写为空值。不会解除 -NoClobber。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>不覆盖现有文件。文件存在时，不更改文件并以终止错误停止。-Force 也不会解除。与 -Append 同时指定时，以 -Append 为优先并追加记录。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoHeader</maml:name>
+          <maml:description>
+            <maml:para>不写入标头行。可以与 -Append 同时指定，此时列仍会与现有文件的标头比对。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="ITI">
+          <maml:name>IncludeTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>在标头之前写入 #TYPE 行。类型名称以 CSV: 开头时（用 Import-ProbedCsv 读取的对象），会去掉该前缀后写入。追加到现有文件时不写入。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NTI">
+          <maml:name>NoTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>不执行任何操作。只是为了让为 Windows PowerShell 5.1 编写的脚本能直接运行而接受此参数。#TYPE 行只有在指定 -IncludeTypeInformation 时才会写入。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="UQ">
+          <maml:name>UseQuotes</maml:name>
+          <maml:description>
+            <maml:para>值的引号方式：Always（默认值）、AsNeeded、Never。AsNeeded 只为包含分隔符、LF 或双引号的值加引号。Never 完全不加引号，因此值包含分隔符时 CSV 会损坏。在 Windows PowerShell 5.1 中也可以使用。不能与 -QuoteFields 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">CsvQuoteKind</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="QF">
+          <maml:name>QuoteFields</maml:name>
+          <maml:description>
+            <maml:para>要为值和标头加引号的列名。列名不区分大小写。在 Windows PowerShell 5.1 中也可以使用。不能与 -UseQuotes 同时指定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>判定现有文件字符编码时使用的开头行数。对象为 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出文件，以及 -Append 的追加目标文件。省略时以整个文件判定。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>需要判定文件时使用的判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>显示执行命令时会发生什么。不会创建或更改文件。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>执行命令前要求确认。</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>AllowEncodingChange</maml:name>
+        <maml:description>
+          <maml:para>跳过 -Append 的一致性检查，即使字节序列与已有文件的字符编码不同也会写入。没有 -Append 时不会生效，并发出警告。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Append</maml:name>
+        <maml:description>
+          <maml:para>追加到已有文件的末尾。对 1 字节以上的已有文件不写入 BOM。不存在或 0 字节的文件视同新建。写入每一行之前，会检查该行是否与以已有文件的字符编码写入时生成相同的字节序列（与 Add-ProbedContent 相同的检查）。不一致时以终止错误停止。之前写入的行会保留，文件仍保持一致。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>执行命令前要求确认。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+          <maml:para>-Culture 与 -UseCulture 不同。-Culture 只用于判定字符编码，-UseCulture 只决定分隔符。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Delimiter</maml:name>
+        <maml:description>
+          <maml:para>字段的分隔符。省略时为逗号（,）。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Char</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>,</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>DetectionLineCount</maml:name>
+        <maml:description>
+          <maml:para>判定现有文件字符编码时使用的开头行数。对象为 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出文件，以及 -Append 的追加目标文件。省略时以整个文件判定。</maml:para>
+          <maml:para>行数是物理行数，按换行（CR-LF / LF / CR）计算，并非 CSV 的记录数。开头 N 行只有 ASCII 时，会视为没有 BOM 的 UTF-8（若从换行的字节序列可知是 UTF-16 / UTF-32，则为没有 BOM 的该字符编码）。</maml:para>
+          <maml:para>在写入任何内容之前，会用判定出的字符编码严格解码整个文件进行验证。若有无效的字节序列（例如只在开头 N 行之后才有日文的 Shift_JIS 文件），则不写入任何内容，并报告终止错误 DetectionVerificationFailed（-WhatIf 时也会报告）。这可以防止 UTF-8 记录被追加到 Shift_JIS 文件。为了验证，文件会读取两次。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>写入时使用的字符编码与 BOM 方针。省略时不查看已有文件，以 utf8NoBOM 写入。指定 -Append 时，会从追加目标文件继承字符编码、BOM 方针与换行（追加目标不存在或为 0 字节时为 utf8NoBOM）。显式指定 Auto 时，会从输出目标的已有文件继承，文件不存在则出错。这与省略 -Encoding 即表示 Auto 的 Set-ProbedContent 规则不同。可指定统一词汇（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、数值代码页、System.Text.Encoding 实例与 EncodingInformation 对象。不能与 -EncodingFrom 同时指定。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>从指定的参考文件继承字符编码、BOM 方针与换行。按输入原样使用，不展开通配符。显式指定 -LineBreak 时，以其优先于继承的换行。不能与 -Encoding 同时指定。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>对设有只读属性的文件，也会暂时去除属性后写入；写入后会恢复属性。在 -Append 时，也接受缺少现有文件某列对应属性的对象，并将该列写为空值。不会解除 -NoClobber。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="ITI">
+        <maml:name>IncludeTypeInformation</maml:name>
+        <maml:description>
+          <maml:para>在标头之前写入 #TYPE 行。类型名称以 CSV: 开头时（用 Import-ProbedCsv 读取的对象），会去掉该前缀后写入。追加到现有文件时不写入。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+        <maml:name>InputObject</maml:name>
+        <maml:description>
+          <maml:para>要导出的对象。每个对象成为一条 CSV 记录。只通过管道按值接收。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>在每一行后面加上的换行: Auto、CrLf、Lf、Cr。Auto 在有参考信息时会继承该信息（-EncodingFrom、显式指定的 -Encoding Auto、传给 -Encoding 的 EncodingInformation、省略 -Encoding 时 -Append 的追加目标），否则使用操作系统默认值。字符串中所含的换行不会被替换。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>输出文件的路径。直接使用输入的值，不展开通配符。-Path 和 -LiteralPath 只能指定其中一个。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+        <maml:name>NoClobber</maml:name>
+        <maml:description>
+          <maml:para>不覆盖现有文件。文件存在时，不更改文件并以终止错误停止。-Force 也不会解除。与 -Append 同时指定时，以 -Append 为优先并追加记录。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>NoHeader</maml:name>
+        <maml:description>
+          <maml:para>不写入标头行。可以与 -Append 同时指定，此时列仍会与现有文件的标头比对。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NTI">
+        <maml:name>NoTypeInformation</maml:name>
+        <maml:description>
+          <maml:para>不执行任何操作。只是为了让为 Windows PowerShell 5.1 编写的脚本能直接运行而接受此参数。#TYPE 行只有在指定 -IncludeTypeInformation 时才会写入。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>输出文件的路径。通配符会展开，且必须解析为恰好一个现有文件；不含通配符且不存在的路径会新建。-Path 和 -LiteralPath 只能指定其中一个。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="QF">
+        <maml:name>QuoteFields</maml:name>
+        <maml:description>
+          <maml:para>要为值和标头加引号的列名。列名不区分大小写。在 Windows PowerShell 5.1 中也可以使用。不能与 -UseQuotes 同时指定。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>需要判定文件时使用的判定方式: Combined（默认值）、NativeOnly、UtfUnknownOnly。名称与可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>UseCulture</maml:name>
+        <maml:description>
+          <maml:para>使用当前区域性（CurrentCulture）的列表分隔符作为分隔符。这与判定现有文件字符编码时使用的 -Culture 不同。两者可以同时指定。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="UQ">
+        <maml:name>UseQuotes</maml:name>
+        <maml:description>
+          <maml:para>值的引号方式：Always（默认值）、AsNeeded、Never。AsNeeded 只为包含分隔符、LF 或双引号的值加引号。Never 完全不加引号，因此值包含分隔符时 CSV 会损坏。在 Windows PowerShell 5.1 中也可以使用。不能与 -QuoteFields 同时指定。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">CsvQuoteKind</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.CsvQuoteKind</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Always</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>显示执行命令时会发生什么。不会创建或更改文件。不更改文件的检查（只读等）仍会执行，并报告其错误。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>可以将任何对象以管道传给该 Cmdlet。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>该 Cmdlet 不输出任何内容。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>备注</maml:title>
+      <maml:alert>
+        <maml:para>本模块接受的字符编码名称（统一词汇）在 Windows PowerShell 5.1 与 PowerShell 7.x 是相同的。它与 PowerShell 5.1 的内置 Cmdlet 在 -Encoding 接受的名称不同，也不一定与 Resolve-Encoding 返回的 PSEncodingName 一致。请勿把一边的名称原样传给另一边并期待相同的结果。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>输出目标始终只有一个，因此此 cmdlet 的失败全部都是终止错误。不更改文件的检查（只读、-NoClobber、现有文件的判定和验证）会在 -WhatIf / -Confirm 之前进行，因此 -WhatIf 时也会报告错误。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>CSV 的规则在两种主机上都与 PowerShell 7.x 一致。与内置 Export-Csv 的差异：在 Windows PowerShell 5.1 中默认的字符编码也是 utf8NoBOM（5.1 的内置 cmdlet 以 ASCII 写入，日文会变成 ???）。默认不写入 #TYPE 行。在 5.1 中也可以使用 -UseQuotes、-QuoteFields 和 -NoHeader。字典以键作为列写入。-Append 会继承现有文件的字符编码和换行并检查一致性；现有文件的最后一行没有换行时，会在第一条记录之前补上换行（内置 cmdlet 会把行连在一起）。在一个管道中读写同一个文件时（Import-ProbedCsv a.csv | Export-ProbedCsv a.csv），不会清空文件，而是以 SamePathRoundTrip 停止。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>省略 -Encoding 与指定 Auto 的含义不同。省略: 新建与覆盖为 utf8NoBOM，-Append 从追加目标继承。Auto: 从输出目标的已有文件继承（文件必须存在）。这与省略 -Encoding 即表示 Auto 的 Set-ProbedContent 规则不同。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>在 -Append 时，会按现有文件标头的列顺序和写法写入记录（列名比对不区分大小写），且不写入标头行和 #TYPE 行。只有 BOM 的文件会写入标头。由于必须读取标头和最后的换行，追加目标文件始终会进行判定（指定 -DetectionLineCount 时也会验证）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>列由第一个对象决定。第二个以后的对象和追加的对象中，不在列中的属性会与内置 Export-Csv 一样不加提示地不写入。缺少的属性会写为空值。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-LineBreak 只决定每条记录和标头之后的换行。值中的换行会按原样写入。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>要用 Excel 打开的 CSV，请使用 utf8BOM 或 shift_jis。没有 BOM 的 UTF-8 可能会被 Excel 误读。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Culture 与 -UseCulture 不同。-Culture 是判定字符编码时使用的区域性，-UseCulture 是将分隔符设为当前区域性列表分隔符的开关参数。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-DetectionLineCount 是物理行数，而不是 CSV 的记录数。指定后，在写入任何内容之前会验证整个现有文件，因此该文件会读取两次。指定 -Encoding 可以省略输出文件的判定和验证，但 -Append 的追加目标文件仍会判定。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>只有在至少写入一行时才写入 BOM。完全没有输入时，输出目标会以不含 BOM 的 0 字节创建（已有文件则截断为 0 字节）。指定 -Append 时不会触碰已有文件。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>单字节字符编码（windows-1252、ISO-8859 等）无法从字节序列的结构判别，而是根据文章的统计进行推测。因此判断成功与否更多取决于内容而非长度。包含字符列表、大量符号和数字的行，或该语言通常不使用的字符的文本，即使有数百字节也可能无法判断（CodePage 为 -1）。此时请不要使用 Auto 或 -Append 的继承，而用 -Encoding 明确指定代码页。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-DetectionLineCount 的验证可能无法发现单字节字符编码的误判。这是因为在单字节字符编码中，几乎所有字节序列都能解码为正确的字符。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 示例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-Process | Select-Object Name, Id | Export-ProbedCsv .\processes.csv</dev:code>
+        <dev:remarks>
+          <maml:para>将对象写入为没有 BOM 的 UTF-8 CSV 文件。在 Windows PowerShell 5.1 中也一样。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $rows | Export-ProbedCsv .\sjis.csv -Append</dev:code>
+        <dev:remarks>
+          <maml:para>按现有 Shift_JIS CSV 文件标头的列顺序，以 Shift_JIS 追加记录。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $rows | Export-ProbedCsv .\data.csv -Encoding utf8BOM -UseQuotes AsNeeded</dev:code>
+        <dev:remarks>
+          <maml:para>只为需要的值加引号，写出供 Excel 使用的 CSV 文件。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 示例 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\in.csv | Export-ProbedCsv .\out.csv -Encoding shift_jis</dev:code>
+        <dev:remarks>
+          <maml:para>将 CSV 文件转换为 Shift_JIS。输入文件的字符编码会进行判定。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Import-ProbedCsv</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Out-ProbedFile</maml:linkText>
         <maml:uri />
       </maml:navigationLink>
       <maml:navigationLink>

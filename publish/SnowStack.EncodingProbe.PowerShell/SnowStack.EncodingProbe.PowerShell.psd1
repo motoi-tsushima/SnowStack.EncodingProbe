@@ -19,7 +19,8 @@
         'Out-ProbedFile',
         'Convert-ProbedContent',
         'ConvertTo-DotNetEncoding',
-        'Import-ProbedCsv'
+        'Import-ProbedCsv',
+        'Export-ProbedCsv'
     )
     FunctionsToExport    = @()
     VariablesToExport    = @()

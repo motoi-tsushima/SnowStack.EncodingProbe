@@ -2512,7 +2512,677 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:examples>
     <maml:relatedLinks>
       <maml:navigationLink>
+        <maml:linkText>Export-ProbedCsv</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
         <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Export-ProbedCsv</command:name>
+      <maml:description>
+        <maml:para>Exports objects to a CSV file, specifying the character encoding, BOM and line break.</maml:para>
+      </maml:description>
+      <command:verb>Export</command:verb>
+      <command:noun>ProbedCsv</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>Converts each input object to a CSV record and writes it to a file. The columns are decided by the first object.</maml:para>
+      <maml:para>The CSV text is produced by code ported from Export-Csv of PowerShell 7.x, so Windows PowerShell 5.1 and PowerShell 7.x write byte-for-byte the same file.</maml:para>
+      <maml:para>The character encoding, the BOM, the line break, appending, the read-only attribute and the time the file is opened follow the rules of Out-ProbedFile.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Export-ProbedCsv</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Path to the output file. Wildcards are expanded and must resolve to exactly one existing file; a path without wildcard characters that does not exist is created. Specify exactly one of -Path and -LiteralPath.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Delimiter</maml:name>
+          <maml:description>
+            <maml:para>Character that separates the fields. Defaults to a comma (,).</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>Objects to export. Each object becomes one CSV record. Accepts input from the pipeline by value only.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the output file. The value is used exactly as typed; wildcards are not expanded. Specify exactly one of -Path and -LiteralPath.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding, and BOM policy, used to write the file. When omitted, the file is written as utf8NoBOM without looking at an existing file; with -Append the character encoding, the BOM policy and the line break are inherited from the file being appended to (utf8NoBOM if it does not exist or is empty). Auto, when specified explicitly, inherits them from the existing output file and reports an error if it does not exist. This differs from Set-ProbedContent, where omitting -Encoding means Auto. Accepts the unified vocabulary (utf8NoBOM, utf8BOM, unicodeBOM, ...), WebNames (shift_jis, euc-jp, ...), numeric code pages, System.Text.Encoding instances and EncodingInformation objects. Cannot be combined with -EncodingFrom.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>Inherits the character encoding, the BOM policy and the line break from the given reference file. The value is used exactly as typed; wildcards are not expanded. An explicit -LineBreak still wins over the inherited line break. Cannot be combined with -Encoding.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>Line break written after each line: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, an explicit -Encoding Auto, an EncodingInformation passed to -Encoding, or the file appended to when -Encoding is omitted with -Append), and otherwise uses the operating system default. Line breaks contained in a string are not replaced.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>Writes to a file that has the read-only attribute set by clearing the attribute temporarily; the attribute is restored after writing. With -Append it also accepts objects that lack a property for a column of the existing file, and writes that column empty. It does not cancel -NoClobber.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>Does not overwrite an existing file; if the file exists, the command stops with a terminating error without touching it. -Force does not cancel it. When -Append is also specified, -Append wins and the records are appended.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoHeader</maml:name>
+          <maml:description>
+            <maml:para>Does not write the header line. Can be combined with -Append; the columns are still matched against the header of the existing file.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="ITI">
+          <maml:name>IncludeTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>Writes a #TYPE line before the header. A type name that starts with CSV: (an object imported with Import-ProbedCsv) is written without that prefix. Not written when appending to an existing file.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NTI">
+          <maml:name>NoTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>Has no effect. It is accepted so that scripts written for Windows PowerShell 5.1 keep working. A #TYPE line is written only with -IncludeTypeInformation.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="UQ">
+          <maml:name>UseQuotes</maml:name>
+          <maml:description>
+            <maml:para>How values are quoted: Always (default), AsNeeded or Never. AsNeeded quotes only values that contain the delimiter, a line feed or a double quote. Never writes no quotes at all, so a value that contains the delimiter breaks the CSV. Available on Windows PowerShell 5.1 as well. Cannot be combined with -QuoteFields.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">CsvQuoteKind</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="QF">
+          <maml:name>QuoteFields</maml:name>
+          <maml:description>
+            <maml:para>Names of the columns whose values and header are quoted; column names are not case-sensitive. Available on Windows PowerShell 5.1 as well. Cannot be combined with -UseQuotes.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>Number of lines at the beginning used to detect the character encoding of an existing file: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. When omitted, the whole file is used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>Detection strategy used when a file has to be detected: Combined (default), NativeOnly or UtfUnknownOnly. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts for confirmation before running the cmdlet.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Export-ProbedCsv</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Path to the output file. Wildcards are expanded and must resolve to exactly one existing file; a path without wildcard characters that does not exist is created. Specify exactly one of -Path and -LiteralPath.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>UseCulture</maml:name>
+          <maml:description>
+            <maml:para>Uses the list separator of the current culture (CurrentCulture) as the delimiter. This is not the same as -Culture, which is the culture used to detect the character encoding of an existing file; both can be specified together.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>Objects to export. Each object becomes one CSV record. Accepts input from the pipeline by value only.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the output file. The value is used exactly as typed; wildcards are not expanded. Specify exactly one of -Path and -LiteralPath.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding, and BOM policy, used to write the file. When omitted, the file is written as utf8NoBOM without looking at an existing file; with -Append the character encoding, the BOM policy and the line break are inherited from the file being appended to (utf8NoBOM if it does not exist or is empty). Auto, when specified explicitly, inherits them from the existing output file and reports an error if it does not exist. This differs from Set-ProbedContent, where omitting -Encoding means Auto. Accepts the unified vocabulary (utf8NoBOM, utf8BOM, unicodeBOM, ...), WebNames (shift_jis, euc-jp, ...), numeric code pages, System.Text.Encoding instances and EncodingInformation objects. Cannot be combined with -EncodingFrom.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>Inherits the character encoding, the BOM policy and the line break from the given reference file. The value is used exactly as typed; wildcards are not expanded. An explicit -LineBreak still wins over the inherited line break. Cannot be combined with -Encoding.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>Line break written after each line: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, an explicit -Encoding Auto, an EncodingInformation passed to -Encoding, or the file appended to when -Encoding is omitted with -Append), and otherwise uses the operating system default. Line breaks contained in a string are not replaced.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>Writes to a file that has the read-only attribute set by clearing the attribute temporarily; the attribute is restored after writing. With -Append it also accepts objects that lack a property for a column of the existing file, and writes that column empty. It does not cancel -NoClobber.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>Does not overwrite an existing file; if the file exists, the command stops with a terminating error without touching it. -Force does not cancel it. When -Append is also specified, -Append wins and the records are appended.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoHeader</maml:name>
+          <maml:description>
+            <maml:para>Does not write the header line. Can be combined with -Append; the columns are still matched against the header of the existing file.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="ITI">
+          <maml:name>IncludeTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>Writes a #TYPE line before the header. A type name that starts with CSV: (an object imported with Import-ProbedCsv) is written without that prefix. Not written when appending to an existing file.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NTI">
+          <maml:name>NoTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>Has no effect. It is accepted so that scripts written for Windows PowerShell 5.1 keep working. A #TYPE line is written only with -IncludeTypeInformation.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="UQ">
+          <maml:name>UseQuotes</maml:name>
+          <maml:description>
+            <maml:para>How values are quoted: Always (default), AsNeeded or Never. AsNeeded quotes only values that contain the delimiter, a line feed or a double quote. Never writes no quotes at all, so a value that contains the delimiter breaks the CSV. Available on Windows PowerShell 5.1 as well. Cannot be combined with -QuoteFields.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">CsvQuoteKind</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="QF">
+          <maml:name>QuoteFields</maml:name>
+          <maml:description>
+            <maml:para>Names of the columns whose values and header are quoted; column names are not case-sensitive. Available on Windows PowerShell 5.1 as well. Cannot be combined with -UseQuotes.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>Number of lines at the beginning used to detect the character encoding of an existing file: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. When omitted, the whole file is used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>Detection strategy used when a file has to be detected: Combined (default), NativeOnly or UtfUnknownOnly. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>Prompts for confirmation before running the cmdlet.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>AllowEncodingChange</maml:name>
+        <maml:description>
+          <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Append</maml:name>
+        <maml:description>
+          <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>Prompts for confirmation before running the cmdlet.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+          <maml:para>-Culture is not the same as -UseCulture: -Culture only affects character encoding detection, and -UseCulture only decides the delimiter.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Delimiter</maml:name>
+        <maml:description>
+          <maml:para>Character that separates the fields. Defaults to a comma (,).</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Char</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>,</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>DetectionLineCount</maml:name>
+        <maml:description>
+          <maml:para>Number of lines at the beginning used to detect the character encoding of an existing file: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. When omitted, the whole file is used.</maml:para>
+          <maml:para>The count is of physical lines, separated by CR-LF, LF or CR; it is not the number of CSV records. When the first N lines are ASCII only, the file is taken as UTF-8 without a BOM (or as UTF-16 or UTF-32 without a BOM when the line breaks show that encoding).</maml:para>
+          <maml:para>Before anything is written, the whole file is decoded strictly with the detected encoding. If it contains invalid bytes (for example a Shift_JIS file whose Japanese text appears only after the first N lines), nothing is written and the terminating error DetectionVerificationFailed is reported, also with -WhatIf. This prevents UTF-8 records from being appended to a Shift_JIS file. Because of the verification the file is read twice.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>Character encoding, and BOM policy, used to write the file. When omitted, the file is written as utf8NoBOM without looking at an existing file; with -Append the character encoding, the BOM policy and the line break are inherited from the file being appended to (utf8NoBOM if it does not exist or is empty). Auto, when specified explicitly, inherits them from the existing output file and reports an error if it does not exist. This differs from Set-ProbedContent, where omitting -Encoding means Auto. Accepts the unified vocabulary (utf8NoBOM, utf8BOM, unicodeBOM, ...), WebNames (shift_jis, euc-jp, ...), numeric code pages, System.Text.Encoding instances and EncodingInformation objects. Cannot be combined with -EncodingFrom.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>Inherits the character encoding, the BOM policy and the line break from the given reference file. The value is used exactly as typed; wildcards are not expanded. An explicit -LineBreak still wins over the inherited line break. Cannot be combined with -Encoding.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>Writes to a file that has the read-only attribute set by clearing the attribute temporarily; the attribute is restored after writing. With -Append it also accepts objects that lack a property for a column of the existing file, and writes that column empty. It does not cancel -NoClobber.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="ITI">
+        <maml:name>IncludeTypeInformation</maml:name>
+        <maml:description>
+          <maml:para>Writes a #TYPE line before the header. A type name that starts with CSV: (an object imported with Import-ProbedCsv) is written without that prefix. Not written when appending to an existing file.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+        <maml:name>InputObject</maml:name>
+        <maml:description>
+          <maml:para>Objects to export. Each object becomes one CSV record. Accepts input from the pipeline by value only.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>Line break written after each line: Auto, CrLf, Lf or Cr. Auto inherits the line break from the reference information if there is any (-EncodingFrom, an explicit -Encoding Auto, an EncodingInformation passed to -Encoding, or the file appended to when -Encoding is omitted with -Append), and otherwise uses the operating system default. Line breaks contained in a string are not replaced.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the output file. The value is used exactly as typed; wildcards are not expanded. Specify exactly one of -Path and -LiteralPath.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+        <maml:name>NoClobber</maml:name>
+        <maml:description>
+          <maml:para>Does not overwrite an existing file; if the file exists, the command stops with a terminating error without touching it. -Force does not cancel it. When -Append is also specified, -Append wins and the records are appended.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>NoHeader</maml:name>
+        <maml:description>
+          <maml:para>Does not write the header line. Can be combined with -Append; the columns are still matched against the header of the existing file.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NTI">
+        <maml:name>NoTypeInformation</maml:name>
+        <maml:description>
+          <maml:para>Has no effect. It is accepted so that scripts written for Windows PowerShell 5.1 keep working. A #TYPE line is written only with -IncludeTypeInformation.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>Path to the output file. Wildcards are expanded and must resolve to exactly one existing file; a path without wildcard characters that does not exist is created. Specify exactly one of -Path and -LiteralPath.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="QF">
+        <maml:name>QuoteFields</maml:name>
+        <maml:description>
+          <maml:para>Names of the columns whose values and header are quoted; column names are not case-sensitive. Available on Windows PowerShell 5.1 as well. Cannot be combined with -UseQuotes.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>Detection strategy used when a file has to be detected: Combined (default), NativeOnly or UtfUnknownOnly. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>UseCulture</maml:name>
+        <maml:description>
+          <maml:para>Uses the list separator of the current culture (CurrentCulture) as the delimiter. This is not the same as -Culture, which is the culture used to detect the character encoding of an existing file; both can be specified together.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="UQ">
+        <maml:name>UseQuotes</maml:name>
+        <maml:description>
+          <maml:para>How values are quoted: Always (default), AsNeeded or Never. AsNeeded quotes only values that contain the delimiter, a line feed or a double quote. Never writes no quotes at all, so a value that contains the delimiter breaks the CSV. Available on Windows PowerShell 5.1 as well. Cannot be combined with -QuoteFields.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">CsvQuoteKind</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.CsvQuoteKind</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Always</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>Shows what would happen if the cmdlet runs. The file is not created or modified. Checks that do not modify files (such as a read-only file) are still performed, and their errors are reported.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>You can pipe any object to this cmdlet.</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>This cmdlet returns no output.</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>Notes</maml:title>
+      <maml:alert>
+        <maml:para>The character encoding names accepted by this module (the unified vocabulary) are the same on Windows PowerShell 5.1 and PowerShell 7.x. They are NOT the same as the names accepted by the -Encoding parameter of the built-in cmdlets on PowerShell 5.1, and they do not necessarily match the PSEncodingName property returned by Resolve-Encoding. Do not pass a name from one system to the other and expect the same result.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>All failures of this cmdlet are terminating errors, because there is always exactly one output file. Checks that do not modify files (a read-only file, -NoClobber, and the detection and verification of existing files) are performed before -WhatIf and -Confirm take effect, so their errors are reported with -WhatIf as well.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>The CSV rules follow PowerShell 7.x on both hosts. Differences from the built-in Export-Csv: the default character encoding is utf8NoBOM on Windows PowerShell 5.1 as well (the built-in cmdlet of 5.1 writes ASCII, so Japanese becomes ???); no #TYPE line is written by default; -UseQuotes, -QuoteFields and -NoHeader are available on 5.1; and dictionaries are written with their keys as columns. -Append inherits the character encoding and the line break of the existing file and checks consistency, and when the last line of the existing file has no line break, one is added before the first record (the built-in cmdlet joins the lines). Reading and writing the same file in one pipeline (Import-ProbedCsv a.csv | Export-ProbedCsv a.csv) stops with SamePathRoundTrip instead of emptying the file.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Omitting -Encoding and specifying Auto mean different things. Omitted: utf8NoBOM for a new or overwritten file, and inherited from the target for -Append. Auto: inherited from the existing output file, which must exist. This differs from Set-ProbedContent, where omitting -Encoding means Auto.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>With -Append, the records are written in the column order and spelling of the header of the existing file (column names are matched without regard to case), and the header and #TYPE lines are not written. A file that contains only a BOM is given a header. The file appended to is always detected (and, with -DetectionLineCount, verified), because its header and its last line break have to be read.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>The columns are decided by the first object. Properties of later objects, and of appended objects, that are not among the columns are silently not written, as with the built-in Export-Csv. Missing properties are written as empty values.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-LineBreak decides only the line break written after each record and after the header. Line breaks inside values are written as they are.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>For a CSV file to be opened in Excel, use utf8BOM or shift_jis: Excel may misread UTF-8 without a BOM.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Culture and -UseCulture are different: -Culture is the culture used to detect the character encoding, and -UseCulture is a switch that makes the delimiter the list separator of the current culture.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-DetectionLineCount counts physical lines, not CSV records. When it is specified, an existing file is verified as a whole before anything is written, so that file is read twice. Specifying -Encoding skips the detection and verification of the output file, but with -Append the file appended to is still detected.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>A BOM is written only when at least one line is written. When no input arrives, the output file is created empty (or truncated to 0 bytes) without a BOM; with -Append an existing file is left untouched.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Single-byte character encodings (windows-1252, ISO-8859-x, ...) cannot be distinguished by their byte structure and are estimated from text statistics. Whether detection succeeds therefore depends more on the content than on the length: text containing a list of characters, lines full of symbols and digits, or characters rarely used in the language may not be detected (CodePage -1) even when it is several hundred bytes long. In that case, specify the code page with -Encoding instead of using Auto or inheriting it with -Append.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>The verification done for -DetectionLineCount cannot always find a misdetected single-byte character encoding, because almost any byte sequence decodes to valid characters in a single-byte encoding.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-Process | Select-Object Name, Id | Export-ProbedCsv .\processes.csv</dev:code>
+        <dev:remarks>
+          <maml:para>Writes the objects as a CSV file in UTF-8 without a BOM, on Windows PowerShell 5.1 as well.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $rows | Export-ProbedCsv .\sjis.csv -Append</dev:code>
+        <dev:remarks>
+          <maml:para>Appends records to an existing Shift_JIS CSV file in Shift_JIS, in the column order of its header.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $rows | Export-ProbedCsv .\data.csv -Encoding utf8BOM -UseQuotes AsNeeded</dev:code>
+        <dev:remarks>
+          <maml:para>Writes a CSV file for Excel, quoting only the values that need it.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\in.csv | Export-ProbedCsv .\out.csv -Encoding shift_jis</dev:code>
+        <dev:remarks>
+          <maml:para>Converts a CSV file to Shift_JIS. The character encoding of the input file is detected.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Import-ProbedCsv</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Out-ProbedFile</maml:linkText>
         <maml:uri />
       </maml:navigationLink>
       <maml:navigationLink>

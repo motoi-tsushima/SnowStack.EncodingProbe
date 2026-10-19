@@ -2512,7 +2512,677 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:examples>
     <maml:relatedLinks>
       <maml:navigationLink>
+        <maml:linkText>Export-ProbedCsv</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
         <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Export-ProbedCsv</command:name>
+      <maml:description>
+        <maml:para>문자 인코딩, BOM, 줄 바꿈을 지정하여 개체를 CSV 파일로 내보냅니다.</maml:para>
+      </maml:description>
+      <command:verb>Export</command:verb>
+      <command:noun>ProbedCsv</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>입력된 각 개체를 CSV 레코드로 변환하여 파일에 씁니다. 열은 첫 번째 개체로 결정됩니다.</maml:para>
+      <maml:para>CSV 문자열화에는 PowerShell 7.x의 Export-Csv에서 이식한 처리를 사용하므로, Windows PowerShell 5.1과 PowerShell 7.x에서 바이트 단위까지 같은 파일이 됩니다.</maml:para>
+      <maml:para>문자 인코딩, BOM, 줄 바꿈, 추가, 읽기 전용 특성, 파일을 여는 시점은 Out-ProbedFile의 규칙을 따릅니다.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Export-ProbedCsv</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>출력 파일의 경로. 와일드카드는 확장되며 정확히 하나의 기존 파일로 확인되어야 합니다. 와일드카드 문자를 포함하지 않는 존재하지 않는 경로는 새로 만듭니다. -Path와 -LiteralPath 중 하나만 지정합니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Delimiter</maml:name>
+          <maml:description>
+            <maml:para>필드 구분 기호. 생략하면 쉼표(,)입니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>내보낼 개체. 개체 하나가 CSV 레코드 하나가 됩니다. 파이프라인에서는 값으로만 받습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>출력 파일의 경로. 값을 그대로 사용하며 와일드카드를 확장하지 않습니다. -Path와 -LiteralPath 중 하나만 지정합니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>지정한 참조 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다. 입력한 그대로 사용하며 와일드카드는 확장하지 않습니다. -LineBreak를 명시하면 상속한 줄 바꿈보다 그것을 우선합니다. -Encoding과 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>각 줄 뒤에 붙이는 줄 바꿈: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, 명시한 -Encoding Auto, -Encoding에 전달한 EncodingInformation, -Encoding을 생략한 -Append의 추가 대상), 없으면 운영 체제 기본값을 사용합니다. 문자열 안에 포함된 줄 바꿈은 바꾸지 않습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈춥니다. 그때까지 쓴 줄은 남으며 파일은 일관성을 유지합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>읽기 전용 특성이 있는 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓴 후에 원래대로 되돌립니다. -Append에서는 기존 파일의 열에 해당하는 속성이 없는 개체도 받아들이고 그 열을 비워서 씁니다. -NoClobber는 해제하지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>기존 파일을 덮어쓰지 않습니다. 파일이 있으면 파일을 건드리지 않고 종료 오류로 중지합니다. -Force로도 해제되지 않습니다. -Append와 함께 지정하면 -Append가 우선하여 레코드를 추가합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoHeader</maml:name>
+          <maml:description>
+            <maml:para>헤더 줄을 쓰지 않습니다. -Append와 함께 지정할 수 있으며, 이 경우에도 열은 기존 파일의 헤더와 대조합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="ITI">
+          <maml:name>IncludeTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>헤더 앞에 #TYPE 줄을 씁니다. 형식 이름이 CSV:로 시작하면(Import-ProbedCsv로 읽은 개체) 그 접두사를 빼고 씁니다. 기존 파일에 추가하는 경우에는 쓰지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NTI">
+          <maml:name>NoTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>아무 작업도 하지 않습니다. Windows PowerShell 5.1용으로 작성된 스크립트가 그대로 동작하도록 받아들이기만 합니다. #TYPE 줄은 -IncludeTypeInformation을 지정한 경우에만 씁니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="UQ">
+          <maml:name>UseQuotes</maml:name>
+          <maml:description>
+            <maml:para>값의 따옴표 처리 방법: Always(기본값), AsNeeded, Never. AsNeeded는 구분 기호, LF, 큰따옴표 중 하나를 포함하는 값만 따옴표로 묶습니다. Never는 전혀 묶지 않으므로 구분 기호를 포함하는 값이 있으면 CSV가 깨집니다. Windows PowerShell 5.1에서도 사용할 수 있습니다. -QuoteFields와 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">CsvQuoteKind</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="QF">
+          <maml:name>QuoteFields</maml:name>
+          <maml:description>
+            <maml:para>값과 헤더를 따옴표로 묶을 열의 이름. 열 이름은 대/소문자를 구분하지 않습니다. Windows PowerShell 5.1에서도 사용할 수 있습니다. -UseQuotes와 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>기존 파일의 문자 인코딩 판정에 사용할 처음 줄 수. 대상은 -EncodingFrom의 참조 파일, 명시적인 -Encoding Auto의 출력 파일, -Append의 추가 대상 파일입니다. 생략하면 파일 전체로 판정합니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>파일 판정이 필요할 때 사용하는 판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>명령을 실행하기 전에 확인을 요청합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Export-ProbedCsv</maml:name>
+        <command:parameter required="false" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>출력 파일의 경로. 와일드카드는 확장되며 정확히 하나의 기존 파일로 확인되어야 합니다. 와일드카드 문자를 포함하지 않는 존재하지 않는 경로는 새로 만듭니다. -Path와 -LiteralPath 중 하나만 지정합니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>UseCulture</maml:name>
+          <maml:description>
+            <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 기존 파일의 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+          <maml:name>InputObject</maml:name>
+          <maml:description>
+            <maml:para>내보낼 개체. 개체 하나가 CSV 레코드 하나가 됩니다. 파이프라인에서는 값으로만 받습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>출력 파일의 경로. 값을 그대로 사용하며 와일드카드를 확장하지 않습니다. -Path와 -LiteralPath 중 하나만 지정합니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>EncodingFrom</maml:name>
+          <maml:description>
+            <maml:para>지정한 참조 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다. 입력한 그대로 사용하며 와일드카드는 확장하지 않습니다. -LineBreak를 명시하면 상속한 줄 바꿈보다 그것을 우선합니다. -Encoding과 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>LineBreak</maml:name>
+          <maml:description>
+            <maml:para>각 줄 뒤에 붙이는 줄 바꿈: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, 명시한 -Encoding Auto, -Encoding에 전달한 EncodingInformation, -Encoding을 생략한 -Append의 추가 대상), 없으면 운영 체제 기본값을 사용합니다. 문자열 안에 포함된 줄 바꿈은 바꾸지 않습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Append</maml:name>
+          <maml:description>
+            <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈춥니다. 그때까지 쓴 줄은 남으며 파일은 일관성을 유지합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>AllowEncodingChange</maml:name>
+          <maml:description>
+            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Force</maml:name>
+          <maml:description>
+            <maml:para>읽기 전용 특성이 있는 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓴 후에 원래대로 되돌립니다. -Append에서는 기존 파일의 열에 해당하는 속성이 없는 개체도 받아들이고 그 열을 비워서 씁니다. -NoClobber는 해제하지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+          <maml:name>NoClobber</maml:name>
+          <maml:description>
+            <maml:para>기존 파일을 덮어쓰지 않습니다. 파일이 있으면 파일을 건드리지 않고 종료 오류로 중지합니다. -Force로도 해제되지 않습니다. -Append와 함께 지정하면 -Append가 우선하여 레코드를 추가합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>NoHeader</maml:name>
+          <maml:description>
+            <maml:para>헤더 줄을 쓰지 않습니다. -Append와 함께 지정할 수 있으며, 이 경우에도 열은 기존 파일의 헤더와 대조합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="ITI">
+          <maml:name>IncludeTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>헤더 앞에 #TYPE 줄을 씁니다. 형식 이름이 CSV:로 시작하면(Import-ProbedCsv로 읽은 개체) 그 접두사를 빼고 씁니다. 기존 파일에 추가하는 경우에는 쓰지 않습니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NTI">
+          <maml:name>NoTypeInformation</maml:name>
+          <maml:description>
+            <maml:para>아무 작업도 하지 않습니다. Windows PowerShell 5.1용으로 작성된 스크립트가 그대로 동작하도록 받아들이기만 합니다. #TYPE 줄은 -IncludeTypeInformation을 지정한 경우에만 씁니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="UQ">
+          <maml:name>UseQuotes</maml:name>
+          <maml:description>
+            <maml:para>값의 따옴표 처리 방법: Always(기본값), AsNeeded, Never. AsNeeded는 구분 기호, LF, 큰따옴표 중 하나를 포함하는 값만 따옴표로 묶습니다. Never는 전혀 묶지 않으므로 구분 기호를 포함하는 값이 있으면 CSV가 깨집니다. Windows PowerShell 5.1에서도 사용할 수 있습니다. -QuoteFields와 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">CsvQuoteKind</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="QF">
+          <maml:name>QuoteFields</maml:name>
+          <maml:description>
+            <maml:para>값과 헤더를 따옴표로 묶을 열의 이름. 열 이름은 대/소문자를 구분하지 않습니다. Windows PowerShell 5.1에서도 사용할 수 있습니다. -UseQuotes와 함께 지정할 수 없습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>기존 파일의 문자 인코딩 판정에 사용할 처음 줄 수. 대상은 -EncodingFrom의 참조 파일, 명시적인 -Encoding Auto의 출력 파일, -Append의 추가 대상 파일입니다. 생략하면 파일 전체로 판정합니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>파일 판정이 필요할 때 사용하는 판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>WhatIf</maml:name>
+          <maml:description>
+            <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Confirm</maml:name>
+          <maml:description>
+            <maml:para>명령을 실행하기 전에 확인을 요청합니다.</maml:para>
+          </maml:description>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>AllowEncodingChange</maml:name>
+        <maml:description>
+          <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Append</maml:name>
+        <maml:description>
+          <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈춥니다. 그때까지 쓴 줄은 남으며 파일은 일관성을 유지합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Confirm</maml:name>
+        <maml:description>
+          <maml:para>명령을 실행하기 전에 확인을 요청합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다.</maml:para>
+          <maml:para>-Culture는 -UseCulture와 다릅니다. -Culture는 문자 인코딩 판정에만 사용하고, -UseCulture는 구분 기호만 결정합니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Delimiter</maml:name>
+        <maml:description>
+          <maml:para>필드 구분 기호. 생략하면 쉼표(,)입니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Char</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>,</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>DetectionLineCount</maml:name>
+        <maml:description>
+          <maml:para>기존 파일의 문자 인코딩 판정에 사용할 처음 줄 수. 대상은 -EncodingFrom의 참조 파일, 명시적인 -Encoding Auto의 출력 파일, -Append의 추가 대상 파일입니다. 생략하면 파일 전체로 판정합니다.</maml:para>
+          <maml:para>줄 수는 물리적인 줄 수이며 줄 바꿈(CR-LF / LF / CR)으로 셉니다. CSV의 레코드 수가 아닙니다. 처음 N줄이 ASCII뿐이면 BOM이 없는 UTF-8로 간주합니다(줄 바꿈의 바이트열로 UTF-16 / UTF-32임을 알 수 있으면 BOM이 없는 해당 문자 인코딩).</maml:para>
+          <maml:para>무엇이든 쓰기 전에 판정한 문자 인코딩으로 파일 전체를 엄격하게 디코딩하여 검증합니다. 잘못된 바이트열이 있으면(처음 N줄 뒤에만 일본어가 있는 Shift_JIS 파일 등) 아무것도 쓰지 않고 종료 오류 DetectionVerificationFailed를 보고합니다(-WhatIf에서도 보고합니다). 이를 통해 Shift_JIS 파일에 UTF-8 레코드가 추가되는 것을 막습니다. 검증을 위해 파일을 두 번 읽습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>EncodingFrom</maml:name>
+        <maml:description>
+          <maml:para>지정한 참조 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다. 입력한 그대로 사용하며 와일드카드는 확장하지 않습니다. -LineBreak를 명시하면 상속한 줄 바꿈보다 그것을 우선합니다. -Encoding과 함께 지정할 수 없습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Force</maml:name>
+        <maml:description>
+          <maml:para>읽기 전용 특성이 있는 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓴 후에 원래대로 되돌립니다. -Append에서는 기존 파일의 열에 해당하는 속성이 없는 개체도 받아들이고 그 열을 비워서 씁니다. -NoClobber는 해제하지 않습니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="ITI">
+        <maml:name>IncludeTypeInformation</maml:name>
+        <maml:description>
+          <maml:para>헤더 앞에 #TYPE 줄을 씁니다. 형식 이름이 CSV:로 시작하면(Import-ProbedCsv로 읽은 개체) 그 접두사를 빼고 씁니다. 기존 파일에 추가하는 경우에는 쓰지 않습니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
+        <maml:name>InputObject</maml:name>
+        <maml:description>
+          <maml:para>내보낼 개체. 개체 하나가 CSV 레코드 하나가 됩니다. 파이프라인에서는 값으로만 받습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">PSObject</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>LineBreak</maml:name>
+        <maml:description>
+          <maml:para>각 줄 뒤에 붙이는 줄 바꿈: Auto, CrLf, Lf, Cr. Auto는 참조 정보가 있으면 그것을 상속하고(-EncodingFrom, 명시한 -Encoding Auto, -Encoding에 전달한 EncodingInformation, -Encoding을 생략한 -Append의 추가 대상), 없으면 운영 체제 기본값을 사용합니다. 문자열 안에 포함된 줄 바꿈은 바꾸지 않습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">LineBreakOption</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.LineBreakOption</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>출력 파일의 경로. 값을 그대로 사용하며 와일드카드를 확장하지 않습니다. -Path와 -LiteralPath 중 하나만 지정합니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
+        <maml:name>NoClobber</maml:name>
+        <maml:description>
+          <maml:para>기존 파일을 덮어쓰지 않습니다. 파일이 있으면 파일을 건드리지 않고 종료 오류로 중지합니다. -Force로도 해제되지 않습니다. -Append와 함께 지정하면 -Append가 우선하여 레코드를 추가합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>NoHeader</maml:name>
+        <maml:description>
+          <maml:para>헤더 줄을 쓰지 않습니다. -Append와 함께 지정할 수 있으며, 이 경우에도 열은 기존 파일의 헤더와 대조합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NTI">
+        <maml:name>NoTypeInformation</maml:name>
+        <maml:description>
+          <maml:para>아무 작업도 하지 않습니다. Windows PowerShell 5.1용으로 작성된 스크립트가 그대로 동작하도록 받아들이기만 합니다. #TYPE 줄은 -IncludeTypeInformation을 지정한 경우에만 씁니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>출력 파일의 경로. 와일드카드는 확장되며 정확히 하나의 기존 파일로 확인되어야 합니다. 와일드카드 문자를 포함하지 않는 존재하지 않는 경로는 새로 만듭니다. -Path와 -LiteralPath 중 하나만 지정합니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="QF">
+        <maml:name>QuoteFields</maml:name>
+        <maml:description>
+          <maml:para>값과 헤더를 따옴표로 묶을 열의 이름. 열 이름은 대/소문자를 구분하지 않습니다. Windows PowerShell 5.1에서도 사용할 수 있습니다. -UseQuotes와 함께 지정할 수 없습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>파일 판정이 필요할 때 사용하는 판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>UseCulture</maml:name>
+        <maml:description>
+          <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 기존 파일의 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="UQ">
+        <maml:name>UseQuotes</maml:name>
+        <maml:description>
+          <maml:para>값의 따옴표 처리 방법: Always(기본값), AsNeeded, Never. AsNeeded는 구분 기호, LF, 큰따옴표 중 하나를 포함하는 값만 따옴표로 묶습니다. Never는 전혀 묶지 않으므로 구분 기호를 포함하는 값이 있으면 CSV가 깨집니다. Windows PowerShell 5.1에서도 사용할 수 있습니다. -QuoteFields와 함께 지정할 수 없습니다.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">CsvQuoteKind</command:parameterValue>
+        <dev:type>
+          <maml:name>SnowStack.EncodingProbe.PowerShell.CsvQuoteKind</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Always</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>WhatIf</maml:name>
+        <maml:description>
+          <maml:para>명령을 실행하면 무슨 일이 일어나는지 표시합니다. 파일은 만들어지거나 변경되지 않습니다. 파일을 변경하지 않는 검사(읽기 전용 등)는 수행하며 그 오류는 보고합니다.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>이 cmdlet에는 임의의 개체를 파이프로 전달할 수 있습니다.</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>None</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>이 cmdlet은 아무것도 출력하지 않습니다.</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>참고</maml:title>
+      <maml:alert>
+        <maml:para>이 모듈이 받아들이는 문자 인코딩 이름(통합 어휘)은 Windows PowerShell 5.1과 PowerShell 7.x에서 동일합니다. PowerShell 5.1의 기본 제공 cmdlet이 -Encoding에 받아들이는 이름과는 다르며, Resolve-Encoding이 반환하는 PSEncodingName과 일치하지 않는 경우도 있습니다. 한쪽의 이름을 다른 쪽에 그대로 전달하고 같은 결과를 기대하지 마십시오.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>출력 대상은 항상 하나이므로 이 cmdlet의 실패는 모두 종료 오류입니다. 파일을 변경하지 않는 검사(읽기 전용, -NoClobber, 기존 파일의 판정과 검증)는 -WhatIf / -Confirm보다 먼저 수행하므로 -WhatIf에서도 오류를 보고합니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>CSV 규칙은 두 호스트 모두 PowerShell 7.x에 맞춥니다. 기본 Export-Csv와의 차이: Windows PowerShell 5.1에서도 기본 문자 인코딩은 utf8NoBOM입니다(5.1의 기본 cmdlet은 ASCII로 쓰므로 일본어가 ???가 됩니다). 기본적으로 #TYPE 줄을 쓰지 않습니다. 5.1에서도 -UseQuotes, -QuoteFields, -NoHeader를 사용할 수 있습니다. 사전은 키를 열로 씁니다. -Append는 기존 파일의 문자 인코딩과 줄 바꿈을 상속하고 일관성을 검사하며, 기존 파일의 마지막 줄에 줄 바꿈이 없으면 첫 번째 레코드 앞에 줄 바꿈을 보충합니다(기본 cmdlet은 줄을 이어 붙입니다). 같은 파일을 하나의 파이프라인에서 읽고 쓰는 경우(Import-ProbedCsv a.csv | Export-ProbedCsv a.csv)에는 파일을 비우지 않고 SamePathRoundTrip으로 중지합니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Encoding 생략과 Auto 지정은 의미가 다릅니다. 생략: 새로 만들기와 덮어쓰기는 utf8NoBOM, -Append는 추가 대상에서 상속. Auto: 출력 대상의 기존 파일에서 상속(파일이 필요). -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Append에서는 기존 파일 헤더의 열 순서와 표기로 레코드를 쓰며(열 이름은 대/소문자를 구분하지 않고 대조합니다), 헤더 줄과 #TYPE 줄은 쓰지 않습니다. BOM만 있는 파일에는 헤더를 씁니다. 헤더와 마지막 줄 바꿈을 읽어야 하므로 추가 대상 파일은 항상 판정합니다(-DetectionLineCount를 지정하면 검증도 합니다).</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>열은 첫 번째 개체로 결정됩니다. 두 번째 이후의 개체나 추가하는 개체에서 열에 없는 속성은 기본 Export-Csv와 마찬가지로 아무 알림 없이 쓰지 않습니다. 없는 속성은 빈 값으로 씁니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-LineBreak가 결정하는 것은 각 레코드와 헤더 뒤에 붙이는 줄 바꿈뿐입니다. 값 안의 줄 바꿈은 그대로 씁니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Excel에서 열 CSV에는 utf8BOM 또는 shift_jis를 사용하십시오. BOM이 없는 UTF-8은 Excel이 잘못 읽을 수 있습니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Culture와 -UseCulture는 다릅니다. -Culture는 문자 인코딩 판정에 사용하는 문화권이고, -UseCulture는 구분 기호를 현재 문화권의 목록 구분 기호로 하는 스위치입니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-DetectionLineCount는 CSV의 레코드 수가 아니라 물리적인 줄 수입니다. 지정하면 무엇이든 쓰기 전에 기존 파일 전체를 검증하므로 그 파일을 두 번 읽습니다. -Encoding을 지정하면 출력 파일의 판정과 검증을 생략할 수 있지만, -Append의 추가 대상 파일은 판정합니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>BOM은 한 줄이라도 썼을 때만 씁니다. 입력이 하나도 없으면 출력 대상은 BOM 없이 0바이트로 만들어집니다(기존 파일이면 0바이트로 자름). -Append이면 기존 파일은 건드리지 않습니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>싱글바이트 문자 인코딩(windows-1252, ISO-8859 등)은 바이트열의 구조로는 구별할 수 없어 문장의 통계로 추정합니다. 따라서 판정의 성패는 길이보다 내용에 좌우됩니다. 문자 목록, 기호·숫자가 많은 줄, 그 언어에서 보통 쓰지 않는 문자를 포함한 텍스트는 수백 바이트가 있어도 판정하지 못할(CodePage가 -1) 수 있습니다. 이 경우 Auto나 -Append의 상속을 사용하지 말고 -Encoding으로 코드 페이지를 명시하십시오.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-DetectionLineCount의 검증은 싱글바이트 문자 인코딩의 잘못된 판정을 찾지 못할 수 있습니다. 싱글바이트 계열에서는 거의 모든 바이트열이 올바른 문자로 디코딩되기 때문입니다.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 예제 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-Process | Select-Object Name, Id | Export-ProbedCsv .\processes.csv</dev:code>
+        <dev:remarks>
+          <maml:para>개체를 BOM이 없는 UTF-8 CSV 파일로 씁니다. Windows PowerShell 5.1에서도 같습니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $rows | Export-ProbedCsv .\sjis.csv -Append</dev:code>
+        <dev:remarks>
+          <maml:para>Shift_JIS 기존 CSV 파일에 그 헤더의 열 순서로, Shift_JIS 그대로 레코드를 추가합니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; $rows | Export-ProbedCsv .\data.csv -Encoding utf8BOM -UseQuotes AsNeeded</dev:code>
+        <dev:remarks>
+          <maml:para>필요한 값만 따옴표로 묶어 Excel용 CSV 파일을 씁니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 예제 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\in.csv | Export-ProbedCsv .\out.csv -Encoding shift_jis</dev:code>
+        <dev:remarks>
+          <maml:para>CSV 파일을 Shift_JIS로 변환합니다. 입력 파일의 문자 인코딩은 판정합니다.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Import-ProbedCsv</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Out-ProbedFile</maml:linkText>
         <maml:uri />
       </maml:navigationLink>
       <maml:navigationLink>
