@@ -18,6 +18,41 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         /// <summary>切り出しで決めた改行の型（Import-ProbedCsv / Export-ProbedCsv の読み替えに使う。仕様書 3.2）</summary>
         public LineBreakUnit Unit { get; }
+
+        /// <summary>
+        /// 仕様書 3.2 の読み替えを行ったコードページを返す（Import-ProbedCsv / Export-ProbedCsv 用）。
+        /// </summary>
+        /// <remarks>
+        /// 判定結果が us-ascii（先頭 N 行のバイトがすべて 0x80 未満）の場合は、切り出しで決めた改行の型に従い、
+        /// 1 バイトの型・改行が無い場合は BOM 無しの UTF-8、UTF-16 / UTF-32 の型ならその文字エンコーディングとする。
+        /// ASCII は UTF-8 の部分集合なので、ファイルが本当に UTF-8 なら必ず正しく読める。
+        /// UTF-8 でなければ、全体の検証で止まる（黙って文字化けしない）。
+        /// UTF-16 / UTF-32 の行が必要なのは、判定処理が 0x00 を含んでいても 0x80 未満のバイトだけなら ASCII と判定するためである
+        /// （24 章 U4、課題 docs/EncodingProbe-課題-BOM無しUTF-16の英数字だけの判定.md）。
+        /// <br/>
+        /// それ以外の判定結果はそのまま返す。Resolve-Encoding は読み替えない（仕様書 3.1）。
+        /// </remarks>
+        public int GetReinterpretedCodePage()
+        {
+            if (this.Information.CodePage != EncodingVocabulary.CodePageAscii)
+            {
+                return this.Information.CodePage;
+            }
+
+            switch (this.Unit)
+            {
+                case LineBreakUnit.Utf16Le:
+                    return EncodingVocabulary.CodePageUtf16Le;
+                case LineBreakUnit.Utf16Be:
+                    return EncodingVocabulary.CodePageUtf16Be;
+                case LineBreakUnit.Utf32Le:
+                    return EncodingVocabulary.CodePageUtf32Le;
+                case LineBreakUnit.Utf32Be:
+                    return EncodingVocabulary.CodePageUtf32Be;
+                default:
+                    return EncodingVocabulary.CodePageUtf8;
+            }
+        }
     }
 
     /// <summary>

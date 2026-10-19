@@ -44,6 +44,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         public bool HadBom { get; }
 
         /// <summary>
+        /// BOM の後ろから復号する読み取り器。CSV の解析（移植した ImportCsvHelper）に渡すために使う。
+        /// </summary>
+        internal TextReader Reader => this._reader;
+
+        /// <summary>
         /// ファイルを開き、必要なら文字エンコーディングを判定する。
         /// </summary>
         /// <param name="path">対象ファイルの絶対パス</param>

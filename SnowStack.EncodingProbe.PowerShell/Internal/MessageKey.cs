@@ -142,5 +142,11 @@
 
         /// <summary>追記するオブジェクトに、追記先の列に当たるプロパティが無い</summary>
         CsvAppendMismatchedPropertyName,
+
+        /// <summary>全体の判定の上限を超えるファイル（-DetectionLineCount を案内する。Import-ProbedCsv / Export-ProbedCsv）</summary>
+        FileTooLargeToDetectUseLineCount,
+
+        /// <summary>Import-ProbedCsv の解析の途中で、不正なバイト列が見つかった</summary>
+        InvalidBytesDuringImport,
     }
 }

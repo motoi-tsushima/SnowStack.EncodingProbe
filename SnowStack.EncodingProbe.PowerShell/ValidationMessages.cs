@@ -283,5 +283,18 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string CsvAppendMismatchedPropertyName(string column, string path)
             => MessageCatalog.Format(MessageKey.CsvAppendMismatchedPropertyName, column, path);
+
+        /// <summary>
+        /// 全体の判定の上限を超えるファイルが指定された場合のエラーメッセージ（-DetectionLineCount を案内する）
+        /// </summary>
+        public static string FileTooLargeToDetectUseLineCount(string path)
+            => MessageCatalog.Format(MessageKey.FileTooLargeToDetectUseLineCount, path);
+
+        /// <summary>
+        /// Import-ProbedCsv の解析の途中で不正なバイト列が見つかった場合のエラーメッセージ
+        /// </summary>
+        /// <param name="offset">バイト位置。求められなかった場合は "?"</param>
+        public static string InvalidBytesDuringImport(string path, string encoding, string offset, string bytes)
+            => MessageCatalog.Format(MessageKey.InvalidBytesDuringImport, path, encoding, offset, bytes);
     }
 }

@@ -212,6 +212,15 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "Cannot append CSV content to the following file: {1}. The appended object does not have a property "
                     + "that corresponds to the following column: {0}. To continue with mismatched properties, "
                     + "add the -Force parameter, and then retry the command.",
+
+                [MessageKey.FileTooLargeToDetectUseLineCount] =
+                    "'{0}' is too large for character encoding detection, which reads the whole file "
+                    + "(the file must be smaller than 2 GB). Specify -DetectionLineCount to detect the character encoding "
+                    + "from the first lines, or specify it explicitly with -Encoding.",
+                [MessageKey.InvalidBytesDuringImport] =
+                    "Stopped reading '{0}' because bytes that are invalid in the character encoding '{1}' were found "
+                    + "while reading, at byte offset {2} ({3}). The records already output cannot be withdrawn. "
+                    + "The file may have been changed after it was verified.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -372,6 +381,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.CsvAppendMismatchedPropertyName] =
                     "次のファイルに CSV を追記できません: {1}。追記するオブジェクトに、次の列に当たるプロパティがありません: {0}。"
                     + "プロパティが一致しないまま続けるには、-Force を指定してもう一度実行してください。",
+
+                [MessageKey.FileTooLargeToDetectUseLineCount] =
+                    "'{0}' は大きすぎるため、文字エンコーディングを判定できません（判定はファイル全体を読むため、2 GB 未満である必要があります）。"
+                    + "先頭の行で判定するには -DetectionLineCount を、文字エンコーディングを明示するには -Encoding を指定してください。",
+                [MessageKey.InvalidBytesDuringImport] =
+                    "'{0}' の読み込み中に、文字エンコーディング '{1}' として不正なバイト列が見つかった（バイト位置 {2}: {3}）ため、読み込みを中止しました。"
+                    + "それまでに出力したレコードは取り消せません。検証の後にファイルが変更された可能性があります。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -534,6 +550,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.CsvAppendMismatchedPropertyName] =
                     "다음 파일에 CSV를 추가할 수 없습니다: {1}. 추가하는 개체에 다음 열에 해당하는 속성이 없습니다: {0}. "
                     + "속성이 일치하지 않는 상태로 계속하려면 -Force를 지정하여 다시 실행하십시오.",
+
+                [MessageKey.FileTooLargeToDetectUseLineCount] =
+                    "'{0}'은(는) 너무 커서 문자 인코딩을 판별할 수 없습니다(판별은 파일 전체를 읽으므로 2GB 미만이어야 합니다). "
+                    + "처음 줄로 판별하려면 -DetectionLineCount를, 문자 인코딩을 명시하려면 -Encoding을 지정하십시오.",
+                [MessageKey.InvalidBytesDuringImport] =
+                    "'{0}'을(를) 읽는 중에 문자 인코딩 '{1}'(으)로서 잘못된 바이트열이 발견되었으므로(바이트 위치 {2}: {3}) 읽기를 중지했습니다. "
+                    + "이미 출력한 레코드는 취소할 수 없습니다. 검증 후에 파일이 변경되었을 수 있습니다.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -689,6 +712,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.CsvAppendMismatchedPropertyName] =
                     "無法將 CSV 附加到下列檔案：{1}。附加的物件沒有對應下列欄位的屬性：{0}。"
                     + "若要在屬性不一致的情況下繼續，請指定 -Force 後再執行一次。",
+
+                [MessageKey.FileTooLargeToDetectUseLineCount] =
+                    "'{0}' 太大，無法判斷字元編碼（判斷會讀取整個檔案，因此檔案必須小於 2 GB）。"
+                    + "若要以開頭的行判斷，請指定 -DetectionLineCount；若要明確指定字元編碼，請指定 -Encoding。",
+                [MessageKey.InvalidBytesDuringImport] =
+                    "讀取 '{0}' 時發現以字元編碼 '{1}' 而言無效的位元組序列（位元組位置 {2}：{3}），因此已中止讀取。"
+                    + "已輸出的記錄無法取消。檔案可能在驗證之後被變更。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -844,6 +874,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.CsvAppendMismatchedPropertyName] =
                     "无法将 CSV 追加到以下文件：{1}。追加的对象没有与以下列对应的属性：{0}。"
                     + "若要在属性不一致的情况下继续，请指定 -Force 后重新运行。",
+
+                [MessageKey.FileTooLargeToDetectUseLineCount] =
+                    "'{0}' 太大，无法判断字符编码（判断会读取整个文件，因此文件必须小于 2 GB）。"
+                    + "若要根据开头的行判断，请指定 -DetectionLineCount；若要明确指定字符编码，请指定 -Encoding。",
+                [MessageKey.InvalidBytesDuringImport] =
+                    "读取 '{0}' 时发现以字符编码 '{1}' 而言无效的字节序列（字节位置 {2}：{3}），因此已中止读取。"
+                    + "已输出的记录无法撤销。文件可能在验证之后被更改。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

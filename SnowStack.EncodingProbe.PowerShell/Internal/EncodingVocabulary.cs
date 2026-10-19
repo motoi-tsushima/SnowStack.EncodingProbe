@@ -28,22 +28,22 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         private const int CodePageUtf7 = 65000;
 
         /// <summary>コードページ：UTF-8</summary>
-        private const int CodePageUtf8 = 65001;
+        internal const int CodePageUtf8 = 65001;
 
         /// <summary>コードページ：UTF-16 リトルエンディアン</summary>
-        private const int CodePageUtf16Le = 1200;
+        internal const int CodePageUtf16Le = 1200;
 
         /// <summary>コードページ：UTF-16 ビッグエンディアン</summary>
-        private const int CodePageUtf16Be = 1201;
+        internal const int CodePageUtf16Be = 1201;
 
         /// <summary>コードページ：UTF-32 リトルエンディアン</summary>
-        private const int CodePageUtf32Le = 12000;
+        internal const int CodePageUtf32Le = 12000;
 
         /// <summary>コードページ：UTF-32 ビッグエンディアン</summary>
-        private const int CodePageUtf32Be = 12001;
+        internal const int CodePageUtf32Be = 12001;
 
         /// <summary>コードページ：US-ASCII</summary>
-        private const int CodePageAscii = 20127;
+        internal const int CodePageAscii = 20127;
 
         /// <summary>「対象ファイルからの検出に委ねる」ことを表す語彙</summary>
         private const string AutoName = "Auto";
