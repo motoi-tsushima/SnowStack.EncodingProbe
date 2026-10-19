@@ -125,5 +125,22 @@
 
         /// <summary>ディレクトリを変換対象から除いた（詳細メッセージ）</summary>
         SkippedDirectory,
+
+        // ---- 1.3.0: -DetectionLineCount と CSV ----
+
+        /// <summary>先頭 N 行の切り出しが、判定できる大きさを超えた</summary>
+        DetectionLinesTooLarge,
+
+        /// <summary>先頭 N 行で判定した文字エンコーディングで、ファイル全体を復号できなかった</summary>
+        DetectionVerificationFailed,
+
+        /// <summary>CSV のヘッダーに同じ列名が複数ある</summary>
+        CsvHeaderAlreadyPresent,
+
+        /// <summary>CSV のヘッダーに空の列名があり、既定の名前で補った（警告）</summary>
+        CsvUnspecifiedHeader,
+
+        /// <summary>追記するオブジェクトに、追記先の列に当たるプロパティが無い</summary>
+        CsvAppendMismatchedPropertyName,
     }
 }

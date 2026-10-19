@@ -252,5 +252,36 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string SkippedDirectory(string path)
             => MessageCatalog.Format(MessageKey.SkippedDirectory, path);
+
+        /// <summary>
+        /// 先頭 N 行の切り出しが、判定できる大きさを超えた場合のエラーメッセージ
+        /// </summary>
+        public static string DetectionLinesTooLarge(string path, long lineCount)
+            => MessageCatalog.Format(MessageKey.DetectionLinesTooLarge, path, lineCount);
+
+        /// <summary>
+        /// 先頭 N 行で判定した文字エンコーディングで、ファイル全体を復号できなかった場合のエラーメッセージ
+        /// </summary>
+        public static string DetectionVerificationFailed(
+            string path, string encoding, long lineCount, long offset, string bytes)
+            => MessageCatalog.Format(MessageKey.DetectionVerificationFailed, path, encoding, lineCount, offset, bytes);
+
+        /// <summary>
+        /// CSV のヘッダーに同じ列名が複数ある場合のエラーメッセージ
+        /// </summary>
+        public static string CsvHeaderAlreadyPresent(string name)
+            => MessageCatalog.Format(MessageKey.CsvHeaderAlreadyPresent, name);
+
+        /// <summary>
+        /// CSV のヘッダーに空の列名があり、既定の名前で補った場合の警告
+        /// </summary>
+        public static string CsvUnspecifiedHeader()
+            => MessageCatalog.Get(MessageKey.CsvUnspecifiedHeader);
+
+        /// <summary>
+        /// 追記するオブジェクトに、追記先の列に当たるプロパティが無い場合のエラーメッセージ
+        /// </summary>
+        public static string CsvAppendMismatchedPropertyName(string column, string path)
+            => MessageCatalog.Format(MessageKey.CsvAppendMismatchedPropertyName, column, path);
     }
 }

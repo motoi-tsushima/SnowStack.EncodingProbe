@@ -192,6 +192,26 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SkippedDirectory] =
                     "Skipped the directory '{0}'.",
+
+                [MessageKey.DetectionLinesTooLarge] =
+                    "Cannot detect the character encoding of '{0}' from its first {1} lines, because they are larger "
+                    + "than the detection limit (they must be smaller than 2 GB). A file without line breaks is read "
+                    + "as a whole. Specify a smaller -DetectionLineCount. Cmdlets that have -Encoding also let you "
+                    + "specify the character encoding explicitly.",
+                [MessageKey.DetectionVerificationFailed] =
+                    "'{0}' was not processed because it contains bytes that are invalid in the character encoding "
+                    + "'{1}', which was detected from its first {2} lines, at byte offset {3} ({4}). "
+                    + "Increase -DetectionLineCount, or specify the character encoding with -Encoding.",
+
+                [MessageKey.CsvHeaderAlreadyPresent] =
+                    "The column name \"{0}\" is specified more than once in the header (column names are not case-sensitive).",
+                [MessageKey.CsvUnspecifiedHeader] =
+                    "One or more headers were not specified. Default names starting with \"H\" have been used "
+                    + "in place of any missing headers.",
+                [MessageKey.CsvAppendMismatchedPropertyName] =
+                    "Cannot append CSV content to the following file: {1}. The appended object does not have a property "
+                    + "that corresponds to the following column: {0}. To continue with mismatched properties, "
+                    + "add the -Force parameter, and then retry the command.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -336,6 +356,22 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SkippedDirectory] =
                     "ディレクトリ '{0}' は対象外のため飛ばしました。",
+
+                [MessageKey.DetectionLinesTooLarge] =
+                    "'{0}' の先頭 {1} 行は、文字エンコーディングを判定できる大きさ（2 GB 未満）を超えているため、判定できません。"
+                    + "改行の無いファイルは全体を読みます。-DetectionLineCount を小さくしてください。"
+                    + "-Encoding を持つコマンドでは、文字エンコーディングを明示することもできます。",
+                [MessageKey.DetectionVerificationFailed] =
+                    "'{0}' には、先頭 {2} 行から判定した文字エンコーディング '{1}' として不正なバイト列がある（バイト位置 {3}: {4}）ため、処理しませんでした。"
+                    + "-DetectionLineCount を増やすか、-Encoding で文字エンコーディングを指定してください。",
+
+                [MessageKey.CsvHeaderAlreadyPresent] =
+                    "列名 \"{0}\" がヘッダーに複数回指定されています（列名の大文字と小文字は区別しません）。",
+                [MessageKey.CsvUnspecifiedHeader] =
+                    "指定されていない列名があります。不足している列名には、\"H\" で始まる既定の名前を使いました。",
+                [MessageKey.CsvAppendMismatchedPropertyName] =
+                    "次のファイルに CSV を追記できません: {1}。追記するオブジェクトに、次の列に当たるプロパティがありません: {0}。"
+                    + "プロパティが一致しないまま続けるには、-Force を指定してもう一度実行してください。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -482,6 +518,22 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SkippedDirectory] =
                     "디렉터리 '{0}'은(는) 대상이 아니므로 건너뛰었습니다.",
+
+                [MessageKey.DetectionLinesTooLarge] =
+                    "'{0}'의 처음 {1}줄은 문자 인코딩을 판별할 수 있는 크기(2GB 미만)를 초과하므로 판별할 수 없습니다. "
+                    + "줄 바꿈이 없는 파일은 전체를 읽습니다. -DetectionLineCount를 줄이십시오. "
+                    + "-Encoding이 있는 명령에서는 문자 인코딩을 명시할 수도 있습니다.",
+                [MessageKey.DetectionVerificationFailed] =
+                    "'{0}'에 처음 {2}줄에서 판별한 문자 인코딩 '{1}'(으)로서 잘못된 바이트열이 있으므로(바이트 위치 {3}: {4}) 처리하지 않았습니다. "
+                    + "-DetectionLineCount를 늘리거나 -Encoding으로 문자 인코딩을 지정하십시오.",
+
+                [MessageKey.CsvHeaderAlreadyPresent] =
+                    "열 이름 \"{0}\"이(가) 헤더에 여러 번 지정되었습니다(열 이름은 대/소문자를 구분하지 않습니다).",
+                [MessageKey.CsvUnspecifiedHeader] =
+                    "지정되지 않은 열 이름이 있습니다. 누락된 열 이름 대신 \"H\"로 시작하는 기본 이름을 사용했습니다.",
+                [MessageKey.CsvAppendMismatchedPropertyName] =
+                    "다음 파일에 CSV를 추가할 수 없습니다: {1}. 추가하는 개체에 다음 열에 해당하는 속성이 없습니다: {0}. "
+                    + "속성이 일치하지 않는 상태로 계속하려면 -Force를 지정하여 다시 실행하십시오.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -622,6 +674,21 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SkippedDirectory] =
                     "已略過目錄 '{0}'。",
+
+                [MessageKey.DetectionLinesTooLarge] =
+                    "'{0}' 的前 {1} 行超過可判斷字元編碼的大小（必須小於 2 GB），因此無法判斷。沒有換行的檔案會讀取整個檔案。"
+                    + "請減少 -DetectionLineCount。在具有 -Encoding 的命令中，也可以明確指定字元編碼。",
+                [MessageKey.DetectionVerificationFailed] =
+                    "'{0}' 含有以前 {2} 行判斷的字元編碼 '{1}' 而言無效的位元組序列（位元組位置 {3}：{4}），因此未處理。"
+                    + "請增加 -DetectionLineCount，或以 -Encoding 指定字元編碼。",
+
+                [MessageKey.CsvHeaderAlreadyPresent] =
+                    "欄位名稱 \"{0}\" 在標頭中指定了多次（欄位名稱不區分大小寫）。",
+                [MessageKey.CsvUnspecifiedHeader] =
+                    "有未指定的欄位名稱。已使用以 \"H\" 開頭的預設名稱取代缺少的欄位名稱。",
+                [MessageKey.CsvAppendMismatchedPropertyName] =
+                    "無法將 CSV 附加到下列檔案：{1}。附加的物件沒有對應下列欄位的屬性：{0}。"
+                    + "若要在屬性不一致的情況下繼續，請指定 -Force 後再執行一次。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -762,6 +829,21 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SkippedDirectory] =
                     "已跳过目录 '{0}'。",
+
+                [MessageKey.DetectionLinesTooLarge] =
+                    "'{0}' 的前 {1} 行超过可判断字符编码的大小（必须小于 2 GB），因此无法判断。没有换行的文件会读取整个文件。"
+                    + "请减小 -DetectionLineCount。在具有 -Encoding 的命令中，也可以明确指定字符编码。",
+                [MessageKey.DetectionVerificationFailed] =
+                    "'{0}' 含有以前 {2} 行判断的字符编码 '{1}' 而言无效的字节序列（字节位置 {3}：{4}），因此未处理。"
+                    + "请增大 -DetectionLineCount，或用 -Encoding 指定字符编码。",
+
+                [MessageKey.CsvHeaderAlreadyPresent] =
+                    "列名 \"{0}\" 在标头中指定了多次（列名不区分大小写）。",
+                [MessageKey.CsvUnspecifiedHeader] =
+                    "有未指定的列名。已使用以 \"H\" 开头的默认名称代替缺少的列名。",
+                [MessageKey.CsvAppendMismatchedPropertyName] =
+                    "无法将 CSV 追加到以下文件：{1}。追加的对象没有与以下列对应的属性：{0}。"
+                    + "若要在属性不一致的情况下继续，请指定 -Force 后重新运行。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =
