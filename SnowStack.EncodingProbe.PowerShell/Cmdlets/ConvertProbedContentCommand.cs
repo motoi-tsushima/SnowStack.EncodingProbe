@@ -596,7 +596,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
                     file,
                     EncodingVocabulary.GetUnifiedName(codePage, bomLength > 0),
                     offset,
-                    FormatBytes(invalidBytes))),
+                    ByteSequenceText.Format(invalidBytes))),
                 "InvalidSourceBytes",
                 ErrorCategory.InvalidData,
                 file));
@@ -939,31 +939,6 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
             default:
                 return original.ToString() ?? string.Empty;
         }
-    }
-
-    /// <summary>
-    /// バイト列を 16 進で表す（エラーメッセージ用）
-    /// </summary>
-    private static string FormatBytes(byte[]? bytes)
-    {
-        if (bytes == null || bytes.Length == 0)
-        {
-            return string.Empty;
-        }
-
-        var builder = new StringBuilder(bytes.Length * 3);
-
-        foreach (byte value in bytes)
-        {
-            if (builder.Length > 0)
-            {
-                builder.Append(' ');
-            }
-
-            builder.Append(value.ToString("X2", CultureInfo.InvariantCulture));
-        }
-
-        return builder.ToString();
     }
 
     private static bool BytesAreEqual(byte[] left, byte[] right)

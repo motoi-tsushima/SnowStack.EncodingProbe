@@ -209,7 +209,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// BOM の判定にはクラスライブラリ側の実装を用いる。UTF-32 のBOMは UTF-16 のBOMを
         /// 前方に含むため判定順序が重要であり、規則を二重に持たないようにする。
         /// </remarks>
-        private static int GetBomLength(byte[] head)
+        internal static int GetBomLength(byte[] head)
         {
             var detection = new ByteOrderMarkDetection();
 
