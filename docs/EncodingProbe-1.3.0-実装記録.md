@@ -4,7 +4,7 @@
 - 作成日: 2026-10-19
 - 目的: 実装の過程で、仕様書・依頼・当初の想定と異なる結果になった点と、
   仕様書に書かれていなかったため実装側で決めた点を残す（1.2.0 の実装記録と同じ形式）
-- 章の構成: 第一次（共通の部品と `Resolve-Encoding -DetectionLineCount`）は 1〜5 章。第二次・第三次は後ろに追記する
+- 章の構成: 第一次（共通の部品と `Resolve-Encoding -DetectionLineCount`）は 1〜5 章、第二次（`Import-ProbedCsv`）は 6 章。第三次は後ろに追記する
 
 ---
 
@@ -301,3 +301,103 @@ net48 版を Windows PowerShell 5.1.26100.9711 で、net10.0 版を PowerShell 7
 ### 5.6 クラスライブラリ
 
 `git diff master -- SnowStack.EncodingProbe/` は空である（クラスライブラリは変更していない）。
+
+---
+
+## 6. 第二次 — `Import-ProbedCsv`（2026-10-19）
+
+### 6.1 利用者の回答と決定
+
+| 事項 | 決定 |
+|---|---|
+| U3（列名の重複） | 非終了エラーとし、次のファイルへ進む（依頼文の回答。1 章） |
+| 解析の途中で復号に失敗した場合（仕様書 10 章の最後の項目） | 新しい ID `InvalidBytesDuringImport`（カテゴリ `InvalidData`）。メッセージに、ファイル・文字エンコーディング・不正な位置とバイト列・「それまでに出力したレコードは取り消せない」・「検証の後にファイルが変更された可能性」を書く。位置は検証の部品（`StrictDecodeVerifier`）でもう一度走査して求め、見つからなければ `?` とする |
+| 列名の重複のエラーの対象とカテゴリ | ID（`AlreadyPresentPSMemberInfoInternalCollectionAdd`）とカテゴリ（`NotSpecified`）は標準と同じにし、対象（TargetObject）は標準の null ではなくファイルのパスにした（複数のファイルを読むときにどのファイルか分かるように） |
+| 検証の失敗のメッセージに示す文字エンコーディング名 | 読み替えた後の名前（実際に検証したもの。例: us-ascii を読み替えた `utf8NoBOM`） |
+| ワイルドカードが 0 件（6.2） | `Get-ProbedContent` に合わせ、エラーにしない |
+
+### 6.2 仕様書と異なった点: ワイルドカードが 0 件
+
+仕様書 9.1・12 章は、ワイルドカードが 0 件に一致した場合を「`Get-ProbedContent` と同じ非終了エラー（同じ ID）」としていた。
+実装時に確かめたところ、既存の `Get-ProbedContent` は 5.1 でも 7.x でも、0 件のワイルドカードに対して**何も出力せず、エラーも出さなかった**
+（標準の `Get-Content` はエラーを出す）。パスの解決の部品（`ProbedContentCommandBase.ResolveOne`）が、
+`GetResolvedProviderPathFromPSPath` の空の結果をそのまま返すためである。
+
+既存のコマンドの挙動は変えない（指示書 1 節）ので、部品は変えられない。利用者に確認し、`Import-ProbedCsv` も `Get-ProbedContent` に合わせてエラーにしないと決めた。
+仕様書 9.1・12 章・13 章の表を改め、経緯を 9.1 に記した。
+
+### 6.3 実装の要点
+
+- **基底クラス:** `ProbedContentCommandBase` を継承する。`-Culture` / `-Strategy`（判定）とパスの解決（`ResolveExistingFiles`）を使う。
+  `BeginProcessing` では `base.BeginProcessing()` を先に呼び、そのあと移植した `SetDelimiter` で区切り文字を決める
+- **パラメータセット:** `DelimiterPath`（既定）/ `DelimiterLiteralPath` / `CulturePath` / `CultureLiteralPath`。
+  名前は移植した `SetDelimiter` が見る名前と同じにした。基底クラスの定数（`Path` / `LiteralPath`）は使っていない（`ResolveExistingFiles` はセット名に依存しない）。
+  `-Culture`（判定のカルチャー）と `-UseCulture`（区切り文字）を取り違えないよう、コメントとヘルプで区別した
+- **-Path / -LiteralPath:** 別々のプロパティに持つ。束縛の属性と別名は `Get-ProbedContent` と同じで、`-LiteralPath` に別名 `LP` を加えた。
+  `Get-ChildItem | Import-ProbedCsv` は両ホストで動いた（PSCompat）
+- **文字エンコーディングの決定:**
+  - 明示した場合は、その値で読む（判定も検証もしない。`-DetectionLineCount` は黙って無視する）
+  - Auto で `-DetectionLineCount` が無い場合は、既存の `ProbedFileReader` で全体を判定する
+  - Auto で `-DetectionLineCount` がある場合は、`HeadLineDetection` で判定し、`GetReinterpretedCodePage` で読み替える（3.2）。
+    `StrictDecodeVerifier` で全体を検証してから、`BuildStrictEncoding` の厳密な `Encoding` で読む
+- **全体の判定の上限超過:** ファイルを開く前に大きさで検査し、`-DetectionLineCount` を案内する新しいメッセージ `FileTooLargeToDetectUseLineCount` で報告する
+  （ID は既存と同じ `EncodingDetectionFailed`）。既存の `FileTooLargeToDetect`（`Get-ProbedContent` などが使う）は変えていない
+- **読み替え:** `HeadLineDetectionResult.GetReinterpretedCodePage` にまとめた（第三次の `Export-ProbedCsv` と共用する）。
+  このため `EncodingVocabulary` のコードページの定数のうち 6 個を private から internal にした（値・挙動は変えていない）
+- **解析:** `ProbedFileReader` に、BOM の後ろから復号する `TextReader` を返す internal の `Reader` を加え、移植した `ImportCsvHelper` に渡す。
+  `ActiveReadRegistry` に登録してから読む。列名が空のときの警告のフラグは cmdlet のフィールドに持ち、複数のファイルとパイプラインの入力にまたがって 1 回だけにした
+- **列名の重複:** ヘッダーを読んだ時点で分かるので、レコードは 1 件も出力していない。移植した処理が投げる `ExtendedTypeSystemException` を非終了エラーにする
+
+### 6.4 テスト
+
+- `CmdletTests/ImportProbedCsvTests`（59 件）
+  - M1 の 15 ケース（7.6.7 の期待値）、c10 の非終了エラーと続行、警告が 1 回だけ、型名・W3C・CR だけの改行
+  - `-Header`・ファイルごとの列、`-Delimiter`・`-UseCulture`（`-Culture` との併用）
+  - パス: ワイルドカードで複数、存在しないファイル・フォルダーでの続行、`Get-ChildItem` からの入力、`-LP`
+  - 判定: 10 章の表の全行
+    - 全体で判定: Shift_JIS / EUC-JP / UTF-8（BOM 有無）/ UTF-16LE・BE（BOM 有無）
+    - 明示: 語彙名・数値・`EncodingInformation`・`Encoding` オブジェクト
+    - 先頭 N 行で判定
+  - 読み替え
+    - 先頭が ASCII の UTF-8 は読める。Shift_JIS / EUC-JP は検証で止まり、メッセージに位置とバイト列が入る
+    - BOM 無しの UTF-16 / UTF-32 で先頭が英数字のもの（英数字だけ・後半に日本語）が正しく読める
+    - BOM 付きも検証する
+  - 一致（3.3）: `Resolve-Encoding -DetectionLineCount` の結果と、`Import-ProbedCsv` が使う `HeadLineDetection.Detect` の結果が全プロパティで一致する
+  - エラー: 12 章の各行（不正な `-Culture` / `-Strategy` / `-Encoding`、0 以下、判定の失敗とコードページが無い場合の続行、全体の判定の上限超過）
+  - コマンドの形（パラメータセット・別名・束縛の属性）
+- 自動テストにしていないもの
+  - 読み取り権限が無いファイル（`ReadAccessDenied`）。ACL の操作が要るため。実装は `Get-ProbedContent` と同じ
+  - 解析の途中で復号に失敗する場合（`InvalidBytesDuringImport`）。検証と解析の間にファイルを書き換える必要があるため
+
+### 6.5 テストと確認の結果（2026-10-19）
+
+| テスト | 結果 |
+|---|---|
+| `EncodingProbe.Tests`（コア） | net10.0 1179 件 / net48 1189 件 成功 |
+| `EncodingProbe.PowerShell.Tests` | 1040 件成功（`ImportProbedCsvTests` 59 件、`MamlHelpTests` の追加分を含む） |
+| PSCompat | 636 シナリオで 5.1 と 7.x が完全に一致（`Import/*` の 48 件を追加） |
+
+PSCompat の `Import/M1/*` の結果は、両ホストで同じだった。xUnit で確かめた 7.6.7 の `Import-Csv` の結果とも同じなので、
+**M1 の 15 ケースは 5.1 でも 7.6.7 と同じ結果になる**。5.1 の標準とは次の点が違い、こちらが正しい。
+
+- c04 の型名は `Foo.Bar;CSV:Foo.Bar` の順
+- c06 は W3C 形式として `date time` の列になる
+- c12 は CR だけの改行で 2 件読める
+
+検証の失敗の位置とバイト列も、両ホストで同じだった（64 KiB を超える位置 100005 / `93`、BOM の後で末尾が途切れた文字 9 / `E6 97`）。
+
+実ホスト（Windows PowerShell 5.1.26100.9711、PowerShell 7.6.7）での手動確認:
+
+| 入力（先頭 2 行が ASCII、3 行目が「日本,語」） | 5.1 | 7.6.7 |
+|---|---|---|
+| Shift_JIS / EUC-JP / UTF-8 / UTF-8 BOM / UTF-16LE（BOM 付き）を全体で判定 | 2 件。3 行目は U+65E5 U+672C U+8A9E | 同左 |
+| Shift_JIS、`-DetectionLineCount 2` | 0 件、`DetectionVerificationFailed`（バイト位置 16: 93、`utf8NoBOM`） | 同左 |
+| Shift_JIS、`-DetectionLineCount 3` | 2 件（正しく読める） | 同左 |
+| `Get-Help Import-ProbedCsv` | 日本語のヘルプ | 同左 |
+
+### 6.6 気づいたこと
+
+- 英数字だけの BOM 無しの UTF-32BE を全体で判定すると、既知の課題（`docs/EncodingProbe-課題-BOM無しUTF-16の英数字だけの判定.md`）のとおり us-ascii と判定され、
+  列名にも値にも U+0000 が混じる。`-DetectionLineCount` を指定すると、読み替えで正しく読める。PSCompat はこの現状の挙動も記録している
+- `-DetectionLineCount` の検証で報告するバイト列は、UTF-8 では不正と分かった 1 バイト（例: Shift_JIS の「日」`93 FA` の `93`）になる。
+  `Convert-ProbedContent` の `InvalidSourceBytes` と同じ規則である
