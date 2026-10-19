@@ -1853,6 +1853,176 @@ Add-Scenario 'Import/UnspecifiedHeader/warn-once' {
 }.GetNewClosure()
 
 # ---------------------------------------------------------------------------
+# Export-ProbedCsv (1.3.0 仕様書 第 4 部)
+#
+# CSV の文字列化は PowerShell 7.x の Export-Csv から移植した処理で行う。出力が両ホストでバイト単位で同じになることを確かめる。
+# 日付・数値はカルチャーに依存するので、値は文字列だけにする。ホストによって形が変わるオブジェクト（FileInfo など）は使わない
+# （第一次の決定）。実測報告 M4 / M5 / M6 に対応するケースを含む。
+# ---------------------------------------------------------------------------
+
+<#
+.SYNOPSIS
+    Export-ProbedCsv を実行し、出力先のバイト列とエラーを 1 行にする。
+.DESCRIPTION
+    終了エラーは FullyQualifiedErrorId とメッセージを記録する（UI カルチャーは en-US に固定している）。
+    警告は件数を記録する。
+#>
+function Invoke-ExportProbedCsv {
+    param([string]$Path, [scriptblock]$Body)
+
+    $ErrorActionPreference = 'Continue'
+    $outcome = 'ok'
+    $warnings = 0
+
+    try {
+        $all = @(& $Body 3>&1)
+        $warnings = @($all | Where-Object { $_ -is [System.Management.Automation.WarningRecord] }).Count
+    }
+    catch {
+        # PowerShell 自身が付ける枠の文言（パラメータの変換の失敗など）を含めないよう、最も内側のメッセージを記録する
+        $outcome = 'ERROR ' + $_.FullyQualifiedErrorId.Split(',')[0] + ' :: ' + (Get-InnermostMessage $_.Exception)
+    }
+
+    return ('{0} // warnings={1} // {2}' -f $outcome, $warnings, (Format-FileBytes $Path))
+}
+
+$script:exportDir = Join-Path $script:WorkRoot 'export'
+$null = New-Item -ItemType Directory -Path $script:exportDir
+$script:exportCount = 0
+
+<#
+.SYNOPSIS
+    Export-ProbedCsv のシナリオを追加する。追記先などの既存ファイルはバイト列を明示して作る。
+#>
+function Add-ExportScenario {
+    param([string]$Name, [byte[]]$Existing, [scriptblock]$Body)
+
+    $script:exportCount++
+    $target = Join-Path $script:exportDir ("e{0:D3}.csv" -f $script:exportCount)
+
+    if ($null -ne $Existing) {
+        [IO.File]::WriteAllBytes($target, $Existing)
+    }
+
+    $run = $Body
+    Add-Scenario ("Export/{0}" -f $Name) {
+        Invoke-ExportProbedCsv -Path $target -Body { & $run $target }
+    }.GetNewClosure()
+}
+
+$script:jpValue = "$([char]0x65E5)$([char]0x672C)$([char]0x8A9E)"
+$script:tsuiki = "$([char]0x8FFD)$([char]0x8A18)"
+$script:baseCsv = [byte[]](& $script:utf8Bytes "`"A`",`"B`"`r`n`"1`",`"2`"`r`n")
+$script:sjisCsv = [byte[]]($script:baseCsv + @(0x93, 0xFA, 0x96, 0x7B, 0x2C, 0x8C, 0xEA, 0x0D, 0x0A))
+
+# M4: 既定（utf8NoBOM、#TYPE 行なし、Always）と各オプション。値は文字列だけ
+$sample = [pscustomobject]@{ Name = $script:jpValue; Quote = 'say "hi"'; Multi = "l1`nl2"; Comma = 'a,b'; Empty = $null }
+foreach ($options in @('default', 'AsNeeded', 'Never', 'QuoteFields', 'NoHeader', 'IncludeTypeInformation', 'NoTypeInformation', 'Semicolon')) {
+    $o = $options
+    Add-ExportScenario "M4/$o" $null {
+        param($p)
+        switch ($o) {
+            'default' { $sample | Export-ProbedCsv -LiteralPath $p }
+            'AsNeeded' { $sample | Export-ProbedCsv -LiteralPath $p -UseQuotes AsNeeded }
+            'Never' { $sample | Export-ProbedCsv -LiteralPath $p -UseQuotes Never }
+            'QuoteFields' { $sample | Export-ProbedCsv -LiteralPath $p -QuoteFields Name, comma }
+            'NoHeader' { $sample | Export-ProbedCsv -LiteralPath $p -NoHeader }
+            'IncludeTypeInformation' { $sample | Export-ProbedCsv -LiteralPath $p -IncludeTypeInformation }
+            'NoTypeInformation' { $sample | Export-ProbedCsv -LiteralPath $p -NoTypeInformation }
+            'Semicolon' { $sample | Export-ProbedCsv $p ';' }
+        }
+    }.GetNewClosure()
+}
+
+# M4: 入力の種類（5.1 の標準は辞書オブジェクト自体のプロパティを書く）
+Add-ExportScenario 'M4/ordered-dictionary' $null { param($p) [ordered]@{ A = '1'; B = 'x' } | Export-ProbedCsv -LiteralPath $p }
+Add-ExportScenario 'M4/hashtable-with-note' $null {
+    param($p)
+    $h = @{ A = '1' }
+    $h = Add-Member -InputObject $h -NotePropertyName Extra -NotePropertyValue 'e' -PassThru
+    $h | Export-ProbedCsv -LiteralPath $p
+}
+Add-ExportScenario 'M4/mixed-objects' $null { param($p) [pscustomobject]@{ A = '1'; B = '2' }, [pscustomobject]@{ B = '3'; C = '4' } | Export-ProbedCsv -LiteralPath $p }
+Add-ExportScenario 'M4/strings' $null { param($p) 'abc', 'de' | Export-ProbedCsv -LiteralPath $p }
+
+# 文字エンコーディングの決定（仕様書 16.1）
+foreach ($encoding in @('utf8BOM', 'shift_jis', 'euc-jp', 'unicodeBOM', 'bigendianunicodeNoBOM', 'utf32BOM')) {
+    $enc = $encoding
+    Add-ExportScenario "Encoding/$enc" $null { param($p) [pscustomobject]@{ A = $script:jpValue } | Export-ProbedCsv -LiteralPath $p -Encoding $enc }.GetNewClosure()
+}
+Add-ExportScenario 'Encoding/omitted-overwrites-sjis-as-utf8' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p }
+Add-ExportScenario 'Encoding/Auto-inherits-sjis' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p -Encoding Auto -Culture ja-JP }
+Add-ExportScenario 'Encoding/Auto-missing' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -Encoding Auto }
+Add-ExportScenario 'Encoding/bare-utf8' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -Encoding utf8 }
+$lfSjisReference = New-ByteFile 'export_ref_lf_sjis.csv' ([byte[]]((& $script:utf8Bytes "x`n") + @(0x93, 0xFA, 0x96, 0x7B, 0x0A)))
+Add-ExportScenario 'Encoding/EncodingFrom-lf-sjis' $null { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p -EncodingFrom $lfSjisReference -Culture ja-JP }.GetNewClosure()
+
+# -DetectionLineCount（仕様書 16.2）。先頭が ASCII の Shift_JIS は、どの箇所でも検証で止まり何も書かない（-WhatIf でも報告）
+$sjisReference = New-ByteFile 'export_ref_sjis.csv' $script:sjisCsv
+Add-ExportScenario 'DetectionLineCount/Append-verification-failed' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'x' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 2 }
+Add-ExportScenario 'DetectionLineCount/Append-WhatIf-verification-failed' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'x' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 2 -WhatIf }
+Add-ExportScenario 'DetectionLineCount/Auto-verification-failed' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p -Encoding Auto -DetectionLineCount 2 }
+Add-ExportScenario 'DetectionLineCount/EncodingFrom-verification-failed' $null { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p -EncodingFrom $sjisReference -DetectionLineCount 2 }.GetNewClosure()
+Add-ExportScenario 'DetectionLineCount/Append-covering' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'x' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 3 -Culture ja-JP }
+
+# -Append（仕様書 18 章、実測報告 M5 a〜l）
+Add-ExportScenario 'M5/a-different-order' $script:baseCsv { param($p) [pscustomobject]@{ B = 'b'; A = 'a' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/b-missing-column' $script:baseCsv { param($p) [pscustomobject]@{ A = 'a' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/b2-missing-column-Force' $script:baseCsv { param($p) [pscustomobject]@{ A = 'a' } | Export-ProbedCsv -LiteralPath $p -Append -Force }
+Add-ExportScenario 'M5/c-extra-property' $script:baseCsv { param($p) [pscustomobject]@{ A = 'a'; B = 'b'; C = 'c' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/d-empty-file' ([byte[]]@()) { param($p) [pscustomobject]@{ A = 'a'; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/e-missing-file' $null { param($p) [pscustomobject]@{ A = 'a'; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/f-utf8bom-target' ([byte[]](@(0xEF, 0xBB, 0xBF) + $script:baseCsv)) { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/g-sjis-target' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append -Culture ja-JP }
+Add-ExportScenario 'M5/h-Append-NoHeader' $script:baseCsv { param($p) [pscustomobject]@{ A = 'a'; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append -NoHeader }
+Add-ExportScenario 'M5/i-lowercase-header' ([byte[]](& $script:utf8Bytes "a,b`r`n1,2`r`n")) { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/j-no-trailing-newline' ([byte[]](& $script:utf8Bytes "`"A`",`"B`"`r`n1,2")) { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/j-utf16le-no-trailing-newline' ([byte[]](@(0xFF, 0xFE) + (New-Object System.Text.UnicodeEncoding($false, $false)).GetBytes("`"A`",`"B`"`r`n1,2"))) { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/k-lf-target' ([byte[]](& $script:utf8Bytes "`"A`",`"B`"`n`"1`",`"2`"`n")) { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/l-readonly' $script:baseCsv {
+    param($p)
+    Set-ItemProperty -LiteralPath $p -Name IsReadOnly -Value $true
+    try { [pscustomobject]@{ A = 'a'; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append }
+    finally { Set-ItemProperty -LiteralPath $p -Name IsReadOnly -Value $false }
+}
+Add-ExportScenario 'M5/l2-readonly-Force' $script:baseCsv {
+    param($p)
+    Set-ItemProperty -LiteralPath $p -Name IsReadOnly -Value $true
+    try {
+        [pscustomobject]@{ A = 'a'; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append -Force
+        if (-not (Get-Item -LiteralPath $p).IsReadOnly) { throw 'read-only attribute was not restored' }
+    }
+    finally { Set-ItemProperty -LiteralPath $p -Name IsReadOnly -Value $false }
+}
+Add-ExportScenario 'M5/bom-only-target' ([byte[]]@(0xEF, 0xBB, 0xBF)) { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/encoding-change' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'x' } | Export-ProbedCsv -LiteralPath $p -Append -Encoding utf8NoBOM -Culture ja-JP }
+
+# M6 とその他（仕様書 19 章）
+$roundTrip = New-ByteFile 'export_roundtrip.csv' $script:baseCsv
+Add-Scenario 'Export/M6/same-path-round-trip' {
+    Invoke-ExportProbedCsv -Path $roundTrip -Body { Import-ProbedCsv -LiteralPath $roundTrip | Export-ProbedCsv -LiteralPath $roundTrip }
+}.GetNewClosure()
+Add-ExportScenario 'M6/NoClobber' $script:baseCsv { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -NoClobber }
+Add-ExportScenario 'M6/NoClobber-WhatIf' $script:baseCsv { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -NoClobber -WhatIf }
+Add-ExportScenario 'M6/WhatIf-new-file' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -WhatIf }
+Add-ExportScenario 'M6/empty-input' $script:baseCsv { param($p) @() | Export-ProbedCsv -LiteralPath $p }
+Add-ExportScenario 'M6/empty-input-Append' ([byte[]](& $script:utf8Bytes "`"A`"`r`n1")) { param($p) @() | Export-ProbedCsv -LiteralPath $p -Append }
+
+# エラー（仕様書 20 章）と警告
+Add-ExportScenario 'Errors/QuoteFields-and-UseQuotes' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -QuoteFields A -UseQuotes Always }
+Add-ExportScenario 'Errors/Path-and-LiteralPath' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -Path $p -LiteralPath $p }
+Add-ExportScenario 'Errors/AllowEncodingChange-without-Append' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -AllowEncodingChange }
+
+# 往復: Export-ProbedCsv で書いたものを Import-ProbedCsv で読むと元の値に戻る
+Add-ExportScenario 'RoundTrip/shift_jis' $null {
+    param($p)
+    $src = [pscustomobject]@{ Q = 'say "hi"'; D = 'a,b'; N = "l1`r`nl2"; J = $script:jpValue }
+    $src | Export-ProbedCsv -LiteralPath $p -Encoding shift_jis
+    $back = Import-ProbedCsv -LiteralPath $p -Culture ja-JP
+    if (-not (($src.Q -ceq $back.Q) -and ($src.D -ceq $back.D) -and ($src.N -ceq $back.N) -and ($src.J -ceq $back.J))) { throw 'round trip changed the values' }
+}
+
+# ---------------------------------------------------------------------------
 # 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
 #
 # UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。
