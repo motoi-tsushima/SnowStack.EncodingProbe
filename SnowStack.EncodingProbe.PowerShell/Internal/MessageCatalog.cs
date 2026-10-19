@@ -221,6 +221,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "Stopped reading '{0}' because bytes that are invalid in the character encoding '{1}' were found "
                     + "while reading, at byte offset {2} ({3}). The records already output cannot be withdrawn. "
                     + "The file may have been changed after it was verified.",
+
+                [MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes] =
+                    "You must specify either the -UseQuotes or -QuoteFields parameters, but not both.",
+                [MessageKey.CannotSpecifyPathAndLiteralPath] =
+                    "You must specify either the -Path or -LiteralPath parameters, but not both.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -388,6 +393,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.InvalidBytesDuringImport] =
                     "'{0}' の読み込み中に、文字エンコーディング '{1}' として不正なバイト列が見つかった（バイト位置 {2}: {3}）ため、読み込みを中止しました。"
                     + "それまでに出力したレコードは取り消せません。検証の後にファイルが変更された可能性があります。",
+
+                [MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes] =
+                    "-UseQuotes と -QuoteFields は同時に指定できません。どちらか一方を指定してください。",
+                [MessageKey.CannotSpecifyPathAndLiteralPath] =
+                    "-Path と -LiteralPath のどちらか一方だけを指定してください。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -557,6 +567,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.InvalidBytesDuringImport] =
                     "'{0}'을(를) 읽는 중에 문자 인코딩 '{1}'(으)로서 잘못된 바이트열이 발견되었으므로(바이트 위치 {2}: {3}) 읽기를 중지했습니다. "
                     + "이미 출력한 레코드는 취소할 수 없습니다. 검증 후에 파일이 변경되었을 수 있습니다.",
+
+                [MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes] =
+                    "-UseQuotes와 -QuoteFields는 동시에 지정할 수 없습니다. 둘 중 하나만 지정하십시오.",
+                [MessageKey.CannotSpecifyPathAndLiteralPath] =
+                    "-Path와 -LiteralPath 중 하나만 지정하십시오.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -719,6 +734,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.InvalidBytesDuringImport] =
                     "讀取 '{0}' 時發現以字元編碼 '{1}' 而言無效的位元組序列（位元組位置 {2}：{3}），因此已中止讀取。"
                     + "已輸出的記錄無法取消。檔案可能在驗證之後被變更。",
+
+                [MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes] =
+                    "-UseQuotes 與 -QuoteFields 不能同時指定。請只指定其中一個。",
+                [MessageKey.CannotSpecifyPathAndLiteralPath] =
+                    "請只指定 -Path 與 -LiteralPath 其中一個。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -881,6 +901,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.InvalidBytesDuringImport] =
                     "读取 '{0}' 时发现以字符编码 '{1}' 而言无效的字节序列（字节位置 {2}：{3}），因此已中止读取。"
                     + "已输出的记录无法撤销。文件可能在验证之后被更改。",
+
+                [MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes] =
+                    "-UseQuotes 与 -QuoteFields 不能同时指定。请只指定其中一个。",
+                [MessageKey.CannotSpecifyPathAndLiteralPath] =
+                    "请只指定 -Path 与 -LiteralPath 其中一个。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

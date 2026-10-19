@@ -29,6 +29,7 @@ public sealed class ProbedCommandRunspaceFixture : IDisposable
         Register(sessionState, "Out-ProbedFile", typeof(OutProbedFileCommand));
         Register(sessionState, "Convert-ProbedContent", typeof(ConvertProbedContentCommand));
         Register(sessionState, "Import-ProbedCsv", typeof(ImportProbedCsvCommand));
+        Register(sessionState, "Export-ProbedCsv", typeof(ExportProbedCsvCommand));
 
         this.Runspace = RunspaceFactory.CreateRunspace(sessionState);
         this.Runspace.Open();

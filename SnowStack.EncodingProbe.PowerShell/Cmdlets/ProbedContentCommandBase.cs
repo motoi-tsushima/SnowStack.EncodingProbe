@@ -148,8 +148,14 @@ public abstract class ProbedContentCommandBase : PSCmdlet
     /// <remarks>
     /// 書き込み系の Set-ProbedContent / Add-ProbedContent / Out-ProbedFile と Convert-ProbedContent が共用する。
     /// 参照先が無い・判定できない場合は終了エラーとする（1 ファイルも処理できないため）。
+    /// <br/>
+    /// <paramref name="detectionLineCount"/> が 1 以上の場合（1.3.0 の Export-ProbedCsv -DetectionLineCount）は、
+    /// 参照ファイルを先頭 N 行で判定し、読み替え、全体を検証する（1.3.0 仕様書 16.2、24 章 U2）。
+    /// 検証に失敗した場合は、ID DetectionVerificationFailed の終了エラーとする。
     /// </remarks>
-    private protected EncodingSpec ResolveEncodingFrom(string encodingFrom)
+    /// <param name="encodingFrom">-EncodingFrom に与えられた値</param>
+    /// <param name="detectionLineCount">判定に使う先頭の行数。0 なら全体で判定する（既定）。</param>
+    private protected EncodingSpec ResolveEncodingFrom(string encodingFrom, long detectionLineCount = 0)
     {
         string reference = GetUnresolvedProviderPathFromPSPath(encodingFrom);
 
@@ -164,7 +170,19 @@ public abstract class ProbedContentCommandBase : PSCmdlet
 
         try
         {
+            if (detectionLineCount > 0 && new FileInfo(reference).Length > 0)
+            {
+                return HeadLineEncodingResolver.Resolve(reference, detectionLineCount, this.DetectorOptions).ToSpec();
+            }
+
             return EncodingInheritance.FromFile(reference, this.DetectorOptions);
+        }
+        catch (DetectionVerificationException exception)
+        {
+            ThrowTerminatingError(CreateError(
+                exception, DetectionVerificationException.ErrorId, ErrorCategory.InvalidData, reference));
+
+            throw;  // ThrowTerminatingError は戻らないが、コンパイラには分からない
         }
         catch (EncodingDetectionException exception)
         {

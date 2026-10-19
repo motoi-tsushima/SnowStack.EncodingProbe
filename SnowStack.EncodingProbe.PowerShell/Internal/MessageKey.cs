@@ -148,5 +148,11 @@
 
         /// <summary>Import-ProbedCsv の解析の途中で、不正なバイト列が見つかった</summary>
         InvalidBytesDuringImport,
+
+        /// <summary>Export-ProbedCsv で -QuoteFields と -UseQuotes が同時に指定された</summary>
+        CannotSpecifyQuoteFieldsAndUseQuotes,
+
+        /// <summary>Export-ProbedCsv で -Path と -LiteralPath が両方指定された、またはどちらも指定されなかった</summary>
+        CannotSpecifyPathAndLiteralPath,
     }
 }

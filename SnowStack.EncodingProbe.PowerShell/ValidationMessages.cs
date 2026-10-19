@@ -296,5 +296,17 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// <param name="offset">バイト位置。求められなかった場合は "?"</param>
         public static string InvalidBytesDuringImport(string path, string encoding, string offset, string bytes)
             => MessageCatalog.Format(MessageKey.InvalidBytesDuringImport, path, encoding, offset, bytes);
+
+        /// <summary>
+        /// Export-ProbedCsv で -QuoteFields と -UseQuotes が同時に指定された場合のエラーメッセージ
+        /// </summary>
+        public static string CannotSpecifyQuoteFieldsAndUseQuotes()
+            => MessageCatalog.Get(MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes);
+
+        /// <summary>
+        /// Export-ProbedCsv で -Path と -LiteralPath のちょうど一方が指定されなかった場合のエラーメッセージ
+        /// </summary>
+        public static string CannotSpecifyPathAndLiteralPath()
+            => MessageCatalog.Get(MessageKey.CannotSpecifyPathAndLiteralPath);
     }
 }

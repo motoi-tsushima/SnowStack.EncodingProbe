@@ -454,15 +454,20 @@ MIT License の条件（著作権表示と許諾表示を、複製または重�
 
 ## 15. パラメータ一覧
 
-パラメータセットは 4 つ。`DelimiterPath`（既定）、`DelimiterLiteralPath`、`CulturePath`、`CultureLiteralPath`。
+パラメータセットは 2 つ。`Delimiter`（既定）、`UseCulture`（標準の `Export-Csv` と同じ構成）。
+`-Path` / `-LiteralPath` は両方のセットにあり、必須ではない。`BeginProcessing` の最初に「ちょうど一方」を検査し、満たさなければ終了エラー（ID `CannotSpecifyPathAndLiteralPath`。標準と同じ）。
+
+> **改めた経緯（2026-10-19、第三次）:** 当初は `Import-ProbedCsv` と同じ 4 つ（`DelimiterPath` / `DelimiterLiteralPath` / `CulturePath` / `CultureLiteralPath`）としていた。
+> 実装したところ、パイプラインから入力を受けて `-LiteralPath` を指定すると、`DelimiterLiteralPath` と `CultureLiteralPath` のどちらか決まらず
+> `AmbiguousParameterSet` で失敗した（`Import-ProbedCsv` はパスをパイプラインから受けるのでこの問題が無い）。利用者の決定で、標準の `Export-Csv` と同じ構成に改めた（実装記録 7 章）。
 
 | パラメータ | 型 | 位置 | パイプライン | 別名 | 説明 |
 |---|---|---|---|---|---|
 | `-InputObject` | `PSObject` | — | ByValue | — | 書き出すオブジェクト。必須 |
-| `-Path` | `string` | 0 | — | — | 出力先。ワイルドカードは 1 件に解決されること（1.2.0 仕様書 2.12）。`*Path` セットで必須 |
-| `-LiteralPath` | `string` | — | — | `PSPath`, `LP` | 出力先。ワイルドカード非対応。`*LiteralPath` セットで必須 |
-| `-Delimiter` | `char` | 1 | — | — | 区切り文字。`Delimiter*` セット。省略時は `,` |
-| `-UseCulture` | switch | — | — | — | 区切り文字に、現在のカルチャーのリスト区切り文字を使う。`Culture*` セットで必須 |
+| `-Path` | `string` | 0 | — | — | 出力先。ワイルドカードは 1 件に解決されること（1.2.0 仕様書 2.12）。`-LiteralPath` とちょうど一方を指定する |
+| `-LiteralPath` | `string` | — | — | `PSPath`, `LP` | 出力先。ワイルドカード非対応。`-Path` とちょうど一方を指定する |
+| `-Delimiter` | `char` | 1 | — | — | 区切り文字。`Delimiter` セット。省略時は `,` |
+| `-UseCulture` | switch | — | — | — | 区切り文字に、現在のカルチャーのリスト区切り文字を使う。`UseCulture` セット（必須ではない。標準と同じ） |
 | `-Encoding` | 多形（書き込み用） | — | — | — | 統一語彙ほか。**位置パラメータにしない**（標準では位置 1 が `-Delimiter` のため）。16 章 |
 | `-EncodingFrom` | `string` | — | — | — | 参照ファイルから継承（1.1.0 と同じ） |
 | `-LineBreak` | `Auto` / `CrLf` / `Lf` / `Cr` | — | — | — | 各行の後ろに付ける改行 |
@@ -608,6 +613,7 @@ MIT License の条件（著作権表示と許諾表示を、複製または重�
 | `-DetectionLineCount` が 0 以下 | パラメータ束縛 | 標準の検証エラー |
 | `-Encoding` と `-EncodingFrom` の同時指定 | `BeginProcessing` | 既存と同じ |
 | `-QuoteFields` と `-UseQuotes` の同時指定 | `BeginProcessing` | `CannotSpecifyQuoteFieldsAndUseQuotes` |
+| `-Path` と `-LiteralPath` の両方の指定・どちらも指定しない（15 章） | `BeginProcessing` | `CannotSpecifyPathAndLiteralPath` |
 | 解釈できない `-Culture` / `-Strategy` | `BeginProcessing` | 既存と同じ |
 | パスの解決の失敗 | `BeginProcessing` | `Out-ProbedFile` と同じ |
 | `-NoClobber` で出力先が存在する | `BeginProcessing` | `NoClobber` |
