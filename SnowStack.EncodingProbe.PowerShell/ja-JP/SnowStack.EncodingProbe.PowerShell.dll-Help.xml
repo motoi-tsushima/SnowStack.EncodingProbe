@@ -2103,6 +2103,426 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
     <command:details>
+      <command:name>Import-ProbedCsv</command:name>
+      <maml:description>
+        <maml:para>CSV ファイルの文字エンコーディングを判定して読み込みます。</maml:para>
+      </maml:description>
+      <command:verb>Import</command:verb>
+      <command:noun>ProbedCsv</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>CSV ファイルを読み込み、レコードごとに 1 個のオブジェクトをパイプラインに出力します。レコードは 1 件ずつ出力するため、ファイル全体をメモリに読み込みません（ファイル全体で文字エンコーディングを判定する場合の判定処理を除く）。</maml:para>
+      <maml:para>-Encoding を省略すると、ファイルごとに文字エンコーディングを判定します。ファイル先頭の BOM は常に読み飛ばします。</maml:para>
+      <maml:para>CSV の解析には PowerShell 7.x の Import-Csv から移植した処理を使うため、Windows PowerShell 5.1 でも PowerShell 7.x と同じオブジェクトになります。CR だけの改行も読み、W3C 拡張ログ形式（#Fields:）に対応し、#TYPE 行の型名は PowerShell 7.x の順序になります。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>読み込む CSV ファイルのパス。ワイルドカードを使用でき、複数のファイルに一致した場合は順に読みます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Delimiter</maml:name>
+          <maml:description>
+            <maml:para>フィールドの区切り文字。省略時はコンマ（,）です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>使用する列名。指定すると、ファイルの 1 行目もデータとして読みます（Import-Csv と同じ）。すべてのファイルに同じ列名を使います。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に使う、各ファイルの先頭の行数。省略時はファイル全体で判定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Delimiter</maml:name>
+          <maml:description>
+            <maml:para>フィールドの区切り文字。省略時はコンマ（,）です。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>使用する列名。指定すると、ファイルの 1 行目もデータとして読みます（Import-Csv と同じ）。すべてのファイルに同じ列名を使います。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に使う、各ファイルの先頭の行数。省略時はファイル全体で判定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>読み込む CSV ファイルのパス。ワイルドカードを使用でき、複数のファイルに一致した場合は順に読みます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>UseCulture</maml:name>
+          <maml:description>
+            <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>使用する列名。指定すると、ファイルの 1 行目もデータとして読みます（Import-Csv と同じ）。すべてのファイルに同じ列名を使います。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に使う、各ファイルの先頭の行数。省略時はファイル全体で判定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>UseCulture</maml:name>
+          <maml:description>
+            <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>使用する列名。指定すると、ファイルの 1 行目もデータとして読みます（Import-Csv と同じ）。すべてのファイルに同じ列名を使います。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に使う、各ファイルの先頭の行数。省略時はファイル全体で判定します。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          <maml:para>-Culture は -UseCulture とは別のものです。-Culture は文字エンコーディングの判定だけに使い、-UseCulture は区切り文字だけを決めます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Delimiter</maml:name>
+        <maml:description>
+          <maml:para>フィールドの区切り文字。省略時はコンマ（,）です。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Char</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>,</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>DetectionLineCount</maml:name>
+        <maml:description>
+          <maml:para>文字エンコーディングの判定に使う、各ファイルの先頭の行数。省略時はファイル全体で判定します。</maml:para>
+          <maml:para>行数は物理的な行数で、改行（CR-LF / LF / CR）で数えます。CSV のレコード数ではありません（引用符の中の改行も 1 行と数えます）。</maml:para>
+          <maml:para>先頭 N 行が ASCII だけの場合は、BOM 無しの UTF-8 として読みます（改行のバイト列から UTF-16 / UTF-32 と分かる場合は、BOM 無しのその文字エンコーディング）。レコードを出力する前に、判定した文字エンコーディングでファイル全体を厳密に復号して検証します。不正なバイト列がある場合（先頭 N 行より後ろにだけ日本語がある Shift_JIS のファイルなど）は、そのファイルのレコードを 1 件も出力せずに、非終了エラー DetectionVerificationFailed を報告します。その場合は -DetectionLineCount を増やすか、-Encoding を指定してください。</maml:para>
+          <maml:para>検証のためにファイルを 2 回読みます。速さが必要な場合は -Encoding を指定してください（判定も検証も行いません）。改行の無いファイルは判定のために全体を読むため、2 GB 以上あると判定できません。-Encoding を指定した場合は無視されます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Header</maml:name>
+        <maml:description>
+          <maml:para>使用する列名。指定すると、ファイルの 1 行目もデータとして読みます（Import-Csv と同じ）。すべてのファイルに同じ列名を使います。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>読み込む CSV ファイルのパス。ワイルドカードを使用でき、複数のファイルに一致した場合は順に読みます。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>UseCulture</maml:name>
+        <maml:description>
+          <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>パスをパイプラインで渡せます（Get-ChildItem の出力を含む）。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>CSV のレコードごとに 1 個のオブジェクト。各列は NoteProperty で、値は文字列です。そのレコードに値が無い列は null です。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>注意事項</maml:title>
+      <maml:alert>
+        <maml:para>本モジュールが受け付ける文字エンコーディング名（統一語彙）は、Windows PowerShell 5.1 と PowerShell 7.x で同じです。PowerShell 5.1 の標準コマンドの -Encoding が受け付ける名前とは 異なり、また Resolve-Encoding が返す PSEncodingName とも一致しない場合があります。一方の名前をもう一方にそのまま渡しても同じ結果になるとは限りません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>CSV の規則は、両ホストとも PowerShell 7.x に合わせています。標準の Import-Csv との違い: 文字エンコーディングを判定します。Windows PowerShell 5.1 でも、CR だけの改行を読み（標準はエラーも警告も出さずに 0 件を返します）、W3C の #Fields: に対応し、#TYPE の型名を 7.x の順序（Foo.Bar が CSV:Foo.Bar より先）にし、Get-ChildItem | Import-ProbedCsv が動きます。両ホストとも、複数のファイルに一致するワイルドカードはすべて読み、存在しないファイルや列名の重複は非終了エラーとして、残りのファイルを読み続けます。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Culture と -UseCulture は別のものです。-Culture は文字エンコーディングの判定に使うカルチャー、-UseCulture は区切り文字を現在のカルチャーのリスト区切り文字にするスイッチです。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-DetectionLineCount は CSV のレコード数ではなく物理的な行数です。指定するとファイル全体を検証するため、ファイルを 2 回読みます。-Encoding を指定すると、判定も検証も省けます。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>シングルバイト系の文字エンコーディング（windows-1252、ISO-8859 など）はバイト列の構造からは判別できず、文章の統計で推定しています。そのため判定の成否は長さよりも内容に左右されます。文字の一覧、記号・数字の多い行、その言語で通常使わない文字を含むテキストでは、数百バイトあっても判定できない（CodePage が -1）ことがあります。その場合は -Encoding でコードページを明示してください。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-DetectionLineCount の検証は、シングルバイト系の文字エンコーディングの誤判定を見つけられないことがあります。シングルバイト系では、ほとんどのバイト列が正しい文字として復号できるためです。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\data.csv</dev:code>
+        <dev:remarks>
+          <maml:para>ファイルの文字エンコーディングを判定して、レコードを読み込みます。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem *.csv | Import-ProbedCsv</dev:code>
+        <dev:remarks>
+          <maml:para>現在のディレクトリのすべての CSV ファイルを読み込みます。ファイルごとに文字エンコーディングを判定し、ヘッダーを読み直します。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\huge.csv -DetectionLineCount 1000</dev:code>
+        <dev:remarks>
+          <maml:para>先頭 1000 行で文字エンコーディングを判定し、ファイル全体を検証してから読み込みます。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 例 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\data.csv ';' -Encoding shift_jis</dev:code>
+        <dev:remarks>
+          <maml:para>判定せずに Shift_JIS として読み込み、区切り文字にセミコロンを使います。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
       <command:name>ConvertTo-DotNetEncoding</command:name>
       <maml:description>
         <maml:para>統一語彙名・コードページ・判定結果を System.Text.Encoding オブジェクトに変換します。</maml:para>

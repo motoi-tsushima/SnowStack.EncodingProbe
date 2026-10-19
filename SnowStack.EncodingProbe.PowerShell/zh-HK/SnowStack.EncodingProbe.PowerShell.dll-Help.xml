@@ -2103,6 +2103,426 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
     <command:details>
+      <command:name>Import-ProbedCsv</command:name>
+      <maml:description>
+        <maml:para>判斷 CSV 檔案的字元編碼並匯入。</maml:para>
+      </maml:description>
+      <command:verb>Import</command:verb>
+      <command:noun>ProbedCsv</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>讀取 CSV 檔案，並為每筆記錄將一個物件輸出到管線。記錄會逐筆輸出，因此不會將整個檔案讀入記憶體（以整個檔案判斷字元編碼時的判斷處理除外）。</maml:para>
+      <maml:para>省略 -Encoding 時，會逐一判斷每個檔案的字元編碼。檔案開頭的 BOM 一律略過。</maml:para>
+      <maml:para>CSV 的剖析使用從 PowerShell 7.x 的 Import-Csv 移植的處理，因此在 Windows PowerShell 5.1 中也會得到與 PowerShell 7.x 相同的物件。也會讀取只有 CR 的換行，支援 W3C 擴充記錄檔格式（#Fields:），#TYPE 行的型別名稱會是 PowerShell 7.x 的順序。</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>要讀取的 CSV 檔案路徑。可使用萬用字元；符合多個檔案時會依序讀取。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Delimiter</maml:name>
+          <maml:description>
+            <maml:para>欄位的分隔字元。省略時為逗號（,）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>要使用的欄位名稱。指定時，檔案的第 1 行也會當作資料讀取（與 Import-Csv 相同）。所有檔案都使用相同的欄位名稱。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。Combined 會先進行自有判斷，只有在無法判斷時才交給 UTF.Unknown。自有判斷負責東亞的多位元組，UTF.Unknown 負責歐美的單位元組，因此自有判斷會誤讀的歐美文字請用 UtfUnknownOnly 讀取。名稱與可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Delimiter</maml:name>
+          <maml:description>
+            <maml:para>欄位的分隔字元。省略時為逗號（,）。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>要使用的欄位名稱。指定時，檔案的第 1 行也會當作資料讀取（與 Import-Csv 相同）。所有檔案都使用相同的欄位名稱。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。Combined 會先進行自有判斷，只有在無法判斷時才交給 UTF.Unknown。自有判斷負責東亞的多位元組，UTF.Unknown 負責歐美的單位元組，因此自有判斷會誤讀的歐美文字請用 UtfUnknownOnly 讀取。名稱與可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>要讀取的 CSV 檔案路徑。可使用萬用字元；符合多個檔案時會依序讀取。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>UseCulture</maml:name>
+          <maml:description>
+            <maml:para>使用目前文化特性（CurrentCulture）的清單分隔符號作為分隔字元。這與判斷字元編碼時使用的 -Culture 不同。兩者可以同時指定。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>要使用的欄位名稱。指定時，檔案的第 1 行也會當作資料讀取（與 Import-Csv 相同）。所有檔案都使用相同的欄位名稱。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。Combined 會先進行自有判斷，只有在無法判斷時才交給 UTF.Unknown。自有判斷負責東亞的多位元組，UTF.Unknown 負責歐美的單位元組，因此自有判斷會誤讀的歐美文字請用 UtfUnknownOnly 讀取。名稱與可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>UseCulture</maml:name>
+          <maml:description>
+            <maml:para>使用目前文化特性（CurrentCulture）的清單分隔符號作為分隔字元。這與判斷字元編碼時使用的 -Culture 不同。兩者可以同時指定。</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>要使用的欄位名稱。指定時，檔案的第 1 行也會當作資料讀取（與 Import-Csv 相同）。所有檔案都使用相同的欄位名稱。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。Combined 會先進行自有判斷，只有在無法判斷時才交給 UTF.Unknown。自有判斷負責東亞的多位元組，UTF.Unknown 負責歐美的單位元組，因此自有判斷會誤讀的歐美文字請用 UtfUnknownOnly 讀取。名稱與可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+          <maml:para>-Culture 與 -UseCulture 不同。-Culture 只用於判斷字元編碼，-UseCulture 只決定分隔字元。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Delimiter</maml:name>
+        <maml:description>
+          <maml:para>欄位的分隔字元。省略時為逗號（,）。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Char</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>,</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>DetectionLineCount</maml:name>
+        <maml:description>
+          <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。</maml:para>
+          <maml:para>行數是實體行數，以換行（CR-LF / LF / CR）計算，並非 CSV 的記錄數（引號中的換行也算作 1 行）。</maml:para>
+          <maml:para>開頭 N 行只有 ASCII 時，會以沒有 BOM 的 UTF-8 讀取（若從換行的位元組序列可知是 UTF-16 / UTF-32，則為沒有 BOM 的該字元編碼）。在輸出記錄之前，會以判斷出的字元編碼嚴格解碼整個檔案加以驗證。若有無效的位元組序列（例如只在開頭 N 行之後才有日文的 Shift_JIS 檔案），則不輸出該檔案的任何記錄，並回報非終止錯誤 DetectionVerificationFailed。此時請增加 -DetectionLineCount，或指定 -Encoding。</maml:para>
+          <maml:para>為了驗證，檔案會讀取兩次。需要速度時請指定 -Encoding（不進行判斷也不進行驗證）。沒有換行的檔案為了判斷會讀取整個檔案，因此達 2 GB 以上時無法判斷。指定 -Encoding 時會忽略此參數。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Header</maml:name>
+        <maml:description>
+          <maml:para>要使用的欄位名稱。指定時，檔案的第 1 行也會當作資料讀取（與 Import-Csv 相同）。所有檔案都使用相同的欄位名稱。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>要讀取的 CSV 檔案路徑。可使用萬用字元；符合多個檔案時會依序讀取。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。Combined 會先進行自有判斷，只有在無法判斷時才交給 UTF.Unknown。自有判斷負責東亞的多位元組，UTF.Unknown 負責歐美的單位元組，因此自有判斷會誤讀的歐美文字請用 UtfUnknownOnly 讀取。名稱與可指定的值和 Resolve-Encoding 的 -Strategy 相同。</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>UseCulture</maml:name>
+        <maml:description>
+          <maml:para>使用目前文化特性（CurrentCulture）的清單分隔符號作為分隔字元。這與判斷字元編碼時使用的 -Culture 不同。兩者可以同時指定。</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>可以透過管線傳入路徑（包括 Get-ChildItem 的輸出）。</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>每筆 CSV 記錄一個物件。每個欄位都是 NoteProperty，值為字串。該記錄沒有值的欄位為 null。</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>備註</maml:title>
+      <maml:alert>
+        <maml:para>本模組接受的字元編碼名稱（統一詞彙）在 Windows PowerShell 5.1 與 PowerShell 7.x 是相同的。它與 PowerShell 5.1 的內建 Cmdlet 在 -Encoding 接受的名稱不同，也不一定與 Resolve-Encoding 傳回的 PSEncodingName 一致。請勿把其中一邊的名稱原封不動傳給另一邊而期待相同的結果。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>CSV 的規則在兩種主機上都配合 PowerShell 7.x。與內建 Import-Csv 的差異：會判斷字元編碼。在 Windows PowerShell 5.1 中也會讀取只有 CR 的換行（內建 Cmdlet 不會產生錯誤或警告，而是傳回 0 筆），支援 W3C 的 #Fields:，#TYPE 的型別名稱為 7.x 的順序（Foo.Bar 在 CSV:Foo.Bar 之前），且 Get-ChildItem | Import-ProbedCsv 可以運作。在兩種主機上，符合多個檔案的萬用字元會全部讀取，不存在的檔案與重複的欄位名稱會作為非終止錯誤處理，並繼續讀取其餘檔案。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Culture 與 -UseCulture 不同。-Culture 是判斷字元編碼時使用的文化特性，-UseCulture 是將分隔字元設為目前文化特性之清單分隔符號的切換參數。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-DetectionLineCount 是實體行數，並非 CSV 的記錄數。指定後會驗證整個檔案，因此檔案會讀取兩次。指定 -Encoding 可以省略判斷與驗證。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請以 -Encoding 明確指定字碼頁。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-DetectionLineCount 的驗證可能無法找出單位元組字元編碼的誤判。這是因為在單位元組字元編碼中，幾乎所有位元組序列都能解碼為正確的字元。</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- 範例 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\data.csv</dev:code>
+        <dev:remarks>
+          <maml:para>判斷檔案的字元編碼並匯入記錄。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 範例 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem *.csv | Import-ProbedCsv</dev:code>
+        <dev:remarks>
+          <maml:para>匯入目前目錄中的所有 CSV 檔案。每個檔案都會個別判斷字元編碼，並重新讀取標頭。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 範例 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\huge.csv -DetectionLineCount 1000</dev:code>
+        <dev:remarks>
+          <maml:para>以開頭 1000 行判斷字元編碼，驗證整個檔案後再匯入。</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- 範例 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\data.csv ';' -Encoding shift_jis</dev:code>
+        <dev:remarks>
+          <maml:para>不進行判斷，以 Shift_JIS 讀取，並使用分號作為分隔字元。</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
       <command:name>ConvertTo-DotNetEncoding</command:name>
       <maml:description>
         <maml:para>將統一詞彙名稱、字碼頁或判斷結果轉換為 System.Text.Encoding 物件。</maml:para>

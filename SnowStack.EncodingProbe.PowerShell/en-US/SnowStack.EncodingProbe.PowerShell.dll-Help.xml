@@ -2103,6 +2103,426 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
   </command:command>
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
     <command:details>
+      <command:name>Import-ProbedCsv</command:name>
+      <maml:description>
+        <maml:para>Imports a CSV file, detecting its character encoding.</maml:para>
+      </maml:description>
+      <command:verb>Import</command:verb>
+      <command:noun>ProbedCsv</command:noun>
+      <dev:version />
+    </command:details>
+    <maml:description>
+      <maml:para>Reads a CSV file and writes one object per record to the pipeline. Records are written one at a time, so the whole file is not loaded into memory (apart from detection when the whole file is used for it).</maml:para>
+      <maml:para>When -Encoding is omitted the character encoding of each file is detected. A byte order mark at the start of the file is always skipped.</maml:para>
+      <maml:para>The CSV is parsed by code ported from Import-Csv of PowerShell 7.x, so Windows PowerShell 5.1 produces the same objects as PowerShell 7.x: CR-only line breaks are read, the W3C extended log format (#Fields:) is supported, and the type names from a #TYPE line are in the PowerShell 7.x order.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Path to the CSV file. Wildcards are permitted; when a wildcard matches several files, they are read in turn.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Delimiter</maml:name>
+          <maml:description>
+            <maml:para>Character that separates the fields. Defaults to a comma (,).</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>Column names to use. When specified, the first line of the file is read as data as well (the same as Import-Csv). The same names are used for every file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>Number of lines at the beginning of each file used to detect the character encoding. When omitted, the whole file is used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>Detection strategy: Combined (default), NativeOnly or UtfUnknownOnly. Combined runs the built-in detector first and falls back to UTF.Unknown only when it cannot decide. The built-in detector covers East Asian multibyte encodings and UTF.Unknown covers Western single-byte encodings, so UtfUnknownOnly is the way to read a Western text that the built-in detector misreads. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+          <maml:name>Delimiter</maml:name>
+          <maml:description>
+            <maml:para>Character that separates the fields. Defaults to a comma (,).</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>Column names to use. When specified, the first line of the file is read as data as well (the same as Import-Csv). The same names are used for every file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>Number of lines at the beginning of each file used to detect the character encoding. When omitted, the whole file is used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>Detection strategy: Combined (default), NativeOnly or UtfUnknownOnly. Combined runs the built-in detector first and falls back to UTF.Unknown only when it cannot decide. The built-in detector covers East Asian multibyte encodings and UTF.Unknown covers Western single-byte encodings, so UtfUnknownOnly is the way to read a Western text that the built-in detector misreads. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+          <maml:name>Path</maml:name>
+          <maml:description>
+            <maml:para>Path to the CSV file. Wildcards are permitted; when a wildcard matches several files, they are read in turn.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>UseCulture</maml:name>
+          <maml:description>
+            <maml:para>Uses the list separator of the current culture (CurrentCulture) as the delimiter. This is not the same as -Culture, which is the culture used to detect the character encoding; both can be specified together.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>Column names to use. When specified, the first line of the file is read as data as well (the same as Import-Csv). The same names are used for every file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>Number of lines at the beginning of each file used to detect the character encoding. When omitted, the whole file is used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>Detection strategy: Combined (default), NativeOnly or UtfUnknownOnly. Combined runs the built-in detector first and falls back to UTF.Unknown only when it cannot decide. The built-in detector covers East Asian multibyte encodings and UTF.Unknown covers Western single-byte encodings, so UtfUnknownOnly is the way to read a Western text that the built-in detector misreads. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Import-ProbedCsv</maml:name>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+          <maml:name>LiteralPath</maml:name>
+          <maml:description>
+            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>UseCulture</maml:name>
+          <maml:description>
+            <maml:para>Uses the list separator of the current culture (CurrentCulture) as the delimiter. This is not the same as -Culture, which is the culture used to detect the character encoding; both can be specified together.</maml:para>
+          </maml:description>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Header</maml:name>
+          <maml:description>
+            <maml:para>Column names to use. When specified, the first line of the file is read as data as well (the same as Import-Csv). The same names are used for every file.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Encoding</maml:name>
+          <maml:description>
+            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>DetectionLineCount</maml:name>
+          <maml:description>
+            <maml:para>Number of lines at the beginning of each file used to detect the character encoding. When omitted, the whole file is used.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Culture</maml:name>
+          <maml:description>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+          <maml:name>Strategy</maml:name>
+          <maml:description>
+            <maml:para>Detection strategy: Combined (default), NativeOnly or UtfUnknownOnly. Combined runs the built-in detector first and falls back to UTF.Unknown only when it cannot decide. The built-in detector covers East Asian multibyte encodings and UTF.Unknown covers Western single-byte encodings, so UtfUnknownOnly is the way to read a Western text that the built-in detector misreads. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+          </maml:description>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Culture</maml:name>
+        <maml:description>
+          <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+          <maml:para>-Culture is not the same as -UseCulture: -Culture only affects character encoding detection, and -UseCulture only decides the delimiter.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
+        <maml:name>Delimiter</maml:name>
+        <maml:description>
+          <maml:para>Character that separates the fields. Defaults to a comma (,).</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Char</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Char</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>,</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>DetectionLineCount</maml:name>
+        <maml:description>
+          <maml:para>Number of lines at the beginning of each file used to detect the character encoding. When omitted, the whole file is used.</maml:para>
+          <maml:para>The count is of physical lines, separated by CR-LF, LF or CR. It is not the number of CSV records: a line break inside a quoted field also counts as a line.</maml:para>
+          <maml:para>When the first N lines are ASCII only, the file is read as UTF-8 without a BOM (or as UTF-16 or UTF-32 without a BOM when the line breaks show that encoding). Before any record is written, the whole file is decoded strictly with the detected encoding. If it contains invalid bytes (for example a Shift_JIS file whose Japanese text appears only after the first N lines), no record of that file is written and the non-terminating error DetectionVerificationFailed is reported. In that case, increase -DetectionLineCount or specify -Encoding.</maml:para>
+          <maml:para>Because of this verification the file is read twice. When speed matters, specify -Encoding: then neither detection nor verification is performed. A file without line breaks is read as a whole for detection, so it cannot be detected if it is 2 GB or larger. Ignored when -Encoding is specified.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Int64</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Encoding</maml:name>
+        <maml:description>
+          <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
+        <dev:type>
+          <maml:name>System.Object</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Auto</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Header</maml:name>
+        <maml:description>
+          <maml:para>Column names to use. When specified, the first line of the file is read as data as well (the same as Import-Csv). The same names are used for every file.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <maml:name>LiteralPath</maml:name>
+        <maml:description>
+          <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <maml:name>Path</maml:name>
+        <maml:description>
+          <maml:para>Path to the CSV file. Wildcards are permitted; when a wildcard matches several files, they are read in turn.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>Strategy</maml:name>
+        <maml:description>
+          <maml:para>Detection strategy: Combined (default), NativeOnly or UtfUnknownOnly. Combined runs the built-in detector first and falls back to UTF.Unknown only when it cannot decide. The built-in detector covers East Asian multibyte encodings and UTF.Unknown covers Western single-byte encodings, so UtfUnknownOnly is the way to read a Western text that the built-in detector misreads. The name and the accepted values are the same as Resolve-Encoding -Strategy.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>System.String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>Combined</dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <maml:name>UseCulture</maml:name>
+        <maml:description>
+          <maml:para>Uses the list separator of the current culture (CurrentCulture) as the delimiter. This is not the same as -Culture, which is the culture used to detect the character encoding; both can be specified together.</maml:para>
+        </maml:description>
+        <dev:type>
+          <maml:name>System.Management.Automation.SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>System.String[]</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>You can pipe paths to this cmdlet, including the output of Get-ChildItem.</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSObject</maml:name>
+          <maml:uri />
+        </dev:type>
+        <maml:description>
+          <maml:para>One object per CSV record. Each column is a NoteProperty whose value is a string, or null when the record has no value for that column.</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <maml:alertSet>
+      <maml:title>Notes</maml:title>
+      <maml:alert>
+        <maml:para>The character encoding names accepted by this module (the unified vocabulary) are the same on Windows PowerShell 5.1 and PowerShell 7.x. They are NOT the same as the names accepted by the -Encoding parameter of the built-in cmdlets on PowerShell 5.1, and they do not necessarily match the PSEncodingName property returned by Resolve-Encoding. Do not pass a name from one system to the other and expect the same result.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>The CSV rules follow PowerShell 7.x on both hosts. Differences from the built-in Import-Csv: the character encoding is detected. On Windows PowerShell 5.1 as well, CR-only line breaks are read (the built-in cmdlet returns no records without any error or warning), the W3C #Fields: header is supported, the #TYPE type names are in the 7.x order (Foo.Bar before CSV:Foo.Bar), and Get-ChildItem | Import-ProbedCsv works. On both hosts, a wildcard that matches several files reads them all, and a missing file or duplicate column names are non-terminating errors, so the remaining files are still read.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-Culture and -UseCulture are different: -Culture is the culture used to detect the character encoding, and -UseCulture is a switch that makes the delimiter the list separator of the current culture.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>-DetectionLineCount counts physical lines, not CSV records. When it is specified the whole file is verified, so each file is read twice. Specifying -Encoding skips both detection and verification.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Single-byte character encodings (windows-1252, ISO-8859-x, ...) cannot be distinguished by their byte structure and are estimated from text statistics. Whether detection succeeds therefore depends more on the content than on the length: text containing a list of characters, lines full of symbols and digits, or characters rarely used in the language may not be detected (CodePage -1) even when it is several hundred bytes long. In that case, specify the code page with -Encoding.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>The verification done for -DetectionLineCount cannot always find a misdetected single-byte character encoding, because almost any byte sequence decodes to valid characters in a single-byte encoding.</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\data.csv</dev:code>
+        <dev:remarks>
+          <maml:para>Detects the character encoding of the file and imports its records.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Get-ChildItem *.csv | Import-ProbedCsv</dev:code>
+        <dev:remarks>
+          <maml:para>Imports every CSV file in the current directory. The character encoding of each file is detected independently, and the header of each file is read again.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\huge.csv -DetectionLineCount 1000</dev:code>
+        <dev:remarks>
+          <maml:para>Detects the character encoding from the first 1000 lines, verifies the whole file, and then imports it.</maml:para>
+        </dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>-------------------------- EXAMPLE 4 --------------------------</maml:title>
+        <dev:code>PS C:\&gt; Import-ProbedCsv .\data.csv ';' -Encoding shift_jis</dev:code>
+        <dev:remarks>
+          <maml:para>Reads the file as Shift_JIS without detection, using a semicolon as the delimiter.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Get-ProbedContent</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Resolve-Encoding</maml:linkText>
+        <maml:uri />
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
       <command:name>ConvertTo-DotNetEncoding</command:name>
       <maml:description>
         <maml:para>Converts a unified vocabulary name, a code page or a detection result to a System.Text.Encoding object.</maml:para>
