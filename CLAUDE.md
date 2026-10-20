@@ -490,6 +490,11 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
 - 手動確認で課題が見つかったら、1.1.0 / 1.2.0 と同じく `docs/EncodingProbe-1.3.0-課題_人間記述用.md`（まだ無い）に利用者が書いて渡す。
   次に起動したときは、まずこのファイルの有無を確かめる
 - 依頼文 3 件（`docs/EncodingProbe-1.3.0-依頼-第一次.md` / `第二次` / `第三次`）は手元に未追跡ファイルとして残っている。コミットしないこと（利用者の指示）
+- **2026-10-20 追加:** 利用者が、BOM 無し UTF-16 / UTF-32 の英数字だけのファイルが us-ascii になる課題を、クラスライブラリとモジュールの **1.3.0 として同時に**直すと決めた
+  （モジュールだけのリリースという方針を改める）。修正の前の実測を済ませた: 報告は `docs/EncodingProbe-1.3.0-調査-NUL入りの入力の判定.md`、
+  スクリプトは `tools/Measure-NulInputDetection.ps1` / `tools/Invoke-NulInputMeasurement.ps1`、生の結果は `tools/NulInputDetectionResults/`。
+  修正案は実験用ブランチ `investigate/1.3.0-nul-ascii`（ローカルのみ。**どこにもマージしない**）にある。
+  次は利用者が報告を見て修正の仕様を決め、本実装を改めて依頼する。実測依頼の文書（`docs/EncodingProbe-1.3.0-実測依頼-NUL入りASCIIの判定.md`）もコミットしない
 
 1.3.0 で行ったこと（詳細は CHANGELOG.md の 1.3.0 節）:
 
