@@ -70,7 +70,8 @@ Visual Studio 用には `Properties/launchSettings.json` に「.NET 4.8 テス�
 
 1. 改行コード判定（`DetectLineBreak`）— 後段の曖昧解消にも使う
 2. BOM（`ByteOrderMarkDetection`）— 一致したら即確定
-3. ISO-2022 / ASCII
+3. ISO-2022 / ASCII。ASCII と判定し、かつ `0x00` を含む入力だけは `NulPaddedUnicode_Detection` で、
+   英数字だけの BOM 無し UTF-32 / UTF-16 であるかを厳密に調べる（1.3.0。後述）
 4. UTF-32 → UTF-16 → UTF-8（UTF-32 を UTF-16 より先に判定する）
 5. **カルチャーゲート**（`GetEastAsianLegacyRegion()` → `ResolveEastAsianLegacyRegion()`）。東アジア漢字文化圏でなければここで打ち切る
 6. カルチャーで分岐。簡体字中国語なら GB2312 → GBK → GB18030 の 3 段階判定。それ以外は EUC 系 → CPxxx 系
@@ -83,6 +84,18 @@ Unicode 系の判定を独自判定側から外すことはできない。
 `.NET` の厳格な UTF-8 デコーダーと判断が一致することを `Utf8StrictnessTests` が検証している。
 
 `DetectionMode.Skippable` を渡すと BOM が無い時点で打ち切る（BOM の有無だけ知りたい呼び出し向け）。
+
+**`0x00` を含む ASCII の扱い（1.3.0、`docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md`）。** 判定順序は変えていない。
+3 で ASCII（ESC シーケンスが無く、すべてのバイトが `0x80` 未満）となった入力に `0x00` があれば、先頭から単位に区切り、
+UTF-32LE → UTF-32BE → UTF-16LE → UTF-16BE の順に**すべての単位**が `<00 以外> 00`（UTF-16LE の場合）などの形に合うかを調べる。
+成立すればそのコードページ（BOM 無し）、成立しなければ ASCII のまま（**UTF-8 の判定には進めない**）。
+
+- 既存の `Utf16_Detection` / `Utf32_Detection` をこの分岐で使わないこと。すべてのバイトが `0x80` 未満という前提では、
+  既存の UTF-16 の判定はほぼ常に成立し、`0x00` を含む ASCII（末尾の `00`、`00` で埋めた固定長レコード）を UTF-16 と判定する
+  （調査 `docs/EncodingProbe-1.3.0-調査-NUL入りの入力の判定.md` 4.2 節。修正案 1 として測って採用しなかった）
+- 既知の限界（追補 4 章）: 2 バイトとも `0x80` 未満になる文字（「上」U+4E0A = `0A 4E` など）や U+0000 を含む UTF-16 / UTF-32 は ASCII のまま、
+  `41 00` のような数バイトの入力は形に合えば UTF-16 / UTF-32。`NulInputDetectionTests` の `KnownLimit_*` が固定している（正しい挙動ではない）。
+  前者は `Import-` / `Export-ProbedCsv` の `-DetectionLineCount` の読み替え（1.3.0 仕様書 3.2）で救える。この読み替えを消さないこと
 
 ### カルチャー依存の曖昧解消
 
@@ -376,9 +389,10 @@ pwsh -NoProfile -File tests/PSCompat/Invoke-ProbedCompatTests.ps1
 
 `CHANGELOG.md` にも追記すること。
 
-**PowerShell モジュールだけをリリースする場合（1.3.0 が該当）は、2 と 3 だけを上げ、1（クラスライブラリ）は据え置く。**
+**PowerShell モジュールだけをリリースする場合は、2 と 3 だけを上げ、1（クラスライブラリ）は据え置く。**
 クラスライブラリに変更が無いのにバージョンを上げると、NuGet パッケージの版と中身が食い違うためである。
 モジュールは、据え置いたクラスライブラリの DLL を同梱する。
+（1.3.0 は当初この扱いだったが、第四次でクラスライブラリの判定処理を直したため、結果として 3 か所すべてを 1.3.0 にして両方をリリースする）
 
 新しいコマンドレットを追加したら、次も忘れずに行う:
 
@@ -478,35 +492,42 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
 
 ## 1.3.0 の作業記録
 
-**PowerShell モジュールだけのリリース（クラスライブラリは 1.2.0 のまま）。** 作業ブランチは `feature/1.3.0-csv`。
+**PowerShell モジュールとクラスライブラリの両方を 1.3.0 としてリリースする**（当初はモジュールだけの予定だった。第四次で改めた）。作業ブランチは `feature/1.3.0-csv`。
 
-**現在の状態（2026-10-19 時点）: 実装（第一次〜第三次）は完了。利用者の手動確認待ちで、master へは未マージ・未リリース。**
+**現在の状態（2026-10-20 時点）: 実装（第一次〜第四次）は完了。利用者の手動確認待ちで、master へは未マージ・未リリース。**
 
-- `feature/1.3.0-csv` はリモートにプッシュ済み。両 TFM のテスト（コア 1179 / 1189 件、モジュール 1079 件）と PSCompat（691 シナリオ）が通っている
-- 配布フォルダー（`publish/SnowStack.EncodingProbe.PowerShell/`）には 1.3.0 の Release ビルドを配置済みで、両ホストで `.psd1` から読み込めることを確かめた
-- リリースで残っている作業（`docs/EncodingProbe-1.3.0-リリース手順.md` 4 章）: README のリリース日の行、master へのマージ、配布フォルダーの公開
+- 両 TFM のテスト（コア 1960 / 1970 件、モジュール 1099 件）と PSCompat（719 シナリオ）が通っている。
+  第四次のコミットはローカルだけにある（リモートへのプッシュは利用者の指示を待つ）
+- **配布フォルダー（`publish/SnowStack.EncodingProbe.PowerShell/`）の DLL は第三次（クラスライブラリ 1.2.0）のビルドのまま。** 第四次の後の Release ビルドで作り直す必要がある（リリース手順 2 章）
+- リリースで残っている作業（`docs/EncodingProbe-1.3.0-リリース手順.md` 2 章・4 章）: 配布フォルダーの作り直し、README のリリース日の行、master へのマージ、
+  配布フォルダーの公開、NuGet パッケージ 1.3.0 の公開、実験用ブランチの削除
 - **利用者の判断待ち:** 配布フォルダーの `LICENSE.txt` / `THIRD-PARTY-NOTICES.txt` は Git の未追跡ファイルのまま（コミットしていない）。
   Git で管理するか、`.gitignore` に加えるかは未決
 - 手動確認で課題が見つかったら、1.1.0 / 1.2.0 と同じく `docs/EncodingProbe-1.3.0-課題_人間記述用.md`（まだ無い）に利用者が書いて渡す。
   次に起動したときは、まずこのファイルの有無を確かめる
-- 依頼文 3 件（`docs/EncodingProbe-1.3.0-依頼-第一次.md` / `第二次` / `第三次`）は手元に未追跡ファイルとして残っている。コミットしないこと（利用者の指示）
+- 依頼文 4 件（`docs/EncodingProbe-1.3.0-依頼-第一次.md` / `第二次` / `第三次` / `第四次`）は手元に未追跡ファイルとして残っている。コミットしないこと（利用者の指示）
 - **2026-10-20 追加:** 利用者が、BOM 無し UTF-16 / UTF-32 の英数字だけのファイルが us-ascii になる課題を、クラスライブラリとモジュールの **1.3.0 として同時に**直すと決めた
   （モジュールだけのリリースという方針を改める）。修正の前の実測を済ませた: 報告は `docs/EncodingProbe-1.3.0-調査-NUL入りの入力の判定.md`、
   スクリプトは `tools/Measure-NulInputDetection.ps1` / `tools/Invoke-NulInputMeasurement.ps1`、生の結果は `tools/NulInputDetectionResults/`。
   修正案は実験用ブランチ `investigate/1.3.0-nul-ascii`（ローカルのみ。**どこにもマージしない**）にある。
   第 2 回の実測（修正案 2：すべての単位が `<00 以外> 00` などの形に合うときだけ UTF-16 / UTF-32 とする厳密な検査）も済ませた。
   報告は同じ文書の 7 章、生の結果は `tools/NulInputDetectionResults/round2/`、修正案 2 は実験用ブランチ `investigate/1.3.0-nul-ascii-strict`（ローカルのみ。**どこにもマージしない**）。
-  次は利用者が報告を見て修正の仕様を決め、本実装を改めて依頼する。実測依頼の文書（`docs/EncodingProbe-1.3.0-実測依頼-NUL入りASCIIの判定.md`、`…-NUL入りの入力の判定-第2回.md`）もコミットしない
+  実測依頼の文書（`docs/EncodingProbe-1.3.0-実測依頼-NUL入りASCIIの判定.md`、`…-NUL入りの入力の判定-第2回.md`）と第四次の依頼文（`docs/EncodingProbe-1.3.0-依頼-第四次.md`）もコミットしない
+- 利用者が修正案 2 の採用を決め、仕様を `docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md`（追補）にまとめた（仕様書なので第四次でコミットした）。
+  第四次で本実装を `feature/1.3.0-csv` に改めて書いた（実験用ブランチはマージしていない）
 
 1.3.0 で行ったこと（詳細は CHANGELOG.md の 1.3.0 節）:
 
 - 第一次: 共通の部品（先頭 N 行の切り出し、全体の厳密な検証、PowerShell 7.x の CSV 処理の移植）と `Resolve-Encoding -DetectionLineCount`
 - 第二次: `Import-ProbedCsv`
 - 第三次: `Export-ProbedCsv`、`Out-ProbedFile` の殻の共通化、バージョン・文書の仕上げ
+- 第四次: クラスライブラリの `0x00` を含む入力の判定の修正（追補）、クラスライブラリを 1.3.0 に。実装記録 8 章。
+  修正後の判定は第 2 回の実測の「修正案 2」と 180 件すべて（両 TFM、判定 API とコマンド）で一致した
 
 関連文書:
 
 - `docs/EncodingProbe-1.3.0-仕様書.md` … 機能仕様。実装で改めた点（`Export-ProbedCsv` のパラメータセット、ワイルドカード 0 件）は該当節に経緯を書いてある
+- `docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md` … 第四次（クラスライブラリの判定処理の修正）の仕様。期待値の根拠は `docs/EncodingProbe-1.3.0-調査-NUL入りの入力の判定.md` 7 章
 - `docs/EncodingProbe-1.3.0-ClaudeCode指示書.md` … 実装時の制約（移植の方針、参照してはならないもの）
 - `docs/EncodingProbe-1.3.0-調査-CSVコマンド挙動の実測.md` … 標準の CSV コマンドの実測（5.1 と 7.6.7）
 - `docs/EncodingProbe-1.3.0-実装記録.md` … 決定事項とその根拠、仕様書と異なった点。**仕様書に書かれていない判断の理由はここにある**
@@ -518,7 +539,6 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
 
 未着手・未決の課題（1.3.0 で起票、または 1.4.0 で検討すると決めたもの）:
 
-- `docs/EncodingProbe-課題-BOM無しUTF-16の英数字だけの判定.md` … クラスライブラリの判定処理の課題（全体で判定すると us-ascii になる）
 - 既存のコマンド（`Get-` / `Set-` / `Add-ProbedContent`、`Out-ProbedFile`、`Convert-ProbedContent`）への `-DetectionLineCount`、
   全体で判定した場合の検証、`Out-ProbedFile` / `Add-ProbedContent` の追記での末尾の改行の補完は 1.4.0 で検討する（仕様書 1.4）
 - 改行の無い 2 GB 以上のファイルに `-DetectionLineCount` を指定すると、エラーになるまで 2 GB を 1 バイトずつ走査する（約 20 秒）。正しさを優先して最適化していない

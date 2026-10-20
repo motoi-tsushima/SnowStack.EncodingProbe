@@ -35,7 +35,7 @@
             ReleaseNotes = @'
 1.3.0
 CSV の読み書きコマンドを 2 つ追加し、Resolve-Encoding で先頭の行だけを判定できるようにしました。
-PowerShell モジュールだけのリリースです（同梱のクラスライブラリは 1.2.0 のまま）。
+同梱のクラスライブラリも 1.3.0 です（判定処理の不具合を 1 件修正）。
 
 - Import-ProbedCsv : 文字エンコーディングを判定して CSV ファイルを読み込みます。解析は PowerShell 7.x の
   Import-Csv から移植した処理で行うため、PowerShell 5.1 でも 7.x と同じ結果になります（CR だけの改行の
@@ -49,6 +49,10 @@ PowerShell モジュールだけのリリースです（同梱のクラスライ
 - -DetectionLineCount : Resolve-Encoding / Import-ProbedCsv / Export-ProbedCsv で、先頭の N 行だけで
   文字エンコーディングを判定します。Import-ProbedCsv / Export-ProbedCsv では、使う前にファイル全体を
   厳密に検証し、判定を誤っていれば処理せずに止めます。
+- 不具合の修正（クラスライブラリ）: BOM 無しの UTF-16 / UTF-32 で英数字だけのファイルが us-ascii と
+  判定され、U+0000 が混じって読まれていた問題を直しました。2 バイトとも 0x80 未満になる文字（「上」など）を
+  英数字に混ぜたものは従来どおり us-ascii と判定されます（Import-ProbedCsv / Export-ProbedCsv では
+  -DetectionLineCount を指定すると正しく読めます）。
 
 CSV の読み書き処理には、PowerShell（Copyright (c) Microsoft Corporation、MIT License）のコードの
 一部を改変して含めています。詳細は THIRD-PARTY-NOTICES.txt を参照してください。

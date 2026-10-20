@@ -2355,7 +2355,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:description>
           <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。</maml:para>
           <maml:para>行數是實體行數，以換行（CR-LF / LF / CR）計算，並非 CSV 的記錄數（引號中的換行也算作 1 行）。</maml:para>
-          <maml:para>開頭 N 行只有 ASCII 時，會以沒有 BOM 的 UTF-8 讀取（若從換行的位元組序列可知是 UTF-16 / UTF-32，則為沒有 BOM 的該字元編碼）。在輸出記錄之前，會以判斷出的字元編碼嚴格解碼整個檔案加以驗證。若有無效的位元組序列（例如只在開頭 N 行之後才有日文的 Shift_JIS 檔案），則不輸出該檔案的任何記錄，並回報非終止錯誤 DetectionVerificationFailed。此時請增加 -DetectionLineCount，或指定 -Encoding。</maml:para>
+          <maml:para>開頭 N 行只有 ASCII 時，會以沒有 BOM 的 UTF-8 讀取（若從換行的位元組序列可知是 UTF-16 / UTF-32，則為沒有 BOM 的該字元編碼）。在輸出記錄之前，會以判斷出的字元編碼嚴格解碼整個檔案加以驗證。若有無效的位元組序列（例如只在開頭 N 行之後才有日文的 Shift_JIS 檔案），則不輸出該檔案的任何記錄，並回報非終止錯誤 DetectionVerificationFailed。此時請增加 -DetectionLineCount，或指定 -Encoding。沒有 BOM 的 UTF-16 / UTF-32 檔案若在英數字中夾雜兩個位元組都小於 0x80 的字元（如「上」U+4E0A），以整個檔案判斷時會是 us-ascii（請參閱 Resolve-Encoding 的備註），但指定 -DetectionLineCount 時，會以從換行的位元組序列可知的字元編碼正確讀取。</maml:para>
           <maml:para>為了驗證，檔案會讀取兩次。需要速度時請指定 -Encoding（不進行判斷也不進行驗證）。沒有換行的檔案為了判斷會讀取整個檔案，因此達 2 GB 以上時無法判斷。指定 -Encoding 時會忽略此參數。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
@@ -2886,7 +2886,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:name>DetectionLineCount</maml:name>
         <maml:description>
           <maml:para>判斷既有檔案字元編碼時使用的開頭行數。對象為 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出檔案，以及 -Append 的附加目標檔案。省略時以整個檔案判斷。</maml:para>
-          <maml:para>行數是實體行數，以換行（CR-LF / LF / CR）計算，並非 CSV 的記錄數。開頭 N 行只有 ASCII 時，會視為沒有 BOM 的 UTF-8（若從換行的位元組序列可知是 UTF-16 / UTF-32，則為沒有 BOM 的該字元編碼）。</maml:para>
+          <maml:para>行數是實體行數，以換行（CR-LF / LF / CR）計算，並非 CSV 的記錄數。開頭 N 行只有 ASCII 時，會視為沒有 BOM 的 UTF-8（若從換行的位元組序列可知是 UTF-16 / UTF-32，則為沒有 BOM 的該字元編碼）。沒有 BOM 的 UTF-16 / UTF-32 的現有檔案若在英數字中夾雜兩個位元組都小於 0x80 的字元（如「上」U+4E0A），以整個檔案判斷時會是 us-ascii（請參閱 Resolve-Encoding 的備註），但指定 -DetectionLineCount 時，會視為從換行的位元組序列可知的字元編碼。</maml:para>
           <maml:para>在寫入任何內容之前，會以判斷出的字元編碼嚴格解碼整個檔案加以驗證。若有無效的位元組序列（例如只在開頭 N 行之後才有日文的 Shift_JIS 檔案），則不寫入任何內容，並回報終止錯誤 DetectionVerificationFailed（-WhatIf 時也會回報）。這可以防止 UTF-8 記錄被附加到 Shift_JIS 檔案。為了驗證，檔案會讀取兩次。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
@@ -3398,7 +3398,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:description>
           <maml:para>判斷時使用的開頭行數。省略時以整個檔案判斷（與以往相同）。</maml:para>
           <maml:para>行數是實體行數，以換行（CR-LF / LF / CR）計算，並非 CSV 的記錄數。CSV 引號中的換行也算作 1 行。</maml:para>
-          <maml:para>結果只反映開頭 N 行。只出現在後半部的字元（ASCII 行之後的日文等）不會反映。開頭 N 行只有 ASCII 時，會回報 us-ascii。沒有 BOM 的 UTF-16 / UTF-32 在開頭 N 行只有英數字時，也會是 us-ascii。LineBreak 也是只以開頭 N 行判斷的結果。</maml:para>
+          <maml:para>結果只反映開頭 N 行。只出現在後半部的字元（ASCII 行之後的日文等）不會反映。開頭 N 行只有 ASCII 時，會回報 us-ascii。沒有 BOM 的 UTF-16 / UTF-32 若在開頭 N 行的英數字中夾雜兩個位元組都小於 0x80 的字元（如「上」U+4E0A），也會是 us-ascii（只有英數字的沒有 BOM 的 UTF-16 / UTF-32，會回報該字元編碼）。LineBreak 也是只以開頭 N 行判斷的結果。</maml:para>
           <maml:para>沒有換行的檔案會讀取整個檔案。判斷範圍達 2 GB 以上時無法判斷，會產生錯誤。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
@@ -3487,6 +3487,9 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </maml:alert>
       <maml:alert>
         <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。Resolve-Encoding 沒有明確指定的方法，請在讀寫命令中指定 -Encoding（Convert-ProbedContent 為 -SourceEncoding）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>所有位元組都小於 0x80 的沒有 BOM 的 UTF-16 / UTF-32，只有在所有單位都是英數字的形式（UTF-16LE 為非 00 的位元組後接 00）時才判斷為 UTF-16 / UTF-32，否則回報 us-ascii。已知的限制: (1) 包含兩個位元組都小於 0x80 的字元（「上」U+4E0A 在 UTF-16LE 為 0A 4E、「字」U+5B57、「あ」U+3042、「、」U+3001 等）的檔案會回報 us-ascii。在 Import-ProbedCsv / Export-ProbedCsv 中指定 -DetectionLineCount 即可正確讀取。(2) 像 41 00 這樣只有幾個位元組的檔案，無法與 ASCII 後接 00 的內容區別。若為英數字的形式，會回報 UTF-16 / UTF-32。(3) 包含 U+0000 字元的檔案會回報 us-ascii。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>

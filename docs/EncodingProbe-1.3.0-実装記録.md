@@ -4,7 +4,8 @@
 - 作成日: 2026-10-19
 - 目的: 実装の過程で、仕様書・依頼・当初の想定と異なる結果になった点と、
   仕様書に書かれていなかったため実装側で決めた点を残す（1.2.0 の実装記録と同じ形式）
-- 章の構成: 第一次（共通の部品と `Resolve-Encoding -DetectionLineCount`）は 1〜5 章、第二次（`Import-ProbedCsv`）は 6 章、第三次（`Export-ProbedCsv` と仕上げ）は 7 章
+- 章の構成: 第一次（共通の部品と `Resolve-Encoding -DetectionLineCount`）は 1〜5 章、第二次（`Import-ProbedCsv`）は 6 章、第三次（`Export-ProbedCsv` と仕上げ）は 7 章、
+  第四次（クラスライブラリの `0x00` を含む入力の判定の修正。`docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md`）は 8 章
 
 ---
 
@@ -294,6 +295,7 @@ net48 版を Windows PowerShell 5.1.26100.9711 で、net10.0 版を PowerShell 7
 
 英数字だけの BOM 無しの UTF-16LE / UTF-16BE / UTF-32LE / UTF-32BE を全体で判定すると、両ホストとも結果は次のとおりだった。
 仕様書の推定どおりなので、課題 `docs/EncodingProbe-課題-BOM無しUTF-16の英数字だけの判定.md` を起票した。クラスライブラリは変更していない。
+（第四次で直した。8 章）
 
 - `Resolve-Encoding` は `20127 / us-ascii` を返した
 - `Get-ProbedContent` は `U+0000` の混じった行を返した
@@ -301,6 +303,7 @@ net48 版を Windows PowerShell 5.1.26100.9711 で、net10.0 版を PowerShell 7
 ### 5.6 クラスライブラリ
 
 `git diff master -- SnowStack.EncodingProbe/` は空である（クラスライブラリは変更していない）。
+（第一次の時点の記録。第四次でクラスライブラリを変更した。8 章）
 
 ---
 
@@ -399,6 +402,8 @@ PSCompat の `Import/M1/*` の結果は、両ホストで同じだった。xUnit
 
 - 英数字だけの BOM 無しの UTF-32BE を全体で判定すると、既知の課題（`docs/EncodingProbe-課題-BOM無しUTF-16の英数字だけの判定.md`）のとおり us-ascii と判定され、
   列名にも値にも U+0000 が混じる。`-DetectionLineCount` を指定すると、読み替えで正しく読める。PSCompat はこの現状の挙動も記録している
+  - **第四次で直した（8 章）。** 英数字だけの BOM 無しの UTF-32BE は全体の判定でも UTF-32BE（12001）と判定され、U+0000 は混じらない。
+    PSCompat の該当シナリオは、両ホストとも修正後の値を記録する（ホストの結果を突き合わせるものなので、シナリオは変えていない）
 - `-DetectionLineCount` の検証で報告するバイト列は、UTF-8 では不正と分かった 1 バイト（例: Shift_JIS の「日」`93 FA` の `93`）になる。
   `Convert-ProbedContent` の `InvalidSourceBytes` と同じ規則である
 
@@ -503,9 +508,170 @@ PSCompat の `Import/M1/*` の結果は、両ホストで同じだった。xUnit
 ### 7.7 文書とバージョン
 
 - バージョン: モジュールの csproj（`Version` / `AssemblyVersion` / `FileVersion`）と `.psd1`（`ModuleVersion`、`ReleaseNotes`）を 1.3.0 にした。
-  クラスライブラリの csproj は 1.2.0 のまま（指示書 4.9）
+  クラスライブラリの csproj は 1.2.0 のまま（指示書 4.9）。**第四次で 1.3.0 に上げた（8 章）**
 - `CHANGELOG.md` / `README.md` に 1.3.0 の節を書いた。README のリリース日の行は、リリース時に利用者が書く
 - `CLAUDE.md` を指示書 7 節のとおり更新した（コマンドの一覧、1.3.0 で追加したコマンドの節、判定はファイル全体を対象とするの例外、
   `Resolve-Encoding` の制約の文言、ライセンス上の注意、モジュールだけをリリースする場合の扱い、1.3.0 の作業記録）
 - `docs/EncodingProbe-1.1.0-仕様書.md` に注記を 2 か所入れた（2.2 の `Resolve-Encoding` を変更しない、9 章の `-TotalCount` と判定の範囲）
 - 仕様書は 9.1（ワイルドカード 0 件。第二次）、15 章・20 章（`Export-ProbedCsv` のパラメータセット。第三次）を改めた
+
+---
+
+## 8. 第四次 — `0x00` を含む入力の判定の修正（クラスライブラリ、2026-10-20）
+
+仕様は `docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md`（以下「追補」）、期待値の根拠は `docs/EncodingProbe-1.3.0-調査-NUL入りの入力の判定.md`（以下「調査報告」）の 7 章。
+課題 `docs/EncodingProbe-課題-BOM無しUTF-16の英数字だけの判定.md` を、調査報告の修正案 2（厳密な構造の検査）で直した。
+
+### 8.1 利用者の回答と決定
+
+| 事項 | 決定 |
+|---|---|
+| 計画 | 提示した計画のとおりに進める |
+| (a) NuGet の `PackageReleaseNotes` | 追記ではなく、1.3.0 の内容に**差し替える**（それまでは「初回リリース。…」のまま古くなっていた） |
+| (b) 追補 4.1 の入力のモジュールのテスト | 依頼の UTF-16LE だけでなく、UTF-16LE / BE・UTF-32LE / BE の **4 つの形**で確かめる |
+
+### 8.2 判定処理の変更（`SnowStack.EncodingProbe/EncodingDetector.cs`）
+
+`Detection` の ISO-2022 / ASCII の分岐で ASCII（20127）とした直後に、次を加えた。判定順序とそれ以外の判定メソッドは変えていない。
+
+```csharp
+encInfo.CodePage = CodePageAscii;
+encInfo.Bom = false;
+
+// 0x00 を含む場合だけ、英数字だけの BOM 無し UTF-32 / UTF-16 であるかを厳密に調べる（1.3.0）。
+// 成立しなければ ASCII のまま（UTF-8 の判定には進まない）
+if (Array.IndexOf(this._buffer, (byte)0x00, 0, this.BufferSize) >= 0)
+{
+    int nulPaddedCodePage;
+    if (NulPaddedUnicode_Detection(out nulPaddedCodePage) == false)
+    {
+        encInfo.CodePage = nulPaddedCodePage;
+    }
+}
+```
+
+- 新しいメソッドは `NulPaddedUnicode_Detection(out int codePage)` と `AllUnitsMatch(int unitSize, int nonZeroIndex)`。`ISO2022_Detection` と `Utf16_Detection` の間に置いた
+- 戻り値は既存の判定メソッドと同じく「`true` = 規格外」とし、コードページは出力引数で返す（調査報告 7.1.1 の手本は「成立したコードページ、不成立は 0」を返していたが、既存の `ISO2022_Detection(out ..., out int codePage)` の形に合わせた）
+- 順序は追補 2.2 の表のとおり UTF-32LE → UTF-32BE → UTF-16LE → UTF-16BE。長さの条件（4 の倍数で 4 以上・偶数で 2 以上）もメソッドの中で見る
+- 既存の `Utf16_Detection` / `Utf32_Detection` を使わない理由（調査報告 4.2）と、既知の限界（追補 4 章）を XML ドキュメントの `remarks` に書いた
+- `EncodingWebName` / `PSEncodingName` / `UsePSName` は、分岐の後の既存の処理（`EncodingName` / `PSEncodingName` / `SetUsePSName`）でコードページから決まる。BOM 無しの UTF-16 / UTF-32 を判定した既存の経路と同じ値になる（`utf-16` / `unicodeFFFE` / `utf-32` / `utf-32BE`）
+- `LineBreak` と `Culture` は変えていない（追補 2.3）
+
+### 8.3 バージョン
+
+- クラスライブラリの csproj の `Version` / `AssemblyVersion` / `FileVersion` を 1.3.0 にし、`PackageReleaseNotes` を 1.3.0 の内容に差し替えた（8.1 (a)）
+- `.psd1` の `ReleaseNotes` を、同梱のクラスライブラリも 1.3.0 であることと、この修正の内容に改めた
+- UTF.Unknown の参照バージョンと `EncodingProbe.License` 定数は変えていない（追補 6 章）
+- これで CLAUDE.md の「バージョン更新時に触る場所」の 3 か所がすべて 1.3.0 になった
+
+### 8.4 テスト
+
+**コア（`tests/EncodingProbe.Tests/DetectorTests/NulInputDetectionTests.cs`、新規）**
+
+- 入力は測定スクリプト（`tools/Measure-NulInputDetection.ps1`）の組み立てを C# に移したもので、符号位置または 16 進のリテラルからバイト列を直接作る。テストデータのファイルは増やしていない
+- 期待値は調査報告 7.2 の「修正案 2」の列（Combined / NativeOnly）と、第 2 回の測定の `detect-strict-*.tsv` の UtfUnknownOnly の値。`CodePage` / `EncodingWebName` / `Bom` / `LineBreak` を確かめる
+- 1 行のテストは「入力 1 件 × 判定方式 3 × カルチャー 2（ja-JP / en-US）」の 1 通り。メソッドは群ごとに分けた
+
+| メソッド | 群 | 入力 | 行 |
+|---|---|---|---|
+| `AlphanumericUnicodeWithoutBom_IsDetectedAsInput` | A | 52 | 312 |
+| `AsciiWithNul_StaysAscii` | B・B12 | 45 | 270 |
+| `OutsideOfAsciiBranch_IsUnchanged` | C2〜C4 | 10 | 60 |
+| `KnownLimit_UnicodeWithLowBytesOnlyCharacter_IsAscii_NotCorrectBehavior` | A6（既知の限界。追補 4.1・4.3） | 11 | 66 |
+| `KnownLimit_ShortInput_IsDecidedByUnitShape` | B9〜B11（既知の限界。追補 4.2） | 12 | 72 |
+| `InputCounts_MatchTheReport` | 群ごとの件数が調査報告と同じこと | — | 1 |
+
+計 781 行。修正前の `EncodingDetector.cs` で実行すると 244 行が落ちることを確かめた（A の 52 件 × Combined / NativeOnly × 2 カルチャー = 208、B9〜B11 のうち UTF-16 / UTF-32 になる 9 件 × 4 = 36）。
+
+- 入力の一覧は静的フィールドの初期化順に左右されないよう、`Lazy` で最初に使うときに組み立てる
+
+**モジュール（`tests/EncodingProbe.PowerShell.Tests`）**
+
+| テスト | 変更 | 行 |
+|---|---|---|
+| `ResolveEncodingCmdletTests.DetectionLineCount_UnicodeWithoutBom_AsciiHead_ReportsUsAscii` | `…_ReportsInputEncoding` に改名し、期待値を入力のコードページにした（調査報告 7.6） | 4（既存） |
+| `ImportProbedCsvTests.Import_DetectionLineCount_UnicodeWithoutBomAsciiHead_ReadsCorrectly` | `Resolve-Encoding -DetectionLineCount 2` の期待値を入力のコードページにした（読み込みの期待値は変わらない） | 8（既存） |
+| `ResolveEncodingCmdletTests.WholeFile_AlphanumericUnicodeWithoutBom_ReportsInputEncoding` | 追加。全体の判定 | 4 |
+| `ResolveEncodingCmdletTests.WholeFile_UnicodeWithLowBytesOnlyCharacter_ReportsUsAscii_KnownLimit` | 追加。追補 4.1 の入力（`A,上` / `1,2`）は全体では us-ascii | 4 |
+| `GetProbedContentTests.Read_AlphanumericUnicodeWithoutBom_DetectsAndDecodes` | 追加。U+0000 の混じらない行で読む | 4 |
+| `ImportProbedCsvTests.Import_WholeFile_AlphanumericUnicodeWithoutBom_ReadsCorrectly` | 追加。全体の判定で正しく読む | 4 |
+| `ImportProbedCsvTests.Import_UnicodeWithLowBytesOnlyCharacter_DetectionLineCountReadsCorrectly` | 追加。追補 4.1 の入力が、全体では us-ascii、`-DetectionLineCount 1` では列名 `A` / `上`、値 `1` / `2` と読めること（8.1 (b) で 4 つの形） | 4 |
+
+追補 4.1 の入力は、ヘッダーとデータの 2 行にした。調査報告 7.5 の A6-ue-u16le（`A,上` の 1 行だけ）が `-DetectionLineCount 1` で 0 行になったのは、ヘッダーしか無いためである（エラーではない）。
+
+**PSCompat（`tests/PSCompat/ProbedCompatScenarios.ps1`）**
+
+`NulInput/<形>/<種類>/...` の 28 シナリオを追加した。4 つの形 × 2 種類（`alnum`: 英数字だけ、`lowbyte`: 追補 4.1 の入力）×
+`Resolve-Encoding` / `Get-ProbedContent` / `Import-ProbedCsv` の全体の判定（24）と、`lowbyte` の `Import-ProbedCsv -DetectionLineCount 1`（4）。
+既存の `Resolve/DetectionLineCount/<形>/ascii-head/...` のシナリオは、両ホストで同じように値が変わるので、そのままにした。
+
+### 8.5 テストと確認の結果（2026-10-20）
+
+| 対象 | 結果 |
+|---|---|
+| `dotnet test SnowStack.EncodingProbe.slnx` | コア net10.0 1960 / 1960、net48 1970 / 1970（それぞれ 781 件の追加）。モジュール net10.0 1099 / 1099（20 件の追加） |
+| PSCompat | 719 シナリオ（既存 691 ＋ 追加 28）すべてで 5.1 と 7.x の結果が一致 |
+
+**再測定（依頼 4 章）**
+
+`tools/Invoke-NulInputMeasurement.ps1` を、修正後の `feature/1.3.0-csv` を現状（`current`）として実行した。
+スクリプトは修正案のビルドを必須の引数（`-ProposalRoot`）に取るが、実験用の worktree はすでに無いため、修正後のリポジトリ自身を渡した。
+出力先は一時フォルダーにし、生の結果はコミットしていない。
+
+```powershell
+dotnet build SnowStack.EncodingProbe.slnx -c Debug
+pwsh -NoProfile -File tools/Invoke-NulInputMeasurement.ps1 -ProposalRoot . -OutDirectory <一時フォルダー>
+```
+
+結果の `detect-current-{net10.0,net48}.tsv` と `commands-current-{net10.0,net48}.tsv` は、第 2 回の
+`tools/NulInputDetectionResults/round2/detect-strict-*.tsv` / `commands-strict-*.tsv` と**バイト単位で同一**だった。
+
+| 比較 | 行 | 結果 |
+|---|---|---|
+| 判定 API（net10.0） | 1080（180 件 × 判定方式 3 × カルチャー 2） | 同一 |
+| 判定 API（net48） | 1080 | 同一 |
+| コマンド（net10.0） | 55（11 件 × 5 コマンド） | 同一 |
+| コマンド（net48） | 55 | 同一 |
+
+診断の `diag-*.tsv` は比べていない。`strict` 列は実験用ブランチのメソッド名（`StrictNulUnicode_Detection`）をリフレクションで呼ぶため、
+名前を変えた本実装では `-` になる。
+
+**実ホストでの手動確認（依頼 4 章）**
+
+ビルド済みの DLL を直接 `Import-Module` し、Windows PowerShell 5.1.26100 と PowerShell 7.6.7 で同じスクリプトを実行した。両ホストで結果は同じだった。
+
+| 入力 | 確認 | 結果 |
+|---|---|---|
+| 英数字だけの BOM 無し UTF-16LE の CSV（`Name,Memo` / `a,b` / `c,d`） | `Resolve-Encoding` | `1200 / utf-16 / Bom=False / CrLf` |
+| 同上 | `Get-ProbedContent` | 3 行。文字のコードに U+0000 が無い |
+| 同上 | `Import-ProbedCsv` | `Name=[a] Memo=[b]`、`Name=[c] Memo=[d]` |
+| `Hello, World!` ＋ `00` | `Resolve-Encoding` | `20127 / us-ascii / Bom=False / None` |
+| 追補 4.1 の入力（`A,上` / `1,2` の BOM 無し UTF-16LE） | `Resolve-Encoding`（全体） | `20127 / us-ascii` |
+| 同上 | `Resolve-Encoding -DetectionLineCount 1` | `20127 / us-ascii`（`Resolve-Encoding` は読み替えない） |
+| 同上 | `Import-ProbedCsv -DetectionLineCount 1` | 1 件。列名 `A`（0041）と `上`（4E0A）、値 `1` と `2` |
+
+### 8.6 追補と異なった点・追補に無く決めた点
+
+- 追補と異なった点は無い
+- 新しいメソッドの名前と戻り値の形（8.2）。追補 2.2 は「名前・コメント・置き場所は既存のコードのスタイルに合わせて書き直す」としている
+- テストの行の単位（8.4）と、UtfUnknownOnly の期待値を第 2 回の測定の TSV から取ったこと（調査報告 7.2 の表は NativeOnly の値だけを載せている）
+- 再測定で `-ProposalRoot` に修正後のリポジトリ自身を渡したこと（8.5）
+- 追補 7 章の表に無い `docs/EncodingProbe-1.3.0-リリース手順.md` も直したこと（「クラスライブラリは 1.2.0 のまま公開しない」が修正後の状態と合わなくなったため。8.7）
+- 未追跡だった追補（仕様書）をコミットしたこと。依頼文・実測依頼の文書はコミットしていない
+- 配布フォルダーの DLL は作り直していない（第三次のビルドのまま）。リリース手順 2 章に、作り直す必要があることを注記した
+
+### 8.7 直した文書
+
+| 文書 | 内容 |
+|---|---|
+| `docs/EncodingProbe-1.3.0-仕様書.md` | 冒頭（対象バージョン・前提文書）、1.1（表に追補の行）、1.2（同時リリース。経緯）、1.3、3.2（UTF-16 / UTF-32 の行が必要な理由を追補 4.1 の入力に改め、経緯を注記）、5.3 の License 定数の理由、6.3、24 章 U4、24.1（1.3.0 で対応した）。1.4 は確かめた（この課題を「扱わないもの」に含めていない） |
+| MAML（5 言語、`zh-TW` を `zh-HK` / `zh-MO` に複製） | `Resolve-Encoding -DetectionLineCount` の記述を改め、NOTES に既知の限界 3 点の項目を追加。`Import-ProbedCsv` / `Export-ProbedCsv` の `-DetectionLineCount` に、追補 4.1 の入力を読める旨の案内を追加 |
+| `docs/EncodingProbe-1.3.0-動作確認手順書.md` | 1.2 の `u16_ascii.csv` の期待値を 1200 にし、追補 4.1 の入力の手順を追加。4 章のチェックの 2 をクラスライブラリも 1.3.0 に改めた |
+| `docs/EncodingProbe-1.3.0-実装記録.md` | 本章。冒頭の章の構成、5.5・5.6・6.6・7.7 に注記（元の記述は残した） |
+| `docs/EncodingProbe-課題-BOM無しUTF-16の英数字だけの判定.md` | 状態を「対応済み（1.3.0）」にし、5 章（採用した直し方・結果・残った限界・参照）を追加 |
+| `docs/EncodingProbe-1.3.0-ClaudeCode指示書.md` | 1 節に追補の例外を注記。4.9 に第四次で改めた旨を注記 |
+| `CHANGELOG.md` | 1.3.0 の見出しから「PowerShell モジュールのみ」を外し、クラスライブラリの不具合の修正の節を追加。既知の課題の節を削除 |
+| `README.md` | 1.3.0 の節に、クラスライブラリの修正と既知の限界を追加 |
+| `CLAUDE.md` | 判定パイプラインの 3、バージョン更新時に触る場所の注記、1.3.0 の作業記録 |
+| `publish/SnowStack.EncodingProbe.PowerShell/SnowStack.EncodingProbe.PowerShell.psd1` | `ReleaseNotes`（8.3） |
+| `docs/EncodingProbe-1.3.0-リリース手順.md` | 冒頭（クラスライブラリも 1.3.0 として公開する）、1 章の確認、2 章に配布フォルダーを作り直す注記、4 章に NuGet パッケージの公開と実験用ブランチの削除を追加 |

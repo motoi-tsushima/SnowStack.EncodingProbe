@@ -74,10 +74,27 @@ Resolve-Encoding .\u16.txt -DetectionLineCount 1
 
 ```powershell
 [System.IO.File]::WriteAllBytes("$t\u16_ascii.csv", $u16.GetBytes("A,B`r`n1,2`r`n3,4`r`n"))
-Resolve-Encoding .\u16_ascii.csv -DetectionLineCount 1   # us-ascii（判定処理の既存の挙動。仕様書 3.2）
+Resolve-Encoding .\u16_ascii.csv -DetectionLineCount 1   # 1200（第四次でクラスライブラリを直した。追補 2 章）
+Resolve-Encoding .\u16_ascii.csv                         # 全体でも 1200
 ```
 
-第二次の後に、`Import-ProbedCsv .\u16_ascii.csv -DetectionLineCount 1` が `A=1, B=2` / `A=3, B=4` を正しく読むことも確かめる（UTF-16LE と読み替える）。
+期待: どちらも `CodePage : 1200`、`Bom : False`。第四次より前は `20127 / us-ascii` だった（仕様書 追補）。
+
+第二次の後に、`Import-ProbedCsv .\u16_ascii.csv -DetectionLineCount 1` と `Import-ProbedCsv .\u16_ascii.csv`（全体）が、
+`A=1, B=2` / `A=3, B=4` を正しく読むことも確かめる（値に U+0000 が混じらない）。
+
+2 バイトとも `0x80` 未満になる文字（「上」U+4E0A）を英数字に混ぜた BOM 無しの UTF-16LE（追補 4.1 の既知の限界）:
+
+```powershell
+[System.IO.File]::WriteAllBytes("$t\u16_ue.csv", $u16.GetBytes("A,上`r`n1,2`r`n"))
+Resolve-Encoding .\u16_ue.csv                            # 20127 / us-ascii（既知の限界）
+Import-ProbedCsv .\u16_ue.csv -DetectionLineCount 1      # A=1, 上=2（第二次の後。改行の型による読み替え）
+```
+
+| 確認 | 期待 |
+|---|---|
+| 全体の判定 | `CodePage : 20127`、`EncodingWebName : us-ascii`（直らない。追補 4.1） |
+| `Import-ProbedCsv -DetectionLineCount 1` | 1 件。列名は `A` と `上`、値は `1` と `2`（U+0000 が混じらない） |
 
 ### 1.3 エラーと表示
 
@@ -217,7 +234,7 @@ Show-Bytes .\same_asneeded.csv
 | # | 項目 |
 |---|---|
 | 1 | モジュールのバージョンが 1.3.0（csproj、`.psd1` の `ModuleVersion`、`ReleaseNotes`） |
-| 2 | **クラスライブラリは 1.2.0 のまま**（NuGet パッケージは公開しない） |
+| 2 | **クラスライブラリも 1.3.0**（csproj の `Version` / `AssemblyVersion` / `FileVersion`、`PackageReleaseNotes`）。NuGet パッケージも公開する（第四次で方針を改めた。仕様書 追補 6 章） |
 | 3 | `.psd1` の `CmdletsToExport` に `Import-ProbedCsv` / `Export-ProbedCsv` がある |
 | 4 | **配布フォルダー（`publish/SnowStack.EncodingProbe.PowerShell/`）に `LICENSE.txt` と `THIRD-PARTY-NOTICES.txt` を置いた**（MIT License の表示の条件。仕様書 5.3） |
 | 5 | `THIRD-PARTY-NOTICES.txt` に PowerShell の節があり、ライセンス本文が原文のまま |

@@ -2355,7 +2355,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:description>
           <maml:para>文字エンコーディングの判定に使う、各ファイルの先頭の行数。省略時はファイル全体で判定します。</maml:para>
           <maml:para>行数は物理的な行数で、改行（CR-LF / LF / CR）で数えます。CSV のレコード数ではありません（引用符の中の改行も 1 行と数えます）。</maml:para>
-          <maml:para>先頭 N 行が ASCII だけの場合は、BOM 無しの UTF-8 として読みます（改行のバイト列から UTF-16 / UTF-32 と分かる場合は、BOM 無しのその文字エンコーディング）。レコードを出力する前に、判定した文字エンコーディングでファイル全体を厳密に復号して検証します。不正なバイト列がある場合（先頭 N 行より後ろにだけ日本語がある Shift_JIS のファイルなど）は、そのファイルのレコードを 1 件も出力せずに、非終了エラー DetectionVerificationFailed を報告します。その場合は -DetectionLineCount を増やすか、-Encoding を指定してください。</maml:para>
+          <maml:para>先頭 N 行が ASCII だけの場合は、BOM 無しの UTF-8 として読みます（改行のバイト列から UTF-16 / UTF-32 と分かる場合は、BOM 無しのその文字エンコーディング）。レコードを出力する前に、判定した文字エンコーディングでファイル全体を厳密に復号して検証します。不正なバイト列がある場合（先頭 N 行より後ろにだけ日本語がある Shift_JIS のファイルなど）は、そのファイルのレコードを 1 件も出力せずに、非終了エラー DetectionVerificationFailed を報告します。その場合は -DetectionLineCount を増やすか、-Encoding を指定してください。BOM 無しの UTF-16 / UTF-32 で、英数字の中に 2 バイトとも 0x80 未満になる文字（「上」U+4E0A など）が混じるファイルは、全体で判定すると us-ascii になりますが（Resolve-Encoding の注意事項を参照）、-DetectionLineCount を指定すると、改行のバイト列から分かる文字エンコーディングで正しく読めます。</maml:para>
           <maml:para>検証のためにファイルを 2 回読みます。速さが必要な場合は -Encoding を指定してください（判定も検証も行いません）。改行の無いファイルは判定のために全体を読むため、2 GB 以上あると判定できません。-Encoding を指定した場合は無視されます。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
@@ -2886,7 +2886,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:name>DetectionLineCount</maml:name>
         <maml:description>
           <maml:para>既存ファイルの文字エンコーディングの判定に使う、先頭の行数。対象は -EncodingFrom の参照ファイル、明示的な -Encoding Auto の出力先、-Append の追記先です。省略時はファイル全体で判定します。</maml:para>
-          <maml:para>行数は物理的な行数で、改行（CR-LF / LF / CR）で数えます。CSV のレコード数ではありません。先頭 N 行が ASCII だけの場合は、BOM 無しの UTF-8 とみなします（改行のバイト列から UTF-16 / UTF-32 と分かる場合は、BOM 無しのその文字エンコーディング）。</maml:para>
+          <maml:para>行数は物理的な行数で、改行（CR-LF / LF / CR）で数えます。CSV のレコード数ではありません。先頭 N 行が ASCII だけの場合は、BOM 無しの UTF-8 とみなします（改行のバイト列から UTF-16 / UTF-32 と分かる場合は、BOM 無しのその文字エンコーディング）。BOM 無しの UTF-16 / UTF-32 で、英数字の中に 2 バイトとも 0x80 未満になる文字（「上」U+4E0A など）が混じる既存のファイルは、全体で判定すると us-ascii になりますが（Resolve-Encoding の注意事項を参照）、-DetectionLineCount を指定すると、改行のバイト列から分かる文字エンコーディングとみなします。</maml:para>
           <maml:para>何かを書く前に、判定した文字エンコーディングでファイル全体を厳密に復号して検証します。不正なバイト列がある場合（先頭 N 行より後ろにだけ日本語がある Shift_JIS のファイルなど）は、何も書かずに終了エラー DetectionVerificationFailed を報告します（-WhatIf でも報告します）。これにより、Shift_JIS のファイルに UTF-8 のレコードが追記されるのを防ぎます。検証のためにファイルを 2 回読みます。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
@@ -3398,7 +3398,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:description>
           <maml:para>判定に使う先頭の行数。省略時はファイル全体で判定します（従来どおり）。</maml:para>
           <maml:para>行数は物理的な行数で、改行（CR-LF / LF / CR）で数えます。CSV のレコード数ではありません。CSV の引用符の中の改行も 1 行と数えます。</maml:para>
-          <maml:para>結果は先頭 N 行だけを見たものです。後半にだけ現れる文字（ASCII の行の後の日本語など）は反映されません。先頭 N 行が ASCII だけなら us-ascii と報告します。BOM 無しの UTF-16 / UTF-32 で先頭 N 行が英数字だけの場合も us-ascii になります。LineBreak も先頭 N 行だけで判定した結果です。</maml:para>
+          <maml:para>結果は先頭 N 行だけを見たものです。後半にだけ現れる文字（ASCII の行の後の日本語など）は反映されません。先頭 N 行が ASCII だけなら us-ascii と報告します。BOM 無しの UTF-16 / UTF-32 で、先頭 N 行の英数字の中に 2 バイトとも 0x80 未満になる文字（「上」U+4E0A など）が混じる場合も us-ascii になります（英数字だけの BOM 無し UTF-16 / UTF-32 は、その文字エンコーディングと報告します）。LineBreak も先頭 N 行だけで判定した結果です。</maml:para>
           <maml:para>改行の無いファイルでは、ファイル全体を読みます。判定する範囲が 2 GB 以上になる場合は判定できず、エラーになります。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
@@ -3487,6 +3487,9 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </maml:alert>
       <maml:alert>
         <maml:para>シングルバイト系の文字エンコーディング（windows-1252、ISO-8859 など）はバイト列の構造からは判別できず、文章の統計で推定しています。そのため判定の成否は長さよりも内容に左右されます。文字の一覧、記号・数字の多い行、その言語で通常使わない文字を含むテキストでは、数百バイトあっても判定できない（CodePage が -1）ことがあります。Resolve-Encoding には明示する手段が無いため、読み書きのコマンドで -Encoding（Convert-ProbedContent では -SourceEncoding）を指定してください。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>すべてのバイトが 0x80 未満の BOM 無し UTF-16 / UTF-32 は、すべての単位が英数字の形（UTF-16LE なら 00 以外のバイトの後に 00）になっている場合だけ UTF-16 / UTF-32 と判定し、それ以外は us-ascii と報告します。既知の限界: (1) 2 バイトとも 0x80 未満になる文字（「上」U+4E0A = UTF-16LE で 0A 4E、「字」U+5B57、「あ」U+3042、「、」U+3001 など）を含むファイルは us-ascii と報告します。Import-ProbedCsv / Export-ProbedCsv では、-DetectionLineCount を指定すると正しく読めます。(2) 41 00 のような数バイトのファイルは、ASCII の後に 00 が付いたものと区別できません。英数字の形であれば UTF-16 / UTF-32 と報告します。(3) U+0000 の文字を含むファイルは us-ascii と報告します。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>

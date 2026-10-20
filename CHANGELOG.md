@@ -3,16 +3,29 @@
 このファイルは SnowStack.EncodingProbe（NuGet パッケージ）と
 SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更をまとめたものです。
 
-## 1.3.0（PowerShell モジュールのみ）
+## 1.3.0
 
 PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv` / `Export-ProbedCsv` を追加し、
 `Resolve-Encoding` に `-DetectionLineCount` を追加しました。
 
-**クラスライブラリ（NuGet パッケージ `SnowStack.EncodingProbe`）は変更していません。** バージョンも 1.2.0 のままで、
-モジュール 1.3.0 はクラスライブラリ 1.2.0 を同梱します。
+クラスライブラリ（NuGet パッケージ `SnowStack.EncodingProbe`）は、判定処理の不具合を 1 件直し、1.3.0 としました（公開 API の変更はありません）。
+モジュール 1.3.0 はクラスライブラリ 1.3.0 を同梱します。
 
-仕様は `docs/EncodingProbe-1.3.0-仕様書.md`、根拠となった標準の CSV コマンドの実測は
-`docs/EncodingProbe-1.3.0-調査-CSVコマンド挙動の実測.md`、実装の過程で決めたことは `docs/EncodingProbe-1.3.0-実装記録.md` にあります。
+仕様は `docs/EncodingProbe-1.3.0-仕様書.md` と `docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md`（クラスライブラリの修正）、
+根拠となった標準の CSV コマンドの実測は `docs/EncodingProbe-1.3.0-調査-CSVコマンド挙動の実測.md`、
+`0x00` を含む入力の判定の実測は `docs/EncodingProbe-1.3.0-調査-NUL入りの入力の判定.md`、
+実装の過程で決めたことは `docs/EncodingProbe-1.3.0-実装記録.md` にあります。
+
+### 不具合の修正（クラスライブラリ）
+
+- **BOM 無しの UTF-16 / UTF-32 で英数字だけのテキストが、`us-ascii` と判定されていた問題を直しました**（1.0.0 から存在）。
+  読み込むと各文字の間に `U+0000` が混じっていました。`Resolve-Encoding`・`Get-ProbedContent`・`Import-ProbedCsv` など、判定を使うすべてのコマンドに効きます
+  - `0x00` を含み、すべてのバイトが `0x80` 未満の入力を、**すべての単位**が UTF-16 / UTF-32 の英数字の形（UTF-16LE なら `<00 以外> 00`）に合うときだけ UTF-16 / UTF-32 と判定します。
+    合わなければ、従来どおり `us-ascii` です。`0x00` を含む ASCII のテキスト（末尾の `00`、`00` で埋めた固定長レコードなど）は `us-ascii` のままです
+  - 判定順序と、それ以外の入力に対する結果は変わりません（`0x00` を含まない入力、BOM のある入力、`0x80` 以上のバイトを含む入力、ESC シーケンスのある入力）
+  - 既知の限界: 2 バイトとも `0x80` 未満になる文字（「上」U+4E0A など）や U+0000 を英数字に混ぜた BOM 無しの UTF-16 / UTF-32 は、従来どおり `us-ascii` です
+    （`Import-ProbedCsv` / `Export-ProbedCsv` で `-DetectionLineCount` を指定すれば、正しく読み書きできます）。
+    `41 00` のような数バイトの入力は、形に合えば UTF-16 / UTF-32 と判定します
 
 ### 追加したコマンド
 
@@ -50,10 +63,7 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
   **使う前にファイル全体を厳密に復号して検証します。** 判定を誤っていれば（先頭が英数字で後半に日本語がある Shift_JIS など）、
   何も読み書きせずにエラー `DetectionVerificationFailed` で止まります。検証のためにファイルを 2 回読みます。`-Encoding` を明示すれば、判定も検証も行いません
 
-### 既知の課題（起票のみ）
-
-- BOM 無しの UTF-16 / UTF-32 で英数字だけのファイルを全体で判定すると、`us-ascii` と判定されます（クラスライブラリの判定処理の課題。1.0.0 から存在）。
-  `docs/EncodingProbe-課題-BOM無しUTF-16の英数字だけの判定.md` に起票しました。`Import-ProbedCsv` / `Export-ProbedCsv` で `-DetectionLineCount` を指定した場合は、正しく読み書きできます
+>>>>
 
 ### ライセンス
 

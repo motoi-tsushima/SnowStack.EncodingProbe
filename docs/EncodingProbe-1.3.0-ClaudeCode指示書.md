@@ -29,6 +29,10 @@
 - **クラスライブラリ（`SnowStack.EncodingProbe` プロジェクト）のすべて。** 1.3.0 は PowerShell モジュールだけのリリースである。
   クラスライブラリに手を入れる必要が生じたら、実装を止めて報告すること
 - クラスライブラリのバージョン（csproj の `Version` / `AssemblyVersion` / `FileVersion`）。1.2.0 のまま
+
+> **例外（第四次、2026-10-20）:** `docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md` の変更（判定処理の追補 2 章の点と、
+> クラスライブラリのバージョンを 1.3.0 に上げること）だけは、この制約を解除する。利用者の決定による（追補 1 章）。
+> それ以外のクラスライブラリの変更（判定順序・他の判定メソッド・公開 API）は、引き続き禁止する。
 - `Resolve-Encoding` の**既存の**パラメータと戻り値。`-DetectionLineCount` の追加だけを行う（仕様書 1.3 の例外）
 - `Get-EncodingProbePlatformInfo`、`EncodingInformation` 型
 - 既存の Probed 系コマンド（`Get-` / `Set-` / `Add-ProbedContent`、`Out-ProbedFile`、`Convert-ProbedContent`、`ConvertTo-DotNetEncoding`）の挙動。
@@ -170,6 +174,7 @@
 
 - 上げるのは**モジュールだけ**: `SnowStack.EncodingProbe.PowerShell.csproj`（`Version` / `AssemblyVersion` / `FileVersion`）と `.psd1`（`ModuleVersion`、`ReleaseNotes`）を 1.3.0 にする
 - クラスライブラリの csproj は 1.2.0 のまま（CLAUDE.md は 3 か所を揃えるよう書いているが、1.3.0 は例外。CLAUDE.md の該当箇所にもその旨を追記する）
+  （第四次で改めた: クラスライブラリも 1.3.0 に上げた。1 節の例外を参照）
 - バージョンを上げるのは第三次の最後でよい
 
 ---
