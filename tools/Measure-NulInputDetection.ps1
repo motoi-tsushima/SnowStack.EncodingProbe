@@ -17,11 +17,18 @@
       A … 修正案で UTF-16 / UTF-32 になってほしいもの
       B … 修正案でも ASCII のままであってほしいもの（リスクの確認）
       C … 修正案で結果が変わらないはずのもの（回帰の確認）。C1 は TestData のすべてのファイル
+    第 2 回（修正案 2）で追加した群（調査文書の 7 章）:
+      A6 … 修正案 2 では直らないと予想しているもの（2 バイトとも 0x01〜0x7F になる文字、U+0000 を含むもの）
+      B9〜B11 … 区切りにくい短い入力（2・3・4・5・6 バイト）
+      B12 … 実在しそうな 0x00 入りの ASCII
 
     出力するファイル（TFM は net10.0 または net48）:
       detect-<BuildName>-<TFM>.tsv   … 入力 × カルチャー × 判定方式ごとの EncodingProbe.Detect の結果
       diag-<BuildName>-<TFM>.tsv     … 入力ごとの診断（ISO2022_Detection / Utf32_Detection / Utf16_Detection を
-                                       リフレクションで単独に呼んだ結果と、NULL パターンの数）
+                                       リフレクションで単独に呼んだ結果と、NULL パターンの数）。
+                                       strict 列は修正案 2 の StrictNulUnicode_Detection を単独で呼んだ結果
+                                       （そのメソッドが無いビルドでは '-'）。strictrule 列は修正案 2 の規則を
+                                       このスクリプトで数え直した値（補助。どのビルドでも同じ）
       commands-<BuildName>-<TFM>.tsv … 代表の入力に対するコマンドの結果（-ModuleDll を指定した場合だけ）
 
 .PARAMETER Bin
@@ -38,7 +45,7 @@
     -SkipCommands を指定するとコマンドを測らない。
 
 .PARAMETER BuildName
-    出力ファイル名に入れるビルドの名前（例: current / proposal）。
+    出力ファイル名に入れるビルドの名前（例: current / proposal / strict）。
 
 .PARAMETER OutDirectory
     TSV の出力先（UTF-8、BOM 無し）。
@@ -228,6 +235,60 @@ Add-Input -Group 'B8' -Id 'B8-12' -Label 'A 000000 B 000000 C D 0000 (12 バイ�
 Add-Input -Group 'B8' -Id 'B8-16' -Label 'A 000000 B 000000 C 00 D 00000000 00 (16 バイト)' -Bytes (ConvertFrom-Hex '41 00 00 00 42 00 00 00 43 00 44 00 00 00 00 00')
 
 #--------------------------------------------------------------------------
+# 第 2 回で追加した入力（A6・B9〜B12）
+#--------------------------------------------------------------------------
+# A6. 2 バイトとも 0x01〜0x7F になる文字（すべてのバイトが 0x80 未満になる）
+#   上 U+4E0A（0A 4E）、字 U+5B57（57 5B）、あ U+3042（42 30）、、 U+3001（01 30。制御文字の範囲のバイトを含む）
+$a6Chars = [ordered]@{ 'ue' = 0x4E0A; 'ji' = 0x5B57; 'a' = 0x3042; 'touten' = 0x3001 }
+$a6Names = @{ 'ue' = '上 U+4E0A'; 'ji' = '字 U+5B57'; 'a' = 'あ U+3042'; 'touten' = '、 U+3001' }
+foreach ($key in $a6Chars.Keys) {
+    $text = ('A,{0}' -f [char]$a6Chars[$key]) + "`r`n"
+    $group = if ($key -eq 'ue') { 'A6-1' } else { 'A6-2' }
+    Add-UnicodeForms -Group $group -Id ('A6-{0}' -f $key) -Label ('A,{0} CRLF' -f $a6Names[$key]) -Text $text -Forms 'u16le' -Command:($key -eq 'ue')
+    Add-UnicodeForms -Group $group -Id ('A6-{0}' -f $key) -Label ('A,{0} CRLF' -f $a6Names[$key]) -Text $text -Forms 'u16be'
+}
+Add-UnicodeForms -Group 'A6-3' -Id 'A6-ue' -Label ('A,{0} CRLF' -f $a6Names['ue']) -Text (('A,{0}' -f [char]0x4E0A) + "`r`n") -Forms 'u32le', 'u32be'
+Add-UnicodeForms -Group 'A6-4' -Id 'A6-nul' -Label 'A,B U+0000 C CRLF' -Text ("A,B{0}C`r`n" -f [char]0) -Forms 'u16le'
+
+# B9〜B11. 区切りにくい短い入力
+foreach ($hex in '41 00', '00 41', '0A 00', '00 0A') {
+    Add-Input -Group 'B9' -Id ('B9-' + $hex.Replace(' ', '')) -Label $hex -Bytes (ConvertFrom-Hex $hex) -Command:($hex -eq '41 00')
+}
+foreach ($hex in '41 00 00 00', '00 00 00 41', '41 00 42 00', '00 41 00 42', '41 42 43 00') {
+    Add-Input -Group 'B10' -Id ('B10-' + $hex.Replace(' ', '')) -Label $hex -Bytes (ConvertFrom-Hex $hex)
+}
+foreach ($hex in '41 00 42', '41 00 42 00 43', '41 00 42 00 43 00') {
+    Add-Input -Group 'B11' -Id ('B11-' + $hex.Replace(' ', '')) -Label $hex -Bytes (ConvertFrom-Hex $hex)
+}
+
+# B12-1. 英数字のログの後ろを 00 で 4096 バイトまで埋めたもの（本文の長さを偶数・奇数で変える）
+$logText = "2026-10-20 10:00:00 INFO start`r`n2026-10-20 10:00:01 INFO ready`r`n"
+foreach ($body in $logText, ($logText + 'x')) {
+    $bodyBytes = Ascii $body
+    Add-Input -Group 'B12-1' -Id ('B12-1-pad4k-body{0}' -f $bodyBytes.Length) -Label ('ログ {0} バイト + 00 で 4096 バイトまで' -f $bodyBytes.Length) -Bytes (Join-Bytes @($bodyBytes, (New-Zeros (4096 - $bodyBytes.Length))))
+}
+
+# B12-2. 改行（CR-LF）ごとに 00 が 1 つ入るテキスト
+$b12Words = 'abc', 'def', 'ghi', 'jkl', 'mno', 'pqr', 'stu', 'vwx', 'yz0', '123'
+foreach ($lineCount in 2, 10) {
+    $parts = @()
+    for ($r = 0; $r -lt $lineCount; $r++) { $parts += , (Ascii $b12Words[$r]); $parts += , (New-Zeros 1); $parts += , (Ascii "`r`n") }
+    $bytes = Join-Bytes $parts
+    Add-Input -Group 'B12-2' -Id ('B12-2-lines{0}' -f $lineCount) -Label ('<3 文字> 00 CRLF × {0} ({1} バイト)' -f $lineCount, $bytes.Length) -Bytes $bytes
+}
+
+# B12-3. タブ区切りで、空のフィールドに 00 が入っているもの（偶数長と奇数長）
+$nul = [string][char]0
+$tsvCases = [ordered]@{
+    'even' = "id`tname`tmemo`r`n1`t$nul`tx`r`n2`tbob`t$nul`r`n"
+    'odd'  = "id`tname`tmemo`r`n1`t$nul`tx`r`n22`tbob`t$nul`r`n"
+}
+foreach ($key in $tsvCases.Keys) {
+    $bytes = Ascii $tsvCases[$key]
+    Add-Input -Group 'B12-3' -Id ('B12-3-{0}' -f $key) -Label ('タブ区切り、空のフィールドに 00 ({0} バイト)' -f $bytes.Length) -Bytes $bytes
+}
+
+#--------------------------------------------------------------------------
 # C. 修正案で結果が変わらないはずのもの
 #--------------------------------------------------------------------------
 $testDataRoot = Join-Path $scriptRepositoryRoot 'tests\EncodingProbe.Tests\TestData'
@@ -288,11 +349,36 @@ function Get-NullPatternCounts([byte[]] $Bytes) {
     return @($le16, $be16, $le32, $be32)
 }
 
+# 修正案 2 の規則（StrictNulUnicode_Detection）を数え直す（診断の補助）。
+# 修正案 2 の分岐に入るのは、すべてのバイトが 0x80 未満で 0x00 を含む入力だけだが、ここでは形だけを見る
+function Test-StrictUnits([byte[]] $Bytes, [int] $Unit, [int] $NonZero) {
+    for ($i = 0; $i -lt $Bytes.Length; $i += $Unit) {
+        for ($k = 0; $k -lt $Unit; $k++) {
+            if (($Bytes[$i + $k] -eq 0) -eq ($k -eq $NonZero)) { return $false }
+        }
+    }
+    return $true
+}
+
+function Get-StrictRule([byte[]] $Bytes) {
+    $n = $Bytes.Length
+    if ($n -ge 4 -and $n % 4 -eq 0) {
+        if (Test-StrictUnits $Bytes 4 0) { return '1:UTF-32LE' }
+        if (Test-StrictUnits $Bytes 4 3) { return '2:UTF-32BE' }
+    }
+    if ($n -ge 2 -and $n % 2 -eq 0) {
+        if (Test-StrictUnits $Bytes 2 0) { return '3:UTF-16LE' }
+        if (Test-StrictUnits $Bytes 2 1) { return '4:UTF-16BE' }
+    }
+    return 'no'
+}
+
 $bindingFlags = [Reflection.BindingFlags]'NonPublic, Instance'
 $detectorType = [SnowStack.EncodingProbe.EncodingDetector]
 $isoMethod = $detectorType.GetMethod('ISO2022_Detection', $bindingFlags)
 $u32Method = $detectorType.GetMethod('Utf32_Detection', $bindingFlags)
 $u16Method = $detectorType.GetMethod('Utf16_Detection', $bindingFlags)
+$strictMethod = $detectorType.GetMethod('StrictNulUnicode_Detection', $bindingFlags)   # 修正案 2 のビルドにだけある
 $byteConstructor = $detectorType.GetConstructor([Type[]]@([byte[]], [SnowStack.EncodingProbe.DetectionMode]))
 
 # 各判定メソッドを単独で呼ぶ。戻り値は「規格外」なので、成立 = false
@@ -310,7 +396,13 @@ function Invoke-Diagnostics([byte[]] $Bytes) {
     $u16Args = [object[]]@($true)
     $u16 = if ([bool]$u16Method.Invoke($detector, $u16Args)) { 'no' } elseif ([bool]$u16Args[0]) { 'LE' } else { 'BE' }
 
-    return @($iso, $u32, $u16)
+    $strict = '-'
+    if ($null -ne $strictMethod) {
+        $strictCodePage = [int]$strictMethod.Invoke($detector, [object[]]@())
+        $strict = if ($strictCodePage -eq 0) { 'no' } else { [string]$strictCodePage }
+    }
+
+    return @($iso, $u32, $u16, $strict)
 }
 
 function Invoke-Detect([byte[]] $Bytes, [string] $Culture, [string] $Strategy) {
@@ -335,16 +427,16 @@ function Write-Tsv([string] $Path, [System.Collections.Generic.List[string]] $Li
 $detectRows = New-Object System.Collections.Generic.List[string]
 $detectRows.Add("group`tid`tculture`tstrategy`tCodePage`tEncodingWebName`tBom`tLineBreak")
 $diagRows = New-Object System.Collections.Generic.List[string]
-$diagRows.Add("group`tid`tlabel`tlength`tmod2`tmod4`tzeros`thead`tiso2022`tutf32`tutf16`tnull16le`tnull16be`tnull32le`tnull32be")
+$diagRows.Add("group`tid`tlabel`tlength`tmod2`tmod4`tzeros`thead`tiso2022`tutf32`tutf16`tnull16le`tnull16be`tnull32le`tnull32be`tstrict`tstrictrule")
 
 foreach ($item in $script:inputs) {
     $bytes = [byte[]]$item.Bytes
     $zeros = Get-ZeroCount $bytes
     $diag = Invoke-Diagnostics $bytes
     $nulls = if ($zeros -gt 0) { Get-NullPatternCounts $bytes } else { @(0, 0, 0, 0) }
-    $diagRows.Add(("{0}`t{1}`t{2}`t{3}`t{4}`t{5}`t{6}`t{7}`t{8}`t{9}`t{10}`t{11}`t{12}`t{13}`t{14}" -f
+    $diagRows.Add(("{0}`t{1}`t{2}`t{3}`t{4}`t{5}`t{6}`t{7}`t{8}`t{9}`t{10}`t{11}`t{12}`t{13}`t{14}`t{15}`t{16}" -f
         $item.Group, $item.Id, $item.Label, $bytes.Length, ($bytes.Length % 2), ($bytes.Length % 4), $zeros, (Format-Head $bytes),
-        $diag[0], $diag[1], $diag[2], $nulls[0], $nulls[1], $nulls[2], $nulls[3]))
+        $diag[0], $diag[1], $diag[2], $nulls[0], $nulls[1], $nulls[2], $nulls[3], $diag[3], (Get-StrictRule $bytes)))
 
     foreach ($culture in $cultures) {
         foreach ($strategy in $strategies) {
@@ -357,7 +449,7 @@ Write-Tsv (Join-Path $OutDirectory ('detect-{0}-{1}.tsv' -f $BuildName, $tfm)) $
 Write-Tsv (Join-Path $OutDirectory ('diag-{0}-{1}.tsv' -f $BuildName, $tfm)) $diagRows
 
 #--------------------------------------------------------------------------
-# コマンド（A1 と B1・B3・B6 の代表）
+# コマンド（A1 と B1・B3・B6 の代表。第 2 回で A6-1 の UTF-16LE と B9 の 41 00 を追加）
 #--------------------------------------------------------------------------
 if ($SkipCommands) { return }
 

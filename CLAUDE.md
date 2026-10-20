@@ -494,7 +494,9 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
   （モジュールだけのリリースという方針を改める）。修正の前の実測を済ませた: 報告は `docs/EncodingProbe-1.3.0-調査-NUL入りの入力の判定.md`、
   スクリプトは `tools/Measure-NulInputDetection.ps1` / `tools/Invoke-NulInputMeasurement.ps1`、生の結果は `tools/NulInputDetectionResults/`。
   修正案は実験用ブランチ `investigate/1.3.0-nul-ascii`（ローカルのみ。**どこにもマージしない**）にある。
-  次は利用者が報告を見て修正の仕様を決め、本実装を改めて依頼する。実測依頼の文書（`docs/EncodingProbe-1.3.0-実測依頼-NUL入りASCIIの判定.md`）もコミットしない
+  第 2 回の実測（修正案 2：すべての単位が `<00 以外> 00` などの形に合うときだけ UTF-16 / UTF-32 とする厳密な検査）も済ませた。
+  報告は同じ文書の 7 章、生の結果は `tools/NulInputDetectionResults/round2/`、修正案 2 は実験用ブランチ `investigate/1.3.0-nul-ascii-strict`（ローカルのみ。**どこにもマージしない**）。
+  次は利用者が報告を見て修正の仕様を決め、本実装を改めて依頼する。実測依頼の文書（`docs/EncodingProbe-1.3.0-実測依頼-NUL入りASCIIの判定.md`、`…-NUL入りの入力の判定-第2回.md`）もコミットしない
 
 1.3.0 で行ったこと（詳細は CHANGELOG.md の 1.3.0 節）:
 
