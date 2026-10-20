@@ -1853,6 +1853,49 @@ Add-Scenario 'Import/UnspecifiedHeader/warn-once' {
 }.GetNewClosure()
 
 # ---------------------------------------------------------------------------
+# 0x00 を含む入力の判定（1.3.0 仕様書 追補。クラスライブラリ 1.3.0 の修正）
+#
+# alnum: 英数字だけの BOM 無し UTF-16 / UTF-32。全体の判定でも入力どおりの文字エンコーディングになる
+# lowbyte: 2 バイトとも 0x80 未満になる文字（上 U+4E0A）を含むもの。全体の判定では ASCII のまま（既知の限界。追補 4.1）で、
+#          Import-ProbedCsv -DetectionLineCount 1 では改行の型による読み替えで正しく読める
+# ---------------------------------------------------------------------------
+
+foreach ($unicode in @(
+    @('utf16le', (New-Object System.Text.UnicodeEncoding($false, $false))),
+    @('utf16be', (New-Object System.Text.UnicodeEncoding($true, $false))),
+    @('utf32le', (New-Object System.Text.UTF32Encoding($false, $false))),
+    @('utf32be', (New-Object System.Text.UTF32Encoding($true, $false))))) {
+
+    $label = $unicode[0]
+    $encoding = $unicode[1]
+
+    $alnum = New-ByteFile "nul_${label}_alnum.csv" ([byte[]]$encoding.GetBytes("Name,Memo`r`na,b`r`nc,d`r`n"))
+    $lowbyte = New-ByteFile "nul_${label}_lowbyte.csv" ([byte[]]$encoding.GetBytes(("A,{0}`r`n1,2`r`n" -f [char]0x4E0A)))
+
+    foreach ($entry in @(@('alnum', $alnum), @('lowbyte', $lowbyte))) {
+        $kind = $entry[0]
+        $path = $entry[1]
+
+        Add-Scenario ("NulInput/{0}/{1}/Resolve/whole" -f $label, $kind) {
+            Format-DetectionResult (Resolve-Encoding -Path $path -Culture ja-JP)
+        }.GetNewClosure()
+
+        Add-Scenario ("NulInput/{0}/{1}/Get/whole" -f $label, $kind) {
+            Format-Lines (Get-ProbedContent -LiteralPath $path -Culture ja-JP)
+        }.GetNewClosure()
+
+        Add-Scenario ("NulInput/{0}/{1}/Import/whole" -f $label, $kind) {
+            Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -Culture ja-JP }
+        }.GetNewClosure()
+    }
+
+    $path = $lowbyte
+    Add-Scenario ("NulInput/{0}/lowbyte/Import/DetectionLineCount1" -f $label) {
+        Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -DetectionLineCount 1 -Culture ja-JP }
+    }.GetNewClosure()
+}
+
+# ---------------------------------------------------------------------------
 # Export-ProbedCsv (1.3.0 仕様書 第 4 部)
 #
 # CSV の文字列化は PowerShell 7.x の Export-Csv から移植した処理で行う。出力が両ホストでバイト単位で同じになることを確かめる。
