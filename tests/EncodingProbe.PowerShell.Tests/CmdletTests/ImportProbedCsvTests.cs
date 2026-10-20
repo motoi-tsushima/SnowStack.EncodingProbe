@@ -382,10 +382,10 @@ public class ImportProbedCsvTests : IClassFixture<ProbedCommandRunspaceFixture>
 
         using var file = ByteExactFile.Create(encoding.GetBytes(AsciiHead + (japaneseTail ? JapaneseRow : "c,d\r\n")));
 
-        // Resolve-Encoding は読み替えない（us-ascii を報告する）
+        // 先頭 N 行の判定の時点で UTF-16 / UTF-32 になる（1.3.0 仕様書 追補 5 章。追補より前は us-ascii で、読み替えで救っていた）
         var resolved = (EncodingInformation)this._fixture.Invoke(
             "Resolve-Encoding", new Dictionary<string, object?> { ["Path"] = file.Path, ["DetectionLineCount"] = 2L })[0].BaseObject;
-        Assert.Equal(20127, resolved.CodePage);
+        Assert.Equal(encoding.CodePage, resolved.CodePage);
 
         InvocationResult result = Invoke(new() { ["LiteralPath"] = new[] { file.Path }, ["DetectionLineCount"] = 2L });
 
@@ -399,6 +399,62 @@ public class ImportProbedCsvTests : IClassFixture<ProbedCommandRunspaceFixture>
                     : PSCustomObjectType + " {Name=[c] | Memo=[d]}",
             },
             Format(result.Output));
+    }
+
+    public static TheoryData<string> UnicodeWithoutBomLabels => new() { "utf16le", "utf16be", "utf32le", "utf32be" };
+
+    private static Encoding UnicodeWithoutBom(string label) => label switch
+    {
+        "utf16le" => new UnicodeEncoding(false, false),
+        "utf16be" => new UnicodeEncoding(true, false),
+        "utf32le" => new UTF32Encoding(false, false),
+        _ => new UTF32Encoding(true, false),
+    };
+
+    /// <summary>
+    /// 英数字だけの BOM 無し UTF-16 / UTF-32 を、全体の判定（-DetectionLineCount なし）でも U+0000 の混じらない値で読めること
+    /// （1.3.0 仕様書 追補 5 章）。
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(UnicodeWithoutBomLabels))]
+    public void Import_WholeFile_AlphanumericUnicodeWithoutBom_ReadsCorrectly(string label)
+    {
+        using var file = ByteExactFile.Create(UnicodeWithoutBom(label).GetBytes(AsciiHead + "c,d\r\n"));
+
+        InvocationResult result = Invoke(new() { ["LiteralPath"] = new[] { file.Path } });
+
+        Assert.Empty(result.Errors);
+        Assert.Equal(
+            new[]
+            {
+                PSCustomObjectType + " {Name=[a] | Memo=[b]}",
+                PSCustomObjectType + " {Name=[c] | Memo=[d]}",
+            },
+            Format(result.Output));
+    }
+
+    /// <summary>
+    /// 2 バイトとも 0x80 未満になる文字（上 U+4E0A = UTF-16LE で 0A 4E）を含む BOM 無しの UTF-16 / UTF-32 は、
+    /// 全体の判定では ASCII のままだが（<b>既知の限界。1.3.0 仕様書 追補 4.1</b>）、
+    /// -DetectionLineCount を指定すると、切り出しで決めた改行の型による読み替え（仕様書 3.2・U4）で正しく読めること。
+    /// 切り出しは「上」の 0A を改行とみなさない。
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(UnicodeWithoutBomLabels))]
+    public void Import_UnicodeWithLowBytesOnlyCharacter_DetectionLineCountReadsCorrectly(string label)
+    {
+        Encoding encoding = UnicodeWithoutBom(label);
+        using var file = ByteExactFile.Create(encoding.GetBytes("A,上\r\n1,2\r\n"));
+
+        // 全体の判定では ASCII（既知の限界）
+        var resolved = (EncodingInformation)this._fixture.Invoke(
+            "Resolve-Encoding", new Dictionary<string, object?> { ["Path"] = file.Path })[0].BaseObject;
+        Assert.Equal(20127, resolved.CodePage);
+
+        InvocationResult result = Invoke(new() { ["LiteralPath"] = new[] { file.Path }, ["DetectionLineCount"] = 1L });
+
+        Assert.Empty(result.Errors);
+        Assert.Equal(new[] { PSCustomObjectType + " {A=[1] | \\u4E0A=[2]}" }, Format(result.Output));
     }
 
     /// <summary>

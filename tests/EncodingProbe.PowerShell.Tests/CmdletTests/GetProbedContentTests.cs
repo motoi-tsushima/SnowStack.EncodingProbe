@@ -129,6 +129,30 @@ public class GetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
     }
 
     /// <summary>
+    /// 英数字だけの BOM 無し UTF-16 / UTF-32 を判定して、U+0000 の混じらない行として読むこと（1.3.0 仕様書 追補 5 章）。
+    /// 追補より前は us-ascii と判定し、各文字の後ろに U+0000 が混じっていた。
+    /// </summary>
+    [Theory]
+    [InlineData(1200)]
+    [InlineData(1201)]
+    [InlineData(12000)]
+    [InlineData(12001)]
+    public void Read_AlphanumericUnicodeWithoutBom_DetectsAndDecodes(int codePage)
+    {
+        Encoding encoding = codePage switch
+        {
+            1200 => new UnicodeEncoding(false, false),
+            1201 => new UnicodeEncoding(true, false),
+            12000 => new UTF32Encoding(false, false),
+            _ => new UTF32Encoding(true, false),
+        };
+
+        using var file = ByteExactFile.Create(encoding.GetBytes("Name,Memo\r\na,b\r\n"));
+
+        Assert.Equal(new[] { "Name,Memo", "a,b" }, ReadLines(file.Path));
+    }
+
+    /// <summary>
     /// -Encoding を明示した場合は判定を行わないこと。
     /// 判定に委ねると Shift-JIS と解釈されうるバイト列を EUC-JP として読ませて確認する。
     /// </summary>

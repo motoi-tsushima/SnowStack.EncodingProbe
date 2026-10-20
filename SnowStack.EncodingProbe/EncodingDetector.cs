@@ -491,6 +491,17 @@ namespace SnowStack.EncodingProbe
                 {
                     encInfo.CodePage = CodePageAscii;
                     encInfo.Bom = false;
+
+                    // 0x00 を含む場合だけ、英数字だけの BOM 無し UTF-32 / UTF-16 であるかを厳密に調べる（1.3.0）。
+                    // 成立しなければ ASCII のまま（UTF-8 の判定には進まない）
+                    if (Array.IndexOf(this._buffer, (byte)0x00, 0, this.BufferSize) >= 0)
+                    {
+                        int nulPaddedCodePage;
+                        if (NulPaddedUnicode_Detection(out nulPaddedCodePage) == false)
+                        {
+                            encInfo.CodePage = nulPaddedCodePage;
+                        }
+                    }
                 }
 
                 encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
@@ -1008,6 +1019,85 @@ namespace SnowStack.EncodingProbe
             }
 
             return outOfSpecification;
+        }
+
+        /// <summary>
+        /// 0x00 を含み、すべてのバイトが 0x80 未満の入力が、英数字（U+0001〜U+007F）だけの BOM 無し UTF-32 / UTF-16 であるか判定する
+        /// </summary>
+        /// <remarks>
+        /// 入力を先頭から単位に区切り、UTF-32LE → UTF-32BE → UTF-16LE → UTF-16BE の順に、
+        /// すべての単位が「1 バイトだけ 00 以外、残りが 00」の形（UTF-16LE なら <c>&lt;00 以外&gt; 00</c>）に合うものを探す。
+        /// 0x00 を含む ASCII のテキスト（末尾の 00、00 で埋めた固定長レコードなど）は、ほとんどの場合この形にならない。
+        /// <br/>
+        /// 既存の <see cref="Utf32_Detection"/> / <see cref="Utf16_Detection"/> は使わない。
+        /// すべてのバイトが 0x80 未満という前提では、既存の UTF-16 の判定はほぼ常に成立してしまい、
+        /// 0x00 を含む ASCII のテキストまで UTF-16 と判定するためである
+        /// （docs/EncodingProbe-1.3.0-調査-NUL入りの入力の判定.md 4.2 節、修正案 2 は 7 章）。
+        /// <br/>
+        /// 2 バイトとも 0x01〜0x7F になる文字（「上」U+4E0A = 0A 4E など）や U+0000 を含む UTF-16 / UTF-32 はこの形にならず、
+        /// ASCII のままとなる（既知の限界。docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md 4 章）。
+        /// </remarks>
+        /// <param name="codePage">判別した文字エンコーディングのコードページ（判別できない場合は-1）(出力引数)</param>
+        /// <returns>true=英数字だけの UTF-32 / UTF-16 では無い</returns>
+        private bool NulPaddedUnicode_Detection(out int codePage)
+        {
+            codePage = -1;
+
+            if (this.BufferSize >= 4 && this.BufferSize % 4 == 0)
+            {
+                if (AllUnitsMatch(4, 0))
+                {
+                    codePage = CodePageUtf32Le;
+                    return false;
+                }
+
+                if (AllUnitsMatch(4, BufferIndex3))
+                {
+                    codePage = CodePageUtf32Be;
+                    return false;
+                }
+            }
+
+            if (this.BufferSize >= 2 && this.BufferSize % 2 == 0)
+            {
+                if (AllUnitsMatch(2, 0))
+                {
+                    codePage = CodePageUtf16Le;
+                    return false;
+                }
+
+                if (AllUnitsMatch(2, 1))
+                {
+                    codePage = CodePageUtf16Be;
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 先頭から unitSize バイトずつ区切ったすべての単位で、位置 nonZeroIndex のバイトが 00 以外、残りのバイトが 00 であるか判定する
+        /// </summary>
+        /// <param name="unitSize">単位のバイト数（BufferSize はその倍数であること）</param>
+        /// <param name="nonZeroIndex">単位の中で 00 以外であるべきバイトの位置</param>
+        /// <returns>true=すべての単位が形に合う</returns>
+        private bool AllUnitsMatch(int unitSize, int nonZeroIndex)
+        {
+            for (int i = 0; i < this.BufferSize; i += unitSize)
+            {
+                for (int k = 0; k < unitSize; k++)
+                {
+                    bool isZero = this._buffer[i + k] == 0x00;
+
+                    if (isZero == (k == nonZeroIndex))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         /// <summary>

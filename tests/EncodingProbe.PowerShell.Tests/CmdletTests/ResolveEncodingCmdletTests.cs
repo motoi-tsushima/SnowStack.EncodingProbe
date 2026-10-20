@@ -250,23 +250,63 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
     }
 
     /// <summary>
-    /// BOM 無しの UTF-16 / UTF-32 で、先頭 N 行が英数字だけの場合は us-ascii と報告すること（仕様書 3.1・6.3）。
-    /// Resolve-Encoding は読み替えない。
+    /// BOM 無しの UTF-16 / UTF-32 で、先頭 N 行が英数字だけの場合も、その文字エンコーディングと報告すること
+    /// （1.3.0 仕様書 追補 2 章。追補より前は us-ascii と報告していた）。
     /// </summary>
     [Theory]
     [InlineData(1200)]
     [InlineData(1201)]
     [InlineData(12000)]
     [InlineData(12001)]
-    public void DetectionLineCount_UnicodeWithoutBom_AsciiHead_ReportsUsAscii(int codePage)
+    public void DetectionLineCount_UnicodeWithoutBom_AsciiHead_ReportsInputEncoding(int codePage)
     {
         System.Text.Encoding encoding = EncodingVocabulary.BuildEncoding(codePage, emitBom: false);
         using var file = ByteExactFile.Create(encoding.GetBytes("A,B\r\n1,2\r\n日本,語\r\n"));
 
         var head = Detect(file.Path, 2);
 
-        Assert.Equal(20127, head.CodePage);
-        Assert.Equal("us-ascii", head.EncodingWebName);
+        Assert.Equal(codePage, head.CodePage);
+        Assert.False(head.Bom);
+    }
+
+    /// <summary>
+    /// 英数字だけの BOM 無し UTF-16 / UTF-32 を、全体の判定でもその文字エンコーディングと報告すること（1.3.0 仕様書 追補 5 章）。
+    /// </summary>
+    [Theory]
+    [InlineData(1200)]
+    [InlineData(1201)]
+    [InlineData(12000)]
+    [InlineData(12001)]
+    public void WholeFile_AlphanumericUnicodeWithoutBom_ReportsInputEncoding(int codePage)
+    {
+        System.Text.Encoding encoding = EncodingVocabulary.BuildEncoding(codePage, emitBom: false);
+        using var file = ByteExactFile.Create(encoding.GetBytes("Name,Memo\r\na,b\r\n"));
+
+        var whole = (EncodingInformation)_fixture.Invoke(file.Path)[0].BaseObject;
+
+        Assert.Equal(codePage, whole.CodePage);
+        Assert.False(whole.Bom);
+        Assert.Equal(LineBreakType.CrLf, whole.LineBreak);
+    }
+
+    /// <summary>
+    /// <b>既知の限界（1.3.0 仕様書 追補 4.1）。</b>2 バイトとも 0x80 未満になる文字（上 U+4E0A）を含む BOM 無しの UTF-16 / UTF-32 は、
+    /// 全体の判定では us-ascii と報告すること（正しい挙動ではない。-DetectionLineCount を指定した Import-ProbedCsv では正しく読める）。
+    /// </summary>
+    [Theory]
+    [InlineData(1200)]
+    [InlineData(1201)]
+    [InlineData(12000)]
+    [InlineData(12001)]
+    public void WholeFile_UnicodeWithLowBytesOnlyCharacter_ReportsUsAscii_KnownLimit(int codePage)
+    {
+        System.Text.Encoding encoding = EncodingVocabulary.BuildEncoding(codePage, emitBom: false);
+        using var file = ByteExactFile.Create(encoding.GetBytes("A,上\r\n1,2\r\n"));
+
+        var whole = (EncodingInformation)_fixture.Invoke(file.Path)[0].BaseObject;
+
+        Assert.Equal(20127, whole.CodePage);
+        Assert.Equal("us-ascii", whole.EncodingWebName);
     }
 
     /// <summary>
