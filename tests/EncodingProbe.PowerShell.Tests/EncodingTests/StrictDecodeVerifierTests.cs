@@ -221,6 +221,50 @@ public class StrictDecodeVerifierTests
         Assert.Null(Verify(Array.Empty<byte>(), Utf8, 64 * 1024));
     }
 
+    /// <summary>
+    /// us-ascii を UTF-8 に読み替えた検証では、ESC の直後が '$'・'('・')' のバイト列を見つけたら失敗とすること（第五次。BUG-0009）。
+    /// ESC と次のバイトがバッファの境目にかかる場合も見つける。指定しなければ探さない
+    /// </summary>
+    [Theory]
+    [InlineData(0x24)]
+    [InlineData(0x28)]
+    [InlineData(0x29)]
+    public void Verify_RejectIso2022Escape_FindsEscapeAtOffset(byte intermediate)
+    {
+        byte[] content = Encoding.ASCII.GetBytes("A,B\r\n\"x").Concat(new byte[] { 0x1B, intermediate, 0x42 }).Concat(Encoding.ASCII.GetBytes("\"\r\n")).ToArray();
+
+        foreach (int bufferSize in BufferSizes)
+        {
+            using (var stream = new MemoryStream(content, writable: false))
+            {
+                StrictDecodeFailure failure = Assert.IsType<StrictDecodeFailure>(
+                    StrictDecodeVerifier.Verify(stream, Utf8, bufferSize, rejectIso2022Escape: true));
+
+                Assert.True(failure.IsIso2022Escape);
+                Assert.Equal(7, failure.Offset);
+                Assert.Equal(new byte[] { 0x1B, intermediate }, failure.Bytes);
+            }
+
+            Assert.Null(Verify(content, Utf8, bufferSize));
+        }
+    }
+
+    /// <summary>
+    /// ESC の後ろが ISO-2022 の中間バイトでなければ（端末の色の ESC [ など）失敗としないこと
+    /// </summary>
+    [Fact]
+    public void Verify_RejectIso2022Escape_IgnoresOtherEscapes()
+    {
+        byte[] content = Encoding.ASCII.GetBytes("\u001B[31mred\u001B[0m\r\n\u001B\r\n");
+
+        foreach (int bufferSize in BufferSizes)
+        {
+            using var stream = new MemoryStream(content, writable: false);
+
+            Assert.Null(StrictDecodeVerifier.Verify(stream, Utf8, bufferSize, rejectIso2022Escape: true));
+        }
+    }
+
     private static StrictDecodeFailure? Verify(byte[] content, int codePage, int bufferSize)
     {
         using var stream = new MemoryStream(content, writable: false);
