@@ -305,9 +305,12 @@ public class DetectionOptionsTests : IClassFixture<ProbedCommandRunspaceFixture>
         using var reference = ByteExactFile.Create(Encode(EucKrCodePage, KoreanText + "\n"));
         using var file = ByteExactFile.CreateMissing();
 
-        InvokeWriter("Set-ProbedContent", file.Path, "ja-JP", reference.Path);
+        InvocationResult result = InvokeWriter("Set-ProbedContent", file.Path, "ja-JP", reference.Path);
 
-        Assert.NotEqual(Encode(Cp949CodePage, KoreanText + "\n"), file.ReadBytes());
+        // 第五次から、EUC-JP で表現できないハングルは '?' にして書かず、ファイルを作らずにエラーにする
+        Assert.Equal(
+            "UnrepresentableCharacter", Assert.Single(result.Errors).FullyQualifiedErrorId.Split(',')[0]);
+        Assert.False(file.Exists);
     }
 
     /// <summary>

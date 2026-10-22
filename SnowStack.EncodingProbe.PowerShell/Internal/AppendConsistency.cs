@@ -21,6 +21,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <param name="specified">書き込みに使う文字エンコーディング</param>
         /// <param name="baseline">追記先の既存の文字エンコーディング</param>
         /// <param name="chunk">書き込む内容（改行を含む）</param>
+        /// <remarks>
+        /// どちらもコードページから例外フォールバックで組み立て直して符号化する（第五次）。
+        /// 利用者が渡した Encoding のフォールバックの設定は使わない（例外フォールバックのインスタンスが生の例外を投げていた。BUG-0012）。
+        /// 既存の文字エンコーディングで表現できない文字は、バイト列が一致しないものとして扱う
+        /// （置換フォールバックでは '?' 同士が一致してしまっていた。BUG-0001）。
+        /// 指定された文字エンコーディングで表現できるかどうかは、呼び出し側が先に確かめている。
+        /// </remarks>
         public static bool ProducesSameBytes(Encoding specified, Encoding baseline, string chunk)
         {
             if (specified.CodePage == baseline.CodePage)
@@ -28,7 +35,16 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 return true;
             }
 
-            return BytesAreEqual(specified.GetBytes(chunk), baseline.GetBytes(chunk));
+            try
+            {
+                return BytesAreEqual(
+                    EncodingVocabulary.BuildStrictEncoding(specified.CodePage).GetBytes(chunk),
+                    EncodingVocabulary.BuildStrictEncoding(baseline.CodePage).GetBytes(chunk));
+            }
+            catch (EncoderFallbackException)
+            {
+                return false;
+            }
         }
 
         /// <summary>

@@ -244,6 +244,7 @@ public sealed class OutProbedFileCommand : ProbedFileOutputCommandBase
             CreateEmptyOutput();
         }
 
+        CompleteOutput();
         Cleanup();
     }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Management.Automation;
 using System.Text;
 using SnowStack.EncodingProbe.PowerShell.Internal;
@@ -170,9 +171,24 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
     /// <summary>
     /// 1 行分（改行を含む）を書く。必要ならファイルを開き、追記の整合性を検査する。
     /// </summary>
+    /// <remarks>
+    /// 表現できない文字があれば、それまでに書いた行も取り消してファイルを元に戻し、終了エラーにする（第五次）。
+    /// 追記の整合性検査より先に調べる。整合性検査で拒否された場合は、それまでに書いた行を残す（第四次までと同じ）。
+    /// </remarks>
     private protected void WriteChunk(string chunk)
     {
         EnsureWriter();
+
+        try
+        {
+            this._writer!.EnsureRepresentable(chunk);
+        }
+        catch (UnrepresentableCharacterException exception)
+        {
+            RollbackOutput();
+            ThrowTerminatingError(CreateError(
+                exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, this.OutputPath));
+        }
 
         if (this.AppendBaseline != null
             && !AppendConsistency.ProducesSameBytes(this.OutputSpec.Encoding!, this.AppendBaseline, chunk))
@@ -192,15 +208,67 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
         {
             this._writer!.Write(chunk);
         }
+        catch (UnrepresentableCharacterException exception)
+        {
+            RollbackOutput();
+            ThrowTerminatingError(CreateError(
+                exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, this.OutputPath));
+        }
         catch (IOException exception)
         {
-            Cleanup();
+            // 書きかけのファイルを残さない（第五次）
+            RollbackOutput();
             ThrowTerminatingError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this.OutputPath));
         }
     }
 
     /// <summary>
-    /// 入力が 0 件だったときに、BOM を書かずに出力先を作る（既存なら上書きは切り詰め、追記は触れない）
+    /// 書き込みを完了する（上書きは一時ファイルで置き換える）。失敗した場合はファイルを元に戻して終了エラー。
+    /// 派生クラスの EndProcessing が、最後の行を書いた後（入力が 0 件なら <see cref="CreateEmptyOutput"/> の後）に呼ぶ。
+    /// </summary>
+    private protected void CompleteOutput()
+    {
+        ProbedFileWriter? writer = this._writer;
+
+        if (writer == null)
+        {
+            return;
+        }
+
+        try
+        {
+            writer.Complete();
+        }
+        catch (UnrepresentableCharacterException exception)
+        {
+            Cleanup();
+            ThrowTerminatingError(CreateError(
+                exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, this.OutputPath));
+        }
+        catch (IOException exception)
+        {
+            Cleanup();
+            ThrowTerminatingError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this.OutputPath));
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            Cleanup();
+            ThrowTerminatingError(CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath));
+        }
+    }
+
+    /// <summary>
+    /// ファイルを書き込みの前の状態に戻し、後始末をする
+    /// </summary>
+    private void RollbackOutput()
+    {
+        this._writer?.Rollback();
+        Cleanup();
+    }
+
+    /// <summary>
+    /// 入力が 0 件だったときに、BOM を書かずに出力先を作る（既存なら上書きは 0 バイトにし、追記は触れない）。
+    /// 書き込みの完了は <see cref="CompleteOutput"/> で行う。
     /// </summary>
     private protected void CreateEmptyOutput()
     {
@@ -209,7 +277,7 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
             return;
         }
 
-        OpenWriter(emitBom: false).Dispose();
+        this._writer = OpenWriter(emitBom: false);
     }
 
     /// <summary>
@@ -234,7 +302,9 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
 
         try
         {
-            matches = GetResolvedProviderPathFromPSPath(path, out _);
+            // 上書きのために書いている途中の一時ファイルは、ワイルドカードに一致させない（第五次）
+            matches = new Collection<string>(
+                GetResolvedProviderPathFromPSPath(path, out _).Where(p => !TemporaryFileRegistry.Contains(p)).ToList());
         }
         catch (ItemNotFoundException)
         {

@@ -267,6 +267,25 @@ namespace SnowStack.EncodingProbe.PowerShell
             => MessageCatalog.Format(MessageKey.DetectionVerificationFailed, path, encoding, lineCount, offset, bytes);
 
         /// <summary>
+        /// us-ascii を UTF-8 に読み替えて全体を検証したら、ISO-2022 のエスケープシーケンスがあった場合のエラーメッセージ（第五次）
+        /// </summary>
+        public static string DetectionVerificationIso2022Escape(
+            string path, string encoding, long lineCount, long offset, string bytes)
+            => MessageCatalog.Format(MessageKey.DetectionVerificationIso2022Escape, path, encoding, lineCount, offset, bytes);
+
+        /// <summary>
+        /// 書き込み系のコマンドで、表現できない文字があったため書き込まなかった場合のエラーメッセージ（第五次）
+        /// </summary>
+        public static string UnrepresentableCharacterOnWrite(string path, string encoding, string codePoint, string character)
+            => MessageCatalog.Format(MessageKey.UnrepresentableCharacterOnWrite, path, encoding, codePoint, character);
+
+        /// <summary>
+        /// Export-ProbedCsv -Append -Force で、追記先のヘッダーに空の列名がある場合のエラーメッセージ（第五次）
+        /// </summary>
+        public static string CsvAppendEmptyPropertyName(string path)
+            => MessageCatalog.Format(MessageKey.CsvAppendEmptyPropertyName, path);
+
+        /// <summary>
         /// CSV のヘッダーに同じ列名が複数ある場合のエラーメッセージ
         /// </summary>
         public static string CsvHeaderAlreadyPresent(string name)

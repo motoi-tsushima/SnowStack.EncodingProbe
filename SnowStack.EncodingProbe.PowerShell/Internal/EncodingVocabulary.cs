@@ -128,9 +128,37 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             if (usage == EncodingUsage.Write)
             {
                 ValidateForWrite(spec, Describe(value));
+
+                if (value is EncodingInformation)
+                {
+                    // 判定結果を渡した場合は継承と同じに扱う（第五次の決定）
+                    spec = TreatInheritedAsciiAsUtf8(spec);
+                }
             }
 
             return spec;
+        }
+
+        /// <summary>
+        /// 継承した文字エンコーディングが us-ascii なら、BOM 無しの UTF-8 に置き換える（1.3.0 第五次。BUG-0001）。
+        /// 改行の情報はそのまま引き継ぐ。
+        /// </summary>
+        /// <remarks>
+        /// us-ascii と判定されるのは、すべてのバイトが 0x80 未満のファイルであり、それは BOM 無しの UTF-8 としても正しい。
+        /// us-ascii のまま書くと、英数字だけのログや CSV に日本語を書き足せない（第四次までは黙って '?' にしていた）。
+        /// ASCII の文字だけを書く場合のバイト列は us-ascii と同じである。
+        /// -DetectionLineCount の読み替え（1.3.0 仕様書 3.2）と同じ考え方で、
+        /// 書き込み先・追記先からの継承（-Encoding 省略・Auto）、-EncodingFrom、-Encoding に判定結果（EncodingInformation）を渡した場合、
+        /// 追記の整合性検査の相手（追記先の文字エンコーディング）に使う。-Encoding ascii の明示は置き換えない。
+        /// </remarks>
+        public static EncodingSpec TreatInheritedAsciiAsUtf8(EncodingSpec spec)
+        {
+            if (spec.IsAuto || spec.Encoding == null || spec.Encoding.CodePage != CodePageAscii)
+            {
+                return spec;
+            }
+
+            return EncodingSpec.Create(new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), emitBom: false, spec.LineBreak);
         }
 
         /// <summary>

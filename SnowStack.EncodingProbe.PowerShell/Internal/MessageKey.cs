@@ -154,5 +154,16 @@
 
         /// <summary>Export-ProbedCsv で -Path と -LiteralPath が両方指定された、またはどちらも指定されなかった</summary>
         CannotSpecifyPathAndLiteralPath,
+
+        // ---- 1.3.0 第五次 ----
+
+        /// <summary>書き込み系のコマンドで、表現できない文字があったため書き込まなかった（ファイルは変更していない）</summary>
+        UnrepresentableCharacterOnWrite,
+
+        /// <summary>us-ascii を UTF-8 に読み替えて全体を検証したら、ISO-2022 のエスケープシーケンスがあった</summary>
+        DetectionVerificationIso2022Escape,
+
+        /// <summary>Export-ProbedCsv -Append -Force で、追記先のヘッダーに空の列名がある</summary>
+        CsvAppendEmptyPropertyName,
     }
 }

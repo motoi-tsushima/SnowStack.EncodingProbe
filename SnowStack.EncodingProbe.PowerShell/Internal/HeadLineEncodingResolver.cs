@@ -21,7 +21,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <summary>ファイル先頭に BOM があったかどうか</summary>
         public bool Bom { get; }
 
-        /// <summary>先頭 N 行の範囲で判定した改行（読み替えない。仕様書 3.2）</summary>
+        /// <summary>
+        /// 先頭 N 行の範囲で判定した改行。UTF-16 / UTF-32 に読み替えた場合は、読み替えた後の単位で数え直したもの（仕様書 3.2。第五次で改めた）
+        /// </summary>
         public LineBreakType LineBreak { get; }
 
         /// <summary>
@@ -75,7 +77,24 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     EncodingDetectionException.CodePageNotAvailableId);
             }
 
-            StrictDecodeFailure? failure = StrictDecodeVerifier.Verify(path, codePage);
+            // us-ascii を UTF-8 に読み替えた場合は、ISO-2022 のエスケープシーケンスも探す（第五次。BUG-0009）。
+            // ISO-2022 のバイト列はすべて 0x80 未満で、UTF-8 としては必ず正しく復号できてしまうため
+            bool readAsUtf8 = information.CodePage == EncodingVocabulary.CodePageAscii
+                && codePage == EncodingVocabulary.CodePageUtf8;
+
+            StrictDecodeFailure? failure = StrictDecodeVerifier.Verify(path, codePage, rejectIso2022Escape: readAsUtf8);
+
+            if (failure != null && failure.IsIso2022Escape)
+            {
+                throw new DetectionVerificationException(
+                    ValidationMessages.DetectionVerificationIso2022Escape(
+                        path,
+                        EncodingVocabulary.GetUnifiedName(codePage, information.Bom),
+                        lineCount,
+                        failure.Offset,
+                        ByteSequenceText.Format(failure.Bytes)),
+                    path);
+            }
 
             if (failure != null)
             {
@@ -90,7 +109,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     path);
             }
 
-            return new HeadLineEncoding(codePage, information.Bom, information.LineBreak);
+            // 改行は、読み替えた後の文字エンコーディングの単位で数え直す（第五次。BUG-0014）。
+            // 判定処理は us-ascii として 1 バイトずつ数えるので、UTF-16 の「上」U+4E0A（0A 4E）などを LF と数えている
+            LineBreakType lineBreak = codePage == information.CodePage
+                ? information.LineBreak
+                : EncodingDetector.DetectLineBreak(detection.Bytes, detection.Bytes.Length, codePage);
+
+            return new HeadLineEncoding(codePage, information.Bom, lineBreak);
         }
     }
 }

@@ -306,6 +306,7 @@ public sealed class ExportProbedCsvCommand : ProbedFileOutputCommandBase
             if (this._preexistingPropertyNames != null)
             {
                 this._propertyNames = ReconcileWithExistingHeader(this._propertyNames, this._preexistingPropertyNames);
+                RejectEmptyPropertyName(this._propertyNames);
             }
 
             if (this._writeHeader)
@@ -337,6 +338,7 @@ public sealed class ExportProbedCsvCommand : ProbedFileOutputCommandBase
             CreateEmptyOutput();
         }
 
+        CompleteOutput();
         Cleanup();
     }
 
@@ -602,6 +604,30 @@ public sealed class ExportProbedCsvCommand : ProbedFileOutputCommandBase
         }
 
         throw new InvalidOperationException();  // ThrowTerminatingError は戻らないが、コンパイラには分からない
+    }
+
+    /// <summary>
+    /// 追記先のヘッダーに空の列名があれば終了エラーにする（第五次）。
+    /// </summary>
+    /// <remarks>
+    /// 移植元は、-Force で照合を通った後、空の名前でプロパティを引こうとして PSArgumentException（ID は汎用の Argument、
+    /// 文言は .NET の「"name" の値が無効」）で止まる（7.6.7 と 5.1 の実測。実装記録 9 章）。止まる点は同じにし、
+    /// ID とメッセージを本モジュールのものにする。-Force が無い場合は、照合が先に CannotAppendCsvWithMismatchedPropertyNames
+    /// で止めるので（移植元と同じ）、ここには来ない。何も書く前なので、ファイルは変わらない。
+    /// </remarks>
+    private void RejectEmptyPropertyName(IList<string> propertyNames)
+    {
+        foreach (string name in propertyNames)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                ThrowTerminatingError(CreateError(
+                    new InvalidOperationException(ValidationMessages.CsvAppendEmptyPropertyName(this.OutputPath)),
+                    "CannotAppendCsvWithEmptyPropertyName",
+                    ErrorCategory.InvalidData,
+                    this.OutputPath));
+            }
+        }
     }
 
     /// <summary>

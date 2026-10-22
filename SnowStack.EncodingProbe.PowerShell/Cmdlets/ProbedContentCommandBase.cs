@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Management.Automation;
 using SnowStack.EncodingProbe;  // クラスライブラリのnamespace
 using SnowStack.EncodingProbe.PowerShell.Internal;
@@ -282,7 +283,8 @@ public abstract class ProbedContentCommandBase : PSCmdlet
 
         try
         {
-            return GetResolvedProviderPathFromPSPath(path, out _);
+            // 上書きのために書いている途中の一時ファイルは、ワイルドカードに一致させない（第五次）
+            return GetResolvedProviderPathFromPSPath(path, out _).Where(p => !TemporaryFileRegistry.Contains(p)).ToList();
         }
         catch (ItemNotFoundException)
         {

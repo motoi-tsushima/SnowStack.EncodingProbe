@@ -77,7 +77,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     EncodingDetectionException.CodePageNotAvailableId);
             }
 
-            return EncodingSpec.Create(encoding!, information.Bom, information.LineBreak);
+            // us-ascii は BOM 無しの UTF-8 とみなす（第五次。BUG-0001）
+            return EncodingVocabulary.TreatInheritedAsciiAsUtf8(
+                EncodingSpec.Create(encoding!, information.Bom, information.LineBreak));
         }
 
         /// <summary>

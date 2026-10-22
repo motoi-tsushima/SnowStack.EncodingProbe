@@ -7,11 +7,15 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// </summary>
     internal sealed class HeadLineDetectionResult
     {
-        public HeadLineDetectionResult(EncodingInformation information, LineBreakUnit unit)
+        public HeadLineDetectionResult(EncodingInformation information, LineBreakUnit unit, byte[] bytes)
         {
             this.Information = information;
             this.Unit = unit;
+            this.Bytes = bytes;
         }
+
+        /// <summary>判定に使った先頭 N 行のバイト列（読み替えた後の単位で改行を数え直すために使う）</summary>
+        public byte[] Bytes { get; }
 
         /// <summary>判定結果（読み替えの前）</summary>
         public EncodingInformation Information { get; }
@@ -82,7 +86,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 ? EncodingProbe.Detect(path, detectorOptions)
                 : EncodingProbe.Detect(cut.Bytes, detectorOptions);
 
-            return new HeadLineDetectionResult(information, cut.Unit);
+            return new HeadLineDetectionResult(information, cut.Unit, cut.Bytes);
         }
     }
 }

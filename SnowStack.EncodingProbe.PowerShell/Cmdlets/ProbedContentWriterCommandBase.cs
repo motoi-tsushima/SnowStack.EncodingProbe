@@ -182,9 +182,38 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     }
 
     /// <summary>
-    /// 開いているファイルをすべて閉じる
+    /// 開いているファイルをすべて閉じる（書き込みを完了する）。完了に失敗したファイルは元に戻し、非終了エラーを報告する。
     /// </summary>
-    protected override void EndProcessing() => CloseTargets();
+    protected override void EndProcessing()
+    {
+        foreach (KeyValuePair<string, WriteTarget?> entry in this._targets)
+        {
+            if (entry.Value == null)
+            {
+                continue;
+            }
+
+            try
+            {
+                entry.Value.Writer.Complete();
+            }
+            catch (UnrepresentableCharacterException exception)
+            {
+                WriteError(CreateError(
+                    exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, entry.Key));
+            }
+            catch (IOException exception)
+            {
+                WriteError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, entry.Key));
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                WriteError(CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, entry.Key));
+            }
+        }
+
+        CloseTargets();
+    }
 
     /// <summary>
     /// パイプラインが中断された場合もファイルを閉じる
@@ -397,6 +426,10 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// <remarks>
     /// 1レコード分をまとめて検査してから書き込む。途中の要素で拒否された場合に
     /// 手前の要素だけが書き込まれた状態にならないようにするためである。
+    /// <br/>
+    /// 表現できない文字があれば、そのファイルへの書き込みを取りやめ、ファイルを元に戻す
+    /// （第五次。それまでのレコードで書いた内容も取り消す）。追記の整合性検査より先に調べる。
+    /// 整合性検査で拒否された場合は、それまでのレコードで書いた内容を残す（検査を通った内容なので、ファイルは一貫している）。
     /// </remarks>
     private void WriteValues(WriteTarget target, string file)
     {
@@ -405,14 +438,30 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
             return;
         }
 
-        var chunks = new List<string>(this.Value.Length);
+        var texts = new List<string>(this.Value.Length);
 
         foreach (object? item in this.Value)
         {
-            string chunk = this.NoNewline.IsPresent
+            texts.Add(this.NoNewline.IsPresent
                 ? ToText(item)
-                : ToText(item) + target.LineBreak;
+                : ToText(item) + target.LineBreak);
+        }
 
+        try
+        {
+            // 要素の境目で分かれたサロゲートペアも 1 文字として調べるため、レコードをまとめて調べる
+            target.Writer.EnsureRepresentable(string.Concat(texts));
+        }
+        catch (UnrepresentableCharacterException exception)
+        {
+            ReportUnrepresentable(exception, file);
+            return;
+        }
+
+        var chunks = new List<string>(this.Value.Length);
+
+        foreach (string chunk in texts)
+        {
             string? rejection = RejectChunk(file, target.Spec, target.Baseline, chunk);
 
             if (rejection != null)
@@ -437,21 +486,49 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
                 target.Writer.Write(chunk);
             }
         }
+        catch (UnrepresentableCharacterException exception)
+        {
+            ReportUnrepresentable(exception, file);
+        }
         catch (IOException exception)
         {
+            // 書きかけのファイルを残さない（第五次）。-ErrorAction Stop では WriteError が戻らないので、先に元に戻す
+            RollbackTarget(file);
             WriteError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, file));
-            AbandonTarget(file);
         }
     }
 
     /// <summary>
-    /// 書き込み先を閉じ、以後そのパスへは書き込まないようにする
+    /// 表現できない文字を非終了エラーとして報告し、ファイルを元に戻す（ほかのファイルへの書き込みは続ける）
+    /// </summary>
+    private void ReportUnrepresentable(UnrepresentableCharacterException exception, string file)
+    {
+        // -ErrorAction Stop では WriteError が戻らない（後始末が書き込みを完了してしまう）ので、先に元に戻す
+        RollbackTarget(file);
+        WriteError(CreateError(exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, file));
+    }
+
+    /// <summary>
+    /// 書き込み先を閉じ、以後そのパスへは書き込まないようにする。それまでに書いた内容は残す。
     /// </summary>
     private void AbandonTarget(string file)
     {
         if (this._targets.TryGetValue(file, out WriteTarget? target))
         {
             target?.Dispose();
+        }
+
+        this._targets[file] = null;
+    }
+
+    /// <summary>
+    /// 書き込み先を書き込みの前の状態に戻し、以後そのパスへは書き込まないようにする（第五次）
+    /// </summary>
+    private void RollbackTarget(string file)
+    {
+        if (this._targets.TryGetValue(file, out WriteTarget? target))
+        {
+            target?.Writer.Rollback();
         }
 
         this._targets[file] = null;

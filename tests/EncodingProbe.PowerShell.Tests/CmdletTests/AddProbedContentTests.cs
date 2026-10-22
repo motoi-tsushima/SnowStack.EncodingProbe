@@ -40,8 +40,10 @@ public class AddProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
     /// UTF-8 / Shift_JIS の 2 件（日本語ありは Error、ASCII のみは許可）が示している。
     /// </remarks>
     [Theory]
-    // US-ASCII のファイルに UTF-8 で日本語を追記 → ファイル全体が UTF-8 に変わってしまう
-    [InlineData(20127, "ABC\r\n", "utf8NoBOM", "日本語", false)]
+    // US-ASCII のファイルに UTF-8 で日本語を追記 → 許可（第五次で改めた。追記先の us-ascii は BOM 無しの UTF-8 とみなす）
+    [InlineData(20127, "ABC\r\n", "utf8NoBOM", "日本語", true)]
+    // US-ASCII のファイルに Shift_JIS で日本語を追記 → UTF-8 とみなした追記先と一致しない
+    [InlineData(20127, "ABC\r\n", "shift_jis", "日本語", false)]
     // UTF-8 のファイルに ascii で ASCII のみを追記 → バイト列が一致する
     [InlineData(65001, "日本語\r\n", "ascii", "ABC", true)]
     [InlineData(65001, "日本語\r\n", "shift_jis", "日本語", false)]
@@ -75,8 +77,10 @@ public class AddProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
         Assert.Empty(result.Errors);
 
         // 許可された場合、結果は既存のエンコーディングで追記したのとバイト単位で同一になる
+        // （既存が us-ascii の場合は BOM 無しの UTF-8 とみなす。第五次）
+        Encoding baseline = existingCodePage == 20127 ? new UTF8Encoding(false) : existing;
         Assert.Equal(
-            ByteExactFile.Concat(original, existing.GetBytes(value + "\n")),
+            ByteExactFile.Concat(original, baseline.GetBytes(value + "\n")),
             file.ReadBytes());
     }
 

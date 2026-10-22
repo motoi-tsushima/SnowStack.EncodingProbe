@@ -226,6 +226,19 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "You must specify either the -UseQuotes or -QuoteFields parameters, but not both.",
                 [MessageKey.CannotSpecifyPathAndLiteralPath] =
                     "You must specify either the -Path or -LiteralPath parameters, but not both.",
+
+                // ---- 1.3.0 第五次 ----
+
+                [MessageKey.UnrepresentableCharacterOnWrite] =
+                    "'{0}' was not written because the character {2} '{3}' cannot be represented in the character encoding '{1}'. "
+                    + "The file was left unchanged.",
+                [MessageKey.DetectionVerificationIso2022Escape] =
+                    "'{0}' was not processed because it contains an ISO-2022 escape sequence at byte offset {3} ({4}), "
+                    + "although its first {2} lines contain only ASCII characters and were read as '{1}'. "
+                    + "Remove -DetectionLineCount, or increase it so that the lines include the escape sequence.",
+                [MessageKey.CsvAppendEmptyPropertyName] =
+                    "Cannot append CSV content to the following file: {0}. The header of the file has an empty column name, "
+                    + "which cannot be used as a property name.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -398,6 +411,16 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "-UseQuotes と -QuoteFields は同時に指定できません。どちらか一方を指定してください。",
                 [MessageKey.CannotSpecifyPathAndLiteralPath] =
                     "-Path と -LiteralPath のどちらか一方だけを指定してください。",
+
+                // ---- 1.3.0 第五次 ----
+
+                [MessageKey.UnrepresentableCharacterOnWrite] =
+                    "文字 {2} '{3}' は文字エンコーディング '{1}' で表現できないため、'{0}' に書き込みませんでした。ファイルは変更していません。",
+                [MessageKey.DetectionVerificationIso2022Escape] =
+                    "'{0}' は、先頭 {2} 行が英数字だけのため '{1}' として読みましたが、バイト位置 {3} に ISO-2022 のエスケープシーケンス（{4}）があるため、処理しませんでした。"
+                    + "-DetectionLineCount を外すか、エスケープシーケンスのある行まで行数を増やしてください。",
+                [MessageKey.CsvAppendEmptyPropertyName] =
+                    "次のファイルに CSV を追記できません: {0}。ファイルのヘッダーに空の列名があり、プロパティ名として使えません。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -572,6 +595,16 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "-UseQuotes와 -QuoteFields는 동시에 지정할 수 없습니다. 둘 중 하나만 지정하십시오.",
                 [MessageKey.CannotSpecifyPathAndLiteralPath] =
                     "-Path와 -LiteralPath 중 하나만 지정하십시오.",
+
+                // ---- 1.3.0 第五次 ----
+
+                [MessageKey.UnrepresentableCharacterOnWrite] =
+                    "문자 {2} '{3}'을(를) 문자 인코딩 '{1}'(으)로 표현할 수 없으므로 '{0}'에 쓰지 않았습니다. 파일은 변경하지 않았습니다.",
+                [MessageKey.DetectionVerificationIso2022Escape] =
+                    "'{0}'은(는) 처음 {2}줄이 ASCII 문자뿐이어서 '{1}'(으)로 읽었지만, 바이트 위치 {3}에 ISO-2022 이스케이프 시퀀스({4})가 있으므로 처리하지 않았습니다. "
+                    + "-DetectionLineCount를 제거하거나, 이스케이프 시퀀스가 있는 줄까지 줄 수를 늘리십시오.",
+                [MessageKey.CsvAppendEmptyPropertyName] =
+                    "다음 파일에 CSV를 추가할 수 없습니다: {0}. 파일의 헤더에 빈 열 이름이 있어 속성 이름으로 사용할 수 없습니다.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -739,6 +772,16 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "-UseQuotes 與 -QuoteFields 不能同時指定。請只指定其中一個。",
                 [MessageKey.CannotSpecifyPathAndLiteralPath] =
                     "請只指定 -Path 與 -LiteralPath 其中一個。",
+
+                // ---- 1.3.0 第五次 ----
+
+                [MessageKey.UnrepresentableCharacterOnWrite] =
+                    "字元 {2} '{3}' 無法以字元編碼 '{1}' 表示，因此未寫入 '{0}'。檔案未變更。",
+                [MessageKey.DetectionVerificationIso2022Escape] =
+                    "'{0}' 的前 {2} 行只有 ASCII 字元，因此以 '{1}' 讀取，但在位元組位置 {3} 有 ISO-2022 跳脫序列（{4}），因此未處理。"
+                    + "請移除 -DetectionLineCount，或將行數增加到包含跳脫序列的行。",
+                [MessageKey.CsvAppendEmptyPropertyName] =
+                    "無法將 CSV 附加到下列檔案：{0}。檔案的標頭有空的欄位名稱，無法作為屬性名稱使用。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -906,6 +949,16 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "-UseQuotes 与 -QuoteFields 不能同时指定。请只指定其中一个。",
                 [MessageKey.CannotSpecifyPathAndLiteralPath] =
                     "请只指定 -Path 与 -LiteralPath 其中一个。",
+
+                // ---- 1.3.0 第五次 ----
+
+                [MessageKey.UnrepresentableCharacterOnWrite] =
+                    "字符 {2} '{3}' 无法用字符编码 '{1}' 表示，因此未写入 '{0}'。文件未更改。",
+                [MessageKey.DetectionVerificationIso2022Escape] =
+                    "'{0}' 的前 {2} 行只有 ASCII 字符，因此按 '{1}' 读取，但在字节位置 {3} 有 ISO-2022 转义序列（{4}），因此未处理。"
+                    + "请去掉 -DetectionLineCount，或将行数增加到包含转义序列的行。",
+                [MessageKey.CsvAppendEmptyPropertyName] =
+                    "无法将 CSV 追加到以下文件：{0}。文件的标题中有空的列名，无法用作属性名称。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

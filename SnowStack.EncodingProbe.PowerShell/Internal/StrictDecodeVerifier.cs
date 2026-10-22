@@ -10,11 +10,17 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// </summary>
     internal sealed class StrictDecodeFailure
     {
-        public StrictDecodeFailure(long offset, byte[] bytes)
+        public StrictDecodeFailure(long offset, byte[] bytes, bool isIso2022Escape = false)
         {
             this.Offset = offset;
             this.Bytes = bytes;
+            this.IsIso2022Escape = isIso2022Escape;
         }
+
+        /// <summary>
+        /// 不正なバイト列ではなく、ISO-2022 のエスケープシーケンス（ESC の直後が '$'・'('・')'）を見つけたかどうか（第五次。BUG-0009）
+        /// </summary>
+        public bool IsIso2022Escape { get; }
 
         /// <summary>不正なバイト列の位置（ファイル先頭からのバイトオフセット。BOM を含めて数える）</summary>
         public long Offset { get; }
@@ -45,14 +51,20 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <summary>BOM の判定に必要な先頭バイト数</summary>
         private const int BomHeadSize = 4;
 
+        /// <summary>ESC（ISO-2022 のエスケープシーケンスの始まり）</summary>
+        private const byte Escape = 0x1B;
+
         /// <summary>
         /// ファイルを開いて全体を検証する。不正なバイト列が無ければ null を返す。
         /// </summary>
         /// <param name="path">対象ファイルの絶対パス。存在することを前提とする。</param>
         /// <param name="codePage">判定したコードページ</param>
+        /// <param name="rejectIso2022Escape">
+        /// ISO-2022 のエスケープシーケンスも失敗とするかどうか。us-ascii を UTF-8 に読み替えた場合に指定する（第五次。BUG-0009）
+        /// </param>
         /// <exception cref="ArgumentException">実行環境がコードページを提供していない場合</exception>
         /// <exception cref="NotSupportedException">実行環境がコードページを提供していない場合</exception>
-        public static StrictDecodeFailure? Verify(string path, int codePage)
+        public static StrictDecodeFailure? Verify(string path, int codePage, bool rejectIso2022Escape = false)
         {
             CodePagesProviderRegistration.EnsureRegistered();
 
@@ -65,7 +77,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 4096,
                 FileOptions.SequentialScan))
             {
-                return Verify(stream, codePage, DefaultBufferSize);
+                return Verify(stream, codePage, DefaultBufferSize, rejectIso2022Escape);
             }
         }
 
@@ -75,7 +87,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <param name="stream">シーク可能なストリーム。先頭から読む。</param>
         /// <param name="codePage">判定したコードページ</param>
         /// <param name="bufferSize">読み込みに使うバッファの大きさ</param>
-        internal static StrictDecodeFailure? Verify(Stream stream, int codePage, int bufferSize)
+        /// <param name="rejectIso2022Escape">ISO-2022 のエスケープシーケンスも失敗とするかどうか</param>
+        /// <remarks>
+        /// ISO-2022-JP / KR / CN のバイト列はすべて 0x80 未満なので、先頭 N 行が英数字だけだと us-ascii と判定され、
+        /// UTF-8 に読み替えると全体の復号は必ず成功する（BUG-0009）。そこで、読み替えた場合は、
+        /// 同じ走査の中で ESC（0x1B）の直後が '$'（0x24）・'('（0x28）・')'（0x29）のバイト列を探し、見つかれば失敗とする。
+        /// 端末の制御文字を含むログ（ESC ( B など）も止めてしまうが、判定を誤ったまま処理するより安全な側に倒す。
+        /// </remarks>
+        internal static StrictDecodeFailure? Verify(Stream stream, int codePage, int bufferSize, bool rejectIso2022Escape = false)
         {
             Encoding strict = EncodingVocabulary.BuildStrictEncoding(codePage);
 
@@ -88,6 +107,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             var buffer = new byte[bufferSize];
             var chars = new char[strict.GetMaxCharCount(bufferSize)];
             long position = bomLength;
+            bool previousIsEscape = false;
 
             while (true)
             {
@@ -107,6 +127,16 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     return Locate(stream, strict, bomLength, position, bufferSize);
                 }
 
+                if (rejectIso2022Escape)
+                {
+                    StrictDecodeFailure? escape = FindIso2022Escape(buffer, count, position, ref previousIsEscape);
+
+                    if (escape != null)
+                    {
+                        return escape;
+                    }
+                }
+
                 position += count;
             }
 
@@ -122,6 +152,32 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             return null;
         }
+
+        /// <summary>
+        /// バッファの中から、ISO-2022 のエスケープシーケンスの始まり（ESC の直後が '$'・'('・')'）を探す。
+        /// 前のバッファの末尾が ESC だった場合は、このバッファの先頭のバイトと合わせて調べる。
+        /// </summary>
+        /// <param name="buffer">読み込んだバッファ</param>
+        /// <param name="count">バッファの有効なバイト数</param>
+        /// <param name="bufferStart">バッファの先頭のファイル上の位置</param>
+        /// <param name="previousIsEscape">前のバッファの最後のバイトが ESC だったかどうか（呼び出しをまたいで引き継ぐ）</param>
+        private static StrictDecodeFailure? FindIso2022Escape(
+            byte[] buffer, int count, long bufferStart, ref bool previousIsEscape)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (previousIsEscape && IsIso2022Intermediate(buffer[i]))
+                {
+                    return new StrictDecodeFailure(bufferStart + i - 1, new[] { Escape, buffer[i] }, isIso2022Escape: true);
+                }
+
+                previousIsEscape = buffer[i] == Escape;
+            }
+
+            return null;
+        }
+
+        private static bool IsIso2022Intermediate(byte value) => value == 0x24 || value == 0x28 || value == 0x29;
 
         /// <summary>
         /// 最初の不正なバイト列の位置と、そのバイト列を求める。
