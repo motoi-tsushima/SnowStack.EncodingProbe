@@ -635,6 +635,12 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <maml:alert>
         <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請不要從寫入目標或 -EncodingFrom 的參照檔案繼承，而以 -Encoding 明確指定字碼頁。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入該檔案，回報非終止錯誤 UnrepresentableCharacter，並繼續寫入其他檔案（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。先前的記錄已寫入的內容也會取消，並將檔案還原為寫入前的狀態（覆寫時先寫入同一資料夾的暫存檔再取代，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -1077,6 +1083,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請不要從寫入目標或 -EncodingFrom 的參照檔案繼承，而以 -Encoding 明確指定字碼頁。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入該檔案，回報非終止錯誤 UnrepresentableCharacter，並繼續寫入其他檔案（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。先前的記錄已寫入的內容也會取消，並將檔案還原為寫入前的狀態（覆寫時先寫入同一資料夾的暫存檔再取代，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。附加的一致性檢查也會將附加目的地的 us-ascii 視為無 BOM 的 UTF-8。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1571,6 +1583,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請不要使用 Auto 或 -Append 的繼承，而以 -Encoding 明確指定字碼頁。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入檔案，回報終止錯誤 UnrepresentableCharacter（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。已寫入的行也會取消，並將檔案還原為寫入前的狀態（覆寫時先寫入同一資料夾的暫存檔再取代，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。附加的一致性檢查也會將附加目的地的 us-ascii 視為無 BOM 的 UTF-8。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -2150,7 +2168,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。</maml:para>
+            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。若因前 N 行只有 ASCII 字元而視為 UTF-8，也會尋找 ISO-2022 跳脫序列（ESC 後接 $、(、)），找到時以 DetectionVerificationFailed 停止（ISO-2022-JP / KR / CN 只由小於 0x80 的位元組組成）。視為 UTF-16 / UTF-32 時，換行的種類也以該單位計算。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2202,7 +2220,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。</maml:para>
+            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。若因前 N 行只有 ASCII 字元而視為 UTF-8，也會尋找 ISO-2022 跳脫序列（ESC 後接 $、(、)），找到時以 DetectionVerificationFailed 停止（ISO-2022-JP / KR / CN 只由小於 0x80 的位元組組成）。視為 UTF-16 / UTF-32 時，換行的種類也以該單位計算。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2253,7 +2271,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。</maml:para>
+            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。若因前 N 行只有 ASCII 字元而視為 UTF-8，也會尋找 ISO-2022 跳脫序列（ESC 後接 $、(、)），找到時以 DetectionVerificationFailed 停止（ISO-2022-JP / KR / CN 只由小於 0x80 的位元組組成）。視為 UTF-16 / UTF-32 時，換行的種類也以該單位計算。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2304,7 +2322,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。</maml:para>
+            <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。若因前 N 行只有 ASCII 字元而視為 UTF-8，也會尋找 ISO-2022 跳脫序列（ESC 後接 $、(、)），找到時以 DetectionVerificationFailed 停止（ISO-2022-JP / KR / CN 只由小於 0x80 的位元組組成）。視為 UTF-16 / UTF-32 時，換行的種類也以該單位計算。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2356,7 +2374,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
           <maml:para>判斷字元編碼時使用的每個檔案開頭行數。省略時以整個檔案判斷。</maml:para>
           <maml:para>行數是實體行數，以換行（CR-LF / LF / CR）計算，並非 CSV 的記錄數（引號中的換行也算作 1 行）。</maml:para>
           <maml:para>開頭 N 行只有 ASCII 時，會以沒有 BOM 的 UTF-8 讀取（若從換行的位元組序列可知是 UTF-16 / UTF-32，則為沒有 BOM 的該字元編碼）。在輸出記錄之前，會以判斷出的字元編碼嚴格解碼整個檔案加以驗證。若有無效的位元組序列（例如只在開頭 N 行之後才有日文的 Shift_JIS 檔案），則不輸出該檔案的任何記錄，並回報非終止錯誤 DetectionVerificationFailed。此時請增加 -DetectionLineCount，或指定 -Encoding。沒有 BOM 的 UTF-16 / UTF-32 檔案若在英數字中夾雜兩個位元組都小於 0x80 的字元（如「上」U+4E0A），以整個檔案判斷時會是 us-ascii（請參閱 Resolve-Encoding 的備註），但指定 -DetectionLineCount 時，會以從換行的位元組序列可知的字元編碼正確讀取。</maml:para>
-          <maml:para>為了驗證，檔案會讀取兩次。需要速度時請指定 -Encoding（不進行判斷也不進行驗證）。沒有換行的檔案為了判斷會讀取整個檔案，因此達 2 GB 以上時無法判斷。指定 -Encoding 時會忽略此參數。</maml:para>
+          <maml:para>為了驗證，檔案會讀取兩次。需要速度時請指定 -Encoding（不進行判斷也不進行驗證）。沒有換行的檔案為了判斷會讀取整個檔案，因此達 2 GB 以上時無法判斷。指定 -Encoding 時會忽略此參數。若因前 N 行只有 ASCII 字元而視為 UTF-8，也會尋找 ISO-2022 跳脫序列（ESC 後接 $、(、)），找到時以 DetectionVerificationFailed 停止（ISO-2022-JP / KR / CN 只由小於 0x80 的位元組組成）。視為 UTF-16 / UTF-32 時，換行的種類也以該單位計算。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         <dev:type>
@@ -2607,7 +2625,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>對設有唯讀屬性的檔案，也會暫時移除屬性後寫入；寫入後會還原屬性。在 -Append 時，也接受缺少既有檔案某欄位對應屬性的物件，並將該欄位寫為空值。不會解除 -NoClobber。</maml:para>
+            <maml:para>對設有唯讀屬性的檔案，也會暫時移除屬性後寫入；寫入後會還原屬性。在 -Append 時，也接受缺少既有檔案某欄位對應屬性的物件，並將該欄位寫為空值。不會解除 -NoClobber。若附加目的地的標頭有空的欄位名稱，即使指定 -Force 也無法附加（CannotAppendCsvWithEmptyPropertyName）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -2651,7 +2669,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>判斷既有檔案字元編碼時使用的開頭行數。對象為 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出檔案，以及 -Append 的附加目標檔案。省略時以整個檔案判斷。</maml:para>
+            <maml:para>判斷既有檔案字元編碼時使用的開頭行數。對象為 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出檔案，以及 -Append 的附加目標檔案。省略時以整個檔案判斷。若因前 N 行只有 ASCII 字元而視為 UTF-8，也會尋找 ISO-2022 跳脫序列（ESC 後接 $、(、)），找到時以 DetectionVerificationFailed 停止（ISO-2022-JP / KR / CN 只由小於 0x80 的位元組組成）。視為 UTF-16 / UTF-32 時，換行的種類也以該單位計算。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2747,7 +2765,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>對設有唯讀屬性的檔案，也會暫時移除屬性後寫入；寫入後會還原屬性。在 -Append 時，也接受缺少既有檔案某欄位對應屬性的物件，並將該欄位寫為空值。不會解除 -NoClobber。</maml:para>
+            <maml:para>對設有唯讀屬性的檔案，也會暫時移除屬性後寫入；寫入後會還原屬性。在 -Append 時，也接受缺少既有檔案某欄位對應屬性的物件，並將該欄位寫為空值。不會解除 -NoClobber。若附加目的地的標頭有空的欄位名稱，即使指定 -Force 也無法附加（CannotAppendCsvWithEmptyPropertyName）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -2791,7 +2809,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>判斷既有檔案字元編碼時使用的開頭行數。對象為 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出檔案，以及 -Append 的附加目標檔案。省略時以整個檔案判斷。</maml:para>
+            <maml:para>判斷既有檔案字元編碼時使用的開頭行數。對象為 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出檔案，以及 -Append 的附加目標檔案。省略時以整個檔案判斷。若因前 N 行只有 ASCII 字元而視為 UTF-8，也會尋找 ISO-2022 跳脫序列（ESC 後接 $、(、)），找到時以 DetectionVerificationFailed 停止（ISO-2022-JP / KR / CN 只由小於 0x80 的位元組組成）。視為 UTF-16 / UTF-32 時，換行的種類也以該單位計算。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2887,7 +2905,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:description>
           <maml:para>判斷既有檔案字元編碼時使用的開頭行數。對象為 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出檔案，以及 -Append 的附加目標檔案。省略時以整個檔案判斷。</maml:para>
           <maml:para>行數是實體行數，以換行（CR-LF / LF / CR）計算，並非 CSV 的記錄數。開頭 N 行只有 ASCII 時，會視為沒有 BOM 的 UTF-8（若從換行的位元組序列可知是 UTF-16 / UTF-32，則為沒有 BOM 的該字元編碼）。沒有 BOM 的 UTF-16 / UTF-32 的現有檔案若在英數字中夾雜兩個位元組都小於 0x80 的字元（如「上」U+4E0A），以整個檔案判斷時會是 us-ascii（請參閱 Resolve-Encoding 的備註），但指定 -DetectionLineCount 時，會視為從換行的位元組序列可知的字元編碼。</maml:para>
-          <maml:para>在寫入任何內容之前，會以判斷出的字元編碼嚴格解碼整個檔案加以驗證。若有無效的位元組序列（例如只在開頭 N 行之後才有日文的 Shift_JIS 檔案），則不寫入任何內容，並回報終止錯誤 DetectionVerificationFailed（-WhatIf 時也會回報）。這可以防止 UTF-8 記錄被附加到 Shift_JIS 檔案。為了驗證，檔案會讀取兩次。</maml:para>
+          <maml:para>在寫入任何內容之前，會以判斷出的字元編碼嚴格解碼整個檔案加以驗證。若有無效的位元組序列（例如只在開頭 N 行之後才有日文的 Shift_JIS 檔案），則不寫入任何內容，並回報終止錯誤 DetectionVerificationFailed（-WhatIf 時也會回報）。這可以防止 UTF-8 記錄被附加到 Shift_JIS 檔案。為了驗證，檔案會讀取兩次。若因前 N 行只有 ASCII 字元而視為 UTF-8，也會尋找 ISO-2022 跳脫序列（ESC 後接 $、(、)），找到時以 DetectionVerificationFailed 停止（ISO-2022-JP / KR / CN 只由小於 0x80 的位元組組成）。視為 UTF-16 / UTF-32 時，換行的種類也以該單位計算。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         <dev:type>
@@ -2923,7 +2941,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>對設有唯讀屬性的檔案，也會暫時移除屬性後寫入；寫入後會還原屬性。在 -Append 時，也接受缺少既有檔案某欄位對應屬性的物件，並將該欄位寫為空值。不會解除 -NoClobber。</maml:para>
+          <maml:para>對設有唯讀屬性的檔案，也會暫時移除屬性後寫入；寫入後會還原屬性。在 -Append 時，也接受缺少既有檔案某欄位對應屬性的物件，並將該欄位寫為空值。不會解除 -NoClobber。若附加目的地的標頭有空的欄位名稱，即使指定 -Force 也無法附加（CannotAppendCsvWithEmptyPropertyName）。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -3145,6 +3163,12 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <maml:alert>
         <maml:para>-DetectionLineCount 的驗證可能無法找出單位元組字元編碼的誤判。這是因為在單位元組字元編碼中，幾乎所有位元組序列都能解碼為正確的字元。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入檔案，回報終止錯誤 UnrepresentableCharacter（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。已寫入的行也會取消，並將檔案還原為寫入前的狀態（覆寫時先寫入同一資料夾的暫存檔再取代，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。附加的一致性檢查也會將附加目的地的 us-ascii 視為無 BOM 的 UTF-8。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -3356,7 +3380,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>判斷時使用的開頭行數。省略時以整個檔案判斷（與以往相同）。</maml:para>
+            <maml:para>判斷時使用的開頭行數。省略時以整個檔案判斷（與以往相同）。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -3399,7 +3423,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
           <maml:para>判斷時使用的開頭行數。省略時以整個檔案判斷（與以往相同）。</maml:para>
           <maml:para>行數是實體行數，以換行（CR-LF / LF / CR）計算，並非 CSV 的記錄數。CSV 引號中的換行也算作 1 行。</maml:para>
           <maml:para>結果只反映開頭 N 行。只出現在後半部的字元（ASCII 行之後的日文等）不會反映。開頭 N 行只有 ASCII 時，會回報 us-ascii。沒有 BOM 的 UTF-16 / UTF-32 若在開頭 N 行的英數字中夾雜兩個位元組都小於 0x80 的字元（如「上」U+4E0A），也會是 us-ascii（只有英數字的沒有 BOM 的 UTF-16 / UTF-32，會回報該字元編碼）。LineBreak 也是只以開頭 N 行判斷的結果。</maml:para>
-          <maml:para>沒有換行的檔案會讀取整個檔案。判斷範圍達 2 GB 以上時無法判斷，會產生錯誤。</maml:para>
+          <maml:para>沒有換行的檔案會讀取整個檔案。判斷範圍達 2 GB 以上時無法判斷，會產生錯誤。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         <dev:type>

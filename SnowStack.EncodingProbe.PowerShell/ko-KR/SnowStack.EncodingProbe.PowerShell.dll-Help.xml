@@ -635,6 +635,12 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <maml:alert>
         <maml:para>싱글바이트 문자 인코딩(windows-1252, ISO-8859 등)은 바이트열의 구조로는 구별할 수 없어 문장의 통계로 추정합니다. 따라서 판정의 성패는 길이보다 내용에 좌우됩니다. 문자 목록, 기호·숫자가 많은 줄, 그 언어에서 보통 쓰지 않는 문자를 포함한 텍스트는 수백 바이트가 있어도 판정하지 못할(CodePage가 -1) 수 있습니다. 이 경우 쓰기 대상이나 -EncodingFrom의 참조 파일에서 상속하지 말고 -Encoding으로 코드 페이지를 명시하십시오.</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>쓰려는 문자열에 대상의 문자 인코딩으로 표현할 수 없는 문자가 있으면 그 파일에는 쓰지 않고, 종료되지 않는 오류 UnrepresentableCharacter를 보고한 뒤 다른 파일에 계속 씁니다(Convert-ProbedContent와 같은 ID입니다). 메시지에는 첫 번째 문자의 코드 포인트(U+XXXX)와 문자 인코딩의 이름을 표시합니다. '?'나 비슷한 문자(é → e 등)로 바꾸어 쓰지 않습니다. 이전 레코드에서 쓴 내용도 취소하고 파일을 쓰기 전 상태로 되돌립니다(덮어쓰기는 같은 폴더의 임시 파일에 쓴 뒤 바꾸고, 추가는 원래 길이로 되돌립니다). -Encoding에 System.Text.Encoding 인스턴스를 전달한 경우에도 그 인스턴스의 대체(fallback) 설정은 사용하지 않습니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>상속한 문자 인코딩(쓰기 대상·추가 대상, -EncodingFrom의 참조 파일, -Encoding에 전달한 EncodingInformation)이 us-ascii인 경우에는 BOM 없는 UTF-8로 간주하여 씁니다. 모든 바이트가 0x80 미만인 파일은 UTF-8로도 올바르므로, ASCII 문자만 있는 로그나 CSV에도 한국어 등을 추가할 수 있습니다. ASCII 문자만 쓰는 경우의 바이트열은 us-ascii와 같습니다. -Encoding ascii를 명시한 경우에는 us-ascii 그대로입니다.</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -1077,6 +1083,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>싱글바이트 문자 인코딩(windows-1252, ISO-8859 등)은 바이트열의 구조로는 구별할 수 없어 문장의 통계로 추정합니다. 따라서 판정의 성패는 길이보다 내용에 좌우됩니다. 문자 목록, 기호·숫자가 많은 줄, 그 언어에서 보통 쓰지 않는 문자를 포함한 텍스트는 수백 바이트가 있어도 판정하지 못할(CodePage가 -1) 수 있습니다. 이 경우 쓰기 대상이나 -EncodingFrom의 참조 파일에서 상속하지 말고 -Encoding으로 코드 페이지를 명시하십시오.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>쓰려는 문자열에 대상의 문자 인코딩으로 표현할 수 없는 문자가 있으면 그 파일에는 쓰지 않고, 종료되지 않는 오류 UnrepresentableCharacter를 보고한 뒤 다른 파일에 계속 씁니다(Convert-ProbedContent와 같은 ID입니다). 메시지에는 첫 번째 문자의 코드 포인트(U+XXXX)와 문자 인코딩의 이름을 표시합니다. '?'나 비슷한 문자(é → e 등)로 바꾸어 쓰지 않습니다. 이전 레코드에서 쓴 내용도 취소하고 파일을 쓰기 전 상태로 되돌립니다(덮어쓰기는 같은 폴더의 임시 파일에 쓴 뒤 바꾸고, 추가는 원래 길이로 되돌립니다). -Encoding에 System.Text.Encoding 인스턴스를 전달한 경우에도 그 인스턴스의 대체(fallback) 설정은 사용하지 않습니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>상속한 문자 인코딩(쓰기 대상·추가 대상, -EncodingFrom의 참조 파일, -Encoding에 전달한 EncodingInformation)이 us-ascii인 경우에는 BOM 없는 UTF-8로 간주하여 씁니다. 모든 바이트가 0x80 미만인 파일은 UTF-8로도 올바르므로, ASCII 문자만 있는 로그나 CSV에도 한국어 등을 추가할 수 있습니다. ASCII 문자만 쓰는 경우의 바이트열은 us-ascii와 같습니다. -Encoding ascii를 명시한 경우에는 us-ascii 그대로입니다. 추가의 일관성 검사에서도 추가 대상의 us-ascii를 BOM 없는 UTF-8로 간주합니다.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -1571,6 +1583,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </maml:alert>
       <maml:alert>
         <maml:para>싱글바이트 문자 인코딩(windows-1252, ISO-8859 등)은 바이트열의 구조로는 구별할 수 없어 문장의 통계로 추정합니다. 따라서 판정의 성패는 길이보다 내용에 좌우됩니다. 문자 목록, 기호·숫자가 많은 줄, 그 언어에서 보통 쓰지 않는 문자를 포함한 텍스트는 수백 바이트가 있어도 판정하지 못할(CodePage가 -1) 수 있습니다. 이 경우 Auto나 -Append의 상속을 사용하지 말고 -Encoding으로 코드 페이지를 명시하십시오.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>쓰려는 문자열에 대상의 문자 인코딩으로 표현할 수 없는 문자가 있으면 파일에는 쓰지 않고 종료 오류 UnrepresentableCharacter를 보고합니다(Convert-ProbedContent와 같은 ID입니다). 메시지에는 첫 번째 문자의 코드 포인트(U+XXXX)와 문자 인코딩의 이름을 표시합니다. '?'나 비슷한 문자(é → e 등)로 바꾸어 쓰지 않습니다. 이미 쓴 줄도 취소하고 파일을 쓰기 전 상태로 되돌립니다(덮어쓰기는 같은 폴더의 임시 파일에 쓴 뒤 바꾸고, 추가는 원래 길이로 되돌립니다). -Encoding에 System.Text.Encoding 인스턴스를 전달한 경우에도 그 인스턴스의 대체(fallback) 설정은 사용하지 않습니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>상속한 문자 인코딩(쓰기 대상·추가 대상, -EncodingFrom의 참조 파일, -Encoding에 전달한 EncodingInformation)이 us-ascii인 경우에는 BOM 없는 UTF-8로 간주하여 씁니다. 모든 바이트가 0x80 미만인 파일은 UTF-8로도 올바르므로, ASCII 문자만 있는 로그나 CSV에도 한국어 등을 추가할 수 있습니다. ASCII 문자만 쓰는 경우의 바이트열은 us-ascii와 같습니다. -Encoding ascii를 명시한 경우에는 us-ascii 그대로입니다. 추가의 일관성 검사에서도 추가 대상의 us-ascii를 BOM 없는 UTF-8로 간주합니다.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
@@ -2150,7 +2168,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용할 각 파일의 처음 줄 수. 생략하면 파일 전체로 판정합니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용할 각 파일의 처음 줄 수. 생략하면 파일 전체로 판정합니다. 처음 N줄이 ASCII 문자뿐이어서 UTF-8로 간주한 경우에는 ISO-2022 이스케이프 시퀀스(ESC 뒤에 $, (, ))도 찾아서, 발견하면 DetectionVerificationFailed로 중지합니다(ISO-2022-JP / KR / CN은 0x80 미만의 바이트로만 이루어져 있기 때문입니다). UTF-16 / UTF-32로 간주한 경우에는 줄 바꿈의 종류도 그 단위로 셉니다. BOM이 없고 0x00을 포함하는 64 KiB 이하의 파일 중 UTF-16 / UTF-32로 정할 수 없는 파일은 파일 전체로 판별합니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2202,7 +2220,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용할 각 파일의 처음 줄 수. 생략하면 파일 전체로 판정합니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용할 각 파일의 처음 줄 수. 생략하면 파일 전체로 판정합니다. 처음 N줄이 ASCII 문자뿐이어서 UTF-8로 간주한 경우에는 ISO-2022 이스케이프 시퀀스(ESC 뒤에 $, (, ))도 찾아서, 발견하면 DetectionVerificationFailed로 중지합니다(ISO-2022-JP / KR / CN은 0x80 미만의 바이트로만 이루어져 있기 때문입니다). UTF-16 / UTF-32로 간주한 경우에는 줄 바꿈의 종류도 그 단위로 셉니다. BOM이 없고 0x00을 포함하는 64 KiB 이하의 파일 중 UTF-16 / UTF-32로 정할 수 없는 파일은 파일 전체로 판별합니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2253,7 +2271,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용할 각 파일의 처음 줄 수. 생략하면 파일 전체로 판정합니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용할 각 파일의 처음 줄 수. 생략하면 파일 전체로 판정합니다. 처음 N줄이 ASCII 문자뿐이어서 UTF-8로 간주한 경우에는 ISO-2022 이스케이프 시퀀스(ESC 뒤에 $, (, ))도 찾아서, 발견하면 DetectionVerificationFailed로 중지합니다(ISO-2022-JP / KR / CN은 0x80 미만의 바이트로만 이루어져 있기 때문입니다). UTF-16 / UTF-32로 간주한 경우에는 줄 바꿈의 종류도 그 단위로 셉니다. BOM이 없고 0x00을 포함하는 64 KiB 이하의 파일 중 UTF-16 / UTF-32로 정할 수 없는 파일은 파일 전체로 판별합니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2304,7 +2322,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용할 각 파일의 처음 줄 수. 생략하면 파일 전체로 판정합니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용할 각 파일의 처음 줄 수. 생략하면 파일 전체로 판정합니다. 처음 N줄이 ASCII 문자뿐이어서 UTF-8로 간주한 경우에는 ISO-2022 이스케이프 시퀀스(ESC 뒤에 $, (, ))도 찾아서, 발견하면 DetectionVerificationFailed로 중지합니다(ISO-2022-JP / KR / CN은 0x80 미만의 바이트로만 이루어져 있기 때문입니다). UTF-16 / UTF-32로 간주한 경우에는 줄 바꿈의 종류도 그 단위로 셉니다. BOM이 없고 0x00을 포함하는 64 KiB 이하의 파일 중 UTF-16 / UTF-32로 정할 수 없는 파일은 파일 전체로 판별합니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2356,7 +2374,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
           <maml:para>문자 인코딩 판정에 사용할 각 파일의 처음 줄 수. 생략하면 파일 전체로 판정합니다.</maml:para>
           <maml:para>줄 수는 물리적인 줄 수이며 줄 바꿈(CR-LF / LF / CR)으로 셉니다. CSV의 레코드 수가 아닙니다(따옴표 안의 줄 바꿈도 1줄로 셉니다).</maml:para>
           <maml:para>처음 N줄이 ASCII뿐이면 BOM이 없는 UTF-8로 읽습니다(줄 바꿈의 바이트열로 UTF-16 / UTF-32임을 알 수 있으면 BOM이 없는 해당 문자 인코딩). 레코드를 출력하기 전에 판정한 문자 인코딩으로 파일 전체를 엄격하게 디코딩하여 검증합니다. 잘못된 바이트열이 있으면(처음 N줄 뒤에만 일본어가 있는 Shift_JIS 파일 등) 해당 파일의 레코드를 하나도 출력하지 않고 종료되지 않는 오류 DetectionVerificationFailed를 보고합니다. 이 경우 -DetectionLineCount를 늘리거나 -Encoding을 지정하십시오. BOM이 없는 UTF-16 / UTF-32에서 영숫자 사이에 2바이트가 모두 0x80 미만이 되는 문자(U+4E0A 등)가 섞인 파일은 전체로 판정하면 us-ascii가 되지만(Resolve-Encoding의 참고 참조), -DetectionLineCount를 지정하면 줄 바꿈의 바이트열로 알 수 있는 문자 인코딩으로 올바르게 읽습니다.</maml:para>
-          <maml:para>검증을 위해 파일을 두 번 읽습니다. 속도가 필요하면 -Encoding을 지정하십시오(판정도 검증도 하지 않습니다). 줄 바꿈이 없는 파일은 판정을 위해 전체를 읽으므로 2GB 이상이면 판정할 수 없습니다. -Encoding을 지정하면 무시됩니다.</maml:para>
+          <maml:para>검증을 위해 파일을 두 번 읽습니다. 속도가 필요하면 -Encoding을 지정하십시오(판정도 검증도 하지 않습니다). 줄 바꿈이 없는 파일은 판정을 위해 전체를 읽으므로 2GB 이상이면 판정할 수 없습니다. -Encoding을 지정하면 무시됩니다. 처음 N줄이 ASCII 문자뿐이어서 UTF-8로 간주한 경우에는 ISO-2022 이스케이프 시퀀스(ESC 뒤에 $, (, ))도 찾아서, 발견하면 DetectionVerificationFailed로 중지합니다(ISO-2022-JP / KR / CN은 0x80 미만의 바이트로만 이루어져 있기 때문입니다). UTF-16 / UTF-32로 간주한 경우에는 줄 바꿈의 종류도 그 단위로 셉니다. BOM이 없고 0x00을 포함하는 64 KiB 이하의 파일 중 UTF-16 / UTF-32로 정할 수 없는 파일은 파일 전체로 판별합니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         <dev:type>
@@ -2607,7 +2625,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>읽기 전용 특성이 있는 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓴 후에 원래대로 되돌립니다. -Append에서는 기존 파일의 열에 해당하는 속성이 없는 개체도 받아들이고 그 열을 비워서 씁니다. -NoClobber는 해제하지 않습니다.</maml:para>
+            <maml:para>읽기 전용 특성이 있는 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓴 후에 원래대로 되돌립니다. -Append에서는 기존 파일의 열에 해당하는 속성이 없는 개체도 받아들이고 그 열을 비워서 씁니다. -NoClobber는 해제하지 않습니다. 추가 대상의 헤더에 빈 열 이름이 있으면 -Force를 지정해도 추가할 수 없습니다(CannotAppendCsvWithEmptyPropertyName).</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -2651,7 +2669,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>기존 파일의 문자 인코딩 판정에 사용할 처음 줄 수. 대상은 -EncodingFrom의 참조 파일, 명시적인 -Encoding Auto의 출력 파일, -Append의 추가 대상 파일입니다. 생략하면 파일 전체로 판정합니다.</maml:para>
+            <maml:para>기존 파일의 문자 인코딩 판정에 사용할 처음 줄 수. 대상은 -EncodingFrom의 참조 파일, 명시적인 -Encoding Auto의 출력 파일, -Append의 추가 대상 파일입니다. 생략하면 파일 전체로 판정합니다. 처음 N줄이 ASCII 문자뿐이어서 UTF-8로 간주한 경우에는 ISO-2022 이스케이프 시퀀스(ESC 뒤에 $, (, ))도 찾아서, 발견하면 DetectionVerificationFailed로 중지합니다(ISO-2022-JP / KR / CN은 0x80 미만의 바이트로만 이루어져 있기 때문입니다). UTF-16 / UTF-32로 간주한 경우에는 줄 바꿈의 종류도 그 단위로 셉니다. BOM이 없고 0x00을 포함하는 64 KiB 이하의 파일 중 UTF-16 / UTF-32로 정할 수 없는 파일은 파일 전체로 판별합니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2747,7 +2765,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Force</maml:name>
           <maml:description>
-            <maml:para>읽기 전용 특성이 있는 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓴 후에 원래대로 되돌립니다. -Append에서는 기존 파일의 열에 해당하는 속성이 없는 개체도 받아들이고 그 열을 비워서 씁니다. -NoClobber는 해제하지 않습니다.</maml:para>
+            <maml:para>읽기 전용 특성이 있는 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓴 후에 원래대로 되돌립니다. -Append에서는 기존 파일의 열에 해당하는 속성이 없는 개체도 받아들이고 그 열을 비워서 씁니다. -NoClobber는 해제하지 않습니다. 추가 대상의 헤더에 빈 열 이름이 있으면 -Force를 지정해도 추가할 수 없습니다(CannotAppendCsvWithEmptyPropertyName).</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -2791,7 +2809,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>기존 파일의 문자 인코딩 판정에 사용할 처음 줄 수. 대상은 -EncodingFrom의 참조 파일, 명시적인 -Encoding Auto의 출력 파일, -Append의 추가 대상 파일입니다. 생략하면 파일 전체로 판정합니다.</maml:para>
+            <maml:para>기존 파일의 문자 인코딩 판정에 사용할 처음 줄 수. 대상은 -EncodingFrom의 참조 파일, 명시적인 -Encoding Auto의 출력 파일, -Append의 추가 대상 파일입니다. 생략하면 파일 전체로 판정합니다. 처음 N줄이 ASCII 문자뿐이어서 UTF-8로 간주한 경우에는 ISO-2022 이스케이프 시퀀스(ESC 뒤에 $, (, ))도 찾아서, 발견하면 DetectionVerificationFailed로 중지합니다(ISO-2022-JP / KR / CN은 0x80 미만의 바이트로만 이루어져 있기 때문입니다). UTF-16 / UTF-32로 간주한 경우에는 줄 바꿈의 종류도 그 단위로 셉니다. BOM이 없고 0x00을 포함하는 64 KiB 이하의 파일 중 UTF-16 / UTF-32로 정할 수 없는 파일은 파일 전체로 판별합니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -2887,7 +2905,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:description>
           <maml:para>기존 파일의 문자 인코딩 판정에 사용할 처음 줄 수. 대상은 -EncodingFrom의 참조 파일, 명시적인 -Encoding Auto의 출력 파일, -Append의 추가 대상 파일입니다. 생략하면 파일 전체로 판정합니다.</maml:para>
           <maml:para>줄 수는 물리적인 줄 수이며 줄 바꿈(CR-LF / LF / CR)으로 셉니다. CSV의 레코드 수가 아닙니다. 처음 N줄이 ASCII뿐이면 BOM이 없는 UTF-8로 간주합니다(줄 바꿈의 바이트열로 UTF-16 / UTF-32임을 알 수 있으면 BOM이 없는 해당 문자 인코딩). BOM이 없는 UTF-16 / UTF-32에서 영숫자 사이에 2바이트가 모두 0x80 미만이 되는 문자(U+4E0A 등)가 섞인 기존 파일은 전체로 판정하면 us-ascii가 되지만(Resolve-Encoding의 참고 참조), -DetectionLineCount를 지정하면 줄 바꿈의 바이트열로 알 수 있는 문자 인코딩으로 간주합니다.</maml:para>
-          <maml:para>무엇이든 쓰기 전에 판정한 문자 인코딩으로 파일 전체를 엄격하게 디코딩하여 검증합니다. 잘못된 바이트열이 있으면(처음 N줄 뒤에만 일본어가 있는 Shift_JIS 파일 등) 아무것도 쓰지 않고 종료 오류 DetectionVerificationFailed를 보고합니다(-WhatIf에서도 보고합니다). 이를 통해 Shift_JIS 파일에 UTF-8 레코드가 추가되는 것을 막습니다. 검증을 위해 파일을 두 번 읽습니다.</maml:para>
+          <maml:para>무엇이든 쓰기 전에 판정한 문자 인코딩으로 파일 전체를 엄격하게 디코딩하여 검증합니다. 잘못된 바이트열이 있으면(처음 N줄 뒤에만 일본어가 있는 Shift_JIS 파일 등) 아무것도 쓰지 않고 종료 오류 DetectionVerificationFailed를 보고합니다(-WhatIf에서도 보고합니다). 이를 통해 Shift_JIS 파일에 UTF-8 레코드가 추가되는 것을 막습니다. 검증을 위해 파일을 두 번 읽습니다. 처음 N줄이 ASCII 문자뿐이어서 UTF-8로 간주한 경우에는 ISO-2022 이스케이프 시퀀스(ESC 뒤에 $, (, ))도 찾아서, 발견하면 DetectionVerificationFailed로 중지합니다(ISO-2022-JP / KR / CN은 0x80 미만의 바이트로만 이루어져 있기 때문입니다). UTF-16 / UTF-32로 간주한 경우에는 줄 바꿈의 종류도 그 단위로 셉니다. BOM이 없고 0x00을 포함하는 64 KiB 이하의 파일 중 UTF-16 / UTF-32로 정할 수 없는 파일은 파일 전체로 판별합니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         <dev:type>
@@ -2923,7 +2941,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Force</maml:name>
         <maml:description>
-          <maml:para>읽기 전용 특성이 있는 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓴 후에 원래대로 되돌립니다. -Append에서는 기존 파일의 열에 해당하는 속성이 없는 개체도 받아들이고 그 열을 비워서 씁니다. -NoClobber는 해제하지 않습니다.</maml:para>
+          <maml:para>읽기 전용 특성이 있는 파일에도 특성을 일시적으로 해제하여 씁니다. 특성은 쓴 후에 원래대로 되돌립니다. -Append에서는 기존 파일의 열에 해당하는 속성이 없는 개체도 받아들이고 그 열을 비워서 씁니다. -NoClobber는 해제하지 않습니다. 추가 대상의 헤더에 빈 열 이름이 있으면 -Force를 지정해도 추가할 수 없습니다(CannotAppendCsvWithEmptyPropertyName).</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -3145,6 +3163,12 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <maml:alert>
         <maml:para>-DetectionLineCount의 검증은 싱글바이트 문자 인코딩의 잘못된 판정을 찾지 못할 수 있습니다. 싱글바이트 계열에서는 거의 모든 바이트열이 올바른 문자로 디코딩되기 때문입니다.</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>쓰려는 문자열에 대상의 문자 인코딩으로 표현할 수 없는 문자가 있으면 파일에는 쓰지 않고 종료 오류 UnrepresentableCharacter를 보고합니다(Convert-ProbedContent와 같은 ID입니다). 메시지에는 첫 번째 문자의 코드 포인트(U+XXXX)와 문자 인코딩의 이름을 표시합니다. '?'나 비슷한 문자(é → e 등)로 바꾸어 쓰지 않습니다. 이미 쓴 줄도 취소하고 파일을 쓰기 전 상태로 되돌립니다(덮어쓰기는 같은 폴더의 임시 파일에 쓴 뒤 바꾸고, 추가는 원래 길이로 되돌립니다). -Encoding에 System.Text.Encoding 인스턴스를 전달한 경우에도 그 인스턴스의 대체(fallback) 설정은 사용하지 않습니다.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>상속한 문자 인코딩(쓰기 대상·추가 대상, -EncodingFrom의 참조 파일, -Encoding에 전달한 EncodingInformation)이 us-ascii인 경우에는 BOM 없는 UTF-8로 간주하여 씁니다. 모든 바이트가 0x80 미만인 파일은 UTF-8로도 올바르므로, ASCII 문자만 있는 로그나 CSV에도 한국어 등을 추가할 수 있습니다. ASCII 문자만 쓰는 경우의 바이트열은 us-ascii와 같습니다. -Encoding ascii를 명시한 경우에는 us-ascii 그대로입니다. 추가의 일관성 검사에서도 추가 대상의 us-ascii를 BOM 없는 UTF-8로 간주합니다.</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -3356,7 +3380,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>판정에 사용할 처음 줄 수. 생략하면 파일 전체로 판정합니다(기존과 동일).</maml:para>
+            <maml:para>판정에 사용할 처음 줄 수. 생략하면 파일 전체로 판정합니다(기존과 동일). BOM이 없고 0x00을 포함하는 64 KiB 이하의 파일 중 UTF-16 / UTF-32로 정할 수 없는 파일은 파일 전체로 판별합니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -3399,7 +3423,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
           <maml:para>판정에 사용할 처음 줄 수. 생략하면 파일 전체로 판정합니다(기존과 동일).</maml:para>
           <maml:para>줄 수는 물리적인 줄 수이며, 줄 바꿈(CR-LF / LF / CR)으로 셉니다. CSV의 레코드 수가 아닙니다. CSV의 따옴표 안의 줄 바꿈도 1줄로 셉니다.</maml:para>
           <maml:para>결과는 처음 N줄만 본 것입니다. 뒷부분에만 나타나는 문자(ASCII 줄 뒤의 일본어 등)는 반영되지 않습니다. 처음 N줄이 ASCII뿐이면 us-ascii로 보고합니다. BOM이 없는 UTF-16 / UTF-32에서 처음 N줄의 영숫자 사이에 2바이트가 모두 0x80 미만이 되는 문자(U+4E0A 등)가 섞여 있는 경우에도 us-ascii가 됩니다(영숫자뿐인 BOM이 없는 UTF-16 / UTF-32는 해당 문자 인코딩으로 보고합니다). LineBreak도 처음 N줄만으로 판정한 결과입니다.</maml:para>
-          <maml:para>줄 바꿈이 없는 파일은 파일 전체를 읽습니다. 판정할 범위가 2GB 이상이 되면 판정할 수 없으며 오류가 발생합니다.</maml:para>
+          <maml:para>줄 바꿈이 없는 파일은 파일 전체를 읽습니다. 판정할 범위가 2GB 이상이 되면 판정할 수 없으며 오류가 발생합니다. BOM이 없고 0x00을 포함하는 64 KiB 이하의 파일 중 UTF-16 / UTF-32로 정할 수 없는 파일은 파일 전체로 판별합니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         <dev:type>

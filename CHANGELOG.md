@@ -8,7 +8,7 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
 PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv` / `Export-ProbedCsv` を追加し、
 `Resolve-Encoding` に `-DetectionLineCount` を追加しました。
 
-クラスライブラリ（NuGet パッケージ `SnowStack.EncodingProbe`）は、判定処理の不具合を 1 件直し、1.3.0 としました（公開 API の変更はありません）。
+クラスライブラリ（NuGet パッケージ `SnowStack.EncodingProbe`）は、判定処理の不具合を 2 件直し、1.3.0 としました（公開 API の変更はありません）。
 モジュール 1.3.0 はクラスライブラリ 1.3.0 を同梱します。
 
 仕様は `docs/EncodingProbe-1.3.0-仕様書.md` と `docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md`（クラスライブラリの修正）、
@@ -26,6 +26,45 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
   - 既知の限界: 2 バイトとも `0x80` 未満になる文字（「上」U+4E0A など）や U+0000 を英数字に混ぜた BOM 無しの UTF-16 / UTF-32 は、従来どおり `us-ascii` です
     （`Import-ProbedCsv` / `Export-ProbedCsv` で `-DetectionLineCount` を指定すれば、正しく読み書きできます）。
     `41 00` のような数バイトの入力は、形に合えば UTF-16 / UTF-32 と判定します
+- **UTF-16 / UTF-32 と判定したときの改行コード（`LineBreak`）を、その単位（2 バイト / 4 バイト）で数えるようにしました**（1.0.0 から存在）。
+  1 バイトずつ `0A` / `0D` を数えていたため、「上」U+4E0A（UTF-16LE で `0A 4E`）・「《」U+300A・「不」U+4E0D のような文字があると、
+  CR-LF のファイルを `LfAndCrAndCrLf`、LF・CR のファイルを `LfAndCr` と報告していました。BOM の有無によりません
+  - PowerShell モジュールでは、`Resolve-Encoding` の `LineBreak` のほか、改行を継承する書き込み（`-EncodingFrom`、`-Encoding` 省略の追記、
+    `Convert-ProbedContent -EncodingFrom`）が、改行が CR のファイルから LF を継承していました。`Convert-ProbedContent -PassThru` の `SourceLineBreak` は、
+    復号した文字列から求めているので、もともと正しい値でした
+  - 公開の `EncodingDetector.DetectLineBreak()` は、文字エンコーディングを知らずに呼ばれるメソッドなので、従来どおりバイト単位で数えます
+
+### 挙動の変更（PowerShell モジュール）
+
+最初の 2 件は 1.2.0 までと結果が変わります。残りは 1.3.0 で追加した機能（`-DetectionLineCount`・`Export-ProbedCsv`）の、リリース前の不具合の修正です。
+
+
+- **書き込みの 4 コマンド（`Set-ProbedContent` / `Add-ProbedContent` / `Out-ProbedFile` / `Export-ProbedCsv`）は、表現できない文字をエラーにします**（BUG-0001・0010・0012）。
+  1.1.0 から、書き込み先の文字エンコーディングで表現できない文字を `?`（`3F`）に、Windows PowerShell 5.1 ではベストフィット（`é` → `e`）にして、黙って書いていました
+  - エラー ID は `UnrepresentableCharacter`（`Convert-ProbedContent` と同じ）で、メッセージに最初の文字の符号位置（`U+XXXX`）と文字エンコーディングの名前を示します
+  - ファイルは書き込みの前の状態に戻します。途中まで書いていた場合も、上書きは同じフォルダーの一時ファイルに書いてから置き換えるので元のファイルは変わらず、追記は元の長さに戻します
+  - 文字エンコーディングを継承した場合・`-Encoding` で明示した場合・`-EncodingFrom` の場合のすべてで同じです。`-Encoding` に `System.Text.Encoding` のインスタンスを渡した場合も、
+    そのフォールバックの設定（置換・例外）は使いません（例外フォールバックのインスタンスでは、生の `EncoderFallbackException` で止まっていました）
+  - `Set-` / `Add-ProbedContent` は非終了エラーで、ほかのファイルへの書き込みは続けます。`Out-ProbedFile` / `Export-ProbedCsv` は終了エラーです
+  - `Add-ProbedContent` の整合性検査（`EncodingChangeOnAppend`）より先に調べます。置き換えて書く逃げ道のスイッチはありません
+- **継承した `us-ascii` は、BOM 無しの UTF-8 とみなします**（BUG-0001）。対象は、書き込み先・追記先からの継承（`-Encoding` 省略・`Auto`）、`-EncodingFrom`、
+  `-Encoding` に `us-ascii` の判定結果（`EncodingInformation`）を渡した場合、追記の整合性検査の相手（追記先の文字エンコーディング）です（`Convert-ProbedContent -EncodingFrom` も含む）
+  - 英数字だけのログや CSV に日本語を追記すると、これまでは `?` になっていましたが、UTF-8 で書きます。英数字だけを書く場合のバイト列は変わりません
+  - `us-ascii` のファイルに `-Encoding utf8NoBOM` / `utf8BOM` を明示して日本語を追記すると、これまでは `EncodingChangeOnAppend` でしたが、許可します（1.1.0 仕様書 6.1 の表を改めました）
+  - `-Encoding ascii` の明示は置き換えません（日本語を書くと `UnrepresentableCharacter`）
+- **`-DetectionLineCount` の切り出しで、BOM の無いファイルの改行の形（1 バイト・UTF-16・UTF-32）の決め方を改めました**（BUG-0002・0013）。
+  先頭 64 KiB を単位に区切って数えた値で決め、改行はその形だけで探します（1.3.0 仕様書 2.4）。
+  `0x00` を含む 64 KiB 以内の 1 バイトのファイルは、行で切らずにファイル全体で判定します
+  - これまでは、`0x00` があれば UTF-16 / UTF-32 の形の最初の改行で決めていたため、`0x00` を含む ASCII の CSV を UTF-16 として読み（レコードが化ける・消える）、
+    `-Append` で UTF-16 の改行を書いてファイルを壊していました。最初の改行より前に U+0D00 / U+0A00 がある BOM 無しの UTF-16 は、逆のバイト順として読んでいました
+  - 型を誤る既知の限界は 1.3.0 仕様書 2.4 の表にあります（U+0D00 / U+0A00 が文字の 1 割以上の UTF-16、先頭 64 KiB に英数字も改行も無い UTF-16、平仮名だけの UTF-16、
+    各行に `00` が 1 つある Shift_JIS などのファイル、U+0000 を含む UTF-16 / UTF-32）
+- **`-DetectionLineCount` で UTF-16 / UTF-32 に読み替えたときの `LineBreak` を、読み替えた後の単位で数えます**（BUG-0014）。
+  1.3.0 仕様書 3.2 の「改行の型は読み替えない」は誤りだったので改めました。英数字と「上」だけの BOM 無しの UTF-16 / UTF-32 の CR のファイルに、LF を追記していました
+- **`-DetectionLineCount` で `us-ascii` を UTF-8 に読み替えたときは、全体の検証で ISO-2022 のエスケープシーケンス（`ESC` の後に `$`・`(`・`)`）も探し、
+  見つかれば `DetectionVerificationFailed` で止めます**（BUG-0009）。先頭 N 行が英数字だけの ISO-2022-JP / KR の CSV を、エスケープシーケンスのまま読み、UTF-8 を追記していました
+- **`Export-ProbedCsv -Append -Force` で追記先のヘッダーに空の列名がある場合は、`CannotAppendCsvWithEmptyPropertyName` で止めます。**
+  標準の `Export-Csv` と同じ点で止まりますが、標準の ID（汎用の `Argument`）と .NET の文言（「"name" の値が無効」）を本モジュールのものに替えました。`-Force` が無い場合は、標準と同じ `CannotAppendCsvWithMismatchedPropertyNames` です
 
 ### 追加したコマンド
 

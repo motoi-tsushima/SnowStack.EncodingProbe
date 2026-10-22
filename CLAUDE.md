@@ -68,7 +68,8 @@ Visual Studio 用には `Properties/launchSettings.json` に「.NET 4.8 テス�
 
 `EncodingDetector.Detection(culture)` 内の判定順序は意味を持つ。順序を入れ替えると誤判定する：
 
-1. 改行コード判定（`DetectLineBreak`）— 後段の曖昧解消にも使う
+1. 改行コード判定（`DetectLineBreak`）— 後段の曖昧解消にも使う。UTF-16 / UTF-32 に決まったら、その単位で数え直す（1.3.0 第五次。`RecountLineBreakByUnit`。
+   バイト単位だと「上」U+4E0A = `0A 4E` などを改行と数える）。公開の `DetectLineBreak()` はバイト単位のまま変えないこと（公開 API）
 2. BOM（`ByteOrderMarkDetection`）— 一致したら即確定
 3. ISO-2022 / ASCII。ASCII と判定し、かつ `0x00` を含む入力だけは `NulPaddedUnicode_Detection` で、
    英数字だけの BOM 無し UTF-32 / UTF-16 であるかを厳密に調べる（1.3.0。後述）
@@ -219,6 +220,13 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
   `Set-` と `Add-` の差は「ファイルの開き方」と「書き込む内容の検査」の 2 点だけ
 - BOM を書き出すかどうかは `EncodingSpec.EmitBom` だけで決め、`ProbedFileWriter` が自分で書き出す。
   `Encoding.GetPreamble()` 任せにしない（解決経路によって出力が変わってしまうため）
+- **書き込みは例外フォールバックで符号化し、表現できない文字は `UnrepresentableCharacter` にしてファイルを元に戻す（1.3.0 第五次）。**
+  `ProbedFileWriter` はコードページから `BuildStrictEncoding` で組み立て直す（利用者が渡した Encoding のフォールバックは使わない）。
+  上書きは同じフォルダーの一時ファイル `.<名前>.<8 桁>.probedtmp` に書いて `File.Replace` で置き換え、追記は開く前の長さに切り詰めて戻す。
+  一時ファイルは `TemporaryFileRegistry` でワイルドカードの解決から除く。`-ErrorAction Stop` では `WriteError` が戻らないので、**元に戻してから** `WriteError` を呼ぶこと。
+  表現できるかは状態を持たない `GetByteCount` で書く前に確かめる（Encoder の状態を進めない）。`EncodingChangeOnAppend` は従来どおり書いた行を残す
+- **継承した us-ascii は BOM 無しの UTF-8 とみなす（1.3.0 第五次）。** `EncodingVocabulary.TreatInheritedAsciiAsUtf8` を `EncodingInheritance.FromFile`（Auto・`-EncodingFrom`・追記の整合性検査の相手）と、
+  書き込み用途で `EncodingInformation` を解決したときに通す。`-Encoding ascii` の明示と読み取り（`ConvertTo-DotNetEncoding` を含む）は置き換えない
 - 文字エンコーディングの判定は**ファイル全体**を対象とする。先頭の一定量に制限すると、
   英数字が続いたあとにマルチバイト文字が現れるファイルを誤判定する。
   **例外は 1.3.0 の `-DetectionLineCount`**（`Resolve-Encoding` / `Import-ProbedCsv` / `Export-ProbedCsv`）で、
@@ -298,6 +306,13 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
 - **`-DetectionLineCount` の判定は 1 か所に集約している。** 切り出しは `Internal/HeadLineCutter`、判定は `Internal/HeadLineDetection`
   （`Resolve-Encoding` はここまで）、読み替え（us-ascii を改行の型に応じて UTF-8 / UTF-16 / UTF-32 に）と全体の検証は `Internal/HeadLineEncodingResolver`
   （`Import-` / `Export-ProbedCsv`、`-EncodingFrom` も含む）。3 つのコマンドの判定結果（読み替え前）が一致することはこの共用で保証している
+- **切り出しの型の決め方（`HeadLineCutter.DecideUnit`。1.3.0 第五次、仕様書 2.4）。** 先頭 64 KiB を単位に区切って N・A・B・Z・Abr・P を数え、
+  共通の条件 A ≥ min(16, ⌈0.6N⌉)・Z = 0（UTF-16 は P ≤ 0.7N）で、UTF-32（B ≤ 0.2A）→ UTF-16 の改行の向き（Abr ≥ 4、逆 ≤ 0.25 Abr）→ UTF-16（B ≤ 0.2A）の順に決める。
+  1 バイトの型で `00` があり 64 KiB 以内なら `None`（ファイル全体）。改行は決めた型の形だけで探す。値は利用者が確定したもの。根拠は `docs/EncodingProbe-1.3.0-調査-切り出しの境目.md`。
+  `HeadLineCutterRuleTests` が調査の 1033 件（生成は `Helpers/CutThresholdSamples.cs`。中身を変えないこと）で、規則のモデルと一致することを確かめている。
+  調査ブランチ `investigate/1.3.0-cut-threshold` は**どこにもマージしない**（文書だけをファイル単位で持ってきた。ブランチはリリース前に利用者が消す）
+- 読み替えで UTF-16 / UTF-32 にしたときは `LineBreak` も読み替えた後の単位で数え直す。us-ascii を UTF-8 に読み替えたときは、全体の検証で ISO-2022 のエスケープシーケンス
+  （ESC の後に `$` `(` `)`）も探して `DetectionVerificationFailed` にする（1.3.0 第五次）
 - 全体の厳密な検証（`Internal/StrictDecodeVerifier`）は `DecoderFallbackException.Index` を使わない。失敗したときだけ先頭から読み直し、
   成功済みのバッファを同じ区切りで与えて `Decoder` の状態を再現し、失敗したバッファから 1 バイトずつ与えて位置を求める（ISO-2022 のような状態を持つ文字エンコーディングのため）
 - 検証の失敗は `DetectionVerificationFailed`（`Import-ProbedCsv` は非終了、`Export-ProbedCsv` は `ShouldProcess` より前の終了エラー）。
@@ -494,11 +509,15 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
 
 **PowerShell モジュールとクラスライブラリの両方を 1.3.0 としてリリースする**（当初はモジュールだけの予定だった。第四次で改めた）。作業ブランチは `feature/1.3.0-csv`。
 
-**現在の状態（2026-10-20 時点）: 実装（第一次〜第四次）は完了。利用者の手動確認待ちで、master へは未マージ・未リリース。**
+**現在の状態（2026-10-22 時点）: 第五次の前半（テスト担当の BUG-0001・0002・0009・0010・0012・0013・0014 と、CSV の追記の空の列名）を実装した。
+報告して利用者の確認を待っている。第五次の後半（パスの束縛・同じファイルの判定・文書・検証の部品）は別の依頼で来る（まだ手を付けていない）。master へは未マージ・未リリース。**
 
-- 両 TFM のテスト（コア 1960 / 1970 件、モジュール 1099 件）と PSCompat（719 シナリオ）が通っている。
-  第四次のコミットはローカルだけにある（リモートへのプッシュは利用者の指示を待つ）
-- **配布フォルダー（`publish/SnowStack.EncodingProbe.PowerShell/`）の DLL は第三次（クラスライブラリ 1.2.0）のビルドのまま。** 第四次の後の Release ビルドで作り直す必要がある（リリース手順 2 章）
+- 両 TFM のテスト（コア net48 2031 / net10.0 2021 件、モジュール 1292 件）と PSCompat（831 シナリオ）が通っている。
+  第四次・第五次のコミットはローカルだけにある（リモートへのプッシュは利用者の指示を待つ）
+- 第五次の内容・決定・最終的な結果の表・決めきれなかったこと（`Resolve-Encoding -DetectionLineCount` の `LineBreak`、`EncodingChangeOnAppend` で元に戻さないこと など）は実装記録 9 章
+- テスト担当のフォルダー（`C:\_test\EncodingProbeBboxTest`）は読むだけにする。テスト担当にまだ伝えていない件（コアの改行の判定）を、テスト担当の報告やフォルダーに書かないこと
+- 第五次の依頼文（`docs/EncodingProbe-1.3.0-依頼-第五次*.md` があれば）もコミットしない
+- **配布フォルダー（`publish/SnowStack.EncodingProbe.PowerShell/`）の DLL は第三次（クラスライブラリ 1.2.0）のビルドのまま。** 第五次の後の Release ビルドで作り直す必要がある（リリース手順 2 章）
 - リリースで残っている作業（`docs/EncodingProbe-1.3.0-リリース手順.md` 2 章・4 章）: 配布フォルダーの作り直し、README のリリース日の行、master へのマージ、
   配布フォルダーの公開、NuGet パッケージ 1.3.0 の公開、実験用ブランチの削除
 - **利用者の判断待ち:** 配布フォルダーの `LICENSE.txt` / `THIRD-PARTY-NOTICES.txt` は Git の未追跡ファイルのまま（コミットしていない）。
@@ -523,11 +542,14 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
 - 第三次: `Export-ProbedCsv`、`Out-ProbedFile` の殻の共通化、バージョン・文書の仕上げ
 - 第四次: クラスライブラリの `0x00` を含む入力の判定の修正（追補）、クラスライブラリを 1.3.0 に。実装記録 8 章。
   修正後の判定は第 2 回の実測の「修正案 2」と 180 件すべて（両 TFM、判定 API とコマンド）で一致した
+- 第五次（前半）: 書き込みで文字を失わない（表現できない文字のエラーと取り消し、継承した us-ascii を UTF-8 に）、切り出しの規則の置き換え、
+  コアの改行の判定を単位で数える、読み替えたときの `LineBreak` の数え直し、ISO-2022 の検査、空の列名の ID。実装記録 9 章
 
 関連文書:
 
 - `docs/EncodingProbe-1.3.0-仕様書.md` … 機能仕様。実装で改めた点（`Export-ProbedCsv` のパラメータセット、ワイルドカード 0 件）は該当節に経緯を書いてある
 - `docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md` … 第四次（クラスライブラリの判定処理の修正）の仕様。期待値の根拠は `docs/EncodingProbe-1.3.0-調査-NUL入りの入力の判定.md` 7 章
+- `docs/EncodingProbe-1.3.0-調査-切り出しの境目.md` … 第五次の切り出しの規則の根拠（調査ブランチの文書をそのまま持ってきたもの）。結論は 1 章の囲み（P ≤ 0.7 × N を含む改訂版）で、値は利用者が確定した
 - `docs/EncodingProbe-1.3.0-ClaudeCode指示書.md` … 実装時の制約（移植の方針、参照してはならないもの）
 - `docs/EncodingProbe-1.3.0-調査-CSVコマンド挙動の実測.md` … 標準の CSV コマンドの実測（5.1 と 7.6.7）
 - `docs/EncodingProbe-1.3.0-実装記録.md` … 決定事項とその根拠、仕様書と異なった点。**仕様書に書かれていない判断の理由はここにある**

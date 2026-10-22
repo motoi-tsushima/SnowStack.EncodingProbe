@@ -521,14 +521,28 @@ $raw -replace 'foo','bar' | Set-ProbedContent b.txt -NoNewline
 
 | 既存 | 追記指定 | 内容 | 判定 |
 |---|---|---|---|
-| US-ASCII | UTF-8 | 日本語含む | Error（※） |
+| US-ASCII | UTF-8 | 日本語含む | 許可（※1。1.3.0 第五次で改めた） |
+| US-ASCII | Shift_JIS | 日本語含む | Error |
 | UTF-8 | US-ASCII | ASCII のみ | 許可 |
+| UTF-8 | US-ASCII | 日本語含む | Error（`UnrepresentableCharacter`。※2） |
 | UTF-8 | Shift_JIS | 日本語含む | Error |
 | UTF-8 | Shift_JIS | ASCII のみ | 許可 |
 | Shift_JIS | UTF-8 | 日本語含む | Error |
 | UTF-8 | UTF-16LE | 何でも | Error |
 
-※ 日本語を含む文字列は US-ASCII で符号化できず `?` に置換されるため、バイト列は一致せず Error となる。これは正しい挙動である。既存ファイルが ASCII だからといって UTF-8 の日本語を追記すれば、**ファイル全体のエンコーディングが UTF-8 に変わる**。それを黙って行うのは `Add-` の役割を超えている。
+※1 既存の US-ASCII は、BOM 無しの UTF-8 とみなして比べる（1.3.0 第五次。1.3.0 仕様書 16.1）。US-ASCII と判定されるのはすべてのバイトが `0x80` 未満のファイルで、
+それは BOM 無しの UTF-8 としても正しい。`-Encoding` を省略して追記先から継承した場合も、同じく BOM 無しの UTF-8 で書く。
+
+※2 指定された文字エンコーディング X で表現できない文字は、整合性検査の前に `UnrepresentableCharacter` で止め、ファイルを変えない（1.3.0 仕様書 16.4）。
+既存のエンコーディング Y で表現できない文字は、バイト列が一致しないものとして Error（`EncodingChangeOnAppend`）とする。
+どちらも、例外フォールバックで符号化して比べる。
+
+> **経緯（1.3.0 第五次）:** 1.1.0 から第四次までは、符号化に .NET の既定の置換フォールバックを使っていた。
+> そのため ※1 の行の注は「日本語は US-ASCII で `?` に置換されるので、バイト列は一致せず Error」としていたが、
+> X と Y が同じ（継承した場合など）と `?` 同士が一致して検査を通り、日本語を黙って `?` で書いていた（BUG-0001）。
+> また X で表現できない文字は、X と Y が同じなら検査を通り `?` やベストフィット（`é` → `e`）で書いていた（BUG-0010）。
+> 当初の注の「既存ファイルが ASCII だからといって UTF-8 の日本語を追記すれば、ファイル全体のエンコーディングが UTF-8 に変わる。
+> それを黙って行うのは `Add-` の役割を超えている」は、ASCII のファイルは UTF-8 としても正しいので変わらない、と改めた（利用者の決定）。
 
 ### 6.2 `-AllowEncodingChange`
 
@@ -631,6 +645,7 @@ $encobj = Resolve-Encoding file.txt | ConvertTo-DotNetEncoding
 | `Set-ProbedContent -Encoding Auto` で書き込み先が存在しない | 非終了エラー |
 | `Add-ProbedContent -Encoding Auto` で追記先が存在しない | 非終了エラー |
 | `Add-ProbedContent` でのバイト列不一致 | 非終了エラー（`-AllowEncodingChange` で回避可） |
+| 書き込む文字列に、書き込み先の文字エンコーディングで表現できない文字がある（1.3.0 第五次） | 非終了エラー `UnrepresentableCharacter`。ファイルは書き込みの前の状態に戻す（`-AllowEncodingChange` でも回避できない） |
 | 同一パスの読み書きを 1 つのパイプラインで行った | 非終了エラー |
 | 書き込み先が読み取り専用・書き込み権限なし | 非終了エラー |
 | `-LineBreak` と `-NoNewline` の同時指定 | Warning |

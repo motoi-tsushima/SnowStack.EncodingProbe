@@ -5,7 +5,8 @@
 - 目的: 実装の過程で、仕様書・依頼・当初の想定と異なる結果になった点と、
   仕様書に書かれていなかったため実装側で決めた点を残す（1.2.0 の実装記録と同じ形式）
 - 章の構成: 第一次（共通の部品と `Resolve-Encoding -DetectionLineCount`）は 1〜5 章、第二次（`Import-ProbedCsv`）は 6 章、第三次（`Export-ProbedCsv` と仕上げ）は 7 章、
-  第四次（クラスライブラリの `0x00` を含む入力の判定の修正。`docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md`）は 8 章
+  第四次（クラスライブラリの `0x00` を含む入力の判定の修正。`docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md`）は 8 章、
+  第五次の前半（書き込みで文字を失う件・切り出し・改行の判定・ISO-2022・CSV の追記。テスト担当のブラックボックステストの不具合）は 9 章
 
 ---
 
@@ -675,3 +676,243 @@ pwsh -NoProfile -File tools/Invoke-NulInputMeasurement.ps1 -ProposalRoot . -OutD
 | `CLAUDE.md` | 判定パイプラインの 3、バージョン更新時に触る場所の注記、1.3.0 の作業記録 |
 | `publish/SnowStack.EncodingProbe.PowerShell/SnowStack.EncodingProbe.PowerShell.psd1` | `ReleaseNotes`（8.3） |
 | `docs/EncodingProbe-1.3.0-リリース手順.md` | 冒頭（クラスライブラリも 1.3.0 として公開する）、1 章の確認、2 章に配布フォルダーを作り直す注記、4 章に NuGet パッケージの公開と実験用ブランチの削除を追加 |
+
+---
+
+## 9. 第五次（前半） — 書き込みで文字を失う件・切り出し・改行の判定・ISO-2022・CSV の追記（2026-10-22）
+
+テスト担当のブラックボックステスト（`C:\_test\EncodingProbeBboxTest\reports\bugs\`）で見つかった不具合のうち、BUG-0001・0002・0009・0010・0012・0013・0014 と、
+前のセッションの調査で見つかった `Export-ProbedCsv -Append` の空の列名の件を直した。後半（パスの束縛・同じファイルの判定・文書・検証の部品）は別の依頼で扱う。
+切り出しの規則の根拠は `docs/EncodingProbe-1.3.0-調査-切り出しの境目.md`（以下「調査文書」。調査ブランチ `investigate/1.3.0-cut-threshold` から、この文書だけをファイル単位で持ってきた）。
+
+### 9.1 利用者の決定
+
+| 事項 | 決定 |
+|---|---|
+| 表現できない文字の書き込み | エラーにする。1.1.0 からの挙動の変更として認める。逃げ道のスイッチは作らない（依頼 0.4） |
+| 継承した us-ascii | BOM 無しの UTF-8 とみなす（依頼 0.4） |
+| 細部の仕様の変更 | 認める。変えたものは CHANGELOG に「挙動の変更」として書く（依頼 0.4） |
+| 切り出しの規則の値 | 16・0.6・Z = 0・0.2・Abr ≥ 4・0.25・P ≤ 0.7 × N で確定（依頼 2.1） |
+| us-ascii のファイルに `-Encoding utf8NoBOM` / `utf8BOM` を明示して日本語を追記 | **許可する**（計画時の質問。整合性検査でも追記先の us-ascii を UTF-8 とみなす。省略したときと結果をそろえる）。1.1.0 仕様書 6.1 の表の 1 行目を改めた |
+| us-ascii の `EncodingInformation` を `-Encoding` に渡した書き込み | **UTF-8 とみなす**（計画時の質問。継承と同じに扱う）。`ConvertTo-DotNetEncoding` は読み取りと同じ用途なので us-ascii のまま |
+| `Export-ProbedCsv -Append` の空の列名 | **`-Force` の場合だけ新しい ID `CannotAppendCsvWithEmptyPropertyName`**（計画時の質問。`-Force` なしは標準と同じ ID のまま） |
+
+### 9.2 書き込みで文字を失う件（BUG-0001・0010・0012）
+
+対象は依頼のとおり 4 コマンド（`Set-ProbedContent`・`Add-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`）。ほかに書き込むコマンドは `Convert-ProbedContent` だけで、もともと例外フォールバックで符号化している。
+
+**符号化（`Internal/ProbedFileWriter`）。** StreamWriter をやめ、`EncodingVocabulary.BuildStrictEncoding(コードページ)` の Encoder で 1 回の書き込みごとに符号化してから、そのバイト列を FileStream に書く。
+
+- コードページから組み立て直すので、利用者が渡した Encoding のフォールバック（置換・例外）の設定は使わない（BUG-0012）。net48 では `Encoding.GetEncoding(cp, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback)` になり、ベストフィット（`é` → `e`）も起きない（PSCompat の 5.1 で確かめた）
+- Encoder は書き込みをまたいで状態を持ち越す。ISO-2022 のエスケープシーケンスの出方は StreamWriter を使っていたときと同じ（完了するときに `flush: true` で ASCII に戻す）
+- 表現できるかどうかは、書く前に状態を持たない `Encoding.GetByteCount(string)` で確かめる（`EnsureRepresentable`）。Encoder の状態を進めると、書かなかった塊の状態が完了時の flush に出てしまうため。
+  文字を表現できるかどうかは ISO-2022 の切り替えの状態によらない。`Set-` / `Add-ProbedContent` は、要素の境目で分かれたサロゲートペアも 1 文字として調べるため、1 レコード分をまとめて調べる
+- 対になっていないサロゲートも、表現できない文字として止まる（第四次までは U+FFFD や `?` で書いていた）
+
+**エラー。** ID は `UnrepresentableCharacter`（`Convert-ProbedContent` と同じ）、分類は InvalidData。メッセージは新しいキー `UnrepresentableCharacterOnWrite`（5 言語）で、
+符号位置（`U+XXXX`。補助文字は 1 文字として）・文字・文字エンコーディングの統一語彙名・パスを示す。`Convert-ProbedContent` のキーは「変換しませんでした」で、書き込みには合わないので分けた。
+例外（`Internal/UnrepresentableCharacterException`）には .NET の `EncoderFallbackException` を内部例外として持たせない。持たせると、PSCompat の最も内側のメッセージが .NET の文言（5.1 と 7.x で違う）になった（1.1.0 の方針と同じ）。
+
+**元に戻す方法（依頼 1.2 で開発側に任された点）。**
+
+| 書き方 | 方法 | 元に戻すとき |
+|---|---|---|
+| 上書き・新規作成（`Set-ProbedContent`、`Out-ProbedFile` / `Export-ProbedCsv` の `-Append` なし） | 同じフォルダーの一時ファイル `.<名前>.<8 桁の 16 進>.probedtmp` に書き、完了したときに `File.Replace`（書き込み先が無ければ `File.Move`）で置き換える | 一時ファイルを消すだけ。元のファイルには触れない |
+| 追記（`Add-ProbedContent`、`-Append`） | 追記先を直接開き、開く前の長さを覚えておく | 元の長さに切り詰める。追記先が無かった場合は、作ったファイルを消す |
+
+- 元に戻すのは、表現できない文字と、書き込みの IOException（ディスクがいっぱいなど）のとき。`EncodingChangeOnAppend` は第四次までと同じく、それまでに書いた行（検査を通った行）を残す。
+  パイプラインの停止（Ctrl+C）や、ほかのコマンドの終了エラーで後始末だけが走った場合も、それまでに書いた内容を残す（第四次までと同じ。上書きなら、その時点の一時ファイルで置き換える）
+- `-ErrorAction Stop` では `WriteError` が戻らず、後始末（`Dispose`）が書き込みを完了してしまう。そのため、**元に戻してから** `WriteError` を呼ぶ（テストで見つけた）
+- 置き換えの後、置き換える前のファイルの属性（隠しファイルなど）を付け直す。読み取り専用は、これまでどおり `ReadOnlyAttributeScope` が戻す（テストで確かめた）
+- 書いている間の一時ファイルは `Internal/TemporaryFileRegistry` に載せ、ワイルドカードの解決（`ProbedContentCommandBase.ResolveOne`、`ProbedFileOutputCommandBase` の 1 件の解決）から除く。
+  `'a','b' | Set-ProbedContent -Path *` で、2 件目のレコードが 1 件目の一時ファイルに一致してしまうため
+- 置き換えの完了に失敗した場合（ほかのプロセスが書き込み先を共有の削除なしで開いているなど）は、`Set-` / `Add-ProbedContent` は `EndProcessing` で非終了エラー `WriteFailed` / `WriteAccessDenied`、
+  `Out-ProbedFile` / `Export-ProbedCsv` は終了エラーにし、一時ファイルを消す
+- 一時ファイルで置き換える方法の限界（第四次までの直接書き込みとの違い）:
+  - 書き込み先がほかのプロセスに開かれていると、失敗するのが開く時点ではなく完了の時点になる。開いている間、ほかのプロセスは元の内容を読める
+  - フォルダーにファイルを作る権限が無く、書き込み先のファイルだけに書き込める場合は、書けなくなる
+  - シンボリックリンクに書くと、リンクの先ではなくリンク自体が通常のファイルに置き換わる。Linux では、元のファイルのアクセス権（mode）を引き継がない（Windows の `ReplaceFile` は ACL・作成日時・代替データストリームを引き継ぐ）
+  - プロセスが強制終了されると、一時ファイルが残ることがある（元のファイルは変わらない）
+  - 上書きする前に元のファイルを一時フォルダーに写しておき、失敗したら書き戻す方法も考えたが、成功したときも毎回写す費用がかかるので採らなかった
+
+**継承した us-ascii。** `EncodingVocabulary.TreatInheritedAsciiAsUtf8` で、us-ascii を BOM 無しの UTF-8（改行の情報はそのまま）に置き換える。呼ぶ場所は 2 か所だけ。
+
+- `EncodingInheritance.FromFile`: 書き込み先・追記先からの継承（省略・`Auto`）、`-EncodingFrom`、追記の整合性検査の相手（`Add-ProbedContent` の baseline、`Out-ProbedFile` / `Export-ProbedCsv` の `AppendBaseline`）がすべてここを通る。
+  `Convert-ProbedContent -EncodingFrom` も通るので、us-ascii の参照ファイルからの変換先は UTF-8 になる（CHANGELOG に書いた）
+- `EncodingVocabulary.Resolve`: 書き込み用途（`EncodingUsage.Write`）で `EncodingInformation` を渡された場合
+- `-DetectionLineCount` の経路（`HeadLineEncodingResolver`）は、もともと us-ascii を読み替えている（1.3.0 仕様書 3.2）
+
+**追記の整合性検査（`AppendConsistency`）。** 指定・既存の両方を、コードページから例外フォールバックで組み立て直して符号化する。既存の側で表現できない文字は「一致しない」（`EncodingChangeOnAppend`）とする。
+指定の側で表現できない文字は、その前に `UnrepresentableCharacter` で止まっている。第四次までは置換フォールバックで `?` 同士が一致していた。
+
+### 9.3 切り出し（BUG-0002・0013）
+
+`HeadLineCutter.DetermineUnit` の手順 2・3 を、調査文書 1 章の囲みの規則（P ≤ 0.7 × N を含む改訂版）に置き換えた（1.3.0 仕様書 2.4）。
+
+- 先頭 64 KiB を 1 回読み、`DecideUnit(byte[], int, bool)`（internal static）が 4 型の N・A・B・Z・Abr と P を数えて型を決める。調査の仮実装（調査ブランチ）は使わず書き直した。比は整数で比べる（⌈0.6N⌉ = ⌊(3N + 4) / 5⌋、5B ≤ A、10P ≤ 7N、4 × 逆の Abr ≤ Abr）
+- UTF-32 の型では改行の向きを見ない（調査文書 1 章の囲みのとおり。調査の評価のモデル `Rule.Predict` は UTF-32 にも改行の向きの救済を許していたが、1033 件の結果は同じ）
+- 手当て（依頼 2.2）: 1 バイトの型になり、先頭 64 KiB に `00` があり、ファイル全体が 64 KiB 以内なら `None`（ファイル全体）
+- 型が決まったら、その型の形の改行だけを探す（依頼 2.3）。見つからなければ従来どおり `None`
+
+**回帰テスト（`EncodingTests/HeadLineCutterRuleTests`）。** 調査の `CutThreshold.cs` の生成の部分（`Sample`・`Rng`・`Generator`）を、生成の処理と擬似乱数・種を変えずに `Helpers/CutThresholdSamples.cs` に移した。
+
+- 1033 件の SHA-256 を改行でつないだ値の SHA-256 が、調査の `manifest.csv` から求めた値（`2d7a1854…`）と一致する（バイト列が調査と同じ）
+- 調査文書 1 章の囲みを浮動小数点でそのまま書いたモデルと、製品の `DecideUnit` の結果が **1033 件すべてで一致**した（手当てで `None` になるものは `None` を期待値にした）
+- モデルが、調査文書の数（改めた規則で 1033 件中 71 件を誤る）を再現することも確かめた（書き写しの誤りの検出のため）
+- `HeadLineCutterTests` の 2 件（`Cut_Utf16Le_ByteOfKanjiIsNotLineBreak`・`Cut_Utf16Be_ByteOfKanjiIsNotLineBreak`）は、8〜10 バイトで A ≥ ⌈0.6N⌉ を満たさず 1 バイトの型になり、
+  手当てでファイル全体を切り出す。期待値を「`None`・ファイル全体（漢字の `0A` で切らない）」に改めた。UTF-16 と決まる長さの入力で漢字の `0A` で切らないことを確かめるテストを 1 つ足した
+
+**最終的な結果（依頼 2.4。調査文書 11 章の `Invoke-CutOutcome.ps1` と同じ観点）。** 調査の入力のうち、BUG-0002 の系統（T-nul の 264 件。テスト担当の C-03 の入力）、BUG-0013 の再現の入力（5 件）、
+調査の規則で誤った 97 件（R 群の us-ascii、後退する 11 件などを含む）の計 366 件を、第四次（コミット `85318cb` のビルド）と第五次で比べた。
+`Invoke-CutOutcome.ps1` を作業フォルダーに写し、対象の一覧と、切り出しで決まった型（`unit`）の列を足して実行した（リポジトリには入れていない）。PowerShell 7.6.7、ja-JP。
+`Import` は `-Encoding` で正しい文字エンコーディングを明示した結果との比較、`-Append` は `-DetectionLineCount` なしで追記したバイト列との比較（調査文書 11.1 節と同じ分類）。
+
+| 入力（件数） | 切り出しの型（第四次 → 第五次） | `Import-ProbedCsv -DetectionLineCount 1`（第四次 → 第五次） | `Export-ProbedCsv -Append -DetectionLineCount 1`（第四次 → 第五次） |
+|---|---|---|---|
+| BUG-0002 の系統（T-nul、264） | None 128・UTF-16BE 82・UTF-16LE 36・UTF-32BE 18 → **None 264**（手当て） | correct 128・DVF 80・**wrong 56** → **correct 264** | 同じ 128・DVF 80・**壊れる 56** → **同じ 264** |
+| BUG-0013 の再現（5） | 逆のバイト順 5 → **正しいバイト順 5** | **wrong 5** → **correct 5** | **壊れる 5** → 同じ 3・比較できない 2（※1） |
+| R 群 us-ascii（26） | None 11・UTF-16 15 → 1 バイト 24・None 2 | correct 9・**wrong 9**・DVF 6・列名の重複 2 → **correct 24**・列名の重複 2 | 同じ 7・**壊れる 8**・DVF 6・`Argument` 2・列なし 2・全体でも失敗 1 → **同じ 20**・`CannotAppendCsvWithEmptyPropertyName` 4・列なし 2 |
+| 後退する 11 件（調査文書 11.4 節） | UTF-16 10・None 1 → **None 11**（手当て） | correct 8・DVF 2・EDF 1 → correct 9・DVF 1・EDF 1（※2） | 同じ 5・DVF 1・列なし 5 → 同じ 6・列なし 5 |
+| R 群 Shift_JIS（26。調査文書 10.4 節） | 変わらない（None 11・UTF-16 15） | correct 12・DVF 14（変わらない） | 同じ 10・DVF 14・列なし 2（変わらない） |
+| S 群 U+0D00 / U+0A00 が 10% 以上（20。既知の限界） | UTF-16 20 → UTF-16 16・1 バイト 4 | wrong 12・DVF 8（変わらない。全体で判定しても誤る） | 壊れる 2・DVF 8・`Argument` 10 → 壊れる 2・DVF 8・`CannotAppendCsvWithEmptyPropertyName` 10 |
+| H 群 短い UTF-16（14。既知の限界） | 変わらない | correct 11・EDF 2・wrong 1（変わらない。wrong は「上」だけのファイル） | 列なし 14 |
+
+（DVF = `DetectionVerificationFailed`、EDF = `EncodingDetectionFailed`）
+
+- ※1 `A<U+0D00>,B`（英数字だけのヘッダー）の 2 件は、全体の判定が 20127（追補 4.1 の既知の限界）で、`-DetectionLineCount` なしの追記が比較の基準にならない。
+  `-DetectionLineCount 1` の追記を直接確かめると、正しい UTF-16 で書いている（`"9","8"` と CR-LF。BUG-0013 の報告の手順 3）
+- ※2 DVF 1・EDF 1 は L 群の 2 件（先頭 64 KiB に英数字も改行も無い UTF-16。全体で判定しても誤る）。調査の仮実装で後退した 9 件（黙って化けた `H Utf16Le tiny06` / `tiny12` を含む）は、
+  手当てでファイル全体を判定するため、すべて第四次と同じ（正しい）結果になった。`H Utf16Be size256 alnum0` は、第四次の DVF が correct に変わった
+- `-DetectionLineCount 10` も、BUG-0013 の系統（第四次も 3 件は正しかった）を除いて 1 と同じ傾向（第五次では T-nul・BUG-0013・R 群 us-ascii がすべて correct）
+- R 群 us-ascii・S 群の `Argument` は、追記先のヘッダーに空の列名がある入力（9.6 節）。ID が変わっただけで、止まる点は同じ
+- 第五次の結果は、Windows PowerShell 5.1 でも同じだった（9.8 節）
+
+### 9.4 改行の判定（BUG-0014 と、コアの DetectLineBreak）
+
+**疑いの確認（依頼 3.1）。** 疑いは本物だった。「上」「《」「不」を各行に含む本文（`日本語の上《不》,B` / `1上,2《` / `不3,4`）を、BOM 付き・BOM 無しの UTF-16LE / BE・UTF-32LE / BE × CR-LF / LF / CR の 24 通りで作り、第四次のビルドで確かめた（7.x、ja-JP）。
+
+| 確かめたもの | 第四次で誤った数（24 通り中） | 誤り方 |
+|---|---:|---|
+| `Resolve-Encoding` の `LineBreak` | 24 | CR-LF → `LfAndCrAndCrLf`、LF・CR → `LfAndCr` |
+| `Convert-ProbedContent -PassThru` の `SourceLineBreak` | 0 | 復号した文字列から求めているので正しかった（依頼の疑いのうち、ここは当たらなかった） |
+| `-EncodingFrom` による改行の継承（`Set-ProbedContent`・`Convert-ProbedContent`） | 8 | 改行が CR のファイルから LF を継承（`LfAndCr` の混在の規則で LF になる） |
+| `Add-ProbedContent` の追記の改行 | 8 | 同上 |
+| `Export-ProbedCsv -Append` の追記の改行（`-DetectionLineCount` なし・1） | 8・8 | 同上 |
+
+CR-LF と LF のファイルは、混在の規則でたまたま正しい改行を選んでいた。第五次のビルドでは、24 通りのすべての項目が実際の改行と一致した（7.x と 5.1）。
+
+**直し方。** `EncodingDetector` に `internal static LineBreakType DetectLineBreak(byte[] buffer, int length, int codePage)` を足した。UTF-16 は 2 バイト、UTF-32 は 4 バイトの単位にオフセット 0 から区切り、
+単位の値が U+000D / U+000A のものだけを数える（BOM はちょうど 1 単位なので区切りは変わらない。端数のバイトは数えない）。`Detection` は、BOM・`0x00` を含む ASCII の分岐（`NulPaddedUnicode_Detection`）・
+UTF-32・UTF-16 で UTF-16 / UTF-32 に決まったときに、この単位で数え直す（`RecountLineBreakByUnit`）。EUC-JP と Shift_JIS の曖昧解消に使う改行は、従来どおりバイト単位（判定の途中で使うため）。
+
+- 公開の `DetectLineBreak()` は署名も挙動も変えていない（文字エンコーディングを知らずに呼ばれる。公開 API を変えない制約）。CHANGELOG に書いた
+- `UtfUnknownOnly` で UTF.Unknown が BOM 付きの UTF-16 を返す場合も、BOM の分岐で数え直した値が使われる。UTF.Unknown は BOM 無しの UTF-16 / UTF-32 を返さないので、それ以外の経路は扱っていない
+
+**`-DetectionLineCount` の読み替え（依頼 3.3）。** `HeadLineEncodingResolver` は、us-ascii を UTF-16 / UTF-32 に読み替えた場合に、切り出したバイト列（`HeadLineDetectionResult.Bytes` を足した）を読み替えた後の単位で数え直す。
+1.3.0 仕様書 3.2 の「LineBreak は読み替えない」を改めた。
+
+- `Resolve-Encoding -DetectionLineCount` は読み替えない（仕様書 3.1）ので、BUG-0014 の入力（英数字と「上」だけの UTF-16）には、第五次でも `20127 / LfAndCr` を報告する。
+  us-ascii として読めば `0A` は LF であり、報告している CodePage とは食い違っていない。テスト担当の期待（`Cr`）とは違う。決めきれなかったこととして 9.9 節に挙げた
+
+**テスト（依頼 3.4）。** コアの `DetectorTests/UnitLineBreakTests`（24 通り × `EncodingProbe.Detect` と `Detection`、`0x00` を含む ASCII の分岐、単位の処理そのもの、公開の `DetectLineBreak()` が変わっていないこと）と、
+モジュールの `CmdletTests/UnitLineBreakCmdletTests`（24 通り × `Resolve-Encoding`・`Convert-ProbedContent -PassThru`・`-EncodingFrom`（Set と Convert）・`Add-ProbedContent`・`Export-ProbedCsv -Append`（`-DetectionLineCount` なし・1）、
+BUG-0014 の再現の入力 8 通り、調査文書 11.4 節で「改行だけ違う」とした 2 件（`H Utf16Be tiny06`・`H Utf16Be size256 alnum5`））。
+
+### 9.5 ISO-2022（BUG-0009）
+
+`StrictDecodeVerifier.Verify` に `rejectIso2022Escape` を足した。`HeadLineEncodingResolver` が us-ascii を UTF-8 に読み替えたときだけ指定する。
+復号の検証と同じ走査の中で、ESC（`0x1B`）の直後が `$`・`(`・`)` のバイト列を探す（ファイルを読む回数は増えない）。ESC と次のバイトがバッファの境目にかかる場合も見つける（バッファの大きさ 1〜64 KiB で確かめた）。
+
+- 見つかれば `DetectionVerificationFailed`（同じ ID）。メッセージは新しいキー `DetectionVerificationIso2022Escape`（5 言語）で、ESC の位置とその 2 バイト、先頭 N 行が英数字だけなので UTF-8 として読んだこと、
+  `-DetectionLineCount` を外すか、エスケープシーケンスのある行まで増やすように書いた
+- 同じバッファの中で、エスケープシーケンスより前に不正な UTF-8 のバイト列がある場合は、不正なバイト列のほうを報告する（そのバッファの復号を先に確かめるため）
+- 端末の制御文字を記録したログ（`ESC ( B`。`tput sgr0` の出力など）も止まる。判定を誤ったまま処理するより安全な側に倒した。`ESC [`（色など）は止めない
+- 全体で判定した場合（`-DetectionLineCount` なし）と、`-Encoding` で明示した場合は探さない。全体の判定は ISO-2022 を正しく判定する
+- BUG-0009 の再現の入力（ISO-2022-JP / KR）で、`Import-ProbedCsv -DetectionLineCount 1` は 1 件も出力せずに DVF、`Export-ProbedCsv -Append -DetectionLineCount 1` は何も書かずに DVF になった。`-DetectionLineCount 2` では従来どおり正しく読める
+
+### 9.6 `Export-ProbedCsv -Append` で、追記先のヘッダーに空の列名がある件
+
+**実測（依頼 5.1）。** 標準の `Export-Csv -Append`（PowerShell 7.6.7 と Windows PowerShell 5.1.26100、ja-JP）に、ヘッダーの違う追記先へ `[pscustomobject]@{A='x';B='y'}` を追記した（逆コンパイルはしていない）。
+2 行目は `1,2,3`。両ホストで同じ結果だった。
+
+| 追記先のヘッダー | `-Force` なし | `-Force` あり |
+|---|---|---|
+| `A,,B`（途中が空） | `CannotAppendCsvWithMismatchedPropertyNames`（InvalidData）。何も書かない | `Argument`（`PSArgumentException`、InvalidArgument、「引数 "name" の値が無効なため…」）。何も書かない |
+| `,A,B`（先頭が空） | 同上 | 同上 |
+| `A,"",B`（引用符で囲んだ空） | 同上 | 同上 |
+| 空の行（ヘッダーが空）・`""` | 同上 | 同上 |
+| `A,B,`（末尾が空） | 追記する（`"x","y"`。末尾の空の列は無視される） | 同左 |
+| `A,,`（末尾の 2 つが空） | 追記する（`"x"`。ヘッダーは `A` だけと読まれる） | 同左 |
+
+第四次の本モジュールも、ID・分類・書いたバイト列まで標準と同じだった（移植したコードのとおり）。`-Force` ありの例外は、移植した `ExportCsvHelper` が空の名前で `PSObject.Properties[""]` を引いたときに出る。
+
+**決めたこと（依頼 5.2）。** 止まる点（最初のオブジェクト・何も書く前）と `-Force` なしの ID は標準に合わせたまま、`-Force` ありだけを、照合を通った直後に検査して
+ID `CannotAppendCsvWithEmptyPropertyName`（InvalidData、対象は出力先のパス）と本モジュールのメッセージ（キー `CsvAppendEmptyPropertyName`、5 言語）にした（利用者の決定）。
+移植したコード（`Internal/Csv/`）は変えていない。検査は `ExportProbedCsvCommand.RejectEmptyPropertyName`。
+
+### 9.7 テスト
+
+| テスト | 内容 |
+|---|---|
+| コア `DetectorTests/UnitLineBreakTests`（61） | 9.4 節 |
+| `EncodingTests/HeadLineCutterRuleTests`（5） | 9.3 節（1033 件の一致・バイト列の同一性・モデルの誤りの数・手当て） |
+| `EncodingTests/HeadLineCutterTests` | 漢字のバイトの 2 件の期待値を改め、1 件（2 通り）を足した |
+| `EncodingTests/StrictDecodeVerifierTests` | ISO-2022 のエスケープシーケンス（3 通り × バッファの大きさ 8 通り）、ほかの ESC を止めないこと |
+| `CmdletTests/UnrepresentableCharacterTests`（39） | 4 コマンド × 明示・継承・`-EncodingFrom`・Encoding のインスタンス（例外・置換フォールバック）、メッセージ、途中のレコードでの取り消し、複数のファイル、検査の順序、属性、一時ファイルとワイルドカード |
+| `CmdletTests/InheritedAsciiTests`（18） | BUG-0001 の再現の入力、明示の utf8NoBOM / utf8BOM、ASCII だけの場合のバイト列、`-EncodingFrom`、`EncodingInformation`、`-Encoding ascii`、`ConvertTo-DotNetEncoding` |
+| `CmdletTests/UnitLineBreakCmdletTests`（106） | 9.4 節 |
+| `CmdletTests/DetectionLineCountRegressionTests`（17） | BUG-0002・0009・0013 の再現の入力、空の列名 |
+| 改めた既存のテスト | `AddProbedContentTests.Append_FollowsByteSequenceRule`（us-ascii に utf8NoBOM で日本語 → 許可。us-ascii に shift_jis で日本語 → Error を足した）、`DetectionOptionsTests.Write_EncodingFromWithJapaneseCulture_DoesNotProduceKoreanBytes`（EUC-JP で表せないハングル → `UnrepresentableCharacter`、ファイルを作らない） |
+| PSCompat | `Fifth/` のシナリオ（表現できない文字 7 通り × 6 つの書き方、取り消し、Encoding のインスタンス、継承した us-ascii、改行の単位 4 型 × 3 改行 × 3、BUG-0002・0009・0013・0014、空の列名） |
+
+### 9.8 テストと確認の結果（2026-10-22）
+
+| 確認 | 結果 |
+|---|---|
+| コアのテスト | net48 **2031 件**、net10.0 **2021 件**、すべて成功（第四次から各 61 件増） |
+| モジュールのテスト | net10.0 **1292 件**、すべて成功（第四次の 1099 件から 193 件増） |
+| PSCompat | **831 シナリオ**で 5.1 と 7.x の結果が完全に一致（第四次の 719 から 112 件増）。`Fifth/` の結果も期待どおり（エラーの場合はすべてファイルが変わらず、一時ファイルも残っていない）ことを、5.1 のレポートで確かめた |
+| 9.4 節の 24 通りの確認 | 第五次のビルドで、7.x・5.1 とも全項目が一致 |
+| 9.3 節の 366 件 | 5.1 の結果は 7.x と全列で一致（`-Append` の分類だけ 4 件違うが、書いたバイト列は同じ。分類のスクリプトが置換フォールバックで復号して比べており、不正なバイト列の復号が .NET Framework と .NET Core で違うため） |
+| テスト担当のスクリプト | 作業フォルダー（scratchpad）に Release ビルドで配布フォルダーと同じ構成を作り、`scripts\BUG-0001・0002・0009・0010・0012・0013・0014.ps1` の写しを 7.6.7 と 5.1 で実行した（テスト担当のフォルダーには何も置いていない）。結果は下の表。両ホストで同じ（メッセージの言語だけ違う場合があった。下の注） |
+
+| BUG | 結果（7.6.7・5.1） |
+|---|---|
+| 0001 | 4 コマンドとも、日本語を UTF-8（`E6 97 A5 E6 9C AC`）で書いた。`3F` は無い。参考の `-Encoding utf8NoBOM` も書けた（第四次は `EncodingChangeOnAppend`） |
+| 0002 | A・B とも、`Import-ProbedCsv` の結果は `-DetectionLineCount` の有無で同じ。`-Append -DetectionLineCount 1 -Force` は ASCII の行（`22 78 22 2C 0A` など）を書いた。`Resolve-Encoding -DetectionLineCount 1` の `LineBreak` は B で `CrLf`（第四次は `Cr`） |
+| 0009 | ISO-2022-JP / KR とも、`Import-ProbedCsv -DetectionLineCount 1` と `Export-ProbedCsv -Append -DetectionLineCount 1` は `DetectionVerificationFailed`、ファイルは変わらない（スクリプトの表示の「appended: 0A」は、ファイルが変わらないときの添字の範囲の計算による見かけ。「=> ACTUAL: …」の行は固定の文字列） |
+| 0010 | 6 つの手順すべてが `UnrepresentableCharacter`。新規のファイルは作らず、既存のファイルは変わらない |
+| 0012 | 5 つのコマンドすべてが `UnrepresentableCharacter`（InvalidData）、ファイルは変わらない。生の `EncoderFallbackException` は出ない |
+| 0013 | 3 つの入力とも、`-DetectionLineCount 1` の判定は全体の判定と同じ（1201 / 1200）、`Import-ProbedCsv` は `-Encoding` で明示した結果と同じ。`-Append` は正しいバイト順の単位で書いた |
+| 0014 | 6 つの入力すべてで、`-Append -DetectionLineCount 1` が期待どおりのバイト列（CR / CR-LF）を書いた（「=> ok」）。`Resolve-Encoding -DetectionLineCount 1` は `20127 / LfAndCr` のまま（9.9 節の 1） |
+
+注: このセッションの道具（PowerShell の呼び出し）から 5.1 を起動したときだけ、5.1 の本モジュールのメッセージが英語になった。Git Bash から起動すると日本語（UI カルチャーは ja-JP）。
+起動の環境によるもので、本モジュールの不具合ではない（同じ DLL・同じスクリプトで確かめた）。
+
+### 9.9 決めきれなかったこと・仕様と食い違ったこと・新たに気づいたこと
+
+1. **`Resolve-Encoding -DetectionLineCount` は、読み替えないので BUG-0014 の入力に `LfAndCr` を報告する。** 依頼 3.3 は読み替えた場合（`Import-` / `Export-ProbedCsv`）の数え直しで、
+   `Resolve-Encoding` は仕様書 3.1 のとおり先頭 N 行が us-ascii に見えることを報告する。テスト担当の期待（`Cr`）とは違う。切り出しの型（UTF-16）で数え直した値を報告するか、
+   us-ascii と報告する以上は今のままにするかは、利用者の判断を求める
+2. **`EncodingChangeOnAppend` は、それまでに書いた行を残す（元に戻さない）。** 表現できない文字は元に戻すようにしたので、`Out-ProbedFile -Append` / `Export-ProbedCsv -Append` と
+   `Add-ProbedContent` の複数のレコードで、失敗の種類によってファイルが元に戻るかどうかが違う。依頼の範囲（表現できない文字）を超えるので変えていない。そろえるかは利用者の判断を求める
+3. **パイプラインの停止（Ctrl+C）での上書き。** 一時ファイルに書いた途中までの内容で置き換える（第四次までの「途中までを書いた状態」と同じ結果）。元のファイルを残すほうが安全とも考えられるが、変えていない
+4. **一時ファイルで置き換える方法の限界**（9.2 節の表の下）。シンボリックリンク・Linux のアクセス権・フォルダーの書き込み権限・失敗する時点の違い
+5. **依頼の 4 コマンドの外への影響。** 継承した us-ascii を UTF-8 とみなす処理を `EncodingInheritance.FromFile` に置いたので、`Convert-ProbedContent -EncodingFrom` の参照ファイルが us-ascii の場合も変換先が UTF-8 になる（第四次は us-ascii で、日本語は `UnrepresentableCharacter`）。CHANGELOG に書いた
+6. **対になっていないサロゲート**も `UnrepresentableCharacter` になる（第四次は `?` や U+FFFD のバイト列で書いていた）。CHANGELOG の「表現できない文字」に含まれるものとして、個別には書いていない
+7. **追補 4.1 の限界の入力への追記。** 英数字と「上」だけの BOM 無し UTF-16 など（全体の判定が us-ascii）に、`-DetectionLineCount` なしで追記すると、
+   継承した us-ascii を UTF-8 とみなすので、日本語は UTF-8 で書く（第四次は `?`）。どちらも UTF-16 のファイルを壊す既存の限界で、`-DetectionLineCount` を指定すれば正しく書く
+8. 新たに気づいた製品の不具合は無い。テスト担当のスクリプト（BUG-0009）の表示の見かけは 9.8 節の表に書いた
+9. リポジトリの配布フォルダー（`publish/`）は作り直していない（依頼のとおりリリースしない）。`publish/.../core/SnowStack.EncodingProbe.PowerShell.deps.json` の変更（モジュールが同梱するクラスライブラリを 1.3.0 にしたもの）は、前のセッションから未コミットのまま残っている
+
+### 9.10 直した文書
+
+| 文書 | 内容 |
+|---|---|
+| `docs/EncodingProbe-1.3.0-仕様書.md` | 2.4 を新しい規則に書き直し、経緯と既知の限界の表を追加。3.2 の「LineBreak は読み替えない」を改め、ISO-2022 の検査を追加。4.3 に ISO-2022 の失敗を追加。16.1 に継承した us-ascii、16.4（表現できない文字）を新設。18.2 に空の列名、20 章の表に 2 行 |
+| `docs/EncodingProbe-1.1.0-仕様書.md` | 6.1 の表と注（us-ascii に UTF-8 → 許可、表現できない文字、経緯）、8 章の表に 1 行 |
+| MAML（5 言語、`zh-TW` を `zh-HK` / `zh-MO` に複製） | 書き込みの 4 コマンドの注意事項に 2 項目（表現できない文字・継承した us-ascii）、`Import-` / `Export-ProbedCsv` / `Resolve-Encoding` の `-DetectionLineCount`、`Export-ProbedCsv` の `-Force` |
+| `README.md`・`CHANGELOG.md` | 1.3.0 の節（改行の判定の修正、挙動の変更、`-DetectionLineCount` の既知の限界） |
+| `SnowStack.EncodingProbe.csproj` の `PackageReleaseNotes`・`.psd1` の `ReleaseNotes` | 第五次の内容を追加 |
+| `docs/EncodingProbe-1.3.0-調査-切り出しの境目.md` | 調査ブランチからそのまま持ってきた（変えていない） |
+| `CLAUDE.md` | 切り出しの調査の結論、調査ブランチをマージしないこと、第五次の作業記録 |
