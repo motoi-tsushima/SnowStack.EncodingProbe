@@ -2066,6 +2066,161 @@ Add-ExportScenario 'RoundTrip/shift_jis' $null {
 }
 
 # ---------------------------------------------------------------------------
+# 1.3.0 第五次: 表現できない文字・継承した us-ascii・改行の単位・切り出し・ISO-2022・空の列名
+#
+# 書き込みの 4 コマンドは、表現できない文字を '?' やベストフィット（é → e。5.1 の .NET Framework で起きる）にせず、
+# UnrepresentableCharacter で止めてファイルを元に戻す。結果は「ok / ERROR <ID> :: <メッセージ>」と書いた後のバイト列で比べる。
+# ---------------------------------------------------------------------------
+
+function Invoke-FifthWrite {
+    param([string]$Path, [scriptblock]$Body)
+
+    $outcome = 'ok'
+
+    try {
+        $null = & $Body
+    }
+    catch {
+        $outcome = 'ERROR ' + $_.FullyQualifiedErrorId.Split(',')[0] + ' :: ' + (Get-InnermostMessage $_.Exception)
+    }
+
+    $leftovers = @(Get-ChildItem -LiteralPath (Split-Path -Parent $Path) -Filter '*.probedtmp' -Force).Count
+    return ('{0} // tmp={1} // {2}' -f $outcome, $leftovers, (Format-FileBytes $Path))
+}
+
+$script:fifthDir = Join-Path $script:WorkRoot 'fifth'
+$null = New-Item -ItemType Directory -Path $script:fifthDir
+$script:fifthCount = 0
+
+function Add-FifthScenario {
+    param([string]$Name, [byte[]]$Existing, [scriptblock]$Body)
+
+    $script:fifthCount++
+    $target = Join-Path $script:fifthDir ("f{0:D3}.txt" -f $script:fifthCount)
+
+    if ($null -ne $Existing) {
+        [IO.File]::WriteAllBytes($target, $Existing)
+    }
+
+    $run = $Body
+    Add-Scenario ("Fifth/{0}" -f $Name) {
+        Invoke-FifthWrite -Path $target -Body { & $run $target }
+    }.GetNewClosure()
+}
+
+$script:korean = "$([char]0xD55C)$([char]0xAD6D)"
+$script:cafe = "caf$([char]0xE9)"
+$script:euro = "$([char]0x20AC)"
+$script:fifthOld = [byte[]](0x6F, 0x6C, 0x64, 0x31, 0x0D, 0x0A, 0x6F, 0x6C, 0x64, 0x32, 0x0D, 0x0A)
+$script:fifthCsv = [byte[]](0x22, 0x56, 0x22, 0x0D, 0x0A, 0x22, 0x6F, 0x6C, 0x64, 0x22, 0x0D, 0x0A)
+
+# BUG-0010: -Encoding で明示した狭い文字エンコーディングで表現できない文字（ベストフィットを含む）
+foreach ($pair in @(@('shift_jis', 'korean'), @('shift_jis', 'cafe'), @('shift_jis', 'euro'), @('ascii', 'jp'), @('iso-2022-jp', 'cafe'), @('ks_c_5601-1987', 'cafe'), @('iso-8859-1', 'euro'))) {
+    $enc = $pair[0]
+    $value = switch ($pair[1]) { 'korean' { $script:korean } 'cafe' { $script:cafe } 'euro' { $script:euro } default { $script:jpValue } }
+    $label = $pair[1]
+    Add-FifthScenario "Unrepresentable/Set/$enc/$label" $script:fifthOld { param($p) Set-ProbedContent -LiteralPath $p -Value $value -Encoding $enc -ErrorAction Stop }.GetNewClosure()
+    Add-FifthScenario "Unrepresentable/Add/$enc/$label" $script:fifthOld { param($p) Add-ProbedContent -LiteralPath $p -Value $value -Encoding $enc -AllowEncodingChange -ErrorAction Stop }.GetNewClosure()
+    Add-FifthScenario "Unrepresentable/Out/$enc/$label" $script:fifthOld { param($p) $value | Out-ProbedFile -LiteralPath $p -Encoding $enc }.GetNewClosure()
+    Add-FifthScenario "Unrepresentable/OutAppend/$enc/$label" $script:fifthOld { param($p) $value | Out-ProbedFile -LiteralPath $p -Encoding $enc -Append -AllowEncodingChange }.GetNewClosure()
+    Add-FifthScenario "Unrepresentable/Export/$enc/$label" $script:fifthCsv { param($p) [pscustomobject]@{ V = $value } | Export-ProbedCsv -LiteralPath $p -Encoding $enc }.GetNewClosure()
+    Add-FifthScenario "Unrepresentable/ExportAppend/$enc/$label" $script:fifthCsv { param($p) [pscustomobject]@{ V = $value } | Export-ProbedCsv -LiteralPath $p -Encoding $enc -Append -AllowEncodingChange }.GetNewClosure()
+}
+
+# 途中のレコードで止まったら、それまでに書いた内容も取り消す
+Add-FifthScenario 'Rollback/Set-pipeline' $script:fifthOld { param($p) 'ok', $script:korean, 'after' | Set-ProbedContent -LiteralPath $p -Encoding shift_jis -ErrorAction Stop }
+Add-FifthScenario 'Rollback/Add-pipeline' $script:fifthOld { param($p) 'ok', $script:korean, 'after' | Add-ProbedContent -LiteralPath $p -Encoding shift_jis -AllowEncodingChange -ErrorAction Stop }
+Add-FifthScenario 'Rollback/Out-pipeline' $script:fifthOld { param($p) 'ok', $script:korean, 'after' | Out-ProbedFile -LiteralPath $p -Encoding shift_jis }
+Add-FifthScenario 'Rollback/Export-pipeline' $script:fifthCsv { param($p) 'ok', $script:korean | ForEach-Object { [pscustomobject]@{ V = $_ } } | Export-ProbedCsv -LiteralPath $p -Encoding shift_jis }
+Add-FifthScenario 'Rollback/Add-missing-file' $null { param($p) Add-ProbedContent -LiteralPath $p -Value $script:korean -Encoding shift_jis -ErrorAction Stop }
+
+# BUG-0012: 例外フォールバック・置換フォールバックの Encoding を渡しても、組み立て直して UnrepresentableCharacter
+Add-FifthScenario 'Instance/exception-fallback/Set' $script:fifthOld {
+    param($p)
+    $ef = [Text.Encoding]::GetEncoding(932, [Text.EncoderFallback]::ExceptionFallback, [Text.DecoderFallback]::ExceptionFallback)
+    Set-ProbedContent -LiteralPath $p -Value 'ok', $script:korean, 'after' -Encoding $ef -ErrorAction Stop
+}
+Add-FifthScenario 'Instance/exception-fallback/Add' $script:fifthOld {
+    param($p)
+    $ef = [Text.Encoding]::GetEncoding(932, [Text.EncoderFallback]::ExceptionFallback, [Text.DecoderFallback]::ExceptionFallback)
+    Add-ProbedContent -LiteralPath $p -Value 'ok', $script:korean, 'after' -Encoding $ef -ErrorAction Stop
+}
+Add-FifthScenario 'Instance/replacement-fallback/Out' $script:fifthOld { param($p) 'ok', $script:korean | Out-ProbedFile -LiteralPath $p -Encoding ([Text.Encoding]::GetEncoding(932)) }
+
+# BUG-0001: 継承した us-ascii は BOM 無しの UTF-8 とみなす（ASCII だけならバイト列は変わらない）
+$script:asciiText = [byte[]](0x61, 0x62, 0x63, 0x0D, 0x0A)
+$script:asciiCsv = [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A)
+Add-FifthScenario 'InheritedAscii/Add' $script:asciiText { param($p) Add-ProbedContent -LiteralPath $p -Value $script:jpValue -ErrorAction Stop }
+Add-FifthScenario 'InheritedAscii/Add-ascii-only' $script:asciiText { param($p) Add-ProbedContent -LiteralPath $p -Value 'xyz' -ErrorAction Stop }
+Add-FifthScenario 'InheritedAscii/Add-utf8NoBOM' $script:asciiText { param($p) Add-ProbedContent -LiteralPath $p -Value $script:jpValue -Encoding utf8NoBOM -ErrorAction Stop }
+Add-FifthScenario 'InheritedAscii/Add-ascii-explicit' $script:asciiText { param($p) Add-ProbedContent -LiteralPath $p -Value $script:jpValue -Encoding ascii -ErrorAction Stop }
+Add-FifthScenario 'InheritedAscii/Set' $script:asciiText { param($p) Set-ProbedContent -LiteralPath $p -Value $script:jpValue -ErrorAction Stop }
+Add-FifthScenario 'InheritedAscii/OutAppend' $script:asciiText { param($p) $script:jpValue | Out-ProbedFile -LiteralPath $p -Append }
+Add-FifthScenario 'InheritedAscii/ExportAppend' $script:asciiCsv { param($p) [pscustomobject]@{ A = $script:jpValue; B = 'x' } | Export-ProbedCsv -LiteralPath $p -Append }
+$asciiReference = New-ByteFile 'fifth_ascii_ref.txt' ([byte[]](0x61, 0x62, 0x63, 0x0A))
+Add-FifthScenario 'InheritedAscii/EncodingFrom' $null { param($p) Set-ProbedContent -LiteralPath $p -Value $jpValue -EncodingFrom $asciiReference -ErrorAction Stop }.GetNewClosure()
+Add-FifthScenario 'InheritedAscii/EncodingInformation' $null { param($p) Set-ProbedContent -LiteralPath $p -Value $jpValue -Encoding (Resolve-Encoding -Path $asciiReference) -ErrorAction Stop }.GetNewClosure()
+
+# 改行の単位（UTF-16 / UTF-32 の「上」「《」「不」を LF / CR と数えない）
+$unitEncodings = [ordered]@{
+    'u16le' = (New-Object System.Text.UnicodeEncoding($false, $false))
+    'u16be' = (New-Object System.Text.UnicodeEncoding($true, $false))
+    'u32le' = (New-Object System.Text.UTF32Encoding($false, $false))
+    'u32be' = (New-Object System.Text.UTF32Encoding($true, $false))
+}
+$unitBreaks = [ordered]@{ 'CrLf' = "`r`n"; 'Lf' = "`n"; 'Cr' = "`r" }
+$unitHeader = "$([char]0x65E5)$([char]0x672C)$([char]0x8A9E)$([char]0x4E0A)$([char]0x300A)$([char]0x4E0D)"
+foreach ($formName in $unitEncodings.Keys) {
+    foreach ($breakName in $unitBreaks.Keys) {
+        $unitEncoding = $unitEncodings[$formName]
+        $nl = $unitBreaks[$breakName]
+        $text = ("$unitHeader,B", "1$([char]0x4E0A),2", "$([char]0x4E0D)3,4") -join $nl
+        $bytes = [byte[]]$unitEncoding.GetBytes($text + $nl)
+        $unitFile = New-ByteFile ("fifth_unit_{0}_{1}.csv" -f $formName, $breakName) $bytes
+        Add-Scenario "Fifth/UnitLineBreak/$formName/$breakName/Resolve" { (Resolve-Encoding -Path $unitFile -Culture ja-JP).LineBreak }.GetNewClosure()
+        Add-FifthScenario "UnitLineBreak/$formName/$breakName/Add" $bytes { param($p) Add-ProbedContent -LiteralPath $p -Value '9,8' -Culture ja-JP -ErrorAction Stop }.GetNewClosure()
+        $h = $unitHeader
+        Add-FifthScenario "UnitLineBreak/$formName/$breakName/ExportAppend-N1" $bytes { param($p) [pscustomobject]@{ "$h" = '9'; B = '8' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 1 -Culture ja-JP }.GetNewClosure()
+    }
+}
+
+# BUG-0014: 英数字と「上」だけの BOM 無し UTF-16LE（改行は CR）。-DetectionLineCount で読み替えた後の単位で改行を数える
+$bug0014 = [byte[]](0x41, 0x00, 0x0A, 0x4E, 0x2C, 0x00, 0x42, 0x00, 0x0D, 0x00, 0x31, 0x00, 0x2C, 0x00, 0x32, 0x00, 0x0D, 0x00)
+Add-FifthScenario 'BUG-0014/ExportAppend-N1' $bug0014 { param($p) [pscustomobject]@{ "A$([char]0x4E0A)" = '9'; B = '8' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 1 }
+
+# BUG-0002: 0x00 を含む ASCII の CSV（-DetectionLineCount の有無で同じ値、追記は ASCII の行）
+foreach ($case in @(
+    @('A-lf', [byte[]](0x41, 0x2C, 0x42, 0x00, 0x0A, 0x31, 0x2C, 0x32, 0x00, 0x0A)),
+    @('B-crlf', [byte[]](0x41, 0x2C, 0x42, 0x00, 0x00, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x00, 0x00, 0x0D, 0x0A)))) {
+    $caseName = $case[0]
+    $caseBytes = $case[1]
+    $caseFile = New-ByteFile ("fifth_bug0002_{0}.csv" -f $caseName) $caseBytes
+    Add-Scenario "Fifth/BUG-0002/$caseName/Import-N1" { Import-ProbedCsv -LiteralPath $caseFile -DetectionLineCount 1 | ConvertTo-Json -Compress }.GetNewClosure()
+    Add-Scenario "Fifth/BUG-0002/$caseName/Resolve-N1" { $r = Resolve-Encoding -Path $caseFile -DetectionLineCount 1; '{0} {1}' -f $r.CodePage, $r.LineBreak }.GetNewClosure()
+    Add-FifthScenario "BUG-0002/$caseName/ExportAppend-N1" $caseBytes { param($p) [pscustomobject]@{ A = 'z'; "B$([char]0)" = 'z' } | Export-ProbedCsv -LiteralPath $p -Append -Force -DetectionLineCount 1 }
+}
+
+# BUG-0013: 最初の改行より前に U+0D00 がある BOM 無し UTF-16BE
+$bug0013 = New-ByteFile 'fifth_bug0013.csv' ([byte[]](0x65, 0xE5, 0x0D, 0x00, 0x00, 0x2C, 0x00, 0x42, 0x00, 0x0D, 0x00, 0x0A, 0x00, 0x31, 0x00, 0x2C, 0x00, 0x32, 0x00, 0x0D, 0x00, 0x0A))
+Add-Scenario 'Fifth/BUG-0013/Import-N1' { Import-ProbedCsv -LiteralPath $bug0013 -DetectionLineCount 1 | ConvertTo-Json -Compress }.GetNewClosure()
+
+# BUG-0009: 先頭行が ASCII だけの ISO-2022-JP / KR
+$iso2022jp = [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x22, 0x1B, 0x24, 0x42, 0x46, 0x7C, 0x4B, 0x5C, 0x1B, 0x28, 0x42, 0x22, 0x2C, 0x78, 0x0D, 0x0A)
+$iso2022kr = [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x22, 0x1B, 0x24, 0x29, 0x43, 0x0E, 0x47, 0x51, 0x31, 0x39, 0x0F, 0x22, 0x2C, 0x78, 0x0D, 0x0A)
+$iso2022jpFile = New-ByteFile 'fifth_iso2022jp.csv' $iso2022jp
+Add-Scenario 'Fifth/BUG-0009/jp/Import-N1' { Import-ProbedCsv -LiteralPath $iso2022jpFile -DetectionLineCount 1 -Culture ja-JP -ErrorAction Stop }.GetNewClosure()
+Add-FifthScenario 'BUG-0009/jp/ExportAppend-N1' $iso2022jp { param($p) [pscustomobject]@{ A = $script:jpValue; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 1 -Culture ja-JP }
+Add-FifthScenario 'BUG-0009/kr/ExportAppend-N1' $iso2022kr { param($p) [pscustomobject]@{ A = $script:korean; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 1 -Culture ko-KR }
+
+# Export-ProbedCsv -Append で、追記先のヘッダーに空の列名がある（-Force なしは本家と同じ ID、-Force ありは本モジュールの ID）
+foreach ($header in @('A,,B', ',A,B', 'A,B,')) {
+    $headerBytes = [byte[]]([Text.Encoding]::ASCII.GetBytes($header + "`r`n1,2,3`r`n"))
+    $hd = $header
+    Add-FifthScenario "EmptyColumn/$hd" $headerBytes { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }.GetNewClosure()
+    Add-FifthScenario "EmptyColumn/$hd/Force" $headerBytes { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append -Force }.GetNewClosure()
+}
+
+# ---------------------------------------------------------------------------
 # 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
 #
 # UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。

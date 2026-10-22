@@ -16,8 +16,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <summary>ErrorRecord に設定するエラー ID（Convert-ProbedContent の N4 と同じ）</summary>
         public const string ErrorId = "UnrepresentableCharacter";
 
-        private UnrepresentableCharacterException(string message, Exception innerException)
-            : base(message, innerException)
+        private UnrepresentableCharacterException(string message)
+            : base(message)
         {
         }
 
@@ -26,7 +26,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// </summary>
         /// <remarks>
         /// <see cref="EncoderFallbackException.Index"/> は使わない（基準が実行環境によって異なりうる。Convert-ProbedContent と同じ）。
-        /// 内部例外には符号化の例外を持たせるが、メッセージは本モジュールの文面だけにする（.NET の文言は PowerShell 5.1 と 7.x で違う）。
+        /// 符号化の例外は内部例外に持たせない。.NET の文言は PowerShell 5.1 と 7.x で違い、利用者に見せないため（1.1.0 の方針）。
         /// </remarks>
         public static UnrepresentableCharacterException From(EncoderFallbackException exception, string path, string encodingName)
         {
@@ -49,8 +49,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     path,
                     encodingName,
                     "U+" + codePoint.ToString("X4", CultureInfo.InvariantCulture),
-                    character),
-                exception);
+                    character));
         }
     }
 }
