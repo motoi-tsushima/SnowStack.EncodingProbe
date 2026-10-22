@@ -222,6 +222,111 @@ namespace SnowStack.EncodingProbe
         }
 
         /// <summary>
+        /// 判定した文字エンコーディングの単位で改行コードを数え、種類を判定する（1.3.0 第五次）
+        /// </summary>
+        /// <remarks>
+        /// <see cref="DetectLineBreak()"/> はバイト単位で 0x0A / 0x0D を数えるため、UTF-16 / UTF-32 では
+        /// 文字の一部のバイトを改行と数えてしまう（UTF-16LE の「上」U+4E0A = 0A 4E、「不」U+4E0D = 0D 4E など）。
+        /// UTF-16 は 2 バイト、UTF-32 は 4 バイトの単位に区切り、単位の値が U+000A / U+000D のものだけを改行とする。
+        /// 単位はオフセット 0 から区切る（BOM はちょうど 1 単位なので、BOM の有無で区切りは変わらない）。末尾の端数のバイトは数えない。
+        /// それ以外のコードページは <see cref="DetectLineBreak()"/> と同じくバイト単位で数える。
+        /// <br/>
+        /// 公開の <see cref="DetectLineBreak()"/> の挙動は変えていない（文字エンコーディングを知らずに呼ばれるため）。
+        /// </remarks>
+        /// <param name="buffer">判定対象のバイト配列</param>
+        /// <param name="length">先頭から数えるバイト数</param>
+        /// <param name="codePage">判定した文字エンコーディングのコードページ</param>
+        internal static LineBreakType DetectLineBreak(byte[] buffer, int length, int codePage)
+        {
+            int unitSize;
+            bool bigEndian;
+
+            switch (codePage)
+            {
+                case CodePageUtf16Le:
+                    unitSize = 2;
+                    bigEndian = false;
+                    break;
+                case CodePageUtf16Be:
+                    unitSize = 2;
+                    bigEndian = true;
+                    break;
+                case CodePageUtf32Le:
+                    unitSize = 4;
+                    bigEndian = false;
+                    break;
+                case CodePageUtf32Be:
+                    unitSize = 4;
+                    bigEndian = true;
+                    break;
+                default:
+                    return new EncodingDetector(length == buffer.Length ? buffer : buffer.Take(length).ToArray()).DetectLineBreak();
+            }
+
+            int countCrLf = 0;
+            int countLf = 0;
+            int countCr = 0;
+            int units = length / unitSize;
+
+            for (int i = 0; i < units; i++)
+            {
+                long value = ReadUnit(buffer, i * unitSize, unitSize, bigEndian);
+
+                if (value == 0x0D)
+                {
+                    if (i + 1 < units && ReadUnit(buffer, (i + 1) * unitSize, unitSize, bigEndian) == 0x0A)
+                    {
+                        countCrLf++;
+                        i++; // LF の単位をスキップ
+                    }
+                    else
+                    {
+                        countCr++;
+                    }
+                }
+                else if (value == 0x0A)
+                {
+                    countLf++;
+                }
+            }
+
+            return DetermineLineBreakType(countCrLf, countLf, countCr);
+        }
+
+        /// <summary>
+        /// 指定位置から始まる 1 単位（2 バイトまたは 4 バイト）の値を返す
+        /// </summary>
+        private static long ReadUnit(byte[] buffer, int offset, int unitSize, bool bigEndian)
+        {
+            long value = 0;
+
+            for (int k = 0; k < unitSize; k++)
+            {
+                value = bigEndian
+                    ? (value << 8) | buffer[offset + k]
+                    : value | ((long)buffer[offset + k] << (8 * k));
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// 判定したコードページが UTF-16 / UTF-32 なら、改行コードをその単位で数え直す（1.3.0 第五次）
+        /// </summary>
+        private void RecountLineBreakByUnit(EncodingInformation encInfo)
+        {
+            switch (encInfo.CodePage)
+            {
+                case CodePageUtf16Le:
+                case CodePageUtf16Be:
+                case CodePageUtf32Le:
+                case CodePageUtf32Be:
+                    encInfo.LineBreak = DetectLineBreak(this._buffer, this.BufferSize, encInfo.CodePage);
+                    break;
+            }
+        }
+
+        /// <summary>
         /// 改行コード出現回数から種類を判定する
         /// </summary>
         private static LineBreakType DetermineLineBreakType(int countCrLf, int countLf, int countCr)
@@ -460,6 +565,7 @@ namespace SnowStack.EncodingProbe
                 encInfo.Bom = true;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
+                RecountLineBreakByUnit(encInfo);
 
                 return encInfo;
             }
@@ -507,6 +613,7 @@ namespace SnowStack.EncodingProbe
                 encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
+                RecountLineBreakByUnit(encInfo);
 
                 return encInfo;
             }
@@ -529,6 +636,7 @@ namespace SnowStack.EncodingProbe
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
+                RecountLineBreakByUnit(encInfo);
 
                 return encInfo;
             }
@@ -551,6 +659,7 @@ namespace SnowStack.EncodingProbe
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
+                RecountLineBreakByUnit(encInfo);
 
                 return encInfo;
             }
