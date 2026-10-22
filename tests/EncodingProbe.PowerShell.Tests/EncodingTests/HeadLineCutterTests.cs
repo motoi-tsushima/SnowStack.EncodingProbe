@@ -100,6 +100,11 @@ public class HeadLineCutterTests
     /// <summary>
     /// UTF-16LE の「上」(U+4E0A = 0A 4E) のように、改行の形に一致しない 0A は改行と数えないこと。
     /// </summary>
+    /// <remarks>
+    /// 第五次で期待値を改めた。「上\n下\n」（8 バイト）は A が 2 で A ≥ ⌈0.6 × N⌉ を満たさず、型の規則では 1 バイトの型になる
+    /// （調査文書 6.4 節の既知の限界）。0x00 があり、ファイル全体が 64 KiB に収まるので、行で切らずにファイル全体を切り出す（仕様書 2.4）。
+    /// 漢字のバイトで切らないことは変わらない。
+    /// </remarks>
     [Fact]
     public void Cut_Utf16Le_ByteOfKanjiIsNotLineBreak()
     {
@@ -112,13 +117,14 @@ public class HeadLineCutterTests
         {
             HeadLineCut cut = Cut(content, 1, bufferSize);
 
-            Assert.Equal(LineBreakUnit.Utf16Le, cut.Unit);
-            Assert.Equal(encoding.GetBytes("上\n"), cut.Bytes);
+            Assert.Equal(LineBreakUnit.None, cut.Unit);
+            Assert.True(cut.IsWholeFile);
+            Assert.Equal(content, cut.Bytes);
         }
     }
 
     /// <summary>
-    /// UTF-16BE の「上」(U+4E0A = 4E 0A) の 0A も、直前が 00 ではないので改行と数えないこと。
+    /// UTF-16BE の「上」(U+4E0A = 4E 0A) の 0A も、直前が 00 ではないので改行と数えないこと（期待値は上と同じ理由で改めた）。
     /// </summary>
     [Fact]
     public void Cut_Utf16Be_ByteOfKanjiIsNotLineBreak()
@@ -130,8 +136,30 @@ public class HeadLineCutterTests
         {
             HeadLineCut cut = Cut(content, 1, bufferSize);
 
-            Assert.Equal(LineBreakUnit.Utf16Be, cut.Unit);
-            Assert.Equal(encoding.GetBytes("上上\n"), cut.Bytes);
+            Assert.Equal(LineBreakUnit.None, cut.Unit);
+            Assert.True(cut.IsWholeFile);
+            Assert.Equal(content, cut.Bytes);
+        }
+    }
+
+    /// <summary>
+    /// 型の規則が UTF-16 に決まる長さがあれば、「上」の 0A では切らず、本物の改行で切ること。
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Cut_Utf16_LongEnough_ByteOfKanjiIsNotLineBreak(bool bigEndian)
+    {
+        var encoding = new UnicodeEncoding(bigEndian, byteOrderMark: false);
+        string first = "上上ID,Name,Value,上\n";
+        byte[] content = encoding.GetBytes(first + "1,上,2\n3,4,5\n6,7,8\n9,10,11\n");
+
+        foreach (int bufferSize in BufferSizes)
+        {
+            HeadLineCut cut = Cut(content, 1, bufferSize);
+
+            Assert.Equal(bigEndian ? LineBreakUnit.Utf16Be : LineBreakUnit.Utf16Le, cut.Unit);
+            Assert.Equal(encoding.GetBytes(first), cut.Bytes);
         }
     }
 

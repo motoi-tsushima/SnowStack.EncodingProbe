@@ -42,7 +42,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// </remarks>
     internal static class HeadLineCutter
     {
-        /// <summary>BOM が無い場合に 0x00 を探す範囲（先頭からのバイト数）</summary>
+        /// <summary>BOM が無い場合に、改行の型を決めるために単位を数える範囲（先頭からのバイト数）</summary>
         public const int ZeroProbeLength = 64 * 1024;
 
         /// <summary>走査に使うバッファの大きさ</summary>
@@ -140,42 +140,48 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 }
             }
 
-            // 2. 先頭の探索範囲に 0x00 があれば、1 バイトの型を候補から外す。
-            //    ASCII 互換の文字エンコーディングのテキストには 0x00 が現れないため
-            bool hasZero = false;
+            // 2. 先頭の探索範囲（短ければ全体）を単位に区切って数え、規則で型を決める（第五次。仕様書 2.4）
+            var probe = new byte[ZeroProbeLength];
+            int probeLength = 0;
 
-            for (long i = 0; i < ZeroProbeLength; i++)
+            while (probeLength < probe.Length)
             {
-                int value = window.Get(i);
+                int value = window.Get(probeLength);
 
                 if (value < 0)
                 {
                     break;
                 }
 
-                if (value == 0)
-                {
-                    hasZero = true;
-                    break;
-                }
+                probe[probeLength++] = (byte)value;
             }
+
+            bool isWholeFile = probeLength < ZeroProbeLength || window.Get(ZeroProbeLength) < 0;
+            LineBreakUnit decided = DecideUnit(probe, probeLength, isWholeFile);
 
             window.Reset();
 
-            // 3. 先頭から 0A / 0D を探し、候補の型のうちバイト列と位置の条件の両方に一致するものに決める
+            if (decided == LineBreakUnit.None)
+            {
+                // 1 バイトの型だが 0x00 があり、ファイル全体が探索範囲に収まる。行で切らずにファイル全体を切り出す
+                return LineBreakUnit.None;
+            }
+
+            // 3. 決めた型の改行だけを先頭から探す。ほかの型の改行の形は見ない
+            //    （第四次までは最初に一致した型に決めていた。BUG-0013 の原因）
             for (long position = 0; ; position++)
             {
                 int value = window.Get(position);
 
                 if (value < 0)
                 {
-                    // 4. 末尾まで決まらなかった場合は、改行が無いとみなす
+                    // 4. 末尾まで見つからなかった場合は、改行が無いとみなす
                     return LineBreakUnit.None;
                 }
 
                 if (position >= maxLength)
                 {
-                    // ここより後ろで型が決まっても、切り出す範囲は上限を超える
+                    // ここより後ろで改行が見つかっても、切り出す範囲は上限を超える
                     throw TooLarge(path, lineCount);
                 }
 
@@ -184,34 +190,102 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     continue;
                 }
 
-                if (!hasZero)
+                // 単位の境界とバイト列の両方が合う位置だけを改行とする（UTF-16LE の「上」U+4E0A = 0A 4E は改行ではない）
+                switch (decided)
                 {
-                    return LineBreakUnit.SingleByte;
-                }
+                    case LineBreakUnit.Utf32Le:
+                        if (position % 4 == 0 && IsZero(window, position + 1, 3))
+                        {
+                            return decided;
+                        }
 
-                // UTF-32 の改行は UTF-16 の改行の形も含むため、UTF-32 を先に調べる
-                if (position % 4 == 0 && IsZero(window, position + 1, 3))
-                {
-                    return LineBreakUnit.Utf32Le;
-                }
+                        break;
+                    case LineBreakUnit.Utf32Be:
+                        if (position % 4 == 3 && IsZero(window, position - 3, 3))
+                        {
+                            return decided;
+                        }
 
-                if (position % 4 == 3 && IsZero(window, position - 3, 3))
-                {
-                    return LineBreakUnit.Utf32Be;
-                }
+                        break;
+                    case LineBreakUnit.Utf16Le:
+                        if (position % 2 == 0 && IsZero(window, position + 1, 1))
+                        {
+                            return decided;
+                        }
 
-                if (position % 2 == 0 && IsZero(window, position + 1, 1))
-                {
-                    return LineBreakUnit.Utf16Le;
-                }
+                        break;
+                    case LineBreakUnit.Utf16Be:
+                        if (position % 2 == 1 && IsZero(window, position - 1, 1))
+                        {
+                            return decided;
+                        }
 
-                if (position % 2 == 1 && IsZero(window, position - 1, 1))
-                {
-                    return LineBreakUnit.Utf16Be;
+                        break;
+                    default:
+                        return decided;
                 }
-
-                // どの型にも一致しない 0A / 0D は改行ではない（UTF-16LE の「上」U+4E0A = 0A 4E など）
             }
+        }
+
+        /// <summary>
+        /// BOM の無いファイルの先頭（探索範囲）を単位に区切って数え、改行の型を決める（仕様書 2.4。第五次）。
+        /// </summary>
+        /// <remarks>
+        /// 規則と値の根拠は docs/EncodingProbe-1.3.0-調査-切り出しの境目.md の 1 章・5 章・10 章。
+        /// 次の順に調べ、最初に成り立った型にする。どれも成り立たなければ 1 バイトの型。
+        /// <list type="number">
+        /// <item>UTF-32LE → UTF-32BE: 共通の条件 かつ B ≤ 0.2 × A</item>
+        /// <item>UTF-16LE → UTF-16BE: 共通の条件 かつ 改行の向きが合う（Abr ≥ 4 かつ 逆の形の改行 ≤ 0.25 × Abr）</item>
+        /// <item>UTF-16LE → UTF-16BE: 共通の条件 かつ B ≤ 0.2 × A</item>
+        /// </list>
+        /// 共通の条件は A ≥ min(16, ⌈0.6 × N⌉) かつ Z = 0。UTF-16 の型ではさらに P ≤ 0.7 × N。
+        /// <br/>
+        /// 1 バイトの型になり、探索範囲に 0x00 があり、しかもファイル全体が探索範囲に収まる場合は <see cref="LineBreakUnit.None"/>
+        /// を返す（行で切らずにファイル全体を切り出す）。短い日本語だけの UTF-16 を 1 バイトの型として切ると、
+        /// 文字の途中で切れた先頭を Shift_JIS などと判定して黙って化けるため（調査文書 11.4 節の 2 件）。
+        /// <br/>
+        /// 比は整数で比べる（⌈0.6 × N⌉ = ⌊(3N + 4) / 5⌋、B ≤ 0.2 × A は 5B ≤ A など）。
+        /// 調査の規則のモデルと 1033 件で決まる型が一致することを、テスト（HeadLineCutterRuleTests）が確かめている。
+        /// </remarks>
+        /// <param name="head">探索範囲のバイト列</param>
+        /// <param name="length">探索範囲のバイト数（ファイルが短ければファイル全体の長さ）</param>
+        /// <param name="isWholeFile">探索範囲がファイル全体であるかどうか</param>
+        internal static LineBreakUnit DecideUnit(byte[] head, int length, bool isWholeFile)
+        {
+            UnitCounts counts = UnitCounts.Measure(head, length);
+
+            foreach (int t in UnitCounts.Utf32Order)
+            {
+                if (counts.BaseConditionHolds(t) && counts.ReverseIsFew(t))
+                {
+                    return UnitCounts.Units[t];
+                }
+            }
+
+            // UTF-16 は改行の向きで先に決める。全角空白や「一」の多い文章で、
+            // B の条件が逆のバイト順でたまたま成り立つのを止めるため（調査文書 5.1 節）
+            foreach (int t in UnitCounts.Utf16Order)
+            {
+                if (counts.BaseConditionHolds(t) && counts.LineBreakDirectionMatches(t))
+                {
+                    return UnitCounts.Units[t];
+                }
+            }
+
+            foreach (int t in UnitCounts.Utf16Order)
+            {
+                if (counts.BaseConditionHolds(t) && counts.ReverseIsFew(t))
+                {
+                    return UnitCounts.Units[t];
+                }
+            }
+
+            if (isWholeFile && counts.HasZero)
+            {
+                return LineBreakUnit.None;
+            }
+
+            return LineBreakUnit.SingleByte;
         }
 
         /// <summary>
@@ -380,6 +454,167 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         private static EncodingDetectionException TooLarge(string path, long lineCount)
             => new EncodingDetectionException(ValidationMessages.DetectionLinesTooLarge(path, lineCount), path);
+
+        /// <summary>
+        /// 探索範囲を 4 つの型の単位に区切って数えた値（調査文書 2 章の N・A・B・Z・Abr・P）
+        /// </summary>
+        private sealed class UnitCounts
+        {
+            public const int Utf16Le = 0;
+            public const int Utf16Be = 1;
+            public const int Utf32Le = 2;
+            public const int Utf32Be = 3;
+
+            /// <summary>添字に対応する型</summary>
+            public static readonly LineBreakUnit[] Units =
+            {
+                LineBreakUnit.Utf16Le, LineBreakUnit.Utf16Be, LineBreakUnit.Utf32Le, LineBreakUnit.Utf32Be,
+            };
+
+            public static readonly int[] Utf32Order = { Utf32Le, Utf32Be };
+
+            public static readonly int[] Utf16Order = { Utf16Le, Utf16Be };
+
+            /// <summary>A の最小の上限（長い入力ではこの数だけあればよい）</summary>
+            private const int MinMatchCap = 16;
+
+            /// <summary>改行の向きで決めるときに要る、その型の形の改行の数</summary>
+            private const int MinLineBreaks = 4;
+
+            /// <summary>N: 全単位数</summary>
+            private readonly int[] _n = new int[4];
+
+            /// <summary>A: その型の英数字の形の単位（UTF-16LE は &lt;00 以外&gt; 00、UTF-32LE は b2・b3 が 00 で b0・b1 が両方 00 ではない）</summary>
+            private readonly int[] _a = new int[4];
+
+            /// <summary>B: 逆のバイト順の英数字の形の単位</summary>
+            private readonly int[] _b = new int[4];
+
+            /// <summary>Z: すべてのバイトが 00 の単位</summary>
+            private readonly int[] _z = new int[4];
+
+            /// <summary>Abr: A のうち改行（00 以外のバイトが 0A / 0D）のもの。UTF-16 だけ数える</summary>
+            private readonly int[] _abr = new int[4];
+
+            /// <summary>P: 2 バイトの単位のうち、両方のバイトが 0x20〜0x7E のもの</summary>
+            private int _printable;
+
+            /// <summary>探索範囲に 0x00 があるかどうか</summary>
+            public bool HasZero { get; private set; }
+
+            public static UnitCounts Measure(byte[] head, int length)
+            {
+                var c = new UnitCounts();
+
+                c.HasZero = Array.IndexOf(head, (byte)0, 0, length) >= 0;
+
+                for (int i = 0; i + 2 <= length; i += 2)
+                {
+                    byte b0 = head[i];
+                    byte b1 = head[i + 1];
+
+                    c._n[Utf16Le]++;
+                    c._n[Utf16Be]++;
+
+                    if (IsPrintable(b0) && IsPrintable(b1))
+                    {
+                        c._printable++;
+                    }
+
+                    if (b0 == 0 && b1 == 0)
+                    {
+                        c._z[Utf16Le]++;
+                        c._z[Utf16Be]++;
+                    }
+                    else if (b1 == 0)
+                    {
+                        c._a[Utf16Le]++;
+                        c._b[Utf16Be]++;
+
+                        if (IsLineBreakByte(b0))
+                        {
+                            c._abr[Utf16Le]++;
+                        }
+                    }
+                    else if (b0 == 0)
+                    {
+                        c._b[Utf16Le]++;
+                        c._a[Utf16Be]++;
+
+                        if (IsLineBreakByte(b1))
+                        {
+                            c._abr[Utf16Be]++;
+                        }
+                    }
+                }
+
+                for (int i = 0; i + 4 <= length; i += 4)
+                {
+                    bool low0 = head[i] == 0 && head[i + 1] == 0;
+                    bool high0 = head[i + 2] == 0 && head[i + 3] == 0;
+
+                    c._n[Utf32Le]++;
+                    c._n[Utf32Be]++;
+
+                    if (low0 && high0)
+                    {
+                        c._z[Utf32Le]++;
+                        c._z[Utf32Be]++;
+                    }
+                    else if (high0)
+                    {
+                        c._a[Utf32Le]++;
+                        c._b[Utf32Be]++;
+                    }
+                    else if (low0)
+                    {
+                        c._b[Utf32Le]++;
+                        c._a[Utf32Be]++;
+                    }
+                }
+
+                return c;
+            }
+
+            /// <summary>
+            /// 共通の条件: A ≥ min(16, ⌈0.6 × N⌉) かつ Z = 0。UTF-16 の型ではさらに P ≤ 0.7 × N
+            /// </summary>
+            public bool BaseConditionHolds(int t)
+            {
+                int n = this._n[t];
+
+                if (n == 0 || this._z[t] != 0)
+                {
+                    return false;
+                }
+
+                // ⌈0.6 × N⌉ = ⌊(3N + 4) / 5⌋（N ≥ 1 なので 1 以上）
+                long minMatch = Math.Min(MinMatchCap, (3L * n + 4) / 5);
+
+                if (this._a[t] < minMatch)
+                {
+                    return false;
+                }
+
+                // 各行に 00 が 1 つある us-ascii のファイルを UTF-16 とみなさないための条件（調査文書 10 章）
+                return t >= Utf32Le || 10L * this._printable <= 7L * n;
+            }
+
+            /// <summary>B ≤ 0.2 × A</summary>
+            public bool ReverseIsFew(int t) => 5L * this._b[t] <= this._a[t];
+
+            /// <summary>改行の向きが合う: Abr ≥ 4 かつ 逆の形の改行 ≤ 0.25 × Abr（UTF-16 の型だけで使う）</summary>
+            public bool LineBreakDirectionMatches(int t)
+            {
+                int abr = this._abr[t];
+
+                return abr >= MinLineBreaks && 4L * this._abr[t ^ 1] <= abr;
+            }
+
+            private static bool IsPrintable(byte value) => value >= 0x20 && value <= 0x7E;
+
+            private static bool IsLineBreakByte(byte value) => value == LineFeed || value == CarriageReturn;
+        }
 
         /// <summary>
         /// ストリームを固定サイズのバッファで先頭から順に読み、ファイル先頭からの位置でバイトを引けるようにする。
