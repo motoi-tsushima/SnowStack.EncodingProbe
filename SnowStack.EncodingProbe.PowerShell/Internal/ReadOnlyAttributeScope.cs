@@ -13,6 +13,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// <br/>
     /// 書き込み系の 4 コマンド（Set-ProbedContent / Add-ProbedContent / Out-ProbedFile / Convert-ProbedContent）
     /// はすべてこの部品を通す。書き込みが途中で失敗した場合も、呼び出し側が破棄すれば属性は戻る。
+    /// <br/>
+    /// 属性は、シンボリックリンクそのものではなく、リンクを最後までたどった実体に対して調べ、外し、戻す（1.3.0 第五次の後半）。
+    /// 書き込むのは実体であり、リンクの属性を見ても実体が読み取り専用かどうかは分からないため。
     /// </remarks>
     internal sealed class ReadOnlyAttributeScope : IDisposable
     {
@@ -28,24 +31,28 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// ファイルが読み取り専用であれば属性を外し、戻すためのスコープを返す。
         /// 読み取り専用でない（または存在しない）場合は null を返す。
         /// </summary>
-        /// <param name="path">対象ファイルの絶対パス</param>
+        /// <param name="path">対象ファイルの絶対パス（リンクなら実体の属性を外す）</param>
         public static ReadOnlyAttributeScope? ClearIfReadOnly(string path)
         {
-            if (!IsReadOnly(path))
+            string target = FileIdentity.ResolveFinalPath(path);
+
+            if (!IsReadOnlyEntry(target))
             {
                 return null;
             }
 
-            var info = new FileInfo(path);
+            var info = new FileInfo(target);
             info.Attributes &= ~FileAttributes.ReadOnly;
 
-            return new ReadOnlyAttributeScope(path);
+            return new ReadOnlyAttributeScope(target);
         }
 
         /// <summary>
-        /// ファイルが存在し、読み取り専用属性を持つかどうか
+        /// ファイル（リンクなら実体）が存在し、読み取り専用属性を持つかどうか
         /// </summary>
-        public static bool IsReadOnly(string path)
+        public static bool IsReadOnly(string path) => IsReadOnlyEntry(FileIdentity.ResolveFinalPath(path));
+
+        private static bool IsReadOnlyEntry(string path)
         {
             var info = new FileInfo(path);
 

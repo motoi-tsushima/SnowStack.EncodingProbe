@@ -60,6 +60,7 @@ public sealed class ImportProbedCsvCommand : ProbedContentCommandBase
     /// パイプライン束縛の属性と別名は、両ホストで Get-ChildItem からの入力が動作確認済みの Get-ProbedContent に合わせる。
     /// -LiteralPath とは別のプロパティに持つ（標準の 5.1 は両者を 1 つの変数で兼ねるため、
     /// Get-ChildItem | Import-Csv が CannotSpecifyPathAndLiteralPath で失敗する）。
+    /// 別名 FullName は -LiteralPath に移した（1.3.0 第五次の後半。BUG-0003。Get-ProbedContent と同じ）。
     /// </remarks>
     [Parameter(
         ParameterSetName = DelimiterPathParameterSet,
@@ -73,7 +74,7 @@ public sealed class ImportProbedCsvCommand : ProbedContentCommandBase
         Position = 0,
         ValueFromPipeline = true,
         ValueFromPipelineByPropertyName = true)]
-    [Alias("FullName", "FilePath")]
+    [Alias("FilePath")]
     public string[] Path { get; set; } = default!;
 
     /// <summary>
@@ -87,7 +88,7 @@ public sealed class ImportProbedCsvCommand : ProbedContentCommandBase
         ParameterSetName = CultureLiteralPathParameterSet,
         Mandatory = true,
         ValueFromPipelineByPropertyName = true)]
-    [Alias("PSPath", "LP")]
+    [Alias("PSPath", "LP", "FullName")]
     public string[] LiteralPath { get; set; } = default!;
 
     /// <summary>

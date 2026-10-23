@@ -69,9 +69,15 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
 
         EncodingDetectorOptions detectorOptions = null;
 
-        // カルチャーを設定
+        // カルチャーを設定。検証はほかのコマンドと同じ部品で行い、同じ ID の終了エラーにする（1.3.0 第五次の後半。BUG-0006）
         if (!string.IsNullOrWhiteSpace(Culture))
         {
+            ErrorRecord? cultureError = ResolveEncodingOptions.ValidateCulture(Culture!);
+            if (cultureError != null)
+            {
+                ThrowTerminatingError(cultureError);
+            }
+
             if(detectorOptions == null)
             {
                 detectorOptions = new EncodingDetectorOptions();
@@ -82,7 +88,12 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
         //エンコーディング判定の戦略を設定
         if (!string.IsNullOrWhiteSpace(Strategy))
         {
-            var parsedStrategy = ResolveEncodingOptions.ParseStrategy(Strategy);
+            ErrorRecord? strategyError = ResolveEncodingOptions.ValidateStrategy(Strategy!, out DetectionStrategy parsedStrategy);
+            if (strategyError != null)
+            {
+                ThrowTerminatingError(strategyError);
+            }
+
             if(detectorOptions == null)
             {
                 detectorOptions = new EncodingDetectorOptions();
@@ -90,8 +101,18 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
             detectorOptions.Strategy = parsedStrategy;
         }
 
-        // PowerShellのパス（相対パス、~等）を解決
-        var resolvedPath = GetUnresolvedProviderPathFromPSPath(Path);
+        // PowerShellのパス（相対パス、~等）を解決する。主ストリームの名前（a.txt::$DATA）は a.txt として扱う
+        string unresolvedPath = GetUnresolvedProviderPathFromPSPath(Path);
+
+        if (!FileSystemPath.TryGetFullPath(unresolvedPath, out string resolvedPath))
+        {
+            ThrowTerminatingError(new ErrorRecord(
+                new PSArgumentException(ValidationMessages.AlternateDataStreamNotSupported(unresolvedPath)),
+                FileSystemPath.AlternateDataStreamErrorId,
+                ErrorCategory.InvalidArgument,
+                unresolvedPath));
+            return;
+        }
 
         // ファイルの存在を確認
         if (!System.IO.File.Exists(resolvedPath))

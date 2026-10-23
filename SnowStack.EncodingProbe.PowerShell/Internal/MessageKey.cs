@@ -165,5 +165,19 @@
 
         /// <summary>Export-ProbedCsv -Append -Force で、追記先のヘッダーに空の列名がある</summary>
         CsvAppendEmptyPropertyName,
+
+        // ---- 1.3.0 第五次の後半 ----
+
+        /// <summary>Set-ProbedContent / Add-ProbedContent の -Path のワイルドカードが、どのファイルにも一致しなかった（書き込まなかった）</summary>
+        WildcardMatchedNoFileForWrite,
+
+        /// <summary>代替データストリーム（a.txt:alt など）が指定された</summary>
+        AlternateDataStreamNotSupported,
+
+        /// <summary>Set-ProbedContent の書き込み先が、リンク先の存在しないシンボリックリンクだった</summary>
+        LinkTargetNotFound,
+
+        /// <summary>写してから直接書く方法で失敗し、写しから書き戻せなかった（写しを一時フォルダーに残した）</summary>
+        RestoreFromBackupFailed,
     }
 }

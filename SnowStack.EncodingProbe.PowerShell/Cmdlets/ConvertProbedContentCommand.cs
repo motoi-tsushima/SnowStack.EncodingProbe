@@ -43,9 +43,10 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     /// <summary>
     /// -Destination への出力で、この実行の中で書き込み先として決めたファイル（ファイル名の重なりの検出に使う）。
     /// 実際に書いたかどうかではなく、検査を通った時点で記録する。-WhatIf で何も書かない場合も、
-    /// 通常の実行と同じ N8 を報告するため（1.2.0 手動確認後の修正）
+    /// 通常の実行と同じ N8 を報告するため（1.2.0 手動確認後の修正）。
+    /// パスの文字列ではなく実体で比べる（1.3.0 第五次の後半。まだ無いファイルは、親フォルダーの実体と名前で比べる）
     /// </summary>
-    private readonly HashSet<string> _plannedDestinations = new HashSet<string>(PathComparison.Comparer);
+    private readonly List<FileIdentity> _plannedDestinations = new List<FileIdentity>();
 
     /// <summary>変換先の文字エンコーディング。変換元を保つ場合は null。</summary>
     private EncodingSpec? _targetSpec;
@@ -62,15 +63,24 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     /// <summary>
     /// 変換するファイルのパス。ワイルドカードを使用できる。
     /// </summary>
-    [Parameter(ParameterSetName = PathParameterSet, Mandatory = true, Position = 0)]
+    /// <remarks>
+    /// パイプラインの文字列も受け取る（1.3.0 第五次の後半。Get-ProbedContent・Import-ProbedCsv と束縛の形をそろえた）。
+    /// </remarks>
+    [Parameter(
+        ParameterSetName = PathParameterSet,
+        Mandatory = true,
+        Position = 0,
+        ValueFromPipeline = true,
+        ValueFromPipelineByPropertyName = true)]
+    [Alias("FilePath")]
     public string[] Path { get; set; } = default!;
 
     /// <summary>
     /// 変換するファイルのパス。ワイルドカードを展開せず、そのままのパスとして扱う。
-    /// Get-ChildItem の出力は PSPath でここに束縛される。
+    /// Get-ChildItem の出力は PSPath で、New-Object System.IO.FileInfo の出力は FullName でここに束縛される。
     /// </summary>
     [Parameter(ParameterSetName = LiteralPathParameterSet, Mandatory = true, ValueFromPipelineByPropertyName = true)]
-    [Alias("PSPath", "LP")]
+    [Alias("PSPath", "LP", "FullName")]
     public string[] LiteralPath { get; set; } = default!;
 
     /// <summary>
@@ -204,25 +214,31 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
 
             foreach (string resolved in matches)
             {
-                if (Directory.Exists(resolved))
+                // 主ストリームの名前（a.txt::$DATA）は a.txt として扱い、代替データストリームはエラーにする
+                if (!TryGetFullPath(resolved, out string fullPath))
                 {
-                    // Get-ChildItem -Recurse の出力にはディレクトリが混ざる。エラーにせず飛ばす
-                    WriteVerbose(ValidationMessages.SkippedDirectory(resolved));
                     continue;
                 }
 
-                if (!File.Exists(resolved))
+                if (Directory.Exists(fullPath))
+                {
+                    // Get-ChildItem -Recurse の出力にはディレクトリが混ざる。エラーにせず飛ばす
+                    WriteVerbose(ValidationMessages.SkippedDirectory(fullPath));
+                    continue;
+                }
+
+                if (!File.Exists(fullPath))
                 {
                     // N1
                     WriteError(CreateError(
-                        new FileNotFoundException(ValidationMessages.FileNotFound(resolved), resolved),
+                        new FileNotFoundException(ValidationMessages.FileNotFound(fullPath), fullPath),
                         "FileNotFound",
                         ErrorCategory.ObjectNotFound,
-                        resolved));
+                        fullPath));
                     continue;
                 }
 
-                ConvertFile(System.IO.Path.GetFullPath(resolved));
+                ConvertFile(fullPath);
             }
         }
     }
@@ -345,7 +361,12 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     /// </summary>
     private string ResolveDestination()
     {
-        string destination = System.IO.Path.GetFullPath(GetUnresolvedProviderPathFromPSPath(this.Destination));
+        string unresolved = GetUnresolvedProviderPathFromPSPath(this.Destination);
+
+        if (!FileSystemPath.TryGetFullPath(unresolved, out string destination))
+        {
+            ThrowTerminatingError(CreateAlternateDataStreamError(unresolved));
+        }
 
         if (!Directory.Exists(destination))
         {
@@ -411,7 +432,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
 
         if (this._destination != null)
         {
-            this._plannedDestinations.Add(target);
+            this._plannedDestinations.Add(FileIdentity.Of(target));
         }
 
         if (!ShouldProcess(target, OperationName))
@@ -783,7 +804,11 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     {
         if (this._destination != null)
         {
-            if (PathComparison.Comparer.Equals(file, target))
+            var targetIdentity = FileIdentity.Of(target);
+
+            // N9 はパスの文字列ではなく実体で比べる（1.3.0 第五次の後半。BUG-0017）。
+            // -Destination に変換元のフォルダーを \\?\・UNC・subst・ジャンクション・リンクの書き方で渡しても N9 にし、-Force でも変換元を書き換えない
+            if (targetIdentity.Matches(FileIdentity.Of(file)))
             {
                 // N9
                 ReportWriteRejection(new IOException(ValidationMessages.DestinationIsSource(file)),
@@ -791,7 +816,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
                 return false;
             }
 
-            if (this._plannedDestinations.Contains(target))
+            if (this._plannedDestinations.Exists(planned => planned.Matches(targetIdentity)))
             {
                 // N8: 同じ実行で書いた（-WhatIf では書くはずだった）ファイルは -Force があっても消さない
                 ReportWriteRejection(new IOException(ValidationMessages.DestinationNameConflict(target, file)),
@@ -825,73 +850,44 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     }
 
     /// <summary>
-    /// 同じフォルダーの一時ファイルに書いてから置き換える。失敗したら一時ファイルを消し、非終了エラーを報告する。
+    /// 書き込み系のほかのコマンドと同じ部品（<see cref="SafeFileOverwrite"/>）で書く。失敗したら元に戻し、非終了エラーを報告する。
     /// </summary>
+    /// <remarks>
+    /// 1.3.0 第五次の後半で、自前の一時ファイルと File.Replace をやめた（H-17）。ハードリンクは切らずに元のファイルへ直接書き、
+    /// シンボリックリンクはリンクの先の実体を置き換える（リンクは残す）。一時ファイルの名前も、ほかのコマンドと同じ
+    /// <c>.&lt;名前&gt;.&lt;8 桁&gt;.probedtmp</c> になった（1.2.0 までは <c>.&lt;名前&gt;.&lt;GUID&gt;.tmp</c>）。
+    /// </remarks>
     private bool WriteAtomically(string target, byte[] content)
     {
-        string directory = System.IO.Path.GetDirectoryName(target)!;
-        string temporary = System.IO.Path.Combine(
-            directory, "." + System.IO.Path.GetFileName(target) + "." + Guid.NewGuid().ToString("N") + ".tmp");
-
-        ReadOnlyAttributeScope? readOnlyScope = null;
+        ReadOnlyAttributeScope? readOnlyScope = this.Force.IsPresent ? ReadOnlyAttributeScope.ClearIfReadOnly(target) : null;
+        SafeFileOverwrite? overwrite = null;
 
         try
         {
-            File.WriteAllBytes(temporary, content);
-
-            if (File.Exists(target))
-            {
-                if (this.Force.IsPresent)
-                {
-                    readOnlyScope = ReadOnlyAttributeScope.ClearIfReadOnly(target);
-                }
-
-                File.Replace(temporary, target, null);
-            }
-            else
-            {
-                File.Move(temporary, target);
-            }
+            overwrite = SafeFileOverwrite.Begin(target, DanglingLinkPolicy.CreateTarget, 4096);
+            overwrite.Stream.Write(content, 0, content.Length);
+            overwrite.Commit();
 
             return true;
         }
         catch (IOException exception)
         {
-            WriteError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, target));
+            overwrite?.Rollback();
+            WriteError(RollbackNotice.Attach(
+                CreateError(exception, "WriteFailed", ErrorCategory.WriteError, target), target, overwrite?.KeptBackupPath));
         }
         catch (UnauthorizedAccessException exception)
         {
-            WriteError(CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, target));
+            overwrite?.Rollback();
+            WriteError(RollbackNotice.Attach(
+                CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, target), target, overwrite?.KeptBackupPath));
         }
         finally
         {
             readOnlyScope?.Dispose();
-            DeleteQuietly(temporary);
         }
 
         return false;
-    }
-
-    /// <summary>
-    /// 一時ファイルを消す。置き換えが済んでいれば既に無い。
-    /// </summary>
-    private static void DeleteQuietly(string path)
-    {
-        try
-        {
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
-        }
-        catch (IOException)
-        {
-            // 後始末であり、消せなくても変換の結果は変わらない
-        }
-        catch (UnauthorizedAccessException)
-        {
-            // 同上
-        }
     }
 
     /// <summary>

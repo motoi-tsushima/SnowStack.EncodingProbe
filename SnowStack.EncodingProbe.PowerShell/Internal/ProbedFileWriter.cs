@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -21,10 +20,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// <br/>
     /// 失敗したときは <see cref="Rollback"/> でファイルを元に戻す。
     /// <list type="bullet">
-    /// <item>上書き・新規作成: 同じフォルダーの一時ファイルに書き、<see cref="Complete"/> で置き換える（既存なら <see cref="File.Replace(string, string, string)"/>、
-    /// 無ければ移動）。元に戻すときは一時ファイルを消すだけで、元のファイルには触れない</item>
-    /// <item>追記: 開く前の長さを覚えておき、元に戻すときはその長さに切り詰める。追記先が無かった場合は、作ったファイルを消す</item>
+    /// <item>上書き・新規作成: <see cref="SafeFileOverwrite"/> に任せる（一時ファイルで置き換える。ハードリンク・権限・リンク切れの場合は書き方を切り替える。1.3.0 第五次の後半）</item>
+    /// <item>追記: 追記先を直接開き、開いたときの長さを覚えておく。元に戻すときはその長さに切り詰める。追記先が無かった場合は、作ったファイルを消す。
+    /// シンボリックリンクはたどって実体に追記する（リンク切れならリンクの先に作る。標準の Add-Content と同じ）</item>
     /// </list>
+    /// どちらも、書き込み先が同じパイプラインで読み取り中のファイルと同じ実体なら <see cref="SameFileRoundTripException"/> を投げる。
+    /// 上書きは一時ファイルに書き始める前に、追記は「切り詰めずに開く → 開いたハンドルで比べる → 書く」の順に比べる。
     /// <see cref="Complete"/> も <see cref="Rollback"/> も呼ばずに <see cref="Dispose"/> した場合（パイプラインの停止など）は、
     /// それまでに書いた内容を残す（<see cref="Complete"/> と同じ。第四次までと同じ挙動）。
     /// </remarks>
@@ -33,21 +34,18 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <summary>FileStream に与えるバッファサイズ</summary>
         private const int WriteBufferSize = 4096;
 
-        /// <summary>一時ファイルの名前の接尾辞</summary>
-        private const string TemporarySuffix = ".probedtmp";
-
         private readonly FileStream _stream;
         private readonly Encoder _encoder;
         private readonly string _path;
 
-        /// <summary>上書き・新規作成のときの一時ファイル。追記のときは null。</summary>
-        private readonly string? _temporaryPath;
+        /// <summary>上書き・新規作成のときの書き込み。追記のときは null。</summary>
+        private readonly SafeFileOverwrite? _overwrite;
 
-        /// <summary>追記先の開く前の長さ。追記先が無かった場合は -1。上書きのときは使わない。</summary>
+        /// <summary>追記先の開いたときの長さ。追記先が無かった場合は -1。上書きのときは使わない。</summary>
         private readonly long _originalLength;
 
-        /// <summary>置き換える前のファイルの属性（上書きで、書き込み先が存在した場合）</summary>
-        private readonly FileAttributes? _originalAttributes;
+        /// <summary>追記先の実体のパス（リンクをたどったもの）。上書きのときは使わない。</summary>
+        private readonly string _appendTargetPath;
 
         /// <summary>-Force で外した読み取り専用属性。閉じるときに元へ戻す。外していなければ null。</summary>
         private readonly ReadOnlyAttributeScope? _readOnlyScope;
@@ -61,9 +59,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             FileStream stream,
             Encoding encoding,
             string path,
-            string? temporaryPath,
+            SafeFileOverwrite? overwrite,
             long originalLength,
-            FileAttributes? originalAttributes,
+            string appendTargetPath,
             ReadOnlyAttributeScope? readOnlyScope,
             string encodingName)
         {
@@ -71,9 +69,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             this.Encoding = encoding;
             this._encoder = encoding.GetEncoder();
             this._path = path;
-            this._temporaryPath = temporaryPath;
+            this._overwrite = overwrite;
             this._originalLength = originalLength;
-            this._originalAttributes = originalAttributes;
+            this._appendTargetPath = appendTargetPath;
             this._readOnlyScope = readOnlyScope;
             this._encodingName = encodingName;
         }
@@ -81,14 +79,21 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <summary>符号化に使用している文字エンコーディング（BOM を持たない、例外フォールバックのインスタンス）</summary>
         public Encoding Encoding { get; }
 
+        /// <summary>元に戻すときに写しから書き戻せず、一時フォルダーに残した写しのパス（<see cref="SafeFileOverwrite.KeptBackupPath"/>）。無ければ null。</summary>
+        public string? KeptBackupPath => this._overwrite?.KeptBackupPath;
+
         /// <summary>
         /// ファイルを新規作成（既存なら置き換え）して開く。
         /// </summary>
+        /// <remarks>
+        /// 書き込み先がリンク切れのシンボリックリンクなら、書かずに <see cref="LinkTargetNotFoundException"/> を投げる
+        /// （Set-ProbedContent。標準の Set-Content と同じく書かない）。
+        /// </remarks>
         /// <param name="path">書き込み先の絶対パス</param>
         /// <param name="spec">使用する文字エンコーディングと BOM 方針</param>
         /// <param name="force">読み取り専用属性を外してから書き込む場合は true</param>
         public static ProbedFileWriter Create(string path, EncodingSpec spec, bool force)
-            => Open(path, spec, force, append: false, emitBom: spec.EmitBom == true);
+            => Open(path, spec, force, append: false, emitBom: spec.EmitBom == true, DanglingLinkPolicy.Reject);
 
         /// <summary>
         /// ファイルを追記用に開く。存在しない場合は新規作成する。
@@ -116,7 +121,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <param name="force">読み取り専用属性を外してから書き込む場合は true</param>
         /// <param name="append">追記するなら true、新規作成（既存なら置き換え）なら false</param>
         /// <param name="emitBom">ファイル先頭に BOM を書くなら true</param>
-        public static ProbedFileWriter Open(string path, EncodingSpec spec, bool force, bool append, bool emitBom)
+        /// <param name="danglingLink">
+        /// 上書きで、書き込み先がリンク切れのシンボリックリンクだった場合の扱い
+        /// （既定は、標準の Out-File / Export-Csv と同じくリンクの先に作る）
+        /// </param>
+        /// <exception cref="SameFileRoundTripException">書き込み先が、同じパイプラインで読み取り中のファイルと同じ実体の場合</exception>
+        public static ProbedFileWriter Open(
+            string path, EncodingSpec spec, bool force, bool append, bool emitBom,
+            DanglingLinkPolicy danglingLink = DanglingLinkPolicy.CreateTarget)
         {
             CodePagesProviderRegistration.EnsureRegistered();
 
@@ -126,34 +138,46 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             Encoding body = EncodingVocabulary.BuildStrictEncoding(codePage);
             string encodingName = EncodingVocabulary.GetUnifiedName(codePage, spec.EmitBom == true);
 
+            if (!append && ActiveReadRegistry.IsBeingRead(path))
+            {
+                // 上書きは、一時ファイルに書き始める前に比べる
+                throw new SameFileRoundTripException(path);
+            }
+
             ReadOnlyAttributeScope? readOnlyScope = force ? ReadOnlyAttributeScope.ClearIfReadOnly(path) : null;
             FileStream? stream = null;
-            string? temporaryPath = null;
+            SafeFileOverwrite? overwrite = null;
+            bool createdByAppend = false;
+            string appendTargetPath = path;
 
             try
             {
                 long originalLength = -1;
-                FileAttributes? originalAttributes = null;
 
                 if (append)
                 {
-                    var info = new FileInfo(path);
-                    originalLength = info.Exists ? info.Length : -1;
+                    // リンク切れは「無い」に数える（開くとリンクの先にファイルができる）
+                    bool existed = FileIdentity.Of(path).Exists;
 
                     stream = new FileStream(
                         path, FileMode.Append, FileAccess.Write, FileShare.Read, WriteBufferSize, FileOptions.SequentialScan);
+                    createdByAppend = !existed;
+
+                    // 切り詰めずに開いてから、開いたハンドルで実体を比べる
+                    FileIdentity opened = FileIdentity.FromHandle(stream.SafeFileHandle, path);
+                    appendTargetPath = opened.FinalPath ?? path;
+
+                    if (ActiveReadRegistry.IsBeingRead(opened))
+                    {
+                        throw new SameFileRoundTripException(path);
+                    }
+
+                    originalLength = existed ? stream.Length : -1;
                 }
                 else
                 {
-                    if (File.Exists(path))
-                    {
-                        originalAttributes = File.GetAttributes(path);
-                    }
-
-                    temporaryPath = CreateTemporaryPath(path);
-                    stream = new FileStream(
-                        temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, WriteBufferSize, FileOptions.SequentialScan);
-                    TemporaryFileRegistry.Add(temporaryPath);
+                    overwrite = SafeFileOverwrite.Begin(path, danglingLink, WriteBufferSize);
+                    stream = overwrite.Stream;
                 }
 
                 if (emitBom)
@@ -163,16 +187,25 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 }
 
                 return new ProbedFileWriter(
-                    stream, body, path, temporaryPath, originalLength, originalAttributes, readOnlyScope, encodingName);
+                    stream, body, path, overwrite, originalLength, appendTargetPath, readOnlyScope, encodingName);
             }
             catch
             {
-                stream?.Dispose();
-
-                if (temporaryPath != null)
+                if (overwrite != null)
                 {
-                    DeleteQuietly(temporaryPath);
-                    TemporaryFileRegistry.Remove(temporaryPath);
+                    overwrite.Rollback();
+                }
+                else
+                {
+                    if (stream != null)
+                    {
+                        DisposeQuietly(stream);
+                    }
+
+                    if (createdByAppend)
+                    {
+                        DeleteQuietly(appendTargetPath);
+                    }
                 }
 
                 readOnlyScope?.Dispose();
@@ -233,12 +266,15 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             try
             {
                 WriteBytes(Encode(string.Empty, flush: true));
-                this._stream.Flush();
-                this._stream.Dispose();
 
-                if (this._temporaryPath != null)
+                if (this._overwrite != null)
                 {
-                    Replace();
+                    this._overwrite.Commit();
+                }
+                else
+                {
+                    this._stream.Flush();
+                    this._stream.Dispose();
                 }
 
                 this._finished = true;
@@ -258,7 +294,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         }
 
         /// <summary>
-        /// ファイルを書き込みの前の状態に戻す（上書きは一時ファイルを消す。追記は元の長さに切り詰める）。
+        /// ファイルを書き込みの前の状態に戻す（上書きは <see cref="SafeFileOverwrite.Rollback"/>。追記は元の長さに切り詰める）。
         /// </summary>
         /// <remarks>
         /// 後始末から呼ばれるため、ここでは例外を投げない（元の例外を覆い隠さない）。
@@ -274,17 +310,15 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             try
             {
-                if (this._temporaryPath != null)
+                if (this._overwrite != null)
                 {
-                    this._stream.Dispose();
-                    DeleteQuietly(this._temporaryPath);
-                    TemporaryFileRegistry.Remove(this._temporaryPath);
+                    this._overwrite.Rollback();
                 }
                 else if (this._originalLength < 0)
                 {
-                    // 追記先が無かった: 作ったファイルを消す
-                    this._stream.Dispose();
-                    DeleteQuietly(this._path);
+                    // 追記先が無かった: 作ったファイル（リンク切れなら、リンクの先に作った実体）を消す
+                    DisposeQuietly(this._stream);
+                    DeleteQuietly(this._appendTargetPath);
                 }
                 else
                 {
@@ -304,9 +338,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             catch (ObjectDisposedException)
             {
                 // すでに閉じていた（Complete の途中で失敗した場合）。切り詰めは下でやり直す
-                if (this._temporaryPath == null && this._originalLength >= 0)
+                if (this._overwrite == null && this._originalLength >= 0)
                 {
-                    TruncateQuietly(this._path, this._originalLength);
+                    TruncateQuietly(this._appendTargetPath, this._originalLength);
                 }
             }
             finally
@@ -364,39 +398,16 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             }
         }
 
-        /// <summary>
-        /// 一時ファイルで書き込み先を置き換える（書き込み先が無ければ移動する）
-        /// </summary>
-        private void Replace()
+        private static void DisposeQuietly(FileStream stream)
         {
-            if (File.Exists(this._path))
+            try
             {
-                File.Replace(this._temporaryPath!, this._path, null);
-
-                if (this._originalAttributes.HasValue)
-                {
-                    // 読み取り専用属性は ReadOnlyAttributeScope が戻す
-                    File.SetAttributes(this._path, this._originalAttributes.Value & ~FileAttributes.ReadOnly);
-                }
+                stream.Dispose();
             }
-            else
+            catch (IOException)
             {
-                File.Move(this._temporaryPath!, this._path);
+                // 書き残しを書き出せなかった。作ったファイルは消すか切り詰めるので問題にならない
             }
-
-            TemporaryFileRegistry.Remove(this._temporaryPath!);
-        }
-
-        /// <summary>
-        /// 書き込み先と同じフォルダーに、一時ファイルのパスを作る（同じボリュームで置き換えるため）
-        /// </summary>
-        private static string CreateTemporaryPath(string path)
-        {
-            string directory = Path.GetDirectoryName(path) ?? string.Empty;
-            string name = "." + Path.GetFileName(path) + "."
-                + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture).Substring(0, 8) + TemporarySuffix;
-
-            return Path.Combine(directory, name);
         }
 
         private static void DeleteQuietly(string path)

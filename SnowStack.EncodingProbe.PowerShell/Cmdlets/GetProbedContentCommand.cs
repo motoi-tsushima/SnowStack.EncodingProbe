@@ -28,23 +28,29 @@ public sealed class GetProbedContentCommand : ProbedContentCommandBase
     /// <summary>
     /// 読み込むファイルのパス。ワイルドカードを使用できる。
     /// </summary>
+    /// <remarks>
+    /// 別名 FullName は -LiteralPath に移した（1.3.0 第五次の後半。BUG-0003）。FileInfo をパイプラインで渡すと
+    /// FullName がここに束縛されてワイルドカードとして展開され、a[1].txt を流すと a1.txt を読んでいた。
+    /// 文字列をパイプラインで渡した場合は、これまでどおりここに入り、ワイルドカードとして扱う。
+    /// </remarks>
     [Parameter(
         ParameterSetName = PathParameterSet,
         Mandatory = true,
         Position = 0,
         ValueFromPipeline = true,
         ValueFromPipelineByPropertyName = true)]
-    [Alias("FullName", "FilePath")]
+    [Alias("FilePath")]
     public string[] Path { get; set; } = default!;
 
     /// <summary>
     /// 読み込むファイルのパス。ワイルドカードを展開せず、そのままのパスとして扱う。
+    /// Get-ChildItem の出力は PSPath で、New-Object System.IO.FileInfo の出力は FullName でここに束縛される。
     /// </summary>
     [Parameter(
         ParameterSetName = LiteralPathParameterSet,
         Mandatory = true,
         ValueFromPipelineByPropertyName = true)]
-    [Alias("PSPath")]
+    [Alias("PSPath", "LP", "FullName")]
     public string[] LiteralPath { get; set; } = default!;
 
     /// <summary>

@@ -18,36 +18,43 @@ namespace SnowStack.EncodingProbe.PowerShell.Cmdlets;
 public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase, IDisposable
 {
     /// <summary>
-    /// 書き込み先ごとに開いた状態。値が null のものは、エラー・-WhatIf・
-    /// 書き込みの中止により、以後書き込まないと決まったパスである。
+    /// 書き込み先ごとに開いた状態。書き込み先はパスの文字列ではなくファイルの実体で区別する（1.3.0 第五次の後半。BUG-0016）。
     /// </summary>
-    private readonly Dictionary<string, WriteTarget?> _targets =
-        new Dictionary<string, WriteTarget?>(PathComparison.Comparer);
+    private readonly WriteTargetTable _targets = new WriteTargetTable();
 
     /// <summary>-EncodingFrom から得た継承情報。指定されていない場合は null。</summary>
     private EncodingSpec? _inheritedSpec;
+
+    /// <summary>書き込み先のパスをパイプラインから受け取っているかどうか（-Path も -LiteralPath もコマンド行で指定されていない）</summary>
+    private bool _pathsFromPipeline;
 
     private bool _disposed;
 
     /// <summary>
     /// 書き込み先のパス。ワイルドカードを使用できる。
     /// </summary>
+    /// <remarks>
+    /// 別名 FullName は -LiteralPath に移した（1.3.0 第五次の後半。BUG-0003）。
+    /// FileInfo をパイプラインで渡すと FullName がここに束縛されてワイルドカードとして展開され、
+    /// a[1].txt を流すと a1.txt に書いていた。
+    /// </remarks>
     [Parameter(
         ParameterSetName = PathParameterSet,
         Mandatory = true,
         Position = 0,
         ValueFromPipelineByPropertyName = true)]
-    [Alias("FullName", "FilePath")]
+    [Alias("FilePath")]
     public string[] Path { get; set; } = default!;
 
     /// <summary>
     /// 書き込み先のパス。ワイルドカードを展開せず、そのままのパスとして扱う。
+    /// Get-ChildItem の出力は PSPath で、New-Object System.IO.FileInfo の出力は FullName でここに束縛される。
     /// </summary>
     [Parameter(
         ParameterSetName = LiteralPathParameterSet,
         Mandatory = true,
         ValueFromPipelineByPropertyName = true)]
-    [Alias("PSPath")]
+    [Alias("PSPath", "LP", "FullName")]
     public string[] LiteralPath { get; set; } = default!;
 
     /// <summary>
@@ -108,6 +115,16 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     protected virtual bool RequiresExistingEncoding => false;
 
     /// <summary>
+    /// パスをパイプラインから受け取っていて、前のレコードと同じ実体が再び現れたときに、書き直すかどうか。
+    /// </summary>
+    /// <remarks>
+    /// Set-ProbedContent は true（前のレコードで書いた内容を取り消して、新しく書く。標準の Set-Content がレコードごとに切り詰め直すのと同じ結果）。
+    /// Add-ProbedContent は false（レコードごとに追記する。標準の Add-Content と同じ）。
+    /// 1 つのレコードの中で同じ実体が重なった場合は、どちらも 1 回だけ書く。
+    /// </remarks>
+    protected virtual bool RewritesRepeatedPipelinePath => false;
+
+    /// <summary>
     /// 書き込み先を開く
     /// </summary>
     private protected abstract ProbedFileWriter CreateWriter(string file, EncodingSpec spec, bool force);
@@ -158,26 +175,67 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         {
             this._inheritedSpec = ResolveEncodingFrom(this.EncodingFrom);
         }
+
+        // BeginProcessing の時点で束縛されていなければ、パスはパイプラインから来る（標準の Set-Content と同じ見分け方）
+        this._pathsFromPipeline =
+            !this.MyInvocation.BoundParameters.ContainsKey(nameof(this.Path))
+            && !this.MyInvocation.BoundParameters.ContainsKey(nameof(this.LiteralPath));
     }
 
     /// <summary>
     /// 指定されたファイルへ内容を書き込む
     /// </summary>
+    /// <remarks>
+    /// 同じ実体を指すパス（a.txt と A.TXT、ハードリンク、\\?\ の書き方など）は、1 つの書き込み先として扱う（BUG-0016）。
+    /// 1 つのレコードの中で重なったものは 1 回だけ書く（Add-ProbedContent は標準の 7.x の Add-Content と同じ。
+    /// 5.1 の標準は 1 回書いた後に 2 件目で GetContentWriterIOError を出すが、エラーにはしない）。
+    /// </remarks>
     protected override void ProcessRecord()
     {
         bool literal = this.ParameterSetName == LiteralPathParameterSet;
         string[] inputPaths = literal ? this.LiteralPath : this.Path;
+        var writtenInThisRecord = new List<WriteTargetEntry>();
 
         foreach (string file in ResolveWritablePaths(inputPaths, literal))
         {
-            WriteTarget? target = GetTarget(file);
+            var identity = FileIdentity.Of(file);
+            WriteTargetEntry? entry = this._targets.Find(identity);
 
-            if (target == null)
+            if (entry != null && writtenInThisRecord.Contains(entry))
             {
                 continue;
             }
 
-            WriteValues(target, file);
+            if (entry != null && entry.Target != null && this._pathsFromPipeline && this.RewritesRepeatedPipelinePath)
+            {
+                // 前のレコードで書いた内容を取り消して、書き直す（Set-ProbedContent）
+                string? kept = RollbackTarget(entry);
+
+                if (kept != null)
+                {
+                    // 写しから書き戻せなかった。書き直さず、写しのパスを知らせる
+                    WriteError(CreateError(
+                        new IOException(ValidationMessages.RestoreFromBackupFailed(file, kept)), "WriteFailed", ErrorCategory.WriteError, file));
+                    continue;
+                }
+
+                this._targets.Remove(entry);
+                entry = null;
+            }
+
+            if (entry == null)
+            {
+                entry = this._targets.Add(identity, file, OpenTarget(file));
+            }
+
+            writtenInThisRecord.Add(entry);
+
+            if (entry.Target == null)
+            {
+                continue;
+            }
+
+            WriteValues(entry);
         }
     }
 
@@ -186,29 +244,33 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// </summary>
     protected override void EndProcessing()
     {
-        foreach (KeyValuePair<string, WriteTarget?> entry in this._targets)
+        foreach (WriteTargetEntry entry in this._targets.Entries)
         {
-            if (entry.Value == null)
+            if (entry.Target == null)
             {
                 continue;
             }
 
+            ProbedFileWriter writer = entry.Target.Writer;
+
             try
             {
-                entry.Value.Writer.Complete();
+                writer.Complete();
             }
             catch (UnrepresentableCharacterException exception)
             {
-                WriteError(CreateError(
-                    exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, entry.Key));
+                WriteError(RollbackNotice.Attach(CreateError(
+                    exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, entry.Path), entry.Path, writer.KeptBackupPath));
             }
             catch (IOException exception)
             {
-                WriteError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, entry.Key));
+                WriteError(RollbackNotice.Attach(
+                    CreateError(exception, "WriteFailed", ErrorCategory.WriteError, entry.Path), entry.Path, writer.KeptBackupPath));
             }
             catch (UnauthorizedAccessException exception)
             {
-                WriteError(CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, entry.Key));
+                WriteError(RollbackNotice.Attach(
+                    CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, entry.Path), entry.Path, writer.KeptBackupPath));
             }
         }
 
@@ -235,38 +297,19 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     }
 
     /// <summary>
-    /// 書き込み先の状態を取得する。まだ開いていなければ開く。
-    /// 書き込まないと決まっているパスに対しては null を返す。
-    /// </summary>
-    private WriteTarget? GetTarget(string file)
-    {
-        if (this._targets.TryGetValue(file, out WriteTarget? existing))
-        {
-            return existing;
-        }
-
-        WriteTarget? target = OpenTarget(file);
-
-        // 開けなかった場合も記録しておく。パイプラインで要素が流れてくるたびに
-        // 同じエラーを繰り返し報告しないため。
-        this._targets[file] = target;
-
-        return target;
-    }
-
-    /// <summary>
     /// 書き込み先を開く。開かない・開けない場合は非終了エラーを報告して null を返す。
     /// </summary>
+    /// <remarks>
+    /// null を返した場合も、呼び出し側はそれを記録しておく。パイプラインで要素が流れてくるたびに
+    /// 同じエラーを繰り返し報告しないため。
+    /// </remarks>
     private WriteTarget? OpenTarget(string file)
     {
         if (ActiveReadRegistry.IsBeingRead(file))
         {
-            // 同じパイプラインで読み取り中のファイルを書き換えると、残りを読めなくなる
-            WriteError(CreateError(
-                new PSInvalidOperationException(ValidationMessages.SamePathRoundTrip(file)),
-                "SamePathRoundTrip",
-                ErrorCategory.ResourceExists,
-                file));
+            // 同じパイプラインで読み取り中のファイルを書き換えると、残りを読めなくなる。
+            // パスの文字列ではなく実体で比べる（\\?\・UNC・subst・リンクの書き方でもすり抜けない。BUG-0004）
+            ReportSameFileRoundTrip(new SameFileRoundTripException(file), file);
 
             return null;
         }
@@ -316,6 +359,16 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
             ProbedFileWriter writer = CreateWriter(file, spec, this.Force.IsPresent);
 
             return new WriteTarget(writer, spec, lineBreak, baseline);
+        }
+        catch (SameFileRoundTripException exception)
+        {
+            // 追記で、開いたハンドルで比べて初めて分かった場合（何も書いていない）
+            ReportSameFileRoundTrip(exception, file);
+        }
+        catch (LinkTargetNotFoundException exception)
+        {
+            // Set-ProbedContent で、リンク切れのシンボリックリンク（標準の Set-Content と同じく書かない）
+            WriteError(CreateError(exception, LinkTargetNotFoundException.ErrorId, ErrorCategory.ObjectNotFound, file));
         }
         catch (IOException exception)
         {
@@ -420,6 +473,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         return existing ?? EncodingInheritance.ForEmptySource();
     }
 
+
     /// <summary>
     /// -Value の各要素を書き込む
     /// </summary>
@@ -427,12 +481,16 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// 1レコード分をまとめて検査してから書き込む。途中の要素で拒否された場合に
     /// 手前の要素だけが書き込まれた状態にならないようにするためである。
     /// <br/>
-    /// 表現できない文字があれば、そのファイルへの書き込みを取りやめ、ファイルを元に戻す
-    /// （第五次。それまでのレコードで書いた内容も取り消す）。追記の整合性検査より先に調べる。
-    /// 整合性検査で拒否された場合は、それまでのレコードで書いた内容を残す（検査を通った内容なので、ファイルは一貫している）。
+    /// 表現できない文字・追記の整合性検査（EncodingChangeOnAppend）・書き込みの失敗のどれでも、そのファイルへの書き込みを取りやめ、
+    /// ファイルを元に戻す（それまでのレコードで書いた内容も取り消す）。ほかのファイルへの書き込みは続ける。
+    /// 「エラーで止まったら、そのファイルには、その呼び出しで書いた分を残さない」（1.3.0 第五次の後半で EncodingChangeOnAppend もそろえた）。
+    /// 表現できない文字は、追記の整合性検査より先に調べる。
     /// </remarks>
-    private void WriteValues(WriteTarget target, string file)
+    private void WriteValues(WriteTargetEntry entry)
     {
+        WriteTarget target = entry.Target!;
+        string file = entry.Path;
+
         if (this.Value == null)
         {
             return;
@@ -454,7 +512,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         }
         catch (UnrepresentableCharacterException exception)
         {
-            ReportUnrepresentable(exception, file);
+            ReportUnrepresentable(exception, entry);
             return;
         }
 
@@ -466,13 +524,14 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
 
             if (rejection != null)
             {
-                WriteError(CreateError(
+                // -ErrorAction Stop では WriteError が戻らない（後始末が書き込みを完了してしまう）ので、先に元に戻す
+                string? kept = RollbackTarget(entry);
+                WriteError(RollbackNotice.Attach(CreateError(
                     new PSInvalidOperationException(rejection),
                     "EncodingChangeOnAppend",
                     ErrorCategory.InvalidData,
-                    file));
+                    file), file, kept));
 
-                AbandonTarget(file);
                 return;
             }
 
@@ -488,50 +547,48 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         }
         catch (UnrepresentableCharacterException exception)
         {
-            ReportUnrepresentable(exception, file);
+            ReportUnrepresentable(exception, entry);
         }
         catch (IOException exception)
         {
             // 書きかけのファイルを残さない（第五次）。-ErrorAction Stop では WriteError が戻らないので、先に元に戻す
-            RollbackTarget(file);
-            WriteError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, file));
+            string? kept = RollbackTarget(entry);
+            WriteError(RollbackNotice.Attach(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, file), file, kept));
         }
     }
 
     /// <summary>
     /// 表現できない文字を非終了エラーとして報告し、ファイルを元に戻す（ほかのファイルへの書き込みは続ける）
     /// </summary>
-    private void ReportUnrepresentable(UnrepresentableCharacterException exception, string file)
+    private void ReportUnrepresentable(UnrepresentableCharacterException exception, WriteTargetEntry entry)
     {
         // -ErrorAction Stop では WriteError が戻らない（後始末が書き込みを完了してしまう）ので、先に元に戻す
-        RollbackTarget(file);
-        WriteError(CreateError(exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, file));
+        string? kept = RollbackTarget(entry);
+        WriteError(RollbackNotice.Attach(
+            CreateError(exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, entry.Path), entry.Path, kept));
     }
 
     /// <summary>
-    /// 書き込み先を閉じ、以後そのパスへは書き込まないようにする。それまでに書いた内容は残す。
+    /// 書き込み先が読み取り中のファイルと同じ実体だったことを、非終了エラーとして報告する
     /// </summary>
-    private void AbandonTarget(string file)
-    {
-        if (this._targets.TryGetValue(file, out WriteTarget? target))
-        {
-            target?.Dispose();
-        }
-
-        this._targets[file] = null;
-    }
+    private void ReportSameFileRoundTrip(SameFileRoundTripException exception, string file)
+        => WriteError(CreateError(
+            new PSInvalidOperationException(exception.Message),
+            SameFileRoundTripException.ErrorId,
+            ErrorCategory.ResourceExists,
+            file));
 
     /// <summary>
-    /// 書き込み先を書き込みの前の状態に戻し、以後そのパスへは書き込まないようにする（第五次）
+    /// 書き込み先を書き込みの前の状態に戻し、以後そのファイルへは書き込まないようにする（第五次）
     /// </summary>
-    private void RollbackTarget(string file)
+    /// <returns>写しから書き戻せず、一時フォルダーに残した写しのパス（<see cref="ProbedFileWriter.KeptBackupPath"/>）。無ければ null</returns>
+    private static string? RollbackTarget(WriteTargetEntry entry)
     {
-        if (this._targets.TryGetValue(file, out WriteTarget? target))
-        {
-            target?.Writer.Rollback();
-        }
+        ProbedFileWriter? writer = entry.Target?.Writer;
+        writer?.Rollback();
+        entry.Target = null;
 
-        this._targets[file] = null;
+        return writer?.KeptBackupPath;
     }
 
     /// <summary>
@@ -549,9 +606,9 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// </summary>
     private void CloseTargets()
     {
-        foreach (WriteTarget? target in this._targets.Values)
+        foreach (WriteTargetEntry entry in this._targets.Entries)
         {
-            target?.Dispose();
+            entry.Target?.Dispose();
         }
 
         this._targets.Clear();
@@ -583,5 +640,108 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         public Encoding? Baseline { get; }
 
         public void Dispose() => this.Writer.Dispose();
+    }
+
+    /// <summary>
+    /// 書き込み先 1 つ分の記録（実体と、最初に現れたときのパス）
+    /// </summary>
+    private sealed class WriteTargetEntry
+    {
+        public WriteTargetEntry(FileIdentity identity, string path, WriteTarget? target)
+        {
+            this.Identity = identity;
+            this.Path = path;
+            this.Target = target;
+        }
+
+        public FileIdentity Identity { get; }
+
+        /// <summary>最初に現れたときのパス（エラーの対象・メッセージに使う）</summary>
+        public string Path { get; }
+
+        /// <summary>
+        /// 開いている書き込み先。null は、エラー・-WhatIf・書き込みの中止により、以後書き込まないと決まったもの。
+        /// </summary>
+        public WriteTarget? Target { get; set; }
+    }
+
+    /// <summary>
+    /// 書き込み先の表。実体の鍵と、親フォルダーと名前の鍵の両方で引く（<see cref="FileIdentity.Matches"/> と同じ規則）。
+    /// </summary>
+    private sealed class WriteTargetTable
+    {
+        private readonly List<WriteTargetEntry> _entries = new List<WriteTargetEntry>();
+        private readonly Dictionary<string, WriteTargetEntry> _byEntity = new Dictionary<string, WriteTargetEntry>(PathComparison.Comparer);
+        private readonly Dictionary<string, WriteTargetEntry> _byLocation = new Dictionary<string, WriteTargetEntry>(PathComparison.Comparer);
+
+        /// <summary>記録した順の書き込み先</summary>
+        public IEnumerable<WriteTargetEntry> Entries => this._entries;
+
+        public WriteTargetEntry? Find(FileIdentity identity)
+        {
+            if (identity.EntityKey != null && this._byEntity.TryGetValue(identity.EntityKey, out WriteTargetEntry? byEntity))
+            {
+                return byEntity;
+            }
+
+            return this._byLocation.TryGetValue(identity.LocationKey, out WriteTargetEntry? byLocation) ? byLocation : null;
+        }
+
+        public WriteTargetEntry Add(FileIdentity identity, string path, WriteTarget? target)
+        {
+            var entry = new WriteTargetEntry(identity, path, target);
+            this._entries.Add(entry);
+            Index(identity, entry);
+
+            if (identity.EntityKey == null && target != null)
+            {
+                // 追記で新しく作ったファイルは、開いた後に実体の鍵を持つ（リンクなど別の書き方で現れても引けるようにする）
+                Index(FileIdentity.Of(path), entry);
+            }
+
+            return entry;
+        }
+
+        public void Remove(WriteTargetEntry entry)
+        {
+            this._entries.Remove(entry);
+            RemoveFrom(this._byEntity, entry);
+            RemoveFrom(this._byLocation, entry);
+        }
+
+        public void Clear()
+        {
+            this._entries.Clear();
+            this._byEntity.Clear();
+            this._byLocation.Clear();
+        }
+
+        private void Index(FileIdentity identity, WriteTargetEntry entry)
+        {
+            if (identity.EntityKey != null)
+            {
+                this._byEntity[identity.EntityKey] = entry;
+            }
+
+            this._byLocation[identity.LocationKey] = entry;
+        }
+
+        private static void RemoveFrom(Dictionary<string, WriteTargetEntry> index, WriteTargetEntry entry)
+        {
+            var keys = new List<string>();
+
+            foreach (KeyValuePair<string, WriteTargetEntry> pair in index)
+            {
+                if (ReferenceEquals(pair.Value, entry))
+                {
+                    keys.Add(pair.Key);
+                }
+            }
+
+            foreach (string key in keys)
+            {
+                index.Remove(key);
+            }
+        }
     }
 }

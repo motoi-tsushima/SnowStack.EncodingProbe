@@ -286,6 +286,30 @@ namespace SnowStack.EncodingProbe.PowerShell
             => MessageCatalog.Format(MessageKey.CsvAppendEmptyPropertyName, path);
 
         /// <summary>
+        /// Set-ProbedContent / Add-ProbedContent の -Path のワイルドカードが、どのファイルにも一致しなかった場合のエラーメッセージ（第五次の後半）
+        /// </summary>
+        public static string WildcardMatchedNoFileForWrite(string path)
+            => MessageCatalog.Format(MessageKey.WildcardMatchedNoFileForWrite, path);
+
+        /// <summary>
+        /// 代替データストリームが指定された場合のエラーメッセージ（第五次の後半）
+        /// </summary>
+        public static string AlternateDataStreamNotSupported(string path)
+            => MessageCatalog.Format(MessageKey.AlternateDataStreamNotSupported, path);
+
+        /// <summary>
+        /// Set-ProbedContent の書き込み先が、リンク先の存在しないシンボリックリンクだった場合のエラーメッセージ（第五次の後半）
+        /// </summary>
+        public static string LinkTargetNotFound(string path)
+            => MessageCatalog.Format(MessageKey.LinkTargetNotFound, path);
+
+        /// <summary>
+        /// 写してから直接書く方法で失敗し、写しから書き戻せなかった場合に、エラーのメッセージに添える文（第五次の後半）
+        /// </summary>
+        public static string RestoreFromBackupFailed(string path, string backupPath)
+            => MessageCatalog.Format(MessageKey.RestoreFromBackupFailed, path, backupPath);
+
+        /// <summary>
         /// CSV のヘッダーに同じ列名が複数ある場合のエラーメッセージ
         /// </summary>
         public static string CsvHeaderAlreadyPresent(string name)

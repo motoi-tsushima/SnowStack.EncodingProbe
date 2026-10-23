@@ -239,6 +239,21 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.CsvAppendEmptyPropertyName] =
                     "Cannot append CSV content to the following file: {0}. The header of the file has an empty column name, "
                     + "which cannot be used as a property name.",
+
+                // ---- 1.3.0 第五次の後半 ----
+
+                [MessageKey.WildcardMatchedNoFileForWrite] =
+                    "No file matches '{0}', so nothing was written. To create a file whose name contains wildcard characters, use "
+                    + "-LiteralPath.",
+                [MessageKey.AlternateDataStreamNotSupported] =
+                    "'{0}' specifies an alternate data stream. Only the main stream of a file (the path itself, or the path followed by "
+                    + "'::$DATA') can be read or written.",
+                [MessageKey.RestoreFromBackupFailed] =
+                    "'{0}' could not be restored and is left partially written. Its original content is kept in '{1}'; restore the file from this copy.",
+
+                [MessageKey.LinkTargetNotFound] =
+                    "'{0}' was not written because it is a symbolic link whose target does not exist. Like Set-Content, this command "
+                    + "does not create the target of a broken link. Write to the target path, or use Out-ProbedFile.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -421,6 +436,20 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     + "-DetectionLineCount を外すか、エスケープシーケンスのある行まで行数を増やしてください。",
                 [MessageKey.CsvAppendEmptyPropertyName] =
                     "次のファイルに CSV を追記できません: {0}。ファイルのヘッダーに空の列名があり、プロパティ名として使えません。",
+
+                // ---- 1.3.0 第五次の後半 ----
+
+                [MessageKey.WildcardMatchedNoFileForWrite] =
+                    "'{0}' に一致するファイルが無いため、書き込みませんでした。名前にワイルドカード文字を含むファイルを作成するには "
+                    + "-LiteralPath を使用してください。",
+                [MessageKey.AlternateDataStreamNotSupported] =
+                    "'{0}' は代替データストリームを指定しています。読み書きできるのは、ファイルの主ストリーム（パスそのもの、またはパスの後に '::$DATA' を付けたもの）だけです。",
+                [MessageKey.RestoreFromBackupFailed] =
+                    "'{0}' を元に戻せなかったため、元のファイルは書きかけの状態です。元の内容は '{1}' に写してあります。この写しから元に戻してください。",
+
+                [MessageKey.LinkTargetNotFound] =
+                    "'{0}' はリンク先が存在しないシンボリックリンクのため、書き込みませんでした。標準の Set-Content と同じく、リンク切れのリンク先は作りません。"
+                    + "リンク先のパスに書き込むか、Out-ProbedFile を使用してください。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -605,6 +634,20 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     + "-DetectionLineCount를 제거하거나, 이스케이프 시퀀스가 있는 줄까지 줄 수를 늘리십시오.",
                 [MessageKey.CsvAppendEmptyPropertyName] =
                     "다음 파일에 CSV를 추가할 수 없습니다: {0}. 파일의 헤더에 빈 열 이름이 있어 속성 이름으로 사용할 수 없습니다.",
+
+                // ---- 1.3.0 第五次の後半 ----
+
+                [MessageKey.WildcardMatchedNoFileForWrite] =
+                    "'{0}'과(와) 일치하는 파일이 없으므로 쓰지 않았습니다. 이름에 와일드카드 문자가 포함된 "
+                    + "파일을 만들려면 -LiteralPath를 사용하십시오.",
+                [MessageKey.AlternateDataStreamNotSupported] =
+                    "'{0}'은(는) 대체 데이터 스트림을 지정합니다. 읽고 쓸 수 있는 것은 파일의 기본 스트림(경로 자체 또는 경로 뒤에 '::$DATA'를 붙인 것)뿐입니다.",
+                [MessageKey.RestoreFromBackupFailed] =
+                    "'{0}'을(를) 원래대로 되돌리지 못해 원래 파일은 쓰다 만 상태입니다. 원래 내용은 '{1}'에 복사해 두었습니다. 이 복사본에서 원래대로 되돌리십시오.",
+
+                [MessageKey.LinkTargetNotFound] =
+                    "'{0}'은(는) 대상이 존재하지 않는 기호 링크이므로 쓰지 않았습니다. 표준 Set-Content와 마찬가지로 끊어진 링크의 대상은 만들지 않습니다. "
+                    + "대상 경로에 쓰거나 Out-ProbedFile을 사용하십시오.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -782,6 +825,18 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     + "請移除 -DetectionLineCount，或將行數增加到包含跳脫序列的行。",
                 [MessageKey.CsvAppendEmptyPropertyName] =
                     "無法將 CSV 附加到下列檔案：{0}。檔案的標頭有空的欄位名稱，無法作為屬性名稱使用。",
+
+                // ---- 1.3.0 第五次の後半 ----
+
+                [MessageKey.WildcardMatchedNoFileForWrite] =
+                    "沒有符合 '{0}' 的檔案，因此未寫入。若要建立名稱包含萬用字元的檔案，請使用 -LiteralPath。",
+                [MessageKey.AlternateDataStreamNotSupported] =
+                    "'{0}' 指定了替代資料流。只能讀寫檔案的主要資料流（路徑本身，或在路徑後加上 '::$DATA'）。",
+                [MessageKey.RestoreFromBackupFailed] =
+                    "無法還原 '{0}'，原始檔案處於寫入到一半的狀態。原始內容已複製到 '{1}'，請從這個複本還原。",
+
+                [MessageKey.LinkTargetNotFound] =
+                    "'{0}' 是目標不存在的符號連結，因此未寫入。與標準的 Set-Content 相同，不會建立中斷連結的目標。請寫入目標路徑，或使用 Out-ProbedFile。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -959,6 +1014,18 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     + "请去掉 -DetectionLineCount，或将行数增加到包含转义序列的行。",
                 [MessageKey.CsvAppendEmptyPropertyName] =
                     "无法将 CSV 追加到以下文件：{0}。文件的标题中有空的列名，无法用作属性名称。",
+
+                // ---- 1.3.0 第五次の後半 ----
+
+                [MessageKey.WildcardMatchedNoFileForWrite] =
+                    "没有与 '{0}' 匹配的文件，因此未写入。若要创建名称包含通配符的文件，请使用 -LiteralPath。",
+                [MessageKey.AlternateDataStreamNotSupported] =
+                    "'{0}' 指定了备用数据流。只能读写文件的主数据流（路径本身，或在路径后加上 '::$DATA'）。",
+                [MessageKey.RestoreFromBackupFailed] =
+                    "无法还原 '{0}'，原始文件处于写入到一半的状态。原始内容已复制到 '{1}'，请从这个副本还原。",
+
+                [MessageKey.LinkTargetNotFound] =
+                    "'{0}' 是目标不存在的符号链接，因此未写入。与标准的 Set-Content 相同，不会创建断开链接的目标。请写入目标路径，或使用 Out-ProbedFile。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

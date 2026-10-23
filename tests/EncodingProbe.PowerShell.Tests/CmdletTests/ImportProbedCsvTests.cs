@@ -618,8 +618,9 @@ public class ImportProbedCsvTests : IClassFixture<ProbedCommandRunspaceFixture>
             metadata.Parameters["Path"].ParameterSets.Keys
                 .Concat(metadata.Parameters["LiteralPath"].ParameterSets.Keys).OrderBy(k => k, StringComparer.Ordinal).ToArray());
 
-        Assert.Equal(new[] { "FullName", "FilePath" }, metadata.Parameters["Path"].Aliases);
-        Assert.Equal(new[] { "PSPath", "LP" }, metadata.Parameters["LiteralPath"].Aliases);
+        // 別名 FullName は -LiteralPath にある（1.3.0 第五次の後半。BUG-0003）
+        Assert.Equal(new[] { "FilePath" }, metadata.Parameters["Path"].Aliases);
+        Assert.Equal(new[] { "PSPath", "LP", "FullName" }, metadata.Parameters["LiteralPath"].Aliases);
         Assert.True(metadata.Parameters["Path"].ParameterSets["DelimiterPath"].ValueFromPipeline);
         Assert.True(metadata.Parameters["Path"].ParameterSets["DelimiterPath"].ValueFromPipelineByPropertyName);
         Assert.False(metadata.Parameters["LiteralPath"].ParameterSets["DelimiterLiteralPath"].ValueFromPipeline);

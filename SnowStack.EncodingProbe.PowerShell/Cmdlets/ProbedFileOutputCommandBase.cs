@@ -99,7 +99,11 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
             resolved = GetUnresolvedProviderPathFromPSPath(path);
         }
 
-        string fullPath = System.IO.Path.GetFullPath(resolved);
+        // 主ストリームの名前（a.txt::$DATA）は a.txt として扱い、代替データストリームは終了エラーにする
+        if (!FileSystemPath.TryGetFullPath(resolved, out string fullPath))
+        {
+            ThrowTerminatingError(CreateAlternateDataStreamError(resolved));
+        }
 
         if (Directory.Exists(fullPath))
         {
@@ -172,8 +176,10 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
     /// 1 行分（改行を含む）を書く。必要ならファイルを開き、追記の整合性を検査する。
     /// </summary>
     /// <remarks>
-    /// 表現できない文字があれば、それまでに書いた行も取り消してファイルを元に戻し、終了エラーにする（第五次）。
-    /// 追記の整合性検査より先に調べる。整合性検査で拒否された場合は、それまでに書いた行を残す（第四次までと同じ）。
+    /// 表現できない文字・追記の整合性検査（EncodingChangeOnAppend）・書き込みの失敗のどれでも、それまでに書いた行も取り消して
+    /// ファイルを元に戻し（追記なら追記を始める前の長さに切り詰め、追記先が無かった場合は作ったファイルを消す）、終了エラーにする。
+    /// 「エラーで止まったら、そのファイルには、その呼び出しで書いた分を残さない」（第五次。EncodingChangeOnAppend は後半でそろえた）。
+    /// 表現できない文字は、追記の整合性検査より先に調べる。
     /// </remarks>
     private protected void WriteChunk(string chunk)
     {
@@ -185,23 +191,23 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
         }
         catch (UnrepresentableCharacterException exception)
         {
-            RollbackOutput();
-            ThrowTerminatingError(CreateError(
-                exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, this.OutputPath));
+            string? kept = RollbackOutput();
+            ThrowTerminatingError(RollbackNotice.Attach(CreateError(
+                exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, this.OutputPath), this.OutputPath, kept));
         }
 
         if (this.AppendBaseline != null
             && !AppendConsistency.ProducesSameBytes(this.OutputSpec.Encoding!, this.AppendBaseline, chunk))
         {
-            // それまでに書いた行は比較が成立した行だけなので、ファイルは追記先のエンコーディングのまま一貫している
-            Cleanup();
+            // -ErrorAction Stop の場合も含め、元に戻してからエラーにする
+            string? kept = RollbackOutput();
 
-            ThrowTerminatingError(CreateError(
+            ThrowTerminatingError(RollbackNotice.Attach(CreateError(
                 new PSInvalidOperationException(ValidationMessages.EncodingChangeOnAppend(
                     this.OutputPath, this.OutputSpec.Encoding!.WebName, this.AppendBaseline.WebName)),
                 "EncodingChangeOnAppend",
                 ErrorCategory.InvalidData,
-                this.OutputPath));
+                this.OutputPath), this.OutputPath, kept));
         }
 
         try
@@ -210,15 +216,16 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
         }
         catch (UnrepresentableCharacterException exception)
         {
-            RollbackOutput();
-            ThrowTerminatingError(CreateError(
-                exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, this.OutputPath));
+            string? kept = RollbackOutput();
+            ThrowTerminatingError(RollbackNotice.Attach(CreateError(
+                exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, this.OutputPath), this.OutputPath, kept));
         }
         catch (IOException exception)
         {
             // 書きかけのファイルを残さない（第五次）
-            RollbackOutput();
-            ThrowTerminatingError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this.OutputPath));
+            string? kept = RollbackOutput();
+            ThrowTerminatingError(RollbackNotice.Attach(
+                CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this.OutputPath), this.OutputPath, kept));
         }
     }
 
@@ -242,28 +249,34 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
         catch (UnrepresentableCharacterException exception)
         {
             Cleanup();
-            ThrowTerminatingError(CreateError(
-                exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, this.OutputPath));
+            ThrowTerminatingError(RollbackNotice.Attach(CreateError(
+                exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, this.OutputPath), this.OutputPath, writer.KeptBackupPath));
         }
         catch (IOException exception)
         {
             Cleanup();
-            ThrowTerminatingError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this.OutputPath));
+            ThrowTerminatingError(RollbackNotice.Attach(
+                CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this.OutputPath), this.OutputPath, writer.KeptBackupPath));
         }
         catch (UnauthorizedAccessException exception)
         {
             Cleanup();
-            ThrowTerminatingError(CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath));
+            ThrowTerminatingError(RollbackNotice.Attach(
+                CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath), this.OutputPath, writer.KeptBackupPath));
         }
     }
 
     /// <summary>
     /// ファイルを書き込みの前の状態に戻し、後始末をする
     /// </summary>
-    private void RollbackOutput()
+    /// <returns>写しから書き戻せず、一時フォルダーに残した写しのパス（<see cref="ProbedFileWriter.KeptBackupPath"/>）。無ければ null</returns>
+    private string? RollbackOutput()
     {
-        this._writer?.Rollback();
+        ProbedFileWriter? writer = this._writer;
+        writer?.Rollback();
         Cleanup();
+
+        return writer?.KeptBackupPath;
     }
 
     /// <summary>
@@ -355,18 +368,20 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
     {
         if (ActiveReadRegistry.IsBeingRead(this.OutputPath))
         {
-            // 同じパイプラインで読み取り中のファイルを書き換えると、残りを読めなくなる
-            ThrowTerminatingError(CreateError(
-                new PSInvalidOperationException(ValidationMessages.SamePathRoundTrip(this.OutputPath)),
-                "SamePathRoundTrip",
-                ErrorCategory.ResourceExists,
-                this.OutputPath));
+            // 同じパイプラインで読み取り中のファイルを書き換えると、残りを読めなくなる。
+            // パスの文字列ではなく実体で比べる（\\?\・UNC・subst・リンクの書き方でもすり抜けない。BUG-0004）
+            ThrowSameFileRoundTrip();
         }
 
         try
         {
             return ProbedFileWriter.Open(
                 this.OutputPath, this.OutputSpec, this.ForceRequested, this.AppendRequested, emitBom);
+        }
+        catch (SameFileRoundTripException)
+        {
+            // 追記で、開いたハンドルで比べて初めて分かった場合（何も書いていない）
+            ThrowSameFileRoundTrip();
         }
         catch (IOException exception)
         {
@@ -379,4 +394,11 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
 
         throw new InvalidOperationException();  // ThrowTerminatingError は戻らないが、コンパイラには分からない
     }
+
+    private void ThrowSameFileRoundTrip()
+        => ThrowTerminatingError(CreateError(
+            new PSInvalidOperationException(ValidationMessages.SamePathRoundTrip(this.OutputPath)),
+            SameFileRoundTripException.ErrorId,
+            ErrorCategory.ResourceExists,
+            this.OutputPath));
 }

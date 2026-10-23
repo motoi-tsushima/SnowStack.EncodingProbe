@@ -36,7 +36,21 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         {
             lock (Paths)
             {
-                return Paths.Count > 0 && Paths.Contains(System.IO.Path.GetFullPath(path));
+                if (Paths.Count == 0)
+                {
+                    return false;
+                }
+            }
+
+            // 主ストリームの名前（a.txt::$DATA）を含むパスでも例外にしない（.NET Framework の GetFullPath は投げる）
+            if (!FileSystemPath.TryGetFullPath(path, out string fullPath))
+            {
+                return false;
+            }
+
+            lock (Paths)
+            {
+                return Paths.Contains(fullPath);
             }
         }
     }

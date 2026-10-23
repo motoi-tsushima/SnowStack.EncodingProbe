@@ -128,9 +128,12 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
     {
         var path = TestDataHelper.GetPath("Japanese", "sample_utf8.txt");
 
+        // 1.3.0 第五次の後半（BUG-0006）から、ほかのコマンドと同じ ID の終了エラー（生の ArgumentException ではない）
         var ex = Assert.Throws<System.Management.Automation.CmdletInvocationException>(
             () => _fixture.Invoke(path, new() { ["Strategy"] = "InvalidStrategy" }));
-        Assert.IsType<ArgumentException>(ex.InnerException);
+        Assert.Equal("InvalidStrategy", ex.ErrorRecord.FullyQualifiedErrorId.Split(',')[0]);
+        Assert.Equal(System.Management.Automation.ErrorCategory.InvalidArgument, ex.ErrorRecord.CategoryInfo.Category);
+        Assert.IsType<System.Management.Automation.PSArgumentException>(ex.ErrorRecord.Exception);
     }
 
     // ─── License ─────────────────────────────────────────────────────────────
