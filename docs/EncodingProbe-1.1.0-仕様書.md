@@ -554,6 +554,10 @@ Add-ProbedContent log.txt -Value $line -Encoding utf8NoBOM -AllowEncodingChange
 
 **`-Force` に相乗りさせない**。`-Force` は「読み取り専用ファイルへ書き込む」という別の意味を既に持っており、両者を分けないと「読み取り専用属性を外したいだけなのにエンコーディング検査まで無効化された」という事故が起きる。
 
+> **1.3.0 第五次の後半で明記した点（BUG-0011）:** `-AllowEncodingChange` が省くのは整合性検査だけである。`-Encoding` を指定した場合は既存ファイルを判定しないので、判定できないファイルへも追記できる。
+> `-Encoding` を省略した場合は、追記先から文字エンコーディングを継承するために判定する（判定できなければ `EncodingDetectionFailed`）。継承した文字エンコーディングで書くので、
+> 「ASCII を UTF-8 に格上げする」ためには `-Encoding` も指定する。挙動は変えず、ヘルプの「判定自体を行わない」という記述を、`-Encoding` を指定した場合に限って改めた。
+
 ### 6.3 補足
 
 - `-Encoding` を明示指定した場合でも、この判定に既存側のエンコーディングが必要なため、**既存ファイルの検出は必ず走る**。検出失敗は既定どおり Error
@@ -561,6 +565,18 @@ Add-ProbedContent log.txt -Value $line -Encoding utf8NoBOM -AllowEncodingChange
 - 改行: CRLF のファイルに LF を追記しても混在改行になるだけで、読めなくなることはない。`-LineBreak Lf` の明示指定は「今後は LF に統一したい」という正当な意図であり得るため、Error にしない
 - 既存ファイルの末尾に改行が無い場合、追記内容は最終行に連結される。標準の `Add-Content` と同じ挙動とする（1.1.0 では警告もスイッチも設けない）
 - ISO-2022-JP のような状態を持つエンコーディングも、.NET のエンコーダは `GetBytes` 呼び出しごとに状態をリセットしてエスケープシーケンスを先頭に出力するため、追記しても壊れない。バイト列比較の判定もそのまま機能する
+
+### 6.4 拒否されたときのファイル（1.3.0 第五次の後半）
+
+整合性検査で拒否された場合（`EncodingChangeOnAppend`）は、**そのファイルには、その呼び出しで書いた分を残さない。** 前のレコードで書いた分も取り消し、追記を始める前の長さに戻す
+（追記先が無かった場合は、作ったファイルを消す）。ほかのファイルへの追記は続ける（非終了エラー）。
+
+- 1.3.0 第五次の前半までは、それまでに書いた行（検査を通った行）を残していた。表現できない文字（`UnrepresentableCharacter`）は元に戻していたので、
+  失敗の種類によってファイルが元に戻るかどうかが違っていた。規則を「エラーで止まったら、そのファイルには、その呼び出しで書いた分を残さない」にそろえた（利用者の決定）
+- `-ErrorAction Stop` では `WriteError` が戻らないので、**元に戻してから**エラーを報告する
+- パイプラインの停止（Ctrl+C）では、これまでどおり、それまでに書いた内容を残す（利用者の決定）
+- 1 回の指定（`-LiteralPath a.txt, A.TXT` など）の中で同じファイル（実体）が重なった場合は 1 回だけ追記する（7.x の標準の `Add-Content` と同じ。5.1 の標準は 1 回追記した後に 2 件目で `GetContentWriterIOError`）。
+  パイプラインのレコードごとに同じファイルを渡した場合は、レコードごとに追記する（両ホストの標準と同じ）
 
 ---
 
@@ -644,9 +660,12 @@ $encobj = Resolve-Encoding file.txt | ConvertTo-DotNetEncoding
 | 判定できても実行環境がそのコードページを提供していない | 非終了エラー（`CodePageNotAvailable`） |
 | `Set-ProbedContent -Encoding Auto` で書き込み先が存在しない | 非終了エラー |
 | `Add-ProbedContent -Encoding Auto` で追記先が存在しない | 非終了エラー |
-| `Add-ProbedContent` でのバイト列不一致 | 非終了エラー（`-AllowEncodingChange` で回避可） |
+| `Add-ProbedContent` でのバイト列不一致 | 非終了エラー（`-AllowEncodingChange` で回避可）。1.3.0 第五次の後半から、その呼び出しで書いた分を取り消してファイルを元に戻す（6.4） |
 | 書き込む文字列に、書き込み先の文字エンコーディングで表現できない文字がある（1.3.0 第五次） | 非終了エラー `UnrepresentableCharacter`。ファイルは書き込みの前の状態に戻す（`-AllowEncodingChange` でも回避できない） |
-| 同一パスの読み書きを 1 つのパイプラインで行った | 非終了エラー |
+| 同じファイルの読み書きを 1 つのパイプラインで行った（1.3.0 第五次の後半から、パスの文字列ではなくファイルの実体で比べる） | 非終了エラー（`SamePathRoundTrip`） |
+| `Set-` / `Add-ProbedContent -Path` のワイルドカードがどのファイルにも一致しない（1.3.0 第五次の後半） | 非終了エラー `ItemNotFound`（標準の `Set-Content` / `Add-Content` と同じ）。読み込み側はエラーにしない |
+| 代替データストリーム（`a.txt:alt`）を指定した（1.3.0 第五次の後半。`a.txt::$DATA` は `a.txt` として扱う） | `AlternateDataStreamNotSupported`（ファイルごとの指定は非終了、出力先が 1 件のコマンドは終了エラー） |
+| `Set-ProbedContent` の書き込み先がリンク切れのシンボリックリンク（1.3.0 第五次の後半） | 非終了エラー `LinkTargetNotFound`（標準の `Set-Content` と同じく書かない） |
 | 書き込み先が読み取り専用・書き込み権限なし | 非終了エラー |
 | `-LineBreak` と `-NoNewline` の同時指定 | Warning |
 
@@ -701,6 +720,9 @@ $encobj = Resolve-Encoding file.txt | ConvertTo-DotNetEncoding
   > （`Import-` / `Export-ProbedCsv` は使う前に全体を厳密に検証する）。`Get-ProbedContent` などへの追加は 1.4.0 で検討する
   > （`docs/EncodingProbe-1.3.0-仕様書.md` 1.4・6.1）。
 - **同一ファイルの往復**: `Get-ProbedContent a.txt | Set-ProbedContent a.txt` は、遅延読み込みの場合に書き込み側が先にファイルを切り詰めて破壊する。標準の `Get-Content` も同様だが、本コマンド群は「エンコーディングを保って書き戻す」用途でこの罠を踏みやすい。**同一パスを検出して非終了エラーとした**（`Internal/ActiveReadRegistry`）。ただし `-Raw` は出力前にファイルを閉じるため対象外で、読んで加工して書き戻せる
+  > **1.3.0 第五次の後半:** パスの文字列で比べていたため、`\\?\`・UNC の管理共有・`\\.\`・subst・リンクで書き方を変えるとすり抜けた（BUG-0004）。
+  > ファイルの実体（Windows はボリュームのシリアル番号とファイル ID、Linux / macOS はリンクを解決したパス）で比べるように改めた（`Internal/FileIdentity`）。
+  > 上書きは一時ファイルに書き始める前に、追記は「切り詰めずに開く → 開いたハンドルで比べる → 書く」の順に比べる（実装記録 10 章）
 - **`EncodingSpec`（内部型）**: 入力を `{ Encoding, EmitBom, LineBreak }` の 3 項に正規化する内部表現。`ArgumentTransformationAttribute` で全コマンド共通に解決する。**公開型としない**
 
 ---

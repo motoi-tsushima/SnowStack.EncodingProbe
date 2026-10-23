@@ -112,6 +112,11 @@ UTF-32LE → UTF-32BE → UTF-16LE → UTF-16BE の順に**すべての単位**�
 `EastAsianLegacyRegion`（`None` / `Japanese` / `Korean` / `ChineseSimplified` / `ChineseTraditional` / `ChineseHongKong`）を返し、
 `GetEucCodePageFromCulture()` と `CPxxx_Detection()` はこの結果で分岐する。表を増やさないこと。
 
+- **カルチャー名を受け付けるかどうかは、名前の形（BCP 47）で決める（`CultureNameSubtags.IsWellFormed`。1.3.0 第五次の後半）。** `CultureInfo` で作れるかどうかで決めないこと。
+  NLS と ICU で受け付ける名前が両方向に違い（`C`・`root`・`art-lojban` は ICU だけ、`und-u-ca-gregory` は NLS だけ）、どちらかに合わせても一致しない。
+  コアの `EncodingProbe.ValidateCulture` とモジュールの `ResolveEncodingOptions.ValidateCulture`（`Resolve-Encoding` を含む全コマンド）が同じ規則を使う。
+  受け付けた名前はそのままコアに渡す（`EncodingInformation.Culture` に出るため、組み立て直さない）。受け付けた名前で `CultureInfo` を作らないこと（片方の .NET だけで例外になる）
+- **言語の直後の拡張言語（英字 3 文字）は、それを言語として扱う**（`CultureNameSubtags.Parse`。RFC 5646 の `zh-yue` = `yue`）。`zh-CHT` / `zh-CHS` は用字として先に扱う。表は増やさない
 - カルチャー名は `Internal/CultureNameSubtags` で言語・用字・地域のサブタグに分解してから引く。
   `CultureInfo` の親チェーンは使わない（net48 の NLS と net10.0 の ICU で名前・親が異なるため）。
   `MessageCatalog` の言語選択も同じ規則を使う（1.2.0 第三次修正。`MessageCatalog.ResolveLanguage`）
@@ -222,9 +227,19 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
   `Encoding.GetPreamble()` 任せにしない（解決経路によって出力が変わってしまうため）
 - **書き込みは例外フォールバックで符号化し、表現できない文字は `UnrepresentableCharacter` にしてファイルを元に戻す（1.3.0 第五次）。**
   `ProbedFileWriter` はコードページから `BuildStrictEncoding` で組み立て直す（利用者が渡した Encoding のフォールバックは使わない）。
-  上書きは同じフォルダーの一時ファイル `.<名前>.<8 桁>.probedtmp` に書いて `File.Replace` で置き換え、追記は開く前の長さに切り詰めて戻す。
+  上書きは `Internal/SafeFileOverwrite`（`Convert-ProbedContent` も共用）。ふつうは同じフォルダーの一時ファイル `.<名前>.<8 桁>.probedtmp` に書いて `File.Replace` で置き換える。
+  シンボリックリンク・ジャンクションは実体（`GetFinalPathNameByHandle`）のフォルダーで置き換え、ハードリンクと一時ファイルを作れないフォルダーは、一時フォルダーに写してから直接書く（1.3.0 第五次の後半）。
+  追記は開いたストリームの長さを覚えて切り詰めて戻す（リンクの `FileInfo.Length` を使わないこと。リンク自身の長さになる）。
   一時ファイルは `TemporaryFileRegistry` でワイルドカードの解決から除く。`-ErrorAction Stop` では `WriteError` が戻らないので、**元に戻してから** `WriteError` を呼ぶこと。
-  表現できるかは状態を持たない `GetByteCount` で書く前に確かめる（Encoder の状態を進めない）。`EncodingChangeOnAppend` は従来どおり書いた行を残す
+  表現できるかは状態を持たない `GetByteCount` で書く前に確かめる（Encoder の状態を進めない）。
+  **規則は「エラーで止まったら、そのファイルには、その呼び出しで書いた分を残さない」**（`EncodingChangeOnAppend` も元に戻す。第五次の後半）。パイプラインの停止（Ctrl+C）は書いた内容を残す
+- **同じファイルかどうかは、パスの文字列ではなく実体で比べる（`Internal/FileIdentity`。1.3.0 第五次の後半）。** Windows は `GetFileInformationByHandle` のボリュームのシリアル番号とファイル ID、
+  Linux / macOS はリンクを解決したパス。まだ無いファイルは親フォルダーの実体＋名前で比べる。`ActiveReadRegistry`（`SamePathRoundTrip`）・書き込み系の書き込み先の表・`Convert-ProbedContent` の N8 / N9 が使う。
+  `PathComparison`（文字列の比較）を、同じファイルの判定に使い直さないこと。追記は「切り詰めずに開く → 開いたハンドルで比べる → 書く」
+- **パスは `Internal/FileSystemPath.TryGetFullPath` で絶対パスにする（`Path.GetFullPath` を直接呼ばない）。** `a.txt::$DATA` は `a.txt` とし、代替データストリームは `AlternateDataStreamNotSupported`。
+  .NET Framework の `GetFullPath` はストリームの名前で `NotSupportedException` を投げる
+- **`-LiteralPath` の別名は `PSPath`・`LP`・`FullName`、`-Path` に `FullName` を付けないこと**（BUG-0003。FileInfo の `FullName` がワイルドカードとして展開される）。
+  `Resolve-Encoding -Path` は展開しないので `FullName` のまま。`Set-` / `Add-ProbedContent -Path` のワイルドカードが 0 件なら `ItemNotFound`（読み込みはエラーにしない）
 - **継承した us-ascii は BOM 無しの UTF-8 とみなす（1.3.0 第五次）。** `EncodingVocabulary.TreatInheritedAsciiAsUtf8` を `EncodingInheritance.FromFile`（Auto・`-EncodingFrom`・追記の整合性検査の相手）と、
   書き込み用途で `EncodingInformation` を解決したときに通す。`-Encoding ascii` の明示と読み取り（`ConvertTo-DotNetEncoding` を含む）は置き換えない
 - 文字エンコーディングの判定は**ファイル全体**を対象とする。先頭の一定量に制限すると、
@@ -251,7 +266,7 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
   `Internal/EncodingInheritance.FromFile` の 2 か所だけ。
   `ConvertTo-DotNetEncoding` は判定処理を呼ばないため対象外
 - 実行環境依存の例外を利用者に見せない。不正なカルチャー名の検証では
-  `CultureNotFoundException` を内部例外として持たせていない。
+  `CultureNotFoundException` を内部例外として持たせていない（1.3.0 第五次の後半からは `CultureInfo` を使わずに検証する）。
   この例外のメッセージは .NET Framework と .NET Core で文言が異なり、
   PS 5.1 と 7.x で見えるメッセージが変わってしまうため（PSCompat が検出した）
 
@@ -509,12 +524,14 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
 
 **PowerShell モジュールとクラスライブラリの両方を 1.3.0 としてリリースする**（当初はモジュールだけの予定だった。第四次で改めた）。作業ブランチは `feature/1.3.0-csv`。
 
-**現在の状態（2026-10-22 時点）: 第五次の前半（テスト担当の BUG-0001・0002・0009・0010・0012・0013・0014 と、CSV の追記の空の列名）を実装した。
-報告して利用者の確認を待っている。第五次の後半（パスの束縛・同じファイルの判定・文書・検証の部品）は別の依頼で来る（まだ手を付けていない）。master へは未マージ・未リリース。**
+**現在の状態（2026-10-23 時点）: 第五次の後半（テスト担当の BUG-0003〜0008・0011・0015〜0017、H-17、9.9 節の 1〜4）を実装した。
+利用者がコアのカルチャー名の検証の変更を認め、報告の後の修正（実装記録 10.14 節）を行ってコミットした（ローカルのみ）。著作権の表記（年・名前・記号）と性能は利用者の判断待ち。master へは未マージ・未リリース。**
 
-- 両 TFM のテスト（コア net48 2031 / net10.0 2021 件、モジュール 1292 件）と PSCompat（831 シナリオ）が通っている。
+- 両 TFM のテスト（コア net48 2117 / net10.0 2107 件、モジュール 1437 件）と PSCompat（1006 シナリオ）が通っている（報告の後の修正（実装記録 10.14 節）を含む）。
+  **性能:** 1000 個の小さなファイルへの `Set-ProbedContent` が第四次の約 10 倍遅い（`File.Replace` の費用。第五次の前半から。実装記録 10.15 節）。直すかどうかは利用者の判断待ち
+  テスト担当のスクリプト 17 本も、作業フォルダーに作った配布の構成で両ホストで確かめた（実装記録 10.11 節）
   第四次・第五次のコミットはローカルだけにある（リモートへのプッシュは利用者の指示を待つ）
-- 第五次の内容・決定・最終的な結果の表・決めきれなかったこと（`Resolve-Encoding -DetectionLineCount` の `LineBreak`、`EncodingChangeOnAppend` で元に戻さないこと など）は実装記録 9 章
+- 第五次の前半の内容・決定・結果は実装記録 9 章、後半は 10 章（標準の実測、`::$DATA` とカルチャー名の案と決定、保たれるもの、決めきれなかったこと）
 - テスト担当のフォルダー（`C:\_test\EncodingProbeBboxTest`）は読むだけにする。テスト担当にまだ伝えていない件（コアの改行の判定）を、テスト担当の報告やフォルダーに書かないこと
 - 第五次の依頼文（`docs/EncodingProbe-1.3.0-依頼-第五次*.md` があれば）もコミットしない
 - **配布フォルダー（`publish/SnowStack.EncodingProbe.PowerShell/`）の DLL は第三次（クラスライブラリ 1.2.0）のビルドのまま。** 第五次の後の Release ビルドで作り直す必要がある（リリース手順 2 章）
@@ -544,6 +561,8 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
   修正後の判定は第 2 回の実測の「修正案 2」と 180 件すべて（両 TFM、判定 API とコマンド）で一致した
 - 第五次（前半）: 書き込みで文字を失わない（表現できない文字のエラーと取り消し、継承した us-ascii を UTF-8 に）、切り出しの規則の置き換え、
   コアの改行の判定を単位で数える、読み替えたときの `LineBreak` の数え直し、ISO-2022 の検査、空の列名の ID。実装記録 9 章
+- 第五次（後半）: パスの束縛（`FullName` を `-LiteralPath` に）、書き込みの 0 件のワイルドカード、同じファイルの判定を実体で、`EncodingChangeOnAppend` の取り消し、
+  上書きのリンク・ハードリンク・権限の扱い、`::$DATA`、`Resolve-Encoding` の検証の部品、カルチャー名を BCP 47 の形で検証（コアも）、`Os.Description` の Trim、文書（BUG-0005・0008・0011）。実装記録 10 章
 
 関連文書:
 

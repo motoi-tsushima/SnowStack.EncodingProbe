@@ -18,7 +18,7 @@
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Get-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>目標檔案的路徑。可以使用萬用字元。</maml:para>
@@ -48,7 +48,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -62,10 +62,10 @@
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Get-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。經由管線傳入的檔案（FileInfo）會以 PSPath（Get-ChildItem、Get-Item 的輸出）或 FullName（New-Object System.IO.FileInfo 的輸出）繫結到此參數，因此名稱包含 [ ] 的檔案也會被視為該檔案本身。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -92,7 +92,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -109,7 +109,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+          <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -129,10 +129,10 @@
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+          <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。經由管線傳入的檔案（FileInfo）會以 PSPath（Get-ChildItem、Get-Item 的輸出）或 FullName（New-Object System.IO.FileInfo 的輸出）繫結到此參數，因此名稱包含 [ ] 的檔案也會被視為該檔案本身。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -141,7 +141,7 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
           <maml:para>目標檔案的路徑。可以使用萬用字元。</maml:para>
@@ -227,6 +227,9 @@
       <maml:alert>
         <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請以 -Encoding 明確指定字碼頁。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA 之類的主要資料流名稱，會視為與 a.txt 相同的檔案。不會讀寫替代資料流（a.txt:alt 等），並產生錯誤 AlternateDataStreamNotSupported（在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -296,10 +299,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Set-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
-            <maml:para>目標檔案的路徑。可以使用萬用字元。檔案不存在時會新建，但若必須從該檔案繼承字元編碼則會發生錯誤（請參閱 -Encoding）。</maml:para>
+            <maml:para>目標檔案的路徑。可以使用萬用字元。檔案不存在時會新建，但若必須從該檔案繼承字元編碼則會發生錯誤（請參閱 -Encoding）。萬用字元未符合任何檔案時，不會寫入，並回報非終止錯誤 ItemNotFound（與標準的 Set-Content / Add-Content 相同）。若要建立名稱包含萬用字元的檔案，請使用 -LiteralPath。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -358,7 +361,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -379,10 +382,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。經由管線傳入的檔案（FileInfo）會以 PSPath（Get-ChildItem、Get-Item 的輸出）或 FullName（New-Object System.IO.FileInfo 的輸出）繫結到此參數，因此名稱包含 [ ] 的檔案也會被視為該檔案本身。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -434,7 +437,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -462,7 +465,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+          <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -517,10 +520,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+          <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。經由管線傳入的檔案（FileInfo）會以 PSPath（Get-ChildItem、Get-Item 的輸出）或 FullName（New-Object System.IO.FileInfo 的輸出）繫結到此參數，因此名稱包含 [ ] 的檔案也會被視為該檔案本身。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -540,10 +543,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
-          <maml:para>目標檔案的路徑。可以使用萬用字元。檔案不存在時會新建，但若必須從該檔案繼承字元編碼則會發生錯誤（請參閱 -Encoding）。</maml:para>
+          <maml:para>目標檔案的路徑。可以使用萬用字元。檔案不存在時會新建，但若必須從該檔案繼承字元編碼則會發生錯誤（請參閱 -Encoding）。萬用字元未符合任何檔案時，不會寫入，並回報非終止錯誤 ItemNotFound（與標準的 Set-Content / Add-Content 相同）。若要建立名稱包含萬用字元的檔案，請使用 -LiteralPath。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -641,6 +644,24 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <maml:alert>
         <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。符號連結與連接點會追蹤到底，取代連結目標的實體（連結本身保留）。若是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且硬式連結會中斷。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入並取代時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>寫入目標是目標不存在的符號連結時，與標準的 Set-Content 相同不會寫入，並回報非終止錯誤 LinkTargetNotFound（若要建立連結目標，請使用 Out-ProbedFile 或指定連結目標的路徑）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>是否為同一個檔案（寫入正在讀取的檔案 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否與來源相同）是以檔案的實體比較，而不是路徑字串。即使以 \\?\、UNC 系統管理共用（\\localhost\C$\…）、\\.\、subst 磁碟機、符號連結、連接點、硬式連結或大小寫差異改變寫法，也會判定為同一個檔案。在 Linux / macOS 上以解析連結後的路徑比較，因此硬式連結視為不同的檔案。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>在一次呼叫中多次指定同一個檔案時（a.txt 與 A.TXT、硬式連結的兩個名稱等），會視為一個寫入目標，結果與寫入一次相同。從管線接收路徑時也相同（與標準的 Set-Content 相同）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA 之類的主要資料流名稱，會視為與 a.txt 相同的檔案。不會讀寫替代資料流（a.txt:alt 等），並產生錯誤 AlternateDataStreamNotSupported（在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -710,10 +731,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Add-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
-            <maml:para>目標檔案的路徑。可以使用萬用字元。檔案不存在時會新建，但若必須從該檔案繼承字元編碼則會發生錯誤（請參閱 -Encoding）。</maml:para>
+            <maml:para>目標檔案的路徑。可以使用萬用字元。檔案不存在時會新建，但若必須從該檔案繼承字元編碼則會發生錯誤（請參閱 -Encoding）。萬用字元未符合任何檔案時，不會寫入，並回報非終止錯誤 ItemNotFound（與標準的 Set-Content / Add-Content 相同）。若要建立名稱包含萬用字元的檔案，請使用 -LiteralPath。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -772,13 +793,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>即使產生的位元組序列與既有的字元編碼不同也允許附加，藉此刻意變更檔案的字元編碼。指定這個參數時完全不會判斷既有檔案，因此對無法判斷的檔案也能附加。-Force 沒有這個效果。</maml:para>
+            <maml:para>即使產生的位元組序列與既有的字元編碼不同也允許附加，藉此刻意變更檔案的字元編碼。指定 -Encoding 時完全不會判斷既有檔案，因此對無法判斷的檔案也能附加。省略 -Encoding 時，為了從附加目標繼承字元編碼，仍會判斷既有檔案（無法判斷的檔案會產生 EncodingDetectionFailed）。由於以繼承的字元編碼寫入，字元編碼不會改變。若要變更字元編碼，請同時指定 -Encoding。-Force 沒有這個效果。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -799,10 +820,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。經由管線傳入的檔案（FileInfo）會以 PSPath（Get-ChildItem、Get-Item 的輸出）或 FullName（New-Object System.IO.FileInfo 的輸出）繫結到此參數，因此名稱包含 [ ] 的檔案也會被視為該檔案本身。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -854,13 +875,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>即使產生的位元組序列與既有的字元編碼不同也允許附加，藉此刻意變更檔案的字元編碼。指定這個參數時完全不會判斷既有檔案，因此對無法判斷的檔案也能附加。-Force 沒有這個效果。</maml:para>
+            <maml:para>即使產生的位元組序列與既有的字元編碼不同也允許附加，藉此刻意變更檔案的字元編碼。指定 -Encoding 時完全不會判斷既有檔案，因此對無法判斷的檔案也能附加。省略 -Encoding 時，為了從附加目標繼承字元編碼，仍會判斷既有檔案（無法判斷的檔案會產生 EncodingDetectionFailed）。由於以繼承的字元編碼寫入，字元編碼不會改變。若要變更字元編碼，請同時指定 -Encoding。-Force 沒有這個效果。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -877,7 +898,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>即使產生的位元組序列與既有的字元編碼不同也允許附加，藉此刻意變更檔案的字元編碼。指定這個參數時完全不會判斷既有檔案，因此對無法判斷的檔案也能附加。-Force 沒有這個效果。</maml:para>
+          <maml:para>即使產生的位元組序列與既有的字元編碼不同也允許附加，藉此刻意變更檔案的字元編碼。指定 -Encoding 時完全不會判斷既有檔案，因此對無法判斷的檔案也能附加。省略 -Encoding 時，為了從附加目標繼承字元編碼，仍會判斷既有檔案（無法判斷的檔案會產生 EncodingDetectionFailed）。由於以繼承的字元編碼寫入，字元編碼不會改變。若要變更字元編碼，請同時指定 -Encoding。-Force 沒有這個效果。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -899,7 +920,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+          <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -954,10 +975,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+          <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。經由管線傳入的檔案（FileInfo）會以 PSPath（Get-ChildItem、Get-Item 的輸出）或 FullName（New-Object System.IO.FileInfo 的輸出）繫結到此參數，因此名稱包含 [ ] 的檔案也會被視為該檔案本身。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -977,10 +998,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
-          <maml:para>目標檔案的路徑。可以使用萬用字元。檔案不存在時會新建，但若必須從該檔案繼承字元編碼則會發生錯誤（請參閱 -Encoding）。</maml:para>
+          <maml:para>目標檔案的路徑。可以使用萬用字元。檔案不存在時會新建，但若必須從該檔案繼承字元編碼則會發生錯誤（請參閱 -Encoding）。萬用字元未符合任何檔案時，不會寫入，並回報非終止錯誤 ItemNotFound（與標準的 Set-Content / Add-Content 相同）。若要建立名稱包含萬用字元的檔案，請使用 -LiteralPath。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -1090,6 +1111,18 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <maml:alert>
         <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。附加的一致性檢查也會將附加目的地的 us-ascii 視為無 BOM 的 UTF-8。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>附加時會直接寫入附加目標檔案。會追蹤符號連結並附加到實體；連結目標不存在時，與標準的 Add-Content / Out-File -Append 相同，會在連結目標建立檔案。因錯誤（無法表示的字元、一致性檢查不符 EncodingChangeOnAppend、寫入失敗）而停止時，會取消該次呼叫寫入的內容，還原為附加前的長度（附加目標原本不存在時，會刪除建立的檔案）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>是否為同一個檔案（寫入正在讀取的檔案 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否與來源相同）是以檔案的實體比較，而不是路徑字串。即使以 \\?\、UNC 系統管理共用（\\localhost\C$\…）、\\.\、subst 磁碟機、符號連結、連接點、硬式連結或大小寫差異改變寫法，也會判定為同一個檔案。在 Linux / macOS 上以解析連結後的路徑比較，因此硬式連結視為不同的檔案。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>在一次指定（-LiteralPath a.txt, A.TXT 等）中同一個檔案重複出現時，只附加一次（與 7.x 的標準 Add-Content 相同；5.1 的標準會將第二個視為錯誤）。在管線的每筆記錄中傳入同一個檔案時，會針對每筆記錄附加（與兩個主機的標準相同）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA 之類的主要資料流名稱，會視為與 a.txt 相同的檔案。不會讀寫替代資料流（a.txt:alt 等），並產生錯誤 AlternateDataStreamNotSupported（在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -1189,13 +1222,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止。先前寫入的行會保留，檔案仍保持一致。</maml:para>
+            <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止，並取消先前寫入的行，將檔案還原為附加前的內容（附加目標原本不存在時，會刪除建立的檔案）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。</maml:para>
+            <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。省略 -Encoding 時，為了從附加目標繼承字元編碼，仍會判斷附加目標（無法判斷的檔案會產生 EncodingDetectionFailed）。由於以繼承的字元編碼寫入，若要變更字元編碼，請同時指定 -Encoding。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1226,7 +1259,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+            <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1290,13 +1323,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止。先前寫入的行會保留，檔案仍保持一致。</maml:para>
+            <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止，並取消先前寫入的行，將檔案還原為附加前的內容（附加目標原本不存在時，會刪除建立的檔案）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。</maml:para>
+            <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。省略 -Encoding 時，為了從附加目標繼承字元編碼，仍會判斷附加目標（無法判斷的檔案會產生 EncodingDetectionFailed）。由於以繼承的字元編碼寫入，若要變更字元編碼，請同時指定 -Encoding。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1327,7 +1360,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+            <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1356,7 +1389,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。</maml:para>
+          <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。省略 -Encoding 時，為了從附加目標繼承字元編碼，仍會判斷附加目標（無法判斷的檔案會產生 EncodingDetectionFailed）。由於以繼承的字元編碼寫入，若要變更字元編碼，請同時指定 -Encoding。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1367,7 +1400,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Append</maml:name>
         <maml:description>
-          <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止。先前寫入的行會保留，檔案仍保持一致。</maml:para>
+          <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止，並取消先前寫入的行，將檔案還原為附加前的內容（附加目標原本不存在時，會刪除建立的檔案）。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1389,7 +1422,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+          <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1590,6 +1623,24 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <maml:alert>
         <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。附加的一致性檢查也會將附加目的地的 us-ascii 視為無 BOM 的 UTF-8。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。符號連結與連接點會追蹤到底，取代連結目標的實體（連結本身保留）。若是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且硬式連結會中斷。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>附加時會直接寫入附加目標檔案。會追蹤符號連結並附加到實體；連結目標不存在時，與標準的 Add-Content / Out-File -Append 相同，會在連結目標建立檔案。因錯誤（無法表示的字元、一致性檢查不符 EncodingChangeOnAppend、寫入失敗）而停止時，會取消該次呼叫寫入的內容，還原為附加前的長度（附加目標原本不存在時，會刪除建立的檔案）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入並取代時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>輸出目標是目標不存在的符號連結時，與標準的 Out-File / Export-Csv 相同，會在連結目標建立檔案（連結本身保留）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>是否為同一個檔案（寫入正在讀取的檔案 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否與來源相同）是以檔案的實體比較，而不是路徑字串。即使以 \\?\、UNC 系統管理共用（\\localhost\C$\…）、\\.\、subst 磁碟機、符號連結、連接點、硬式連結或大小寫差異改變寫法，也會判定為同一個檔案。在 Linux / macOS 上以解析連結後的路徑比較，因此硬式連結視為不同的檔案。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA 之類的主要資料流名稱，會視為與 a.txt 相同的檔案。不會讀寫替代資料流（a.txt:alt 等），並產生錯誤 AlternateDataStreamNotSupported（在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -1653,12 +1704,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
     <maml:description>
       <maml:para>以不同的字元編碼、BOM 或換行重寫文字檔。字元本身不會改變。目標檔案以 -Path / -LiteralPath 指定，或以管線傳入 Get-ChildItem 的輸出。這個 Cmdlet 本身沒有 -Recurse 或篩選功能。</maml:para>
       <maml:para>絕不會遺失字元。含有對來源字元編碼而言無效的位元組序列，或含有無法以目標字元編碼表示之字元的檔案不會轉換，而是保持原狀。錯誤訊息會指出其位置。沒有將這類字元取代後再轉換的選項。</maml:para>
-      <maml:para>每個檔案都會先寫入同一資料夾的暫存檔再取代原始檔案，因此即使中途失敗，原始檔案也不會損壞。若轉換結果與原始位元組序列完全相同，則不會重寫，修改時間也不會改變。</maml:para>
+      <maml:para>每個檔案都會先寫入同一資料夾的暫存檔再取代原始檔案，因此即使中途失敗，原始檔案也不會損壞。符號連結會取代連結目標的實體（連結保留），硬式連結則不會中斷，而是直接寫入原始檔案（請參閱附註）。若轉換結果與原始位元組序列完全相同，則不會重寫，修改時間也不會改變。</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Convert-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>要轉換的檔案。可使用萬用字元。沒有符合檔案的路徑會回報為非終止錯誤。目錄會被略過。</maml:para>
@@ -1703,7 +1754,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷來源檔案字元編碼時使用的文化特性名稱（例如 ko-KR）。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+            <maml:para>判斷來源檔案字元編碼時使用的文化特性名稱（例如 ko-KR）。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1748,10 +1799,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Convert-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>要轉換的檔案。依輸入原樣使用，不展開萬用字元。Get-ChildItem 的輸出會透過 PSPath 屬性繫結到這個參數。目錄會被略過並記錄於詳細資訊訊息。</maml:para>
+            <maml:para>要轉換的檔案。依輸入原樣使用，不展開萬用字元。Get-ChildItem 的輸出會透過 PSPath 屬性繫結到這個參數。目錄會被略過並記錄於詳細資訊訊息。經由管線傳入的檔案（FileInfo）會以 PSPath（Get-ChildItem、Get-Item 的輸出）或 FullName（New-Object System.IO.FileInfo 的輸出）繫結到此參數，因此名稱包含 [ ] 的檔案也會被視為該檔案本身。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -1793,7 +1844,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷來源檔案字元編碼時使用的文化特性名稱（例如 ko-KR）。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+            <maml:para>判斷來源檔案字元編碼時使用的文化特性名稱（例如 ko-KR）。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1864,7 +1915,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>判斷來源檔案字元編碼時使用的文化特性名稱（例如 ko-KR）。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+          <maml:para>判斷來源檔案字元編碼時使用的文化特性名稱（例如 ko-KR）。指定 -SourceEncoding 時不使用。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1932,10 +1983,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>要轉換的檔案。依輸入原樣使用，不展開萬用字元。Get-ChildItem 的輸出會透過 PSPath 屬性繫結到這個參數。目錄會被略過並記錄於詳細資訊訊息。</maml:para>
+          <maml:para>要轉換的檔案。依輸入原樣使用，不展開萬用字元。Get-ChildItem 的輸出會透過 PSPath 屬性繫結到這個參數。目錄會被略過並記錄於詳細資訊訊息。經由管線傳入的檔案（FileInfo）會以 PSPath（Get-ChildItem、Get-Item 的輸出）或 FullName（New-Object System.IO.FileInfo 的輸出）繫結到此參數，因此名稱包含 [ ] 的檔案也會被視為該檔案本身。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -1955,7 +2006,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
           <maml:para>要轉換的檔案。可使用萬用字元。沒有符合檔案的路徑會回報為非終止錯誤。目錄會被略過。</maml:para>
@@ -2054,6 +2105,18 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <maml:alert>
         <maml:para>即使使用 -WhatIf / -Confirm，也會執行不變更檔案的檢查（唯讀、-Destination 中已有同名檔案、同一次執行中檔名重複、輸出目標與來源相同、無效的位元組序列、無法表示的字元），並以錯誤回報。-WhatIf / -Confirm 的訊息是在求得轉換結果之後、寫入之前顯示，因此轉換結果與原檔相同而不重寫的檔案也會顯示。這是為了在指定 -Confirm 時不省略確認而有意設計的行為。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。符號連結與連接點會追蹤到底，取代連結目標的實體（連結本身保留）。若是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且硬式連結會中斷。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入並取代時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>是否為同一個檔案（寫入正在讀取的檔案 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否與來源相同）是以檔案的實體比較，而不是路徑字串。即使以 \\?\、UNC 系統管理共用（\\localhost\C$\…）、\\.\、subst 磁碟機、符號連結、連接點、硬式連結或大小寫差異改變寫法，也會判定為同一個檔案。在 Linux / macOS 上以解析連結後的路徑比較，因此硬式連結視為不同的檔案。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA 之類的主要資料流名稱，會視為與 a.txt 相同的檔案。不會讀寫替代資料流（a.txt:alt 等），並產生錯誤 AlternateDataStreamNotSupported（在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -2137,7 +2200,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>要讀取的 CSV 檔案路徑。可使用萬用字元；符合多個檔案時會依序讀取。</maml:para>
@@ -2175,7 +2238,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2189,10 +2252,10 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。經由管線傳入的檔案（FileInfo）會以 PSPath（Get-ChildItem、Get-Item 的輸出）或 FullName（New-Object System.IO.FileInfo 的輸出）繫結到此參數，因此名稱包含 [ ] 的檔案也會被視為該檔案本身。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -2227,7 +2290,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2241,7 +2304,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>要讀取的 CSV 檔案路徑。可使用萬用字元；符合多個檔案時會依序讀取。</maml:para>
@@ -2278,7 +2341,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2292,10 +2355,10 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+            <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。經由管線傳入的檔案（FileInfo）會以 PSPath（Get-ChildItem、Get-Item 的輸出）或 FullName（New-Object System.IO.FileInfo 的輸出）繫結到此參數，因此名稱包含 [ ] 的檔案也會被視為該檔案本身。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -2329,7 +2392,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+            <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2346,7 +2409,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。</maml:para>
+          <maml:para>判斷字元編碼時使用的文化特性名稱（例如 ko-KR）。EUC-KR 與 CP949、EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分的組合，要以文化特性來消除歧義，因此在日文環境讀取韓文或中文檔案時，請指定目標語言的文化特性。省略時使用執行中工作階段的文化特性。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。明確指定字元編碼時不進行判斷，因此這個參數不會有影響。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           <maml:para>-Culture 與 -UseCulture 不同。-Culture 只用於判斷字元編碼，-UseCulture 只決定分隔字元。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -2407,10 +2470,10 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。</maml:para>
+          <maml:para>目標檔案的路徑。直接使用輸入的值，不展開萬用字元。經由管線傳入的檔案（FileInfo）會以 PSPath（Get-ChildItem、Get-Item 的輸出）或 FullName（New-Object System.IO.FileInfo 的輸出）繫結到此參數，因此名稱包含 [ ] 的檔案也會被視為該檔案本身。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -2419,7 +2482,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
           <maml:para>要讀取的 CSV 檔案路徑。可使用萬用字元；符合多個檔案時會依序讀取。</maml:para>
@@ -2497,6 +2560,9 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <maml:alert>
         <maml:para>-DetectionLineCount 的驗證可能無法找出單位元組字元編碼的誤判。這是因為在單位元組字元編碼中，幾乎所有位元組序列都能解碼為正確的字元。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA 之類的主要資料流名稱，會視為與 a.txt 相同的檔案。不會讀寫替代資料流（a.txt:alt 等），並產生錯誤 AlternateDataStreamNotSupported（在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -2555,7 +2621,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:details>
     <maml:description>
       <maml:para>將每個輸入物件轉換為 CSV 記錄並寫入檔案。欄位由第一個物件決定。</maml:para>
-      <maml:para>CSV 的字串化使用從 PowerShell 7.x 的 Export-Csv 移植的處理，因此 Windows PowerShell 5.1 與 PowerShell 7.x 會寫出位元組完全相同的檔案。</maml:para>
+      <maml:para>CSV 的字串化使用從 PowerShell 7.x 的 Export-Csv 移植的處理，因此 Windows PowerShell 5.1 與 PowerShell 7.x 會寫出位元組完全相同的檔案。但日期與數值的格式由目前的文化特性與主機的 .NET（5.1 為 .NET Framework 的 NLS，7.x 為 .NET 的 ICU）決定，因此在 ko-KR、zh-TW、zh-HK、ar-SA 等文化特性下，兩個主機的結果可能不同（標準的 Export-Csv / ConvertTo-Csv 也相同）。</maml:para>
       <maml:para>字元編碼、BOM、換行、附加、唯讀屬性與開啟檔案的時機，都依照 Out-ProbedFile 的規則。</maml:para>
     </maml:description>
     <command:syntax>
@@ -2613,13 +2679,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止。先前寫入的行會保留，檔案仍保持一致。</maml:para>
+            <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止，並取消先前寫入的行，將檔案還原為附加前的內容（附加目標原本不存在時，會刪除建立的檔案）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。</maml:para>
+            <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。省略 -Encoding 時，為了從附加目標繼承字元編碼，仍會判斷附加目標（無法判斷的檔案會產生 EncodingDetectionFailed）。由於以繼承的字元編碼寫入，若要變更字元編碼，請同時指定 -Encoding。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2676,7 +2742,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+            <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2753,13 +2819,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止。先前寫入的行會保留，檔案仍保持一致。</maml:para>
+            <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止，並取消先前寫入的行，將檔案還原為附加前的內容（附加目標原本不存在時，會刪除建立的檔案）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。</maml:para>
+            <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。省略 -Encoding 時，為了從附加目標繼承字元編碼，仍會判斷附加目標（無法判斷的檔案會產生 EncodingDetectionFailed）。由於以繼承的字元編碼寫入，若要變更字元編碼，請同時指定 -Encoding。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2816,7 +2882,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+            <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2845,7 +2911,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。</maml:para>
+          <maml:para>略過 -Append 的一致性檢查，即使位元組序列與既有檔案的字元編碼不同也會寫入。沒有 -Append 時不會生效，並發出警告。省略 -Encoding 時，為了從附加目標繼承字元編碼，仍會判斷附加目標（無法判斷的檔案會產生 EncodingDetectionFailed）。由於以繼承的字元編碼寫入，若要變更字元編碼，請同時指定 -Encoding。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2856,7 +2922,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Append</maml:name>
         <maml:description>
-          <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止。先前寫入的行會保留，檔案仍保持一致。</maml:para>
+          <maml:para>附加到既有檔案的結尾。對 1 位元組以上的既有檔案不寫入 BOM。不存在或 0 位元組的檔案視同新建。寫入每一行之前，會檢查該行是否與以既有檔案的字元編碼寫入時產生相同的位元組序列（與 Add-ProbedContent 相同的檢查）。不一致時以終止錯誤停止，並取消先前寫入的行，將檔案還原為附加前的內容（附加目標原本不存在時，會刪除建立的檔案）。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2878,7 +2944,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。</maml:para>
+          <maml:para>需要判斷檔案時使用的文化特性名稱（例如 ko-KR）。判斷的對象是 -EncodingFrom 的參考檔案、明確指定 -Encoding Auto 時的輸出目標，以及 -Append 的附加目標。單靠位元組序列無法區分的組合以文化特性消除歧義。名稱與可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           <maml:para>-Culture 與 -UseCulture 不同。-Culture 只用於判斷字元編碼，-UseCulture 只決定分隔字元。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -3169,6 +3235,24 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <maml:alert>
         <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。附加的一致性檢查也會將附加目的地的 us-ascii 視為無 BOM 的 UTF-8。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。符號連結與連接點會追蹤到底，取代連結目標的實體（連結本身保留）。若是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且硬式連結會中斷。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>附加時會直接寫入附加目標檔案。會追蹤符號連結並附加到實體；連結目標不存在時，與標準的 Add-Content / Out-File -Append 相同，會在連結目標建立檔案。因錯誤（無法表示的字元、一致性檢查不符 EncodingChangeOnAppend、寫入失敗）而停止時，會取消該次呼叫寫入的內容，還原為附加前的長度（附加目標原本不存在時，會刪除建立的檔案）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入並取代時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>輸出目標是目標不存在的符號連結時，與標準的 Out-File / Export-Csv 相同，會在連結目標建立檔案（連結本身保留）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>是否為同一個檔案（寫入正在讀取的檔案 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否與來源相同）是以檔案的實體比較，而不是路徑字串。即使以 \\?\、UNC 系統管理共用（\\localhost\C$\…）、\\.\、subst 磁碟機、符號連結、連接點、硬式連結或大小寫差異改變寫法，也會判定為同一個檔案。在 Linux / macOS 上以解析連結後的路徑比較，因此硬式連結視為不同的檔案。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA 之類的主要資料流名稱，會視為與 a.txt 相同的檔案。不會讀寫替代資料流（a.txt:alt 等），並產生錯誤 AlternateDataStreamNotSupported（在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -3307,7 +3391,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:example>
         <maml:title>-------------------------- 範例 2 --------------------------</maml:title>
         <dev:code>PS C:\&gt; $enc = Resolve-Encoding .\a.txt | ConvertTo-DotNetEncoding
-[System.IO.File]::ReadAllText('.\a.txt', $enc)</dev:code>
+[System.IO.File]::ReadAllText((Convert-Path -LiteralPath .\a.txt), $enc)</dev:code>
         <dev:remarks>
           <maml:para>判斷檔案，並將結果直接傳給 .NET 的 API。</maml:para>
         </dev:remarks>
@@ -3366,21 +3450,21 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>用來解決 EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分之組合的文化特性名稱。省略時使用執行中工作階段的文化特性。</maml:para>
+            <maml:para>用來解決 EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分之組合的文化特性名稱。省略時使用執行中工作階段的文化特性。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。Combined 會先進行自有判斷，只有在無法判斷時才交給 UTF.Unknown。</maml:para>
+            <maml:para>判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。Combined 會先進行自有判斷，只有在無法判斷時才交給 UTF.Unknown。無法解譯的值會與其他命令相同，產生終止錯誤 InvalidStrategy。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>判斷時使用的開頭行數。省略時以整個檔案判斷（與以往相同）。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
+            <maml:para>判斷時使用的開頭行數。省略時以整個檔案判斷（與以往相同）。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。回報為 us-ascii 時，LineBreak 也是以 us-ascii（以 1 位元組為單位）計算的值。不會像 Import-ProbedCsv / Export-ProbedCsv 那樣改讀為 UTF-16 / UTF-32 後重新計算。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -3408,7 +3492,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>用來解決 EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分之組合的文化特性名稱。省略時使用執行中工作階段的文化特性。</maml:para>
+          <maml:para>用來解決 EUC-JP 與 Shift_JIS 這類單靠位元組序列無法區分之組合的文化特性名稱。省略時使用執行中工作階段的文化特性。是否接受由名稱的格式（BCP 47）決定，在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同。C、root、POSIX 之類的名稱不會被接受，並產生終止錯誤 InvalidCulture。格式正確時，不存在的名稱（如 xx-YY）也會被接受，但不屬於任何東亞語言圈。緊接在語言之後的擴充語言（如 zh-yue 的 yue）依 RFC 5646 視為語言，因此 zh-yue 會視為粵語（繁體中文、香港）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -3420,7 +3504,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>DetectionLineCount</maml:name>
         <maml:description>
-          <maml:para>判斷時使用的開頭行數。省略時以整個檔案判斷（與以往相同）。</maml:para>
+          <maml:para>判斷時使用的開頭行數。省略時以整個檔案判斷（與以往相同）。回報為 us-ascii 時，LineBreak 也是以 us-ascii（以 1 位元組為單位）計算的值。不會像 Import-ProbedCsv / Export-ProbedCsv 那樣改讀為 UTF-16 / UTF-32 後重新計算。</maml:para>
           <maml:para>行數是實體行數，以換行（CR-LF / LF / CR）計算，並非 CSV 的記錄數。CSV 引號中的換行也算作 1 行。</maml:para>
           <maml:para>結果只反映開頭 N 行。只出現在後半部的字元（ASCII 行之後的日文等）不會反映。開頭 N 行只有 ASCII 時，會回報 us-ascii。沒有 BOM 的 UTF-16 / UTF-32 若在開頭 N 行的英數字中夾雜兩個位元組都小於 0x80 的字元（如「上」U+4E0A），也會是 us-ascii（只有英數字的沒有 BOM 的 UTF-16 / UTF-32，會回報該字元編碼）。LineBreak 也是只以開頭 N 行判斷的結果。</maml:para>
           <maml:para>沒有換行的檔案會讀取整個檔案。判斷範圍達 2 GB 以上時無法判斷，會產生錯誤。沒有 BOM、包含 0x00 且在 64 KiB 以內、無法判定為 UTF-16 / UTF-32 的檔案，會以整個檔案判斷。</maml:para>
@@ -3458,7 +3542,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。Combined 會先進行自有判斷，只有在無法判斷時才交給 UTF.Unknown。</maml:para>
+          <maml:para>判斷方式: Combined（預設值）、NativeOnly、UtfUnknownOnly。Combined 會先進行自有判斷，只有在無法判斷時才交給 UTF.Unknown。無法解譯的值會與其他命令相同，產生終止錯誤 InvalidStrategy。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -3514,6 +3598,9 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </maml:alert>
       <maml:alert>
         <maml:para>所有位元組都小於 0x80 的沒有 BOM 的 UTF-16 / UTF-32，只有在所有單位都是英數字的形式（UTF-16LE 為非 00 的位元組後接 00）時才判斷為 UTF-16 / UTF-32，否則回報 us-ascii。已知的限制: (1) 包含兩個位元組都小於 0x80 的字元（「上」U+4E0A 在 UTF-16LE 為 0A 4E、「字」U+5B57、「あ」U+3042、「、」U+3001 等）的檔案會回報 us-ascii。在 Import-ProbedCsv / Export-ProbedCsv 中指定 -DetectionLineCount 即可正確讀取。(2) 像 41 00 這樣只有幾個位元組的檔案，無法與 ASCII 後接 00 的內容區別。若為英數字的形式，會回報 UTF-16 / UTF-32。(3) 包含 U+0000 字元的檔案會回報 us-ascii。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA 之類的主要資料流名稱，會視為與 a.txt 相同的檔案。不會讀寫替代資料流（a.txt:alt 等），並產生錯誤 AlternateDataStreamNotSupported（在 Windows PowerShell 5.1 與 PowerShell 7.x 中相同）。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>

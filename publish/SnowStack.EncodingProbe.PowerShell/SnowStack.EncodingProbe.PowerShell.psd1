@@ -35,7 +35,7 @@
             ReleaseNotes = @'
 1.3.0
 CSV の読み書きコマンドを 2 つ追加し、Resolve-Encoding で先頭の行だけを判定できるようにしました。
-同梱のクラスライブラリも 1.3.0 です（判定処理の不具合を 2 件修正）。
+同梱のクラスライブラリも 1.3.0 です（判定処理の不具合を 2 件修正し、カルチャー名の検証を改めました）。
 
 - Import-ProbedCsv : 文字エンコーディングを判定して CSV ファイルを読み込みます。解析は PowerShell 7.x の
   Import-Csv から移植した処理で行うため、PowerShell 5.1 でも 7.x と同じ結果になります（CR だけの改行の
@@ -43,7 +43,7 @@ CSV の読み書きコマンドを 2 つ追加し、Resolve-Encoding で先頭�
   Get-ChildItem | Import-ProbedCsv も 5.1 で動きます。
 - Export-ProbedCsv : 文字エンコーディング・BOM・改行を指定して CSV ファイルに書き出します。
   文字列化は PowerShell 7.x の Export-Csv から移植した処理で行うため、5.1 と 7.x でバイト単位まで同じ
-  ファイルになります。-Encoding を省略すると 5.1 でも utf8NoBOM で書きます。-Append では追記先の
+  ファイルになります（日付・数値の書式は、カルチャーとホストの .NET によって違うことがあります）。-Encoding を省略すると 5.1 でも utf8NoBOM で書きます。-Append では追記先の
   文字エンコーディングと改行を継承し、最後の行に改行が無ければ補ってから追記します。
   -UseQuotes / -QuoteFields / -NoHeader は 5.1 でも使えます。
 - -DetectionLineCount : Resolve-Encoding / Import-ProbedCsv / Export-ProbedCsv で、先頭の N 行だけで
@@ -60,6 +60,18 @@ CSV の読み書きコマンドを 2 つ追加し、Resolve-Encoding で先頭�
   エラー UnrepresentableCharacter にしてファイルを元のままにします。
 - 挙動の変更: 継承した文字エンコーディングが us-ascii の場合は、BOM 無しの UTF-8 とみなして書きます
   （英数字だけのログや CSV にも日本語を追記できます）。
+- 挙動の変更: 別名 FullName を -Path から -LiteralPath に移しました。Get-ChildItem から渡したファイルの
+  名前に [ ] があっても、そのファイルそのものを読み書きします。Set-ProbedContent / Add-ProbedContent -Path の
+  ワイルドカードがどのファイルにも一致しないときは、エラー ItemNotFound にします。
+- 挙動の変更: 読み取り中のファイルへの書き込み（SamePathRoundTrip）と Convert-ProbedContent -Destination の
+  変換元との比較を、パスの文字列ではなくファイルの実体で行います（\\?\・UNC・subst・リンクの書き方でも検出）。
+  1 回の Set-ProbedContent で同じファイルを 2 回指定しても、1 回書いたのと同じ結果になります。
+- 挙動の変更: 追記の整合性検査（EncodingChangeOnAppend）で止まった場合も、ファイルを追記の前に戻します。
+- 挙動の変更: シンボリックリンクに上書きするとリンクの先の実体を書き換え、リンクを残します。ハードリンクは
+  切りません（Convert-ProbedContent を含む）。リンク切れへの Set-ProbedContent はエラー LinkTargetNotFound です。
+- 挙動の変更: a.txt::$DATA は a.txt として扱い、代替データストリームはエラー AlternateDataStreamNotSupported
+  にします。Resolve-Encoding の -Strategy / -Culture の誤りは、ほかのコマンドと同じ ID のエラーにします。
+  -Culture に受け付ける名前は、名前の形（BCP 47）で決めます（C・root は両ホストで InvalidCulture）。
 
 CSV の読み書き処理には、PowerShell（Copyright (c) Microsoft Corporation、MIT License）のコードの
 一部を改変して含めています。詳細は THIRD-PARTY-NOTICES.txt を参照してください。

@@ -18,7 +18,7 @@
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Get-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>対象ファイルのパス。ワイルドカードを使用できます。</maml:para>
@@ -48,7 +48,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -62,10 +62,10 @@
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Get-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。パイプラインから渡したファイル（FileInfo）は、PSPath（Get-ChildItem・Get-Item の出力）または FullName（New-Object System.IO.FileInfo の出力）でこのパラメーターに束縛されるので、名前に [ ] を含むファイルも、そのファイルそのものとして扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -92,7 +92,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -109,7 +109,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -129,10 +129,10 @@
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。パイプラインから渡したファイル（FileInfo）は、PSPath（Get-ChildItem・Get-Item の出力）または FullName（New-Object System.IO.FileInfo の出力）でこのパラメーターに束縛されるので、名前に [ ] を含むファイルも、そのファイルそのものとして扱います。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -141,7 +141,7 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
           <maml:para>対象ファイルのパス。ワイルドカードを使用できます。</maml:para>
@@ -227,6 +227,9 @@
       <maml:alert>
         <maml:para>シングルバイト系の文字エンコーディング（windows-1252、ISO-8859 など）はバイト列の構造からは判別できず、文章の統計で推定しています。そのため判定の成否は長さよりも内容に左右されます。文字の一覧、記号・数字の多い行、その言語で通常使わない文字を含むテキストでは、数百バイトあっても判定できない（CodePage が -1）ことがあります。その場合は -Encoding でコードページを明示してください。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -296,10 +299,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Set-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
-            <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。</maml:para>
+            <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。ワイルドカードがどのファイルにも一致しない場合は、書き込まずに非終了エラー ItemNotFound を報告します（標準の Set-Content / Add-Content と同じ）。名前にワイルドカード文字を含むファイルを作るには -LiteralPath を使ってください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -358,7 +361,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -379,10 +382,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。パイプラインから渡したファイル（FileInfo）は、PSPath（Get-ChildItem・Get-Item の出力）または FullName（New-Object System.IO.FileInfo の出力）でこのパラメーターに束縛されるので、名前に [ ] を含むファイルも、そのファイルそのものとして扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -434,7 +437,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -462,7 +465,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -517,10 +520,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。パイプラインから渡したファイル（FileInfo）は、PSPath（Get-ChildItem・Get-Item の出力）または FullName（New-Object System.IO.FileInfo の出力）でこのパラメーターに束縛されるので、名前に [ ] を含むファイルも、そのファイルそのものとして扱います。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -540,10 +543,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
-          <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。</maml:para>
+          <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。ワイルドカードがどのファイルにも一致しない場合は、書き込まずに非終了エラー ItemNotFound を報告します（標準の Set-Content / Add-Content と同じ）。名前にワイルドカード文字を含むファイルを作るには -LiteralPath を使ってください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -641,6 +644,24 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <maml:alert>
         <maml:para>継承した文字エンコーディング（書き込み先・追記先、-EncodingFrom の参照先、-Encoding に渡した EncodingInformation）が us-ascii の場合は、BOM 無しの UTF-8 とみなして書きます。すべてのバイトが 0x80 未満のファイルは UTF-8 としても正しいため、英数字だけのログや CSV にも日本語を書き足せます。ASCII の文字だけを書く場合のバイト列は us-ascii と同じです。-Encoding ascii を明示した場合は us-ascii のままです。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>上書きは、書き込み先と同じフォルダーの一時ファイル（.&lt;名前&gt;.&lt;8 桁の 16 進&gt;.probedtmp）に書き終えてから置き換えるので、途中で失敗しても元のファイルは変わりません。シンボリックリンク・ジャンクションは最後までたどり、リンクの先の実体を置き換えます（リンクはそのまま残ります）。ハードリンク（リンク数が 2 以上）と、フォルダーにファイルを作る権限が無い場合は、元のファイルを一時フォルダーに写してから元のファイルに直接書き、失敗したら写しから書き戻します。そのため大きなファイルでは、写す時間がかかります。どの書き方でも、属性（読み取り専用・隠し）・作成日時・代替データストリーム・ACL は保たれます。Linux / macOS では、元のファイルのアクセス権を引き継ぎますが、所有者は引き継げず、ハードリンクは切れます。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>ほかのプロセスが書き込み先を開いている場合、上書きが失敗するのは、ファイルを開く時点ではなく、書き込みを完了して置き換える時点です（WriteFailed など）。そのときも元のファイルは変わらず、一時ファイルも残りません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>書き込み先がリンク先の存在しないシンボリックリンクの場合は、標準の Set-Content と同じく書き込まず、非終了エラー LinkTargetNotFound を報告します（リンク先を作るには、Out-ProbedFile を使うか、リンク先のパスを指定してください）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>1 回の呼び出しで同じファイルを 2 回以上指定した場合（a.txt と A.TXT、ハードリンクの 2 つの名前など）は 1 つの書き込み先として扱い、1 回書いたのと同じ結果になります。パスをパイプラインから受け取る場合も同じです（標準の Set-Content と同じ）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -710,10 +731,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Add-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
-            <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。</maml:para>
+            <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。ワイルドカードがどのファイルにも一致しない場合は、書き込まずに非終了エラー ItemNotFound を報告します（標準の Set-Content / Add-Content と同じ）。名前にワイルドカード文字を含むファイルを作るには -LiteralPath を使ってください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -772,13 +793,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。このスイッチを指定すると既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Force にこの効果はありません。</maml:para>
+            <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。-Encoding を指定した場合は、既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングは変わりません。文字エンコーディングを変えるには -Encoding も指定してください。-Force にこの効果はありません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -799,10 +820,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。パイプラインから渡したファイル（FileInfo）は、PSPath（Get-ChildItem・Get-Item の出力）または FullName（New-Object System.IO.FileInfo の出力）でこのパラメーターに束縛されるので、名前に [ ] を含むファイルも、そのファイルそのものとして扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -854,13 +875,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。このスイッチを指定すると既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Force にこの効果はありません。</maml:para>
+            <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。-Encoding を指定した場合は、既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングは変わりません。文字エンコーディングを変えるには -Encoding も指定してください。-Force にこの効果はありません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -877,7 +898,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。このスイッチを指定すると既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Force にこの効果はありません。</maml:para>
+          <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。-Encoding を指定した場合は、既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングは変わりません。文字エンコーディングを変えるには -Encoding も指定してください。-Force にこの効果はありません。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -899,7 +920,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -954,10 +975,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。パイプラインから渡したファイル（FileInfo）は、PSPath（Get-ChildItem・Get-Item の出力）または FullName（New-Object System.IO.FileInfo の出力）でこのパラメーターに束縛されるので、名前に [ ] を含むファイルも、そのファイルそのものとして扱います。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -977,10 +998,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
-          <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。</maml:para>
+          <maml:para>対象ファイルのパス。ワイルドカードを使用できます。ファイルが存在しない場合は新規作成しますが、文字エンコーディングをそのファイルから継承する必要がある場合はエラーになります（-Encoding を参照）。ワイルドカードがどのファイルにも一致しない場合は、書き込まずに非終了エラー ItemNotFound を報告します（標準の Set-Content / Add-Content と同じ）。名前にワイルドカード文字を含むファイルを作るには -LiteralPath を使ってください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -1090,6 +1111,18 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <maml:alert>
         <maml:para>継承した文字エンコーディング（書き込み先・追記先、-EncodingFrom の参照先、-Encoding に渡した EncodingInformation）が us-ascii の場合は、BOM 無しの UTF-8 とみなして書きます。すべてのバイトが 0x80 未満のファイルは UTF-8 としても正しいため、英数字だけのログや CSV にも日本語を書き足せます。ASCII の文字だけを書く場合のバイト列は us-ascii と同じです。-Encoding ascii を明示した場合は us-ascii のままです。追記の整合性検査でも、追記先の us-ascii を BOM 無しの UTF-8 とみなします。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>追記は、追記先のファイルに直接書きます。シンボリックリンクはたどって実体に追記し、リンク先が存在しない場合は、標準の Add-Content / Out-File -Append と同じくリンクの先にファイルを作ります。エラー（表現できない文字、整合性検査の不一致 EncodingChangeOnAppend、書き込みの失敗）で止まった場合は、その呼び出しで書いた分を取り消し、追記の前の長さに戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>1 回の指定（-LiteralPath a.txt, A.TXT など）の中で同じファイルが重なった場合は、1 回だけ追記します（7.x の標準の Add-Content と同じ。5.1 の標準は 2 件目をエラーにします）。パイプラインのレコードごとに同じファイルを渡した場合は、レコードごとに追記します（両ホストの標準と同じ）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -1189,13 +1222,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まります。それまでに書いた行は残り、ファイルは一貫したままです。</maml:para>
+            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。</maml:para>
+            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1226,7 +1259,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1290,13 +1323,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まります。それまでに書いた行は残り、ファイルは一貫したままです。</maml:para>
+            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。</maml:para>
+            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1327,7 +1360,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1356,7 +1389,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。</maml:para>
+          <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1367,7 +1400,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Append</maml:name>
         <maml:description>
-          <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まります。それまでに書いた行は残り、ファイルは一貫したままです。</maml:para>
+          <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1389,7 +1422,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+          <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1590,6 +1623,24 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <maml:alert>
         <maml:para>継承した文字エンコーディング（書き込み先・追記先、-EncodingFrom の参照先、-Encoding に渡した EncodingInformation）が us-ascii の場合は、BOM 無しの UTF-8 とみなして書きます。すべてのバイトが 0x80 未満のファイルは UTF-8 としても正しいため、英数字だけのログや CSV にも日本語を書き足せます。ASCII の文字だけを書く場合のバイト列は us-ascii と同じです。-Encoding ascii を明示した場合は us-ascii のままです。追記の整合性検査でも、追記先の us-ascii を BOM 無しの UTF-8 とみなします。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>上書きは、書き込み先と同じフォルダーの一時ファイル（.&lt;名前&gt;.&lt;8 桁の 16 進&gt;.probedtmp）に書き終えてから置き換えるので、途中で失敗しても元のファイルは変わりません。シンボリックリンク・ジャンクションは最後までたどり、リンクの先の実体を置き換えます（リンクはそのまま残ります）。ハードリンク（リンク数が 2 以上）と、フォルダーにファイルを作る権限が無い場合は、元のファイルを一時フォルダーに写してから元のファイルに直接書き、失敗したら写しから書き戻します。そのため大きなファイルでは、写す時間がかかります。どの書き方でも、属性（読み取り専用・隠し）・作成日時・代替データストリーム・ACL は保たれます。Linux / macOS では、元のファイルのアクセス権を引き継ぎますが、所有者は引き継げず、ハードリンクは切れます。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>追記は、追記先のファイルに直接書きます。シンボリックリンクはたどって実体に追記し、リンク先が存在しない場合は、標準の Add-Content / Out-File -Append と同じくリンクの先にファイルを作ります。エラー（表現できない文字、整合性検査の不一致 EncodingChangeOnAppend、書き込みの失敗）で止まった場合は、その呼び出しで書いた分を取り消し、追記の前の長さに戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>ほかのプロセスが書き込み先を開いている場合、上書きが失敗するのは、ファイルを開く時点ではなく、書き込みを完了して置き換える時点です（WriteFailed など）。そのときも元のファイルは変わらず、一時ファイルも残りません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>出力先がリンク先の存在しないシンボリックリンクの場合は、標準の Out-File / Export-Csv と同じく、リンクの先にファイルを作ります（リンクはそのまま残ります）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -1653,12 +1704,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
     <maml:description>
       <maml:para>テキストファイルを、別の文字エンコーディング・BOM・改行で書き直します。文字そのものは変えません。対象のファイルは -Path / -LiteralPath で指定するか、Get-ChildItem の出力をパイプで渡します。このコマンドレット自体は -Recurse や絞り込みの機能を持ちません。</maml:para>
       <maml:para>文字を失うことはありません。変換元の文字エンコーディングとして不正なバイト列や、変換先の文字エンコーディングで表現できない文字を含むファイルは変換せず、そのまま残します。エラーメッセージにその位置を示します。そのような文字を置き換えて変換するオプションはありません。</maml:para>
-      <maml:para>各ファイルは同じフォルダーの一時ファイルに書いてから元のファイルと置き換えるため、途中で失敗しても元のファイルは壊れません。変換結果が元のバイト列と完全に同じなら書き直さず、更新日時も変わりません。</maml:para>
+      <maml:para>各ファイルは同じフォルダーの一時ファイルに書いてから元のファイルと置き換えるため、途中で失敗しても元のファイルは壊れません。シンボリックリンクはリンクの先の実体を置き換え（リンクは残ります）、ハードリンクは切らずに元のファイルへ直接書きます（注意事項を参照）。変換結果が元のバイト列と完全に同じなら書き直さず、更新日時も変わりません。</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Convert-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>変換するファイル。ワイルドカードを使えます。一致するファイルが無いパスは非終了エラーとして報告します。ディレクトリは飛ばします。</maml:para>
@@ -1703,7 +1754,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+            <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1748,10 +1799,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Convert-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>変換するファイル。入力どおりに使い、ワイルドカードは展開しません。Get-ChildItem の出力は PSPath プロパティでこのパラメーターに束縛されます。ディレクトリは飛ばし、詳細メッセージに記録します。</maml:para>
+            <maml:para>変換するファイル。入力どおりに使い、ワイルドカードは展開しません。Get-ChildItem の出力は PSPath プロパティでこのパラメーターに束縛されます。ディレクトリは飛ばし、詳細メッセージに記録します。パイプラインから渡したファイル（FileInfo）は、PSPath（Get-ChildItem・Get-Item の出力）または FullName（New-Object System.IO.FileInfo の出力）でこのパラメーターに束縛されるので、名前に [ ] を含むファイルも、そのファイルそのものとして扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -1793,7 +1844,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+            <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1864,7 +1915,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+          <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1932,10 +1983,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>変換するファイル。入力どおりに使い、ワイルドカードは展開しません。Get-ChildItem の出力は PSPath プロパティでこのパラメーターに束縛されます。ディレクトリは飛ばし、詳細メッセージに記録します。</maml:para>
+          <maml:para>変換するファイル。入力どおりに使い、ワイルドカードは展開しません。Get-ChildItem の出力は PSPath プロパティでこのパラメーターに束縛されます。ディレクトリは飛ばし、詳細メッセージに記録します。パイプラインから渡したファイル（FileInfo）は、PSPath（Get-ChildItem・Get-Item の出力）または FullName（New-Object System.IO.FileInfo の出力）でこのパラメーターに束縛されるので、名前に [ ] を含むファイルも、そのファイルそのものとして扱います。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -1955,7 +2006,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
           <maml:para>変換するファイル。ワイルドカードを使えます。一致するファイルが無いパスは非終了エラーとして報告します。ディレクトリは飛ばします。</maml:para>
@@ -2054,6 +2105,18 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <maml:alert>
         <maml:para>-WhatIf / -Confirm でも、ファイルを変更しない検査（読み取り専用、-Destination に同名のファイルがある、同じ実行でファイル名が重なる、出力先が変換元と同じ、不正なバイト列、表現できない文字）は行い、エラーとして報告します。-WhatIf / -Confirm のメッセージは変換結果を求めた後・書き込みの前に出すため、変換結果が元と同じで書き直さないファイルにも出ます。-Confirm を指定したときに確認を省かないための意図した動作です。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>上書きは、書き込み先と同じフォルダーの一時ファイル（.&lt;名前&gt;.&lt;8 桁の 16 進&gt;.probedtmp）に書き終えてから置き換えるので、途中で失敗しても元のファイルは変わりません。シンボリックリンク・ジャンクションは最後までたどり、リンクの先の実体を置き換えます（リンクはそのまま残ります）。ハードリンク（リンク数が 2 以上）と、フォルダーにファイルを作る権限が無い場合は、元のファイルを一時フォルダーに写してから元のファイルに直接書き、失敗したら写しから書き戻します。そのため大きなファイルでは、写す時間がかかります。どの書き方でも、属性（読み取り専用・隠し）・作成日時・代替データストリーム・ACL は保たれます。Linux / macOS では、元のファイルのアクセス権を引き継ぎますが、所有者は引き継げず、ハードリンクは切れます。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>ほかのプロセスが書き込み先を開いている場合、上書きが失敗するのは、ファイルを開く時点ではなく、書き込みを完了して置き換える時点です（WriteFailed など）。そのときも元のファイルは変わらず、一時ファイルも残りません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -2137,7 +2200,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>読み込む CSV ファイルのパス。ワイルドカードを使用でき、複数のファイルに一致した場合は順に読みます。</maml:para>
@@ -2175,7 +2238,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2189,10 +2252,10 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。パイプラインから渡したファイル（FileInfo）は、PSPath（Get-ChildItem・Get-Item の出力）または FullName（New-Object System.IO.FileInfo の出力）でこのパラメーターに束縛されるので、名前に [ ] を含むファイルも、そのファイルそのものとして扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -2227,7 +2290,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2241,7 +2304,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>読み込む CSV ファイルのパス。ワイルドカードを使用でき、複数のファイルに一致した場合は順に読みます。</maml:para>
@@ -2278,7 +2341,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2292,10 +2355,10 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+            <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。パイプラインから渡したファイル（FileInfo）は、PSPath（Get-ChildItem・Get-Item の出力）または FullName（New-Object System.IO.FileInfo の出力）でこのパラメーターに束縛されるので、名前に [ ] を含むファイルも、そのファイルそのものとして扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -2329,7 +2392,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2346,7 +2409,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。</maml:para>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           <maml:para>-Culture は -UseCulture とは別のものです。-Culture は文字エンコーディングの判定だけに使い、-UseCulture は区切り文字だけを決めます。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -2407,10 +2470,10 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。</maml:para>
+          <maml:para>対象ファイルのパス。入力された値がそのまま使われ、ワイルドカードは展開されません。パイプラインから渡したファイル（FileInfo）は、PSPath（Get-ChildItem・Get-Item の出力）または FullName（New-Object System.IO.FileInfo の出力）でこのパラメーターに束縛されるので、名前に [ ] を含むファイルも、そのファイルそのものとして扱います。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -2419,7 +2482,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
           <maml:para>読み込む CSV ファイルのパス。ワイルドカードを使用でき、複数のファイルに一致した場合は順に読みます。</maml:para>
@@ -2497,6 +2560,9 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <maml:alert>
         <maml:para>-DetectionLineCount の検証は、シングルバイト系の文字エンコーディングの誤判定を見つけられないことがあります。シングルバイト系では、ほとんどのバイト列が正しい文字として復号できるためです。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -2555,7 +2621,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:details>
     <maml:description>
       <maml:para>入力された各オブジェクトを CSV のレコードに変換してファイルに書き出します。列は最初のオブジェクトで決まります。</maml:para>
-      <maml:para>CSV の文字列化には PowerShell 7.x の Export-Csv から移植した処理を使うため、Windows PowerShell 5.1 と PowerShell 7.x でバイト単位まで同じファイルになります。</maml:para>
+      <maml:para>CSV の文字列化には PowerShell 7.x の Export-Csv から移植した処理を使うため、Windows PowerShell 5.1 と PowerShell 7.x でバイト単位まで同じファイルになります。ただし、日付・数値の書式は現在のカルチャーとホストの .NET（5.1 は .NET Framework の NLS、7.x は .NET の ICU）で決まるため、ko-KR・zh-TW・zh-HK・ar-SA などのカルチャーでは両ホストで違うことがあります（標準の Export-Csv / ConvertTo-Csv も同じです）。</maml:para>
       <maml:para>文字エンコーディング、BOM、改行、追記、読み取り専用属性、ファイルを開く時点は、Out-ProbedFile の規則に従います。</maml:para>
     </maml:description>
     <command:syntax>
@@ -2613,13 +2679,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まります。それまでに書いた行は残り、ファイルは一貫したままです。</maml:para>
+            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。</maml:para>
+            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2676,7 +2742,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2753,13 +2819,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まります。それまでに書いた行は残り、ファイルは一貫したままです。</maml:para>
+            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。</maml:para>
+            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2816,7 +2882,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2845,7 +2911,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。</maml:para>
+          <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2856,7 +2922,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Append</maml:name>
         <maml:description>
-          <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まります。それまでに書いた行は残り、ファイルは一貫したままです。</maml:para>
+          <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2878,7 +2944,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。</maml:para>
+          <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           <maml:para>-Culture は -UseCulture とは別のものです。-Culture は文字エンコーディングの判定だけに使い、-UseCulture は区切り文字だけを決めます。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -3169,6 +3235,24 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <maml:alert>
         <maml:para>継承した文字エンコーディング（書き込み先・追記先、-EncodingFrom の参照先、-Encoding に渡した EncodingInformation）が us-ascii の場合は、BOM 無しの UTF-8 とみなして書きます。すべてのバイトが 0x80 未満のファイルは UTF-8 としても正しいため、英数字だけのログや CSV にも日本語を書き足せます。ASCII の文字だけを書く場合のバイト列は us-ascii と同じです。-Encoding ascii を明示した場合は us-ascii のままです。追記の整合性検査でも、追記先の us-ascii を BOM 無しの UTF-8 とみなします。</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>上書きは、書き込み先と同じフォルダーの一時ファイル（.&lt;名前&gt;.&lt;8 桁の 16 進&gt;.probedtmp）に書き終えてから置き換えるので、途中で失敗しても元のファイルは変わりません。シンボリックリンク・ジャンクションは最後までたどり、リンクの先の実体を置き換えます（リンクはそのまま残ります）。ハードリンク（リンク数が 2 以上）と、フォルダーにファイルを作る権限が無い場合は、元のファイルを一時フォルダーに写してから元のファイルに直接書き、失敗したら写しから書き戻します。そのため大きなファイルでは、写す時間がかかります。どの書き方でも、属性（読み取り専用・隠し）・作成日時・代替データストリーム・ACL は保たれます。Linux / macOS では、元のファイルのアクセス権を引き継ぎますが、所有者は引き継げず、ハードリンクは切れます。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>追記は、追記先のファイルに直接書きます。シンボリックリンクはたどって実体に追記し、リンク先が存在しない場合は、標準の Add-Content / Out-File -Append と同じくリンクの先にファイルを作ります。エラー（表現できない文字、整合性検査の不一致 EncodingChangeOnAppend、書き込みの失敗）で止まった場合は、その呼び出しで書いた分を取り消し、追記の前の長さに戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>ほかのプロセスが書き込み先を開いている場合、上書きが失敗するのは、ファイルを開く時点ではなく、書き込みを完了して置き換える時点です（WriteFailed など）。そのときも元のファイルは変わらず、一時ファイルも残りません。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>出力先がリンク先の存在しないシンボリックリンクの場合は、標準の Out-File / Export-Csv と同じく、リンクの先にファイルを作ります（リンクはそのまま残ります）。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -3307,7 +3391,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:example>
         <maml:title>-------------------------- 例 2 --------------------------</maml:title>
         <dev:code>PS C:\&gt; $enc = Resolve-Encoding .\a.txt | ConvertTo-DotNetEncoding
-[System.IO.File]::ReadAllText('.\a.txt', $enc)</dev:code>
+[System.IO.File]::ReadAllText((Convert-Path -LiteralPath .\a.txt), $enc)</dev:code>
         <dev:remarks>
           <maml:para>ファイルを判定し、その結果をそのまま .NET の API に渡します。</maml:para>
         </dev:remarks>
@@ -3366,21 +3450,21 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせを解決するためのカルチャー名。省略時は実行中のセッションのカルチャーを使います。</maml:para>
+            <maml:para>EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせを解決するためのカルチャー名。省略時は実行中のセッションのカルチャーを使います。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。解釈できない値は、ほかのコマンドと同じく終了エラー InvalidStrategy になります。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>判定に使う先頭の行数。省略時はファイル全体で判定します（従来どおり）。BOM が無く、0x00 を含む 64 KiB 以内のファイルで、UTF-16 / UTF-32 と決められないものは、ファイル全体で判定します。</maml:para>
+            <maml:para>判定に使う先頭の行数。省略時はファイル全体で判定します（従来どおり）。BOM が無く、0x00 を含む 64 KiB 以内のファイルで、UTF-16 / UTF-32 と決められないものは、ファイル全体で判定します。us-ascii と報告する場合、LineBreak も us-ascii（1 バイト単位）として数えた値です。Import-ProbedCsv / Export-ProbedCsv のように UTF-16 / UTF-32 に読み替えて数え直すことはしません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -3408,7 +3492,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせを解決するためのカルチャー名。省略時は実行中のセッションのカルチャーを使います。</maml:para>
+          <maml:para>EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせを解決するためのカルチャー名。省略時は実行中のセッションのカルチャーを使います。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -3420,7 +3504,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>DetectionLineCount</maml:name>
         <maml:description>
-          <maml:para>判定に使う先頭の行数。省略時はファイル全体で判定します（従来どおり）。</maml:para>
+          <maml:para>判定に使う先頭の行数。省略時はファイル全体で判定します（従来どおり）。us-ascii と報告する場合、LineBreak も us-ascii（1 バイト単位）として数えた値です。Import-ProbedCsv / Export-ProbedCsv のように UTF-16 / UTF-32 に読み替えて数え直すことはしません。</maml:para>
           <maml:para>行数は物理的な行数で、改行（CR-LF / LF / CR）で数えます。CSV のレコード数ではありません。CSV の引用符の中の改行も 1 行と数えます。</maml:para>
           <maml:para>結果は先頭 N 行だけを見たものです。後半にだけ現れる文字（ASCII の行の後の日本語など）は反映されません。先頭 N 行が ASCII だけなら us-ascii と報告します。BOM 無しの UTF-16 / UTF-32 で、先頭 N 行の英数字の中に 2 バイトとも 0x80 未満になる文字（「上」U+4E0A など）が混じる場合も us-ascii になります（英数字だけの BOM 無し UTF-16 / UTF-32 は、その文字エンコーディングと報告します）。LineBreak も先頭 N 行だけで判定した結果です。</maml:para>
           <maml:para>改行の無いファイルでは、ファイル全体を読みます。判定する範囲が 2 GB 以上になる場合は判定できず、エラーになります。BOM が無く、0x00 を含む 64 KiB 以内のファイルで、UTF-16 / UTF-32 と決められないものは、ファイル全体で判定します。</maml:para>
@@ -3458,7 +3542,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。</maml:para>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。解釈できない値は、ほかのコマンドと同じく終了エラー InvalidStrategy になります。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -3514,6 +3598,9 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </maml:alert>
       <maml:alert>
         <maml:para>すべてのバイトが 0x80 未満の BOM 無し UTF-16 / UTF-32 は、すべての単位が英数字の形（UTF-16LE なら 00 以外のバイトの後に 00）になっている場合だけ UTF-16 / UTF-32 と判定し、それ以外は us-ascii と報告します。既知の限界: (1) 2 バイトとも 0x80 未満になる文字（「上」U+4E0A = UTF-16LE で 0A 4E、「字」U+5B57、「あ」U+3042、「、」U+3001 など）を含むファイルは us-ascii と報告します。Import-ProbedCsv / Export-ProbedCsv では、-DetectionLineCount を指定すると正しく読めます。(2) 41 00 のような数バイトのファイルは、ASCII の後に 00 が付いたものと区別できません。英数字の形であれば UTF-16 / UTF-32 と報告します。(3) U+0000 の文字を含むファイルは us-ascii と報告します。</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>

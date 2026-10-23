@@ -6,7 +6,8 @@
   仕様書に書かれていなかったため実装側で決めた点を残す（1.2.0 の実装記録と同じ形式）
 - 章の構成: 第一次（共通の部品と `Resolve-Encoding -DetectionLineCount`）は 1〜5 章、第二次（`Import-ProbedCsv`）は 6 章、第三次（`Export-ProbedCsv` と仕上げ）は 7 章、
   第四次（クラスライブラリの `0x00` を含む入力の判定の修正。`docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md`）は 8 章、
-  第五次の前半（書き込みで文字を失う件・切り出し・改行の判定・ISO-2022・CSV の追記。テスト担当のブラックボックステストの不具合）は 9 章
+  第五次の前半（書き込みで文字を失う件・切り出し・改行の判定・ISO-2022・CSV の追記。テスト担当のブラックボックステストの不具合）は 9 章、
+  第五次の後半（パスの束縛・同じファイルの判定・リンクと権限・追記の取り消し・検証の部品・文書）は 10 章
 
 ---
 
@@ -916,3 +917,390 @@ ID `CannotAppendCsvWithEmptyPropertyName`（InvalidData、対象は出力先の�
 | `SnowStack.EncodingProbe.csproj` の `PackageReleaseNotes`・`.psd1` の `ReleaseNotes` | 第五次の内容を追加 |
 | `docs/EncodingProbe-1.3.0-調査-切り出しの境目.md` | 調査ブランチからそのまま持ってきた（変えていない） |
 | `CLAUDE.md` | 切り出しの調査の結論、調査ブランチをマージしないこと、第五次の作業記録 |
+
+## 10. 第五次（後半） — パスの束縛・同じファイルの判定・リンクと権限・追記の取り消し・検証の部品・文書（2026-10-23）
+
+テスト担当のブラックボックステストの残り（BUG-0003〜0008・0011・0015〜0017）と H-17（`Convert-ProbedContent` がハードリンクを切る件）、
+前半の報告で判断を求めた 9.9 節の 1〜4 を片付けた。
+
+### 10.1 利用者の決定
+
+| 事項 | 決定 |
+|---|---|
+| 別名 `FullName` を `-Path` から `-LiteralPath` に移す・BUG-0006 / 0007 のエラー ID を変える | 認める（まだ広く使われていないため。依頼 0.4） |
+| BUG-0011 | 挙動を変えず、ヘルプを直す |
+| `Resolve-Encoding -DetectionLineCount` の `LineBreak`（9.9 節の 1） | 今のまま。`us-ascii` と報告する以上、改行も `us-ascii` として数える。ヘルプに一言書く |
+| `EncodingChangeOnAppend`（9.9 節の 2） | ファイルを元に戻す（10.5 節） |
+| パイプラインの停止 Ctrl+C（9.9 節の 3） | 今のまま、それまでに書いた内容を残す |
+| 一時ファイルで置き換える方法（9.9 節の 4） | 残し、リンクと権限の場合だけ書き方を切り替える（10.6 節） |
+| `::$DATA`（依頼 4 章 6.。計画時の質問） | **主ストリームとして扱う**（`a.txt::$DATA` は `a.txt`。ほかのストリームは両ホストで `AlternateDataStreamNotSupported`） |
+| `-Culture` の範囲（依頼 5 章 3.。計画時の質問） | **独自の書式で決める**（BCP 47 の形。`C`・`root` は両ホストで `InvalidCulture`） |
+| リンク切れのシンボリックリンク（計画時の質問） | **各コマンドを標準に合わせる**（`Set-ProbedContent` は書かずに `LinkTargetNotFound`、`Out-ProbedFile`・`Export-ProbedCsv`・追記はリンクの先に作る） |
+| BUG-0008 (5) `Os.Description` の末尾の空白（計画時の質問） | **コアで Trim する** |
+
+### 10.2 標準の実測（依頼 1 章 2.・3 章 1.・4 章 5.）
+
+PowerShell 7.6.7 と Windows PowerShell 5.1.26100.9711、Windows 11 Pro 10.0.26300、ja-JP。逆コンパイルはしていない。使い捨てのスクリプトで測った（リポジトリには入れていない）。
+
+**ワイルドカードが 0 件（依頼 1 章 2.）。** 両ホストで同じ。
+
+| 操作 | 結果 |
+|---|---|
+| `Set-Content -Path 'c[1].txt'`・`'x*.txt'` | 非終了エラー `ItemNotFound`（ObjectNotFound）。ファイルは作らない |
+| `Add-Content -Path 'c[1].txt'`・`'x*.txt'` | 同上 |
+| 参考: ワイルドカード文字を含まない存在しないパス | 作る |
+
+→ `Set-` / `Add-ProbedContent` も同じ ID・分類の非終了エラーにした。メッセージは新しいキー `WildcardMatchedNoFileForWrite`（「一致するファイルが無いため、書き込みませんでした。…-LiteralPath を使って」）。
+`Out-ProbedFile` / `Export-ProbedCsv` は終了エラー `FileNotFound` のまま（1.2.0 仕様書 2.12。出力先がちょうど 1 件の規則）。メッセージは「一致するファイルがありません」で始まり、
+`Out-ProbedFile` 側は「ちょうど 1 件に一致する必要がある」、`Set-` / `Add-` 側は「書き込みませんでした」と、それぞれの規則を書いていて、食い違いはない。
+
+**同じパスを 2 回（依頼 4 章 5.）。**
+
+| 操作 | 7.6.7 | 5.1 |
+|---|---|---|
+| `Add-Content -LiteralPath a.txt, a.txt -Value Z` | 1 回だけ追記、エラーなし | 1 回追記し、2 件目で `GetContentWriterIOError` |
+| `-LiteralPath a.txt, A.TXT` | 同上 | 同上 |
+| `-Path a.txt, a*` | 同上 | 同上 |
+| `'p','q' \| Add-Content -LiteralPath a.txt, a.txt` | `p`・`q` を 1 回ずつ | 同左、2 件目で `GetContentWriterIOError` |
+| `(gi a.txt), (gi a.txt) \| Add-Content -Value Z` | **2 回追記**（レコードごと） | 同左 |
+| `Set-Content -LiteralPath a.txt, a.txt -Value Z` | `Z` 1 回 | `Z` 1 回、2 件目で `GetContentWriterIOError` |
+
+→ `Add-ProbedContent` は、1 回の指定（1 レコード）の中の重複は 1 回だけ追記し、エラーにしない（7.x に合わせた。5.1 のエラーは標準の内部の事情で、利用者に意味が無い）。
+パイプラインのレコードをまたぐ場合は、レコードごとに追記する（両ホストの標準と同じ）。
+`Set-ProbedContent` は依頼どおり「1 回書いたのと同じ」。パスをパイプラインから受け取る場合（`BeginProcessing` の時点で `-Path` も `-LiteralPath` も束縛されていない）は、
+前のレコードで書いた内容を取り消して書き直す（標準の `Set-Content` がレコードごとに切り詰め直すのと同じ結果）。値をパイプラインから受け取る場合（`'p','q' | Set-ProbedContent a.txt`）は、これまでどおり続けて書く。
+
+**リンク切れのシンボリックリンク（依頼 3 章 1.）。** `mklink` で作った（5.1 の `New-Item` はリンク切れのリンクを作れない）。両ホストで同じ。
+
+| 操作 | 結果 |
+|---|---|
+| `Set-Content` にリンク切れ（絶対パス・相対パス・2 段） | 生の `FileNotFoundException` の終了エラー。何も作らない |
+| 同上でリンク先のフォルダーも無い | 生の `DirectoryNotFoundException` |
+| `Add-Content` / `Out-File` / `Export-Csv` にリンク切れ（相対パス） | リンクの先にファイルを作って書く。リンクは残る |
+| `Add-Content` でリンク先のフォルダーが無い | 非終了エラー `GetContentWriterDirectoryNotFoundError` |
+| `Out-File` でリンク先のフォルダーが無い | `FileOpenFailure` |
+| 参考: リンクが 2 段で、実体が存在する `Set-Content` | 実体に書く。リンクは残る |
+
+→ 利用者の決定で、各コマンドを対応する標準に合わせた。`Set-ProbedContent` は生の例外ではなく、非終了エラー `LinkTargetNotFound`（ObjectNotFound、新しいキー `LinkTargetNotFound`）。
+リンク先のフォルダーが無い場合は、既存の `WriteFailed`（Set / Add）・終了エラー `WriteFailed`（Out / Export）のまま。
+
+**`::$DATA`（依頼 4 章 6.）。** 標準の `Get-Content` / `Set-Content -LiteralPath a.txt::$DATA` は、両ホストで主ストリームを読み書きする。
+.NET の `Path.GetFullPath` は、7.x では受け付け、5.1（.NET Framework）では `NotSupportedException` を投げる（本モジュールの 5.1 の生の例外の原因）。
+`Convert-Path` は両ホストで受け付ける。
+
+**カルチャー名（依頼 5 章 3.）。** `new CultureInfo(name)` の可否を 100 個ほどの名前で比べた。
+
+| 名前 | net48（NLS） | net10.0（ICU） |
+|---|---|---|
+| `C`・`c`・`root`・`ROOT` | 拒否 | 受付（Name は空、LCID 127 / 4096） |
+| `art-lojban`・`zh-guoyu`・`zh-hakka`・`zh-min-nan`・`zh-xiang`・`zh-yue` | 拒否 | 受付（`jbo`・`zh`・`hak` などに正規化） |
+| `und-u-ca-gregory` | 受付 | 拒否 |
+| ほかの名前（`xx-YY`・`ko_KR`・`i-klingon`・`x-test`・`qps-ploc`・`POSIX`・`en-u` など） | 両ホストで同じ | 同左 |
+
+差が両方向にあるので、どちらの .NET に合わせても一致は保証できない。コアの `EncodingProbe.ValidateCulture` も `CultureInfo` に頼っていた。
+
+**FileInfo の束縛（依頼 1 章 1.）。** 高度な関数で `-Path`（ByValue・ByPropertyName、別名 `FilePath`）と `-LiteralPath`（ByPropertyName、別名 `PSPath`・`LP`・`FullName`）を作って両ホストで確かめた（後で製品の DLL でも確かめた）。
+`Get-Item` / `Get-ChildItem` の FileInfo は `-LiteralPath` に `PSPath` で、`New-Object System.IO.FileInfo` は `FullName` で束縛される。文字列は `-Path` に入る。`DirectoryInfo` も `-LiteralPath`。
+両ホストで同じ。1 つのパラメーターが `PSPath` と `FullName` の両方の別名を持っても問題ない。
+
+### 10.3 パスの束縛（BUG-0003・0015）
+
+- `Get-ProbedContent`・`Import-ProbedCsv`・`Set-ProbedContent`・`Add-ProbedContent`: `-Path` の別名を `FilePath` だけにし、`-LiteralPath` の別名を `PSPath`・`LP`・`FullName` にした
+- `Convert-ProbedContent`: `-LiteralPath` に `FullName` を足した（`New-Object FileInfo` は `PSPath` を持たず `InputObjectNotBound` だった。標準の `Get-Content` も同じだが、ほかの 4 コマンドとそろえた）。
+  `-Path` に `ValueFromPipeline` / `ValueFromPipelineByPropertyName` と別名 `FilePath` を足した（文字列をパイプラインから受け取る。ほかのコマンドとそろえた）
+- `Resolve-Encoding`: 変えていない。`-Path` はもともとワイルドカードを展開しない（`GetUnresolvedProviderPathFromPSPath`）ので、`FullName` で束縛されても正しいファイルを判定する。
+  `-LiteralPath` を足すのは既存のパラメーターの形を変えるので、依頼の範囲外とした
+- MAML の `aliases` 属性・`pipelineInput` 属性も 5 言語でそろえた
+- 書き込み側の 0 件のワイルドカード: `ProbedContentCommandBase.ResolveWritablePaths` で、解決した結果が 0 件なら `ItemNotFound`。
+  ワイルドカード文字を含まない存在しないパスは、解決に失敗して「これから作るファイル」として 1 件返るので、0 件になるのはワイルドカードが一致しなかった場合だけ
+
+### 10.4 同じファイルの判定（BUG-0004・0016・0017）
+
+**実体の求め方（`Internal/FileIdentity`）。**
+
+- Windows: `CreateFileW`（`FILE_READ_ATTRIBUTES`、共有はすべて、`FILE_FLAG_BACKUP_SEMANTICS`）で開き、`GetFileInformationByHandle` のボリュームのシリアル番号とファイル ID（64 ビット）を鍵にする。
+  リンク数（`nNumberOfLinks`）もここで求める。リンクを最後までたどった実体のパスは `GetFinalPathNameByHandle`。net48 と net10.0 で同じ P/Invoke。
+  属性の読み取りだけで開くので、ほかのプロセスが共有なしで開いているファイルでも求められる。長いパスは `\\?\` を付けて渡す（5.1 のホストは長いパスに対応していないことがある）
+- Linux / macOS（net10.0 だけ）: パスを 1 要素ずつ `FileSystemInfo.LinkTarget` で解決したフルパスを鍵にする（realpath 相当。最後の要素は存在しなくてよい）。ハードリンクは別のファイルとみなす（既知の限界）
+- まだ無いファイル: 「親フォルダーの実体＋名前」（`LocationKey`）で比べる。存在するファイルも `LocationKey` を持ち、実体の鍵か `LocationKey` のどちらかが一致すれば同じとする（`Matches`）
+- BUG-0004 の書き方（`\\?\`・`\\?\UNC\`・`\\localhost\C$`・`\\.\`・subst・シンボリックリンク・ジャンクション・ハードリンク・大文字小文字・`::$DATA`）をすべて同じ実体と判定することを、単体テスト（subst を除く）・PSCompat・テスト担当のスクリプト（subst を含む）で確かめた
+- 既知の限界: ReFS の 128 ビットのファイル ID は扱わない（`GetFileInformationByHandle` の 64 ビットの値で比べる。依頼の指定どおり）
+
+**比べる時点。**
+
+| 書き方 | 時点 |
+|---|---|
+| 上書き（置き換え・写してから直接） | 一時ファイルに書き始める前（コマンドの検査と、`ProbedFileWriter.Open` の中の 2 か所。どちらもファイルに触れる前） |
+| 追記 | 切り詰めずに開く → 開いたハンドルで実体を求めて比べる → 書く（`ProbedFileWriter.Open`）。一致したら何も書かずに閉じて `SamePathRoundTrip` |
+| `Convert-ProbedContent` | 変換元を読む前（N10）と、`-Destination` の N8・N9 の検査（`ShouldProcess` より前） |
+
+`ActiveReadRegistry` は、読み込むファイルの実体（`FileIdentity`）を登録し、実体で比べる。読み取り中のファイルが無いときは実体を求めない（余分にファイルを開かない）。
+
+**書き込み先の表（`ProbedContentWriterCommandBase`）。** パスの文字列の辞書をやめ、実体の鍵と `LocationKey` の 2 つの索引を持つ表にした。追記で新しく作ったファイルは、開いた後に実体の鍵でも引けるようにする。
+
+**BUG-0004 の `Add-ProbedContent` が終わらない件。** 開く前の検査で `SamePathRoundTrip` になり、追記を始めないので止まる（テスト担当のスクリプトで、`\\?\`・シンボリックリンクとも `finished error=SamePathRoundTrip`、長さは変わらない）。
+
+**BUG-0017。** `Convert-ProbedContent -Destination` の出力先（フォルダー＋名前）と変換元を `FileIdentity.Matches` で比べる。出力先が変換元そのものなら、実体の鍵が一致する。
+N8（同じ実行で書く予定のファイル）も実体の表で比べる。`-Force` の有無によらず N9 で止まり、変換元は変わらない。
+
+### 10.5 `EncodingChangeOnAppend` でもファイルを元に戻す（依頼 2 章）
+
+`ProbedContentWriterCommandBase.WriteValues`（`Add-ProbedContent`）と `ProbedFileOutputCommandBase.WriteChunk`（`Out-ProbedFile -Append`・`Export-ProbedCsv -Append`）で、
+`EncodingChangeOnAppend` のときに、それまでの「閉じる（書いた行を残す）」をやめ、表現できない文字と同じ `Rollback` にした。どちらも**元に戻してから**エラーを報告する（`-ErrorAction Stop` の対策）。
+
+- `Add-ProbedContent` は前のレコードで書いた分も取り消し、そのファイルには以後書かない。ほかのファイルは続ける（非終了エラー）
+- 追記先が無かった場合（`-AllowEncodingChange` なしでは整合性検査の相手が無いので、実際には起きない）は、作ったファイルを消す
+- 1.1.0 仕様書 6.4（新設）・8 章、1.2.0 仕様書 2.8、1.3.0 仕様書 16.4 を改めた。既存のテスト `OutProbedFileTests.Append_Mismatch_StopsBeforeTheLineAndKeepsEarlierLines` は、期待値を「元に戻す」に改めて名前を変えた
+
+### 10.6 書き込みのリンク・権限の扱い（依頼 3 章、H-17）
+
+上書きの部品を `Internal/SafeFileOverwrite` に切り出し、`ProbedFileWriter`（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`）と `Convert-ProbedContent` の両方が使う。
+
+| 書き込み先 | 書き方 |
+|---|---|
+| まだ無い | 置き換え（同じフォルダーの一時ファイルに書き、完了したときに移動）。一時ファイルを作れなければ（権限）直接作る |
+| ふつうのファイル | 置き換え（`File.Replace`）。置き換える前の属性を付け直す（読み取り専用は `ReadOnlyAttributeScope` が戻す） |
+| シンボリックリンク・ジャンクション経由（何段でも、相対パスでも） | `GetFinalPathNameByHandle` で求めた実体のフォルダーに一時ファイルを作り、実体を置き換える。リンクはそのまま |
+| ハードリンク（リンク数 2 以上） | 写してから直接書く: 元のファイルを `Path.GetTempPath()` の `SnowStack.EncodingProbe.<8 桁>.probedbak` に写し、元のファイルを開いて長さ 0 にしてから書く。成功したら写しを消し、失敗したら写しから書き戻す |
+| 一時ファイルを作るときに `UnauthorizedAccessException` | 写してから直接書く（同上） |
+| リンク切れのシンボリックリンク | `Set-ProbedContent` は `LinkTargetNotFound`。ほかは `FileMode.Create` で開いてリンクの先に作る（失敗したら、ハンドルから求めた実体のパスを消す） |
+
+- 追記（`Add-ProbedContent`・`-Append`）は、もともと追記先を直接開く（`FileMode.Append` はリンクをたどる）。開く前の長さは、リンクの長さではなく、開いたストリームの長さにした
+  （`FileInfo` をリンクに対して使うとリンク自身の長さになり、元に戻すときに実体を切り詰めてしまうため）。元に戻すときに消すのも、リンクではなく作った実体
+- 読み取り専用の検査・`-Force` で外す属性は、リンクの先の実体に対して行う（`ReadOnlyAttributeScope` が `FileIdentity.ResolveFinalPath` を通す）
+- Linux / macOS: 置き換える前に `File.GetUnixFileMode` / `SetUnixFileMode` でアクセス権を一時ファイルに写す。所有者は写せない。ハードリンクは切れる（既知の限界）。**この環境では実行していない**
+- `Convert-ProbedContent` の一時ファイルの名前は `.<名前>.<GUID>.tmp` から `.<名前>.<8 桁>.probedtmp` になり、`TemporaryFileRegistry` に載る（ワイルドカードの解決から除かれる）。CHANGELOG に書いた
+
+**保たれるもの（依頼 3 章 6.）。** 隠し＋読み取り専用の属性、作成日時（2001-02-03）、代替データストリーム（`:meta`）、ACL（Everyone に ReadData を足したもの）を付けたファイルに、`-Force` で書いて確かめた。
+Windows 11（NTFS）、両ホストで同じ結果。
+
+| 書き方 | 確かめたコマンド | 属性 | 作成日時 | 代替データストリーム | ACL |
+|---|---|---|---|---|---|
+| 置き換え | `Set-ProbedContent`・`Out-ProbedFile`・`Convert-ProbedContent` | 保たれる | 保たれる | 保たれる | 保たれる |
+| 写してから直接 | `Set-ProbedContent`・`Convert-ProbedContent`（ハードリンク）、失敗して書き戻した場合 | 保たれる | 保たれる | 保たれる | 保たれる |
+| 追記 | `Add-ProbedContent`、失敗して切り詰めた場合 | 保たれる | 保たれる | 保たれる | 保たれる |
+
+（置き換えは `ReplaceFile` が作成日時・代替データストリーム・ACL を引き継ぐ。写してから直接と追記は、元のファイルそのものに書くので変わらない。）
+既知の限界として書くもの: Linux / macOS の所有者とハードリンク。ReFS など NTFS 以外のファイルシステムは確かめていない。
+
+**ほかのプロセスが開いているとき（依頼 3 章 7.）。** 置き換えは、失敗するのが開く時点ではなく完了の時点になる（`Set-` / `Add-` は `EndProcessing` で非終了エラー `WriteFailed`、`Out-` / `Export-` は終了エラー）。
+元のファイルは変わらず、一時ファイルも残らない（テスト `OpenedByAnotherHandle_FailsAtCompletion`）。ヘルプ（注意事項）と 1.3.0 仕様書 16.5 に書いた。
+写してから直接書く方法の、大きなファイルで写す時間がかかる点（依頼 3 章 8.）も、ヘルプと仕様書に書いた。
+
+**フォルダーにファイルを作れない場合（依頼 3 章 3.）。** フォルダーに「ファイルの作成（WD）」の拒否を付けたフォルダーで、両ホストで、`Set-ProbedContent`・`Out-ProbedFile`・`Convert-ProbedContent` が書けること、
+表現できない文字で失敗したときに元に戻ること、新しいファイルは作れずに `WriteAccessDenied` になること、写しが残らないことを確かめた。
+
+### 10.7 `::$DATA` と代替データストリーム（依頼 4 章 6.）
+
+**案と決定。** 案 1（推奨・採用）: 主ストリームの名前は両ホストでそのファイルとして扱い、ほかのストリームは両ホストで ID の付いたエラーにする。案 2: ストリームの指定はすべて拒否する（7.x で今動いているものが動かなくなる）。
+
+- `Internal/FileSystemPath.TryGetFullPath` が、パスの最後の要素の `::$DATA`（大文字小文字は問わない）を取り除いてから `GetFullPath` を呼ぶ。最後の要素にそれ以外の `:` があれば代替データストリームとして false を返す（Windows のみ。Linux / macOS では `:` は名前の一部）
+- `GetFullPath` を直接呼んでいた箇所（`ProbedContentCommandBase` のパスの解決・`-EncodingFrom`、`ProbedFileOutputCommandBase` の出力先、`Convert-ProbedContent` の変換元と `-Destination`、`Resolve-Encoding`、`TemporaryFileRegistry`）をすべて通した
+- エラー ID は `AlternateDataStreamNotSupported`（InvalidArgument、新しいキー）。ファイルごとの指定は非終了エラー、出力先が 1 件のコマンド・`Resolve-Encoding`・`-EncodingFrom`・`-Destination` は終了エラー
+- 同じファイルの判定では、`::$DATA` を取り除いたパスで実体を求めるので、`a.txt::$DATA` への書き込みも `SamePathRoundTrip` になる
+
+### 10.8 `-Culture` の検証（BUG-0006・0007。依頼 5 章 2.・3.）
+
+**案と決定。** 案 1（推奨・採用）: `CultureInfo` に頼らず、名前の形（BCP 47）で受け付けるかを決める。案 2: 今の検査に加えて `C` と `root` だけを拒否する（`art-lojban`・`und-u-ca-gregory` などの差が残る）。
+
+**規則（`CultureNameSubtags.IsWellFormed`。クラスライブラリ）。** 区切りは `-` と `_`、各要素は英数字 1〜8 文字。言語は英字 2〜3 文字（拡張言語 3 文字を 3 つまで）、用字 4 文字、地域 2 文字か数字 3 文字、
+変種 5〜8 文字か数字で始まる 4 文字、拡張（`x` 以外の 1 文字＋2〜8 文字）、私用（`x`＋1〜8 文字）。`x-…`（全体が私用）と `i-…`、RFC 5646 の irregular な grandfathered タグ 17 個も受け付ける。
+
+**計画と違えた点（報告で確認を求める）。** 計画では「コアには、分解したサブタグから組み立て直した名前を渡す」としたが、コアの判定結果 `EncodingInformation.Culture` には渡した名前がそのまま入り、
+`Resolve-Encoding` の出力に見える（`-Culture ko_KR` が `ko-KR` になってしまう。既存の戻り値を変えない制約に触れる）。そのため、**コアの `EncodingProbe.ValidateCulture` 自体を同じ規則に改めた**。
+クラスライブラリの公開 API（`Detect` の引数と戻り値）は変えていないが、受け付ける名前の集合が変わる（net48 と net10.0 で同じになる）。CHANGELOG のクラスライブラリの節に書いた。
+モジュールは先に同じ規則で検証し、本モジュールの ID とメッセージにする（`ResolveEncodingOptions.ValidateCulture`。`Resolve-Encoding` とほかのコマンドの共通の部品）。
+
+| 名前 | 1.2.0 まで（5.1 / 7.x） | 第五次の後半 |
+|---|---|---|
+| `C`・`c`・`root` | 拒否 / 判定に進む | 両ホストで `InvalidCulture` |
+| `art-lojban`・`zh-min-nan`・`zh-yue`・`zh-guoyu` | 拒否 / 受付 | 両ホストで受付 |
+| `und-u-ca-gregory` | 受付 / 拒否 | 両ホストで受付 |
+| `c-JP`・`ja-JP-x`・`ja-JP-JP`・`ja-JP_x` | 受付 / 受付 | **両ホストで拒否**（BCP 47 の形でない。利用者の決定の範囲で、両ホストとも変わる） |
+| `cel-gaulish`・`no-bok`・`zh-min` | 拒否 / 拒否 | **両ホストで受付**（BCP 47 の形をしている） |
+| `xx-YY`・`ko_KR`・`i-klingon`・`x-test`・`POSIX`（拒否）・`en-u`（拒否）など | 同じ | 変わらない |
+
+- 受け付けた名前の判定は従来どおりサブタグで行う（`ResolveEastAsianLegacyRegion`）。受け付けた名前で `CultureInfo` を作る処理は、コアにもモジュールにも無い（10.14 節で確かめた）
+- **拡張言語（言語サブタグの直後の英字 3 文字）は、それを言語として扱う**（報告の後の修正。10.14 節）。RFC 5646 では `zh-yue` = `yue`、`zh-cmn` = `cmn`。
+  `zh-yue` は `yue`（広東語。繁体字・香港）になる。表は増やしていないので、`cmn`・`min` などは表に無い言語（`None`）。旧形式の `zh-CHT` / `zh-CHS` は用字として先に扱う
+- `Resolve-Encoding` の `-Strategy` / `-Culture` は、`ResolveEncodingOptions.ValidateStrategy` / `ValidateCulture` で検証し、ほかのコマンドと同じ ID・分類（InvalidArgument）・例外の型（`PSArgumentException`）・5 言語のメッセージの終了エラーにした（BUG-0006）。
+  使われなくなった `ResolveEncodingOptions.ParseStrategy`（生の `ArgumentException` を投げていた）は消した
+- `PlatformInfoResolver` で `OSDescription` を Trim した（BUG-0008 (5)。両ホストで `Microsoft Windows 10.0.26300`）
+
+### 10.9 文書（依頼 5 章 1.・4.〜6.）
+
+| BUG | 直したもの |
+|---|---|
+| 0005 | 「両ホストでバイト単位で同じ」に、日付・数値の書式はカルチャーとホストの .NET（NLS / ICU）で違うことがある、という条件を足した: README、CHANGELOG（`Export-ProbedCsv` の節）、1.3.0 仕様書 1.5・14 章、`Export-ProbedCsv` のヘルプの説明（5 言語）、`.psd1` のリリースノート |
+| 0008 | (1) CHANGELOG の `>>>>` の行を消した。(3) `ConvertTo-DotNetEncoding` の例 2 を `[System.IO.File]::ReadAllText((Convert-Path -LiteralPath .\a.txt), $enc)` にした（5 言語）。(4) README の「推測処理ょ」の誤字。(5) `Os.Description` の Trim（10.8 節）。(2) はブログの記述で、リポジトリには無いので直していない |
+| 0011 | `Add-ProbedContent` の `-AllowEncodingChange` の「判定自体を行わない」を「`-Encoding` を指定した場合は」に限り、省略した場合は継承のために判定する（判定できなければ `EncodingDetectionFailed`）ことを書いた。`Out-ProbedFile` / `Export-ProbedCsv` の `-AllowEncodingChange` にも同じことを足した（5 言語）。1.1.0 仕様書 6.2 に注記 |
+| — | `Resolve-Encoding -DetectionLineCount` のヘルプに、`us-ascii` と報告する場合は `LineBreak` も `us-ascii` として数えた値であることを書いた（5 言語）。1.3.0 仕様書 3.1 |
+
+ヘルプにはほかに、`-LiteralPath` の FileInfo の束縛、`-Path` の 0 件のワイルドカード（Set / Add）、`-Culture` の受け付ける名前（8 コマンド）、`Resolve-Encoding -Strategy` のエラー、
+注意事項として上書きの書き方（リンク・ハードリンク・権限・保たれるもの・Linux）、追記の書き方と取り消し、ほかのプロセスが開いているとき、リンク切れ、同じファイルの判定、同じファイルの重複（Set / Add）、
+代替データストリームを足した（5 言語、`zh-TW` を `zh-HK` / `zh-MO` に複製。`MamlHelpTests` の骨格の一致を通した）。
+
+### 10.10 テスト
+
+| テスト | 内容 |
+|---|---|
+| コア `DetectorTests/CultureNameValidationTests`（59） | 受け付けない名前・受け付ける名前（10.2 節の表の旧 net48 / 旧 net10.0 の差を含む）、例外に内部例外が無いこと、`Os.Description` の Trim。net48 と net10.0 の両方で通す |
+| `FileSystemTests/FileIdentityTests`（18） | 大文字小文字・`\\?\`・`\\.\`・管理共有・`\\?\UNC\`・相対パスと 2 段のシンボリックリンク・リンク切れ・ジャンクション・フォルダーのシンボリックリンク・ハードリンクとリンク数・まだ無いファイル・別のファイル・`::$DATA` の正規化・代替データストリームの拒否・`ActiveReadRegistry` |
+| `CmdletTests/PathBindingTests`（21） | 5 コマンドの別名、`Resolve-Encoding` の別名、`Get-Item` / `New-Object FileInfo` / `Get-ChildItem` からの読み書き、`Convert-ProbedContent` のパイプライン、文字列はワイルドカード、0 件のワイルドカード（Set / Add は `ItemNotFound`、読み込みはエラーにしない、ほかのパスは書く） |
+| `CmdletTests/SameFileTests`（55） | 8 つの書き方 × 4 つの書き込み（`SamePathRoundTrip`、ファイルは変わらない）、CSV、Set / Add の重複、まだ無いファイルの 2 つの書き方、`Convert-ProbedContent -Destination` の 6 つの書き方 × `-Force` の有無（N9）、N8、`::$DATA` と代替データストリーム（8 コマンド） |
+| `CmdletTests/LinkAndPermissionWriteTests`（22） | 5 つの書き込み × シンボリックリンク（相対・2 段）とハードリンク、ハードリンクの書き戻し、リンク切れ（4 コマンド）、リンクの先の読み取り専用、フォルダーにファイルを作れない場合、3 つの書き方で保たれるもの、ほかのハンドルが開いているとき |
+| `CmdletTests/AppendRollbackTests`（4） | `EncodingChangeOnAppend` の取り消し（Add の複数ファイル、`-ErrorAction Stop` の 3 コマンド） |
+| `CmdletTests/CultureValidationTests`（19） | 7 つの受け付けない名前 × 5 コマンド（`Resolve-Encoding` を含む）、11 の受け付ける名前（`Culture` にそのままの名前が出る）、`Resolve-Encoding -Strategy` |
+| 改めた既存のテスト | `ImportProbedCsvTests.Metadata_ParameterSetsAndBinding`（別名）、`ResolveEncodingCmdletTests.Invoke_WithInvalidStrategy_ThrowsCmdletInvocationException`（ID）、`OutProbedFileTests.Append_Mismatch_StopsAndRestoresTheFile`（10.5 節） |
+| PSCompat | `Fifth2/` の 117 シナリオ（束縛・0 件のワイルドカード・同じファイルの 7 つの書き方 × 4・CSV・重複・`-Destination` の 5 つの書き方 × `-Force`・リンク・リンク切れ・ハードリンクの書き戻し・追記の取り消し・ストリーム・カルチャー 17 個 × 2・`-Strategy`・`Os.Description`）。リンクは `mklink` で作る |
+
+リンクを作るテストは、シンボリックリンクを作れない環境（開発者モードでも管理者でもない）では何も確かめずに終わる（xUnit 2 に実行時のスキップが無いため。`Helpers/FileLinks`）。この環境では作れる（開発者モード）。
+
+### 10.11 テストと確認の結果（2026-10-23）
+
+| 確認 | 結果 |
+|---|---|
+| コアのテスト | net48 **2090 件**、net10.0 **2080 件**、すべて成功（前半から各 59 件増） |
+| モジュールのテスト | net10.0 **1431 件**、すべて成功（前半の 1292 件から 139 件増） |
+| PSCompat | **948 シナリオ**で 5.1 と 7.x の結果が完全に一致（前半の 831 から 117 件増）。`Fifth2/` の値も 5.1 のレポートで期待どおりなことを確かめた |
+| テスト担当のスクリプト | 作業フォルダー（scratchpad）に Release ビルドで配布フォルダーと同じ構成を作り、`scripts\` の写しを 7.6.7 と 5.1 で実行した（テスト担当のフォルダーには何も置いていない。CHANGELOG・README は写しを `docs\repo\` に置いた）。下の表 |
+
+| BUG | 結果（7.6.7・5.1。両ホストで同じ） |
+|---|---|
+| 0003 | 4 コマンドとも流したファイルそのもの（`A,x`、`b[1].txt` に追記・上書き、`b1.txt` は変わらない）。`a1.csv` / `b1.txt` が無くても同じ。`Get-ChildItem` の 2 ファイルは各 1 回（並び順だけ 5.1 が違う。`Get-ChildItem` の順序） |
+| 0004 | 7 つの書き方（大文字・`\\?\`・管理共有・シンボリックリンク・ジャンクション・subst）× Set / Out / Export がすべて `SamePathRoundTrip`、長さは 12003 バイトのまま。`Add-ProbedContent` は 10 秒以内に終わり `SamePathRoundTrip` |
+| 0005 | 書式の差は残る（文書で条件を書いた。挙動は変えていない） |
+| 0006 | `Resolve-Encoding` も `InvalidStrategy` / `InvalidCulture`、InvalidArgument、`PSArgumentException`、本モジュールのメッセージ |
+| 0007 | `C`・`root`・`POSIX` は両ホストで終了エラー `InvalidCulture`。`xx-YY` は両ホストで判定不能、`ko-KR` は 949 |
+| 0008 | (1) `>>>>` 無し、(3) `[Microsoft Windows 10.0.26300]`（5.1 も末尾の空白が無い）、(5) 誤字無し。(4) はスクリプトが相対パスの危うさそのものを示す（ヘルプの例は直した）、(2) はブログ |
+| 0011 | 挙動は変えていない（ヘルプを直した） |
+| 0015 | Set / Add とも `ItemNotFound`、ファイルを作らない（標準と同じ） |
+| 0016 | 3 通りとも `5A 0D 0A`（標準と同じ） |
+| 0017 | 5 つの書き方 × `-Force` の有無がすべて `DestinationIsSource`、`a.txt` は変わらない |
+| 0001・0002・0009・0010・0012・0013・0014（前半） | 前半と同じ結果（後退なし）。0009 は 5.1 と 7.x のエラーの表示の形式（ホストの表示）だけが違う |
+
+### 10.12 決めきれなかったこと・仕様と食い違ったこと・新たに気づいたこと
+
+1. **コアのカルチャー名の検証を変えた**（10.8 節）。計画では「組み立て直した名前をコアに渡す」としていたが、`EncodingInformation.Culture` に出る名前が変わってしまうため、コアの検証を同じ規則にした。
+   NuGet パッケージの利用者にとっては、`ArgumentException` になる名前の集合が変わる（net48 と net10.0 でそろう）。確認を求める
+2. **両ホストで変わる名前がある**（10.8 節の表）。`c-JP`・`ja-JP-x`・`ja-JP-JP` は 1.2.0 まで両ホストで受け付けていたが、拒否する。`cel-gaulish` などは受け付ける。BCP 47 の形に合わせた結果
+3. ~~`zh-yue`（広東語の拡張言語の形）は簡体字中国語として扱う~~ → **報告の後に改めた（10.14 節）:** 拡張言語を言語として扱う規則を足し、`zh-yue` は `yue`（香港）になった。表は増やしていない
+4. **`Convert-ProbedContent -Path` が文字列をパイプラインから受け取るようになった**（そろえるために足した機能）。`-LiteralPath` の `FullName` も足した
+5. **`Add-ProbedContent` の 1 レコードの中の重複は、5.1 でもエラーにしない**（5.1 の標準は 2 件目で `GetContentWriterIOError`）。7.x に合わせた
+6. **`Set-ProbedContent` でパスをパイプラインから受け取り、同じ実体が後のレコードで現れた場合は、前のレコードの分を取り消して書き直す**（最後のレコードの内容が残る。標準と同じ結果）
+7. **写してから直接書く方法で、写しから書き戻せなかった場合は、写しを一時フォルダーに残す。** ~~メッセージは出さない~~ → 報告の後に、エラーのメッセージに写しのパスを示すようにした（10.14 節）
+8. **Linux / macOS の経路（リンクの解決・アクセス権の複写）は、この環境では実行していない**。コンパイルと Windows での動作だけを確かめた
+9. **`Convert-ProbedContent -Destination` の出力先がリンク切れのシンボリックリンクの場合は、リンクの先に作る**（`-Force` が必要。N7 で `File.Exists` がリンクに対して真になるため）。対応する標準のコマンドが無いので、`Out-File` に合わせた
+10. `FileIdentity` はパスごとにファイルを開くので、`Get-ChildItem -Recurse | Set-ProbedContent` のように多数のファイルを書くと、ファイルごとに数回の余分な `CreateFile` が増える。測っていない
+11. 新たに気づいた製品の不具合は無い。測定の途中で、Bash の heredoc が `\\` を 1 つに縮めること、5.1 が BOM 無しのスクリプトの日本語のコメントで次の行を飲み込むこと、pwsh から起動した 5.1 では `PSModulePath` を引き継いで `Get-Acl` が読めないことに当たった（どれも測定の道具の問題で、製品とは関係ない）
+
+### 10.13 直した文書
+
+| 文書 | 内容 |
+|---|---|
+| `docs/EncodingProbe-1.1.0-仕様書.md` | 6.2 に `-AllowEncodingChange` の注記（BUG-0011）、6.4 を新設（拒否されたときのファイル・重複）、8 章の表に 4 行・1 行を改め、9 章の同一ファイルの往復に注記 |
+| `docs/EncodingProbe-1.2.0-仕様書.md` | 2.8（不一致で元に戻す）、2.10（実体で比べる）、15.1（一時ファイルの名前と書き方の切り替え） |
+| `docs/EncodingProbe-1.3.0-仕様書.md` | 1.5・14 章（書式の条件）、3.1（`LineBreak`）、9.1（FileInfo の束縛）、16.4（`EncodingChangeOnAppend`）、16.5 を新設（上書きの書き方・同じファイルの判定）、20 章の表 |
+| MAML（5 言語、`zh-TW` を `zh-HK` / `zh-MO` に複製） | 10.9 節 |
+| `README.md`・`CHANGELOG.md` | 1.3.0 の節（パス・同じファイル・リンクの挙動の変更、カルチャー名の検証、書式の条件、`>>>>`・誤字） |
+| `SnowStack.EncodingProbe.csproj` の `PackageReleaseNotes`・`.psd1` の `ReleaseNotes` | 第五次の後半の内容を追加 |
+| `CLAUDE.md` | 第五次の後半の作業記録、実体の判定・上書きの部品・カルチャー名の規則 |
+
+### 10.14 報告の後の修正（2026-10-23）
+
+利用者は、コアのカルチャー名の検証を BCP 47 の形で決めるように変えたこと（10.8 節）を認め、コミットの前に次を直すよう依頼した。
+
+**1. クラスライブラリの変更の記述をそろえた。** 1.3.0 仕様書 1.1〜1.3 は「クラスライブラリの変更は追補 2 章の点だけ」としていたが、実際には、改行の数え直し（第五次の前半）・カルチャー名の検証・`Os.Description` の Trim も変わっている。
+仕様書 1.1 の表、1.2（4 点を列挙し、公開 API（型・メソッド・プロパティ、引数と戻り値の型）は変えないこと、`ArgumentException` になる名前の集合が変わることを書いた）、1.3、
+CHANGELOG（「挙動の変更（クラスライブラリ）」の節を新設し、カルチャー名の検証と `Os.Description` を「不具合の修正」から移した）、`SnowStack.EncodingProbe.csproj` の `PackageReleaseNotes` を改めた。
+1.3 の「変更しないもの」に並んでいた既存のコマンドには、第五次で挙動を変えた点があることを注記した。
+
+**2. 受け付けるようになった名前で `CultureInfo` を作っていないかを確かめた。** コアとモジュールのソースで、`CultureInfo` の作成（`new CultureInfo(...)`・`GetCultureInfo`・`CreateSpecificCulture`）を探した。
+渡された名前から作る箇所は無い（第五次の後半で検証の 2 か所を消した後は、`CultureInfo.CurrentCulture` / `CurrentUICulture` / `InvariantCulture` だけ）。
+`EncodingDetectorOptions.Culture` と `EncodingInformation.Culture` はただの文字列で、判定は `CultureNameSubtags.Parse` によるサブタグの分解だけを使う。テストを足した。
+
+- コア `CultureNameValidationTests.NewlyAcceptedNames_DetectToTheEnd`（9 件）: `art-lojban`・`zh-min-nan`・`zh-guoyu`・`cel-gaulish`・`no-bok`・`zh-min`・`und-u-ca-gregory`（CP949 のファイル）と `zh-yue`・`zh-cmn`（香港の Big5）で、
+  3 つの判定方式 × バイト列・ストリーム・ファイルの判定を最後まで通す。**net48 と net10.0 の両方で通した**（これが「両ホスト」の確認。モジュールの経路は下の PSCompat）
+- モジュール `CultureValidationTests.Accepted_ReachesDetection`: 名前を 4 つ足し、`Get-ProbedContent`・`Import-ProbedCsv`・`Resolve-Encoding -DetectionLineCount`・`Set-ProbedContent -EncodingFrom`・`Convert-ProbedContent` を通す
+- PSCompat `Fifth2/Culture`: 名前を 6 つ足し（`cel-gaulish`・`zh-min`・`no-bok`・`zh-cmn`・`zh-guoyu`・`zh-yue-HK`）、`Import-ProbedCsv`・`Convert-ProbedContent` のシナリオを足した。CP949 のファイルを両ホストで判定する
+
+**3. 拡張言語を解釈する。** `CultureNameSubtags.Parse` で、言語サブタグの直後の英字 3 文字を拡張言語とみなし、それを言語として扱うようにした（RFC 5646: `zh-yue` = `yue`、`zh-cmn` = `cmn`）。
+旧形式の `zh-CHT` / `zh-CHS` は、従来どおり先に用字として扱う。表は増やしていない。
+
+| 名前 | 改める前 | 改めた後 |
+|---|---|---|
+| `zh-yue`・`zh-yue-HK` | `zh`（簡体字） | `yue`（香港） |
+| `zh-yue-Hans-CN` | 簡体字 | 簡体字（`yue` でも用字が優先する。既存の規則） |
+| `zh-cmn`・`zh-cmn-Hans-CN`・`zh-min-nan` | `zh`（簡体字） | 表に無い言語（`None`。東アジアの旧マルチバイトの判定を行わない） |
+| `zh-CHT`・`zh-CHS` | 繁体字・簡体字 | 変わらない |
+
+テスト: `CultureNameSubtagsTests.Parse` に 5 件、`Resolve_ExtendedLanguage`（8 件）、コアの `ExtendedLanguage_IsUsedForDetection`（香港の Big5 を `zh-yue` と `zh-HK` で同じに、`zh-cmn` と `en-US` で同じに判定する）。
+メッセージの言語の選択（`MessageCatalog.ResolveLanguage`）も同じ分解を使うので、UI カルチャーが `zh-yue` なら繁体字の文面になる。
+ヘルプの `-Culture` の説明（8 コマンド × 5 言語、複製を含む）に、拡張言語の扱いを足した。10.8 節・10.12 節の 3 を改めた。
+
+**4. ハードリンクの書き戻しに失敗したとき。** `SafeFileOverwrite.Rollback` が写しから書き戻せなかった場合に、残した写しのパスを `KeptBackupPath` に記録する（写しは今までどおり残す）。
+エラーを報告するすべての箇所（`Set-` / `Add-ProbedContent` の表現できない文字・整合性検査・書き込みの失敗・完了の失敗、`Out-ProbedFile` / `Export-ProbedCsv` の同じ 4 か所、`Convert-ProbedContent` の書き込みの失敗）で、
+`Internal/RollbackNotice.Attach` が、エラーの `ErrorDetails` に元のメッセージと新しいキー `RestoreFromBackupFailed`（5 言語）の文を入れる。
+「'<パス>' を元に戻せなかったため、元のファイルは書きかけの状態です。元の内容は '<写しのパス>' に写してあります。この写しから元に戻してください。」
+ID・分類・例外（`Exception.Message`）は変えない。パイプラインからパスを受け取る `Set-ProbedContent` が、前のレコードの分を取り消すときに書き戻せなかった場合は、書き直さずに `WriteFailed` でこの文を報告する。
+
+テストで起こせた（`LinkAndPermissionWriteTests.HardLink_RestoreFails_MessageShowsTheCopy`、Set と Out）: ハードリンクに、上流のスクリプトが 1 件目を流した後で実体を読み取り専用にし、2 件目の表現できない文字で元に戻させる。
+書き戻しは読み取り専用で失敗し、エラーの ID は `UnrepresentableCharacter` のまま、`ErrorDetails.Message` に写しのパスが入り、写しの中身は元の内容、元のファイルは書きかけになることを確かめる。
+
+**5. LICENSE.txt。**
+
+- **本文の比較:** GitHub のライセンスのひな形（`github/choosealicense.com` の `_licenses/mit.txt`、2026-10-23 に取得）と 1 文字ずつ比べた。著作権の行（年と名前）を除いて違うのは 1 か所だけで、
+  20 行目の「OR **THE USE OR** OTHER DEALINGS」の「THE USE OR」が抜けて「OR THE OTHER DEALINGS」になっていた。
+  依頼の文面は「OR OTHER DEALINGS」に直すことだったが、それでは原文と一致しないので、**依頼の趣旨（MIT License の原文どおり）に合わせて「OR THE USE OR OTHER DEALINGS」に直した**。
+  直した後、`LICENSE.txt` と、同じ文を持つ `EncodingProbe.License` 定数（`Resolve-Encoding -License` が表示する）が、ひな形とバイト単位で一致することを確かめた（年と名前を置き換えて比べた）
+- **「Copyright c」:** `LICENSE.txt` には無かった（最初から `Copyright (c)`）。`SnowStack.EncodingProbe.PowerShell/LicenseAndHelp.cs`（`Resolve-Encoding -License` の先頭）にあったので、`Copyright (c)` に直した
+- **履歴:**
+  - `LICENSE.txt` の「THE USE OR」は、コミット `3c368dc`（2026-08-10「UTF.Unknown のライセンスを MITライセンスと誤認してしたので、正しいライセンス条項に書き換えました。」）で抜けた。
+    その前の `9981260`（2026-05-31。ひな形のまま `[year] [fullname]`、ASCII）と `3086af6`（2026-05-31。UTF-8 の BOM 付きになり、著作権の行が `SnowStack.EncodingProbe Copyright (c) 2026 motoi.tsushima`）には「THE USE OR」がある。
+    同じコミットで `EncodingProbe.License` 定数にも、抜けた文が入った
+  - 「Copyright c」は、コミット `2b2e93c`（2026-06-06「ライセンスとバージョンの表示機能を追加した。」）で、`LicenseAndHelp.cs` と `EncodingProbe.cs` に入った。`EncodingProbe.cs` の分は `3c368dc` で `Copyright (c)` に直り、`LicenseAndHelp.cs` の分が残っていた
+  - 「©」（U+00A9）が「c」に変わった形跡は、Git の履歴には無い。`LicenseAndHelp.cs` は最初の版から ASCII のファイルで「c」だった（同じコミットのほかのファイルは BOM 無しの UTF-8 で、文字化けは無い）。
+    変わったとすれば、コミットする前（エディターでの入力など）である。なお `©` は、クラスライブラリの csproj の `<Copyright>` と `.psd1` の `Copyright` で、別の表記として使われている
+- **著作権の年の現状（直していない）:**
+
+| 箇所 | 現状 |
+|---|---|
+| `LICENSE.txt`（3 行目） | `Copyright (c) 2025 Motoi Tsushima` |
+| `publish/SnowStack.EncodingProbe.PowerShell/LICENSE.txt`（未追跡の写し） | 同上（本文の修正は、リリースの手順で写し直すときに入る。このファイルは変えていない） |
+| `SnowStack.EncodingProbe/SnowStack.EncodingProbe.csproj` の `<Copyright>` | `Copyright © 2026 motoi.tsushima` |
+| `SnowStack.EncodingProbe.PowerShell/SnowStack.EncodingProbe.PowerShell.csproj` | `<Copyright>` は無い |
+| `publish/.../SnowStack.EncodingProbe.PowerShell.psd1` の `Copyright` | `Copyright © 2026 motoi.tsushima` |
+| `SnowStack.EncodingProbe/EncodingProbe.cs` の `License` 定数 | `Copyright (c) 2026 motoi.tsushima` |
+| `SnowStack.EncodingProbe.PowerShell/LicenseAndHelp.cs` の `License` | `Copyright (c) 2026 motoi.tsushima`（`c` から直した） |
+| `README.md`・`THIRD-PARTY-NOTICES.txt`・`CHANGELOG.md` | 本プロジェクトの著作権の年は書かれていない（`THIRD-PARTY-NOTICES.txt` は第三者の表示だけ） |
+
+年は 2025 と 2026、名前は `Motoi Tsushima` と `motoi.tsushima`、記号は `(c)` と `©` が混在している。利用者が表記を決めるまで直さない。
+
+**確認の結果（10.14 節の修正の後）。** コアのテスト net48 **2117 件**・net10.0 **2107 件**（各 27 件増）、モジュールのテスト **1437 件**（6 件増）、すべて成功。PSCompat は **1006 シナリオ**で 5.1 と 7.x が完全に一致（58 件増）。新しく受け付ける名前（`cel-gaulish`・`zh-min`・`no-bok`・`zh-cmn` など）は、両ホストで CP949 のファイルを判定し、表に無い言語は判定不能（`EncodingDetectionFailed`）、`zh-yue` / `zh-yue-HK` は香港の扱い（950）で、どちらも例外にはならなかった。
+
+### 10.15 性能の確認（依頼 6 章）
+
+`Set-ProbedContent` で、小さなファイル（5 バイト）1000 個に書く時間を測った。Release ビルド、Windows 11 Pro（NTFS、Microsoft Defender は既定のまま）、1 つの書き方につき 5 回（517bb86 は 3 回）の中央値。
+第四次（`85318cb`）と今（第五次の後半）は、両ホストとも 2 回ずつ測り、どちらの回も同じ傾向だった（下は 2 回目）。切り分けのため、第五次の前半（`517bb86`）も測った。
+
+| ビルド | ホスト | `-LiteralPath` に 1000 個 | `Get-ChildItem` から | `-Encoding` 省略（継承） |
+|---|---|---:|---:|---:|
+| 第四次 `85318cb` | 7.6.7 | 1,058 ms | 1,478 ms | 1,766 ms |
+| 第四次 `85318cb` | 5.1 | 456 ms | 1,596 ms | 1,721 ms |
+| 前半 `517bb86` | 7.6.7 | 10,618 ms | 11,597 ms | 11,302 ms |
+| 前半 `517bb86` | 5.1 | 10,119 ms | 10,925 ms | 11,162 ms |
+| 今 | 7.6.7 | 11,330 ms | 11,163 ms | 11,432 ms |
+| 今 | 5.1 | 10,574 ms | 11,330 ms | 11,756 ms |
+
+**明らかに遅くなっている（約 10 倍、1 ファイルあたり約 1〜1.7 ms → 約 11 ms）。** ただし、遅くなったのは第五次の前半からで、後半の `FileIdentity`（ファイルごとの `CreateFile` の追加）による差は、計測のぶれの範囲だった。
+.NET だけで 1000 個に書いて確かめた（7.6.7 で 2 回、5.1 で 1 回）:
+
+| 書き方 | 時間 |
+|---|---:|
+| 直接書く（`File.WriteAllBytes`） | 約 280 ms |
+| 一時ファイルに書いて移す（`File.Move`。比較のため移した先を消す） | 約 1,400 ms |
+| 一時ファイルに書いて `File.Replace` で置き換える | 約 8,800〜10,300 ms |
+
+原因は、前半で入れた「同じフォルダーの一時ファイルに書いて `File.Replace`（Windows の `ReplaceFile`）で置き換える」方法の、`ReplaceFile` の費用（1 回あたり約 9 ms）である。
+`ReplaceFile` は属性・作成日時・ACL・代替データストリームを引き継ぐ処理をし、ウイルス対策の走査も受けるためと考えられる（内訳は測っていない）。
+直すかどうかは利用者が決める（直していない）。考えられる案: 書き込み先が小さい・新しい場合は直接書く、`File.Move`（上書き）で置き換えてから属性などを付け直す、など。どれも 10.6 節の「保たれるもの」を確かめ直す必要がある。

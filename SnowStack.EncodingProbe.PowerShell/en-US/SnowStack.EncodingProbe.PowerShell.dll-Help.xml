@@ -18,7 +18,7 @@
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Get-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>Path to the target file. Wildcards are permitted.</maml:para>
@@ -48,7 +48,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -62,10 +62,10 @@
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Get-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded. A file (FileInfo) passed through the pipeline is bound to this parameter by its PSPath property (output of Get-ChildItem and Get-Item) or its FullName property (output of New-Object System.IO.FileInfo), so a file whose name contains [ ] is treated as that file itself.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -92,7 +92,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -109,7 +109,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+          <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -129,10 +129,10 @@
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+          <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded. A file (FileInfo) passed through the pipeline is bound to this parameter by its PSPath property (output of Get-ChildItem and Get-Item) or its FullName property (output of New-Object System.IO.FileInfo), so a file whose name contains [ ] is treated as that file itself.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -141,7 +141,7 @@
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
           <maml:para>Path to the target file. Wildcards are permitted.</maml:para>
@@ -227,6 +227,9 @@
       <maml:alert>
         <maml:para>Single-byte character encodings (windows-1252, ISO-8859-x, ...) cannot be distinguished by their byte structure and are estimated from text statistics. Whether detection succeeds therefore depends more on the content than on the length: text containing a list of characters, lines full of symbols and digits, or characters rarely used in the language may not be detected (CodePage -1) even when it is several hundred bytes long. In that case, specify the code page with -Encoding.</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>A main-stream name such as a.txt::$DATA is treated as the same file as a.txt. Alternate data streams (such as a.txt:alt) are not read or written; they cause the error AlternateDataStreamNotSupported (the same on Windows PowerShell 5.1 and PowerShell 7.x).</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -296,10 +299,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Set-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
-            <maml:para>Path to the target file. Wildcards are permitted. The file is created if it does not exist, unless the character encoding has to be inherited from it (see -Encoding).</maml:para>
+            <maml:para>Path to the target file. Wildcards are permitted. The file is created if it does not exist, unless the character encoding has to be inherited from it (see -Encoding). If the wildcard matches no file, nothing is written and the non-terminating error ItemNotFound is reported (the same as Set-Content / Add-Content). To create a file whose name contains wildcard characters, use -LiteralPath.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -358,7 +361,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -379,10 +382,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded. A file (FileInfo) passed through the pipeline is bound to this parameter by its PSPath property (output of Get-ChildItem and Get-Item) or its FullName property (output of New-Object System.IO.FileInfo), so a file whose name contains [ ] is treated as that file itself.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -434,7 +437,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -462,7 +465,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+          <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -517,10 +520,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+          <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded. A file (FileInfo) passed through the pipeline is bound to this parameter by its PSPath property (output of Get-ChildItem and Get-Item) or its FullName property (output of New-Object System.IO.FileInfo), so a file whose name contains [ ] is treated as that file itself.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -540,10 +543,10 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
-          <maml:para>Path to the target file. Wildcards are permitted. The file is created if it does not exist, unless the character encoding has to be inherited from it (see -Encoding).</maml:para>
+          <maml:para>Path to the target file. Wildcards are permitted. The file is created if it does not exist, unless the character encoding has to be inherited from it (see -Encoding). If the wildcard matches no file, nothing is written and the non-terminating error ItemNotFound is reported (the same as Set-Content / Add-Content). To create a file whose name contains wildcard characters, use -LiteralPath.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -641,6 +644,24 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <maml:alert>
         <maml:para>When the inherited character encoding (from the destination or the file being appended to, the -EncodingFrom reference, or an EncodingInformation passed to -Encoding) is us-ascii, the text is written as UTF-8 without a BOM. A file whose bytes are all below 0x80 is also valid UTF-8, so you can add non-ASCII text to a log or CSV that contains only ASCII characters. When only ASCII characters are written, the bytes are the same as us-ascii. An explicit -Encoding ascii stays us-ascii.</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>An overwrite is written to a temporary file in the same folder as the target (.&lt;name&gt;.&lt;8 hex digits&gt;.probedtmp), which replaces the target only when writing is complete, so the original file is unchanged if writing fails midway. Symbolic links and junctions are followed to the end, and the target of the link is replaced (the link itself remains). For a hard link (two or more links) and for a folder in which files cannot be created, the original file is first copied to the temporary folder and then written directly; if writing fails, it is restored from the copy. Copying takes time for a large file. With every method, the attributes (read-only, hidden), the creation time, alternate data streams and the ACL are kept. On Linux / macOS the permissions of the original file are carried over, but the owner is not, and hard links are broken.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>When another process has the target open, an overwrite fails not when the file is opened but when writing is completed and the file is replaced (WriteFailed and so on). The original file is still unchanged, and no temporary file is left.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>When the target is a symbolic link whose target does not exist, nothing is written and the non-terminating error LinkTargetNotFound is reported, because Set-Content does not write either (to create the target, use Out-ProbedFile or specify the target path).</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Whether two paths are the same file (writing to a file that is being read, SamePathRoundTrip; a -Destination of Convert-ProbedContent that is the source itself) is decided by the file itself, not by the path string. \\?\, administrative UNC shares (\\localhost\C$\...), \\.\, subst drives, symbolic links, junctions, hard links and differences in case are all recognized as the same file. On Linux / macOS paths are compared after resolving links, so hard links are regarded as different files.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>When one call specifies the same file more than once (a.txt and A.TXT, two names of a hard link, and so on), it is treated as one target and the result is the same as writing it once. The same applies to paths received from the pipeline (as with Set-Content).</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>A main-stream name such as a.txt::$DATA is treated as the same file as a.txt. Alternate data streams (such as a.txt:alt) are not read or written; they cause the error AlternateDataStreamNotSupported (the same on Windows PowerShell 5.1 and PowerShell 7.x).</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -710,10 +731,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Add-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
-            <maml:para>Path to the target file. Wildcards are permitted. The file is created if it does not exist, unless the character encoding has to be inherited from it (see -Encoding).</maml:para>
+            <maml:para>Path to the target file. Wildcards are permitted. The file is created if it does not exist, unless the character encoding has to be inherited from it (see -Encoding). If the wildcard matches no file, nothing is written and the non-terminating error ItemNotFound is reported (the same as Set-Content / Add-Content). To create a file whose name contains wildcard characters, use -LiteralPath.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -772,13 +793,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. With this switch the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. -Force does NOT have this effect.</maml:para>
+            <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. When -Encoding is specified, the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed); the inherited encoding is then used, so the character encoding of the file does not change. To change it, specify -Encoding as well. -Force does NOT have this effect.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -799,10 +820,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded. A file (FileInfo) passed through the pipeline is bound to this parameter by its PSPath property (output of Get-ChildItem and Get-Item) or its FullName property (output of New-Object System.IO.FileInfo), so a file whose name contains [ ] is treated as that file itself.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -854,13 +875,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. With this switch the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. -Force does NOT have this effect.</maml:para>
+            <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. When -Encoding is specified, the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed); the inherited encoding is then used, so the character encoding of the file does not change. To change it, specify -Encoding as well. -Force does NOT have this effect.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -877,7 +898,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. With this switch the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. -Force does NOT have this effect.</maml:para>
+          <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. When -Encoding is specified, the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed); the inherited encoding is then used, so the character encoding of the file does not change. To change it, specify -Encoding as well. -Force does NOT have this effect.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -899,7 +920,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+          <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -954,10 +975,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+          <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded. A file (FileInfo) passed through the pipeline is bound to this parameter by its PSPath property (output of Get-ChildItem and Get-Item) or its FullName property (output of New-Object System.IO.FileInfo), so a file whose name contains [ ] is treated as that file itself.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -977,10 +998,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
-          <maml:para>Path to the target file. Wildcards are permitted. The file is created if it does not exist, unless the character encoding has to be inherited from it (see -Encoding).</maml:para>
+          <maml:para>Path to the target file. Wildcards are permitted. The file is created if it does not exist, unless the character encoding has to be inherited from it (see -Encoding). If the wildcard matches no file, nothing is written and the non-terminating error ItemNotFound is reported (the same as Set-Content / Add-Content). To create a file whose name contains wildcard characters, use -LiteralPath.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -1090,6 +1111,18 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <maml:alert>
         <maml:para>When the inherited character encoding (from the destination or the file being appended to, the -EncodingFrom reference, or an EncodingInformation passed to -Encoding) is us-ascii, the text is written as UTF-8 without a BOM. A file whose bytes are all below 0x80 is also valid UTF-8, so you can add non-ASCII text to a log or CSV that contains only ASCII characters. When only ASCII characters are written, the bytes are the same as us-ascii. An explicit -Encoding ascii stays us-ascii. The append consistency check also treats a us-ascii file being appended to as UTF-8 without a BOM.</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>Appending writes directly to the existing file. Symbolic links are followed and the target is appended to; when the target of a link does not exist, a file is created there, as Add-Content / Out-File -Append do. When the command stops with an error (an unrepresentable character, the consistency check EncodingChangeOnAppend, or a write failure), everything written to the file by that call is removed and the file returns to its length before the append (a file created by the append is deleted).</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Whether two paths are the same file (writing to a file that is being read, SamePathRoundTrip; a -Destination of Convert-ProbedContent that is the source itself) is decided by the file itself, not by the path string. \\?\, administrative UNC shares (\\localhost\C$\...), \\.\, subst drives, symbolic links, junctions, hard links and differences in case are all recognized as the same file. On Linux / macOS paths are compared after resolving links, so hard links are regarded as different files.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>When the same file appears more than once in one specification (-LiteralPath a.txt, A.TXT and so on), it is appended to only once (as Add-Content of 7.x does; that of 5.1 reports an error for the second one). When the same file is passed in several pipeline records, it is appended to once for each record (as the built-in cmdlet does on both hosts).</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>A main-stream name such as a.txt::$DATA is treated as the same file as a.txt. Alternate data streams (such as a.txt:alt) are not read or written; they cause the error AlternateDataStreamNotSupported (the same on Windows PowerShell 5.1 and PowerShell 7.x).</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -1189,13 +1222,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error, and the lines it has already written are removed so that the file returns to its content before the append (a file created by the append is deleted).</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1226,7 +1259,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1290,13 +1323,13 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error, and the lines it has already written are removed so that the file returns to its content before the append (a file created by the append is deleted).</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1327,7 +1360,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1356,7 +1389,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+          <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1367,7 +1400,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Append</maml:name>
         <maml:description>
-          <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+          <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error, and the lines it has already written are removed so that the file returns to its content before the append (a file created by the append is deleted).</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1389,7 +1422,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+          <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1590,6 +1623,24 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <maml:alert>
         <maml:para>When the inherited character encoding (from the destination or the file being appended to, the -EncodingFrom reference, or an EncodingInformation passed to -Encoding) is us-ascii, the text is written as UTF-8 without a BOM. A file whose bytes are all below 0x80 is also valid UTF-8, so you can add non-ASCII text to a log or CSV that contains only ASCII characters. When only ASCII characters are written, the bytes are the same as us-ascii. An explicit -Encoding ascii stays us-ascii. The append consistency check also treats a us-ascii file being appended to as UTF-8 without a BOM.</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>An overwrite is written to a temporary file in the same folder as the target (.&lt;name&gt;.&lt;8 hex digits&gt;.probedtmp), which replaces the target only when writing is complete, so the original file is unchanged if writing fails midway. Symbolic links and junctions are followed to the end, and the target of the link is replaced (the link itself remains). For a hard link (two or more links) and for a folder in which files cannot be created, the original file is first copied to the temporary folder and then written directly; if writing fails, it is restored from the copy. Copying takes time for a large file. With every method, the attributes (read-only, hidden), the creation time, alternate data streams and the ACL are kept. On Linux / macOS the permissions of the original file are carried over, but the owner is not, and hard links are broken.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Appending writes directly to the existing file. Symbolic links are followed and the target is appended to; when the target of a link does not exist, a file is created there, as Add-Content / Out-File -Append do. When the command stops with an error (an unrepresentable character, the consistency check EncodingChangeOnAppend, or a write failure), everything written to the file by that call is removed and the file returns to its length before the append (a file created by the append is deleted).</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>When another process has the target open, an overwrite fails not when the file is opened but when writing is completed and the file is replaced (WriteFailed and so on). The original file is still unchanged, and no temporary file is left.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>When the destination is a symbolic link whose target does not exist, the file is created at the target of the link, as Out-File / Export-Csv do (the link itself remains).</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Whether two paths are the same file (writing to a file that is being read, SamePathRoundTrip; a -Destination of Convert-ProbedContent that is the source itself) is decided by the file itself, not by the path string. \\?\, administrative UNC shares (\\localhost\C$\...), \\.\, subst drives, symbolic links, junctions, hard links and differences in case are all recognized as the same file. On Linux / macOS paths are compared after resolving links, so hard links are regarded as different files.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>A main-stream name such as a.txt::$DATA is treated as the same file as a.txt. Alternate data streams (such as a.txt:alt) are not read or written; they cause the error AlternateDataStreamNotSupported (the same on Windows PowerShell 5.1 and PowerShell 7.x).</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -1653,12 +1704,12 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
     <maml:description>
       <maml:para>Rewrites text files with a different character encoding, BOM or line break. The characters themselves are never changed. Files are selected with -Path or -LiteralPath, or by piping the output of Get-ChildItem; this cmdlet has no -Recurse or filtering of its own.</maml:para>
       <maml:para>No character is ever lost. A file that contains bytes that are invalid in the source character encoding, or characters that cannot be represented in the destination character encoding, is not converted and is left as it is; the error message shows the position. There is no option to replace such characters.</maml:para>
-      <maml:para>Each file is written to a temporary file in the same folder, which then replaces the original, so the original is not damaged if the conversion fails midway. If the result is byte-for-byte identical to the original, the file is not rewritten and its timestamp does not change.</maml:para>
+      <maml:para>Each file is written to a temporary file in the same folder, which then replaces the original, so the original is not damaged if the conversion fails midway. Symbolic links are followed and their target is replaced (the link remains), and hard links are not broken: such a file is written directly (see NOTES). If the result is byte-for-byte identical to the original, the file is not rewritten and its timestamp does not change.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Convert-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>Files to convert. Wildcards are permitted. A path that matches no file is reported as a non-terminating error. Directories are skipped.</maml:para>
@@ -1703,7 +1754,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding of the source files, such as ko-KR. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding of the source files, such as ko-KR. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Culture. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1748,10 +1799,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Convert-ProbedContent</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>Files to convert. The value is used exactly as typed; wildcards are not expanded. The output of Get-ChildItem is bound to this parameter through its PSPath property. Directories are skipped and recorded in the verbose stream.</maml:para>
+            <maml:para>Files to convert. The value is used exactly as typed; wildcards are not expanded. The output of Get-ChildItem is bound to this parameter through its PSPath property. Directories are skipped and recorded in the verbose stream. A file (FileInfo) passed through the pipeline is bound to this parameter by its PSPath property (output of Get-ChildItem and Get-Item) or its FullName property (output of New-Object System.IO.FileInfo), so a file whose name contains [ ] is treated as that file itself.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -1793,7 +1844,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding of the source files, such as ko-KR. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding of the source files, such as ko-KR. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Culture. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1864,7 +1915,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>Culture name used when detecting the character encoding of the source files, such as ko-KR. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+          <maml:para>Culture name used when detecting the character encoding of the source files, such as ko-KR. Not used when -SourceEncoding is given. The name and the accepted values are the same as Resolve-Encoding -Culture. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1932,10 +1983,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>Auto</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>Files to convert. The value is used exactly as typed; wildcards are not expanded. The output of Get-ChildItem is bound to this parameter through its PSPath property. Directories are skipped and recorded in the verbose stream.</maml:para>
+          <maml:para>Files to convert. The value is used exactly as typed; wildcards are not expanded. The output of Get-ChildItem is bound to this parameter through its PSPath property. Directories are skipped and recorded in the verbose stream. A file (FileInfo) passed through the pipeline is bound to this parameter by its PSPath property (output of Get-ChildItem and Get-Item) or its FullName property (output of New-Object System.IO.FileInfo), so a file whose name contains [ ] is treated as that file itself.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -1955,7 +2006,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         </dev:type>
         <dev:defaultValue>False</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="false" position="0" aliases="none">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
           <maml:para>Files to convert. Wildcards are permitted. A path that matches no file is reported as a non-terminating error. Directories are skipped.</maml:para>
@@ -2054,6 +2105,18 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <maml:alert>
         <maml:para>With -WhatIf and -Confirm, checks that do not modify files (a read-only file, an existing file in -Destination, a file name used twice in the same run, a destination that is the source itself, invalid bytes and unrepresentable characters) are still performed and reported as errors. The -WhatIf and -Confirm message is shown after the conversion result has been computed and before writing, so it also appears for a file whose conversion result is identical to the original and which is therefore not rewritten. This is intended, so that a confirmation requested with -Confirm is never skipped.</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>An overwrite is written to a temporary file in the same folder as the target (.&lt;name&gt;.&lt;8 hex digits&gt;.probedtmp), which replaces the target only when writing is complete, so the original file is unchanged if writing fails midway. Symbolic links and junctions are followed to the end, and the target of the link is replaced (the link itself remains). For a hard link (two or more links) and for a folder in which files cannot be created, the original file is first copied to the temporary folder and then written directly; if writing fails, it is restored from the copy. Copying takes time for a large file. With every method, the attributes (read-only, hidden), the creation time, alternate data streams and the ACL are kept. On Linux / macOS the permissions of the original file are carried over, but the owner is not, and hard links are broken.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>When another process has the target open, an overwrite fails not when the file is opened but when writing is completed and the file is replaced (WriteFailed and so on). The original file is still unchanged, and no temporary file is left.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Whether two paths are the same file (writing to a file that is being read, SamePathRoundTrip; a -Destination of Convert-ProbedContent that is the source itself) is decided by the file itself, not by the path string. \\?\, administrative UNC shares (\\localhost\C$\...), \\.\, subst drives, symbolic links, junctions, hard links and differences in case are all recognized as the same file. On Linux / macOS paths are compared after resolving links, so hard links are regarded as different files.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>A main-stream name such as a.txt::$DATA is treated as the same file as a.txt. Alternate data streams (such as a.txt:alt) are not read or written; they cause the error AlternateDataStreamNotSupported (the same on Windows PowerShell 5.1 and PowerShell 7.x).</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -2137,7 +2200,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>Path to the CSV file. Wildcards are permitted; when a wildcard matches several files, they are read in turn.</maml:para>
@@ -2175,7 +2238,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2189,10 +2252,10 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded. A file (FileInfo) passed through the pipeline is bound to this parameter by its PSPath property (output of Get-ChildItem and Get-Item) or its FullName property (output of New-Object System.IO.FileInfo), so a file whose name contains [ ] is treated as that file itself.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -2227,7 +2290,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2241,7 +2304,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+        <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
           <maml:name>Path</maml:name>
           <maml:description>
             <maml:para>Path to the CSV file. Wildcards are permitted; when a wildcard matches several files, they are read in turn.</maml:para>
@@ -2278,7 +2341,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2292,10 +2355,10 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </command:syntaxItem>
       <command:syntaxItem>
         <maml:name>Import-ProbedCsv</maml:name>
-        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+        <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
           <maml:name>LiteralPath</maml:name>
           <maml:description>
-            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+            <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded. A file (FileInfo) passed through the pipeline is bound to this parameter by its PSPath property (output of Get-ChildItem and Get-Item) or its FullName property (output of New-Object System.IO.FileInfo), so a file whose name contains [ ] is treated as that file itself.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         </command:parameter>
@@ -2329,7 +2392,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+            <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2346,7 +2409,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then.</maml:para>
+          <maml:para>Culture name used when detecting the character encoding, such as ko-KR. Combinations that the bytes alone cannot tell apart - EUC-KR and CP949, or EUC-JP and Shift_JIS - are resolved with the culture, so specify the culture of the target language when reading Korean or Chinese files on a Japanese system. Defaults to the culture of the current session. The name and the accepted values are the same as Resolve-Encoding -Culture. Has no effect when the character encoding is given explicitly, because no detection is performed then. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           <maml:para>-Culture is not the same as -UseCulture: -Culture only affects character encoding detection, and -UseCulture only decides the delimiter.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -2407,10 +2470,10 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP">
+      <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByPropertyName)" position="named" aliases="PSPath, LP, FullName">
         <maml:name>LiteralPath</maml:name>
         <maml:description>
-          <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded.</maml:para>
+          <maml:para>Path to the target file. The value is used exactly as typed; wildcards are not expanded. A file (FileInfo) passed through the pipeline is bound to this parameter by its PSPath property (output of Get-ChildItem and Get-Item) or its FullName property (output of New-Object System.IO.FileInfo), so a file whose name contains [ ] is treated as that file itself.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String[]</command:parameterValue>
         <dev:type>
@@ -2419,7 +2482,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         </dev:type>
         <dev:defaultValue>None</dev:defaultValue>
       </command:parameter>
-      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FullName, FilePath">
+      <command:parameter required="true" variableLength="false" globbing="true" pipelineInput="true (ByValue, ByPropertyName)" position="0" aliases="FilePath">
         <maml:name>Path</maml:name>
         <maml:description>
           <maml:para>Path to the CSV file. Wildcards are permitted; when a wildcard matches several files, they are read in turn.</maml:para>
@@ -2497,6 +2560,9 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <maml:alert>
         <maml:para>The verification done for -DetectionLineCount cannot always find a misdetected single-byte character encoding, because almost any byte sequence decodes to valid characters in a single-byte encoding.</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>A main-stream name such as a.txt::$DATA is treated as the same file as a.txt. Alternate data streams (such as a.txt:alt) are not read or written; they cause the error AlternateDataStreamNotSupported (the same on Windows PowerShell 5.1 and PowerShell 7.x).</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -2555,7 +2621,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:details>
     <maml:description>
       <maml:para>Converts each input object to a CSV record and writes it to a file. The columns are decided by the first object.</maml:para>
-      <maml:para>The CSV text is produced by code ported from Export-Csv of PowerShell 7.x, so Windows PowerShell 5.1 and PowerShell 7.x write byte-for-byte the same file.</maml:para>
+      <maml:para>The CSV text is produced by code ported from Export-Csv of PowerShell 7.x, so Windows PowerShell 5.1 and PowerShell 7.x write byte-for-byte the same file. However, dates and numbers are formatted by the current culture and the .NET of the host (NLS of .NET Framework on 5.1, ICU of .NET on 7.x), so in some cultures such as ko-KR, zh-TW, zh-HK and ar-SA they can differ between the two hosts (the same as the built-in Export-Csv / ConvertTo-Csv).</maml:para>
       <maml:para>The character encoding, the BOM, the line break, appending, the read-only attribute and the time the file is opened follow the rules of Out-ProbedFile.</maml:para>
     </maml:description>
     <command:syntax>
@@ -2613,13 +2679,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error, and the lines it has already written are removed so that the file returns to its content before the append (a file created by the append is deleted).</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2676,7 +2742,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2753,13 +2819,13 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+            <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error, and the lines it has already written are removed so that the file returns to its content before the append (a file created by the append is deleted).</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2816,7 +2882,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+            <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2845,7 +2911,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued.</maml:para>
+          <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2856,7 +2922,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Append</maml:name>
         <maml:description>
-          <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error; the lines written before it are kept and the file stays consistent.</maml:para>
+          <maml:para>Adds the output to the end of an existing file. No BOM is written into an existing file (one byte or longer); a missing or empty file is treated as a new file. Before each line is written, it is checked that the line produces the same bytes as the character encoding of the existing file would (the same check as Add-ProbedContent). On a mismatch the command stops with a terminating error, and the lines it has already written are removed so that the file returns to its content before the append (a file created by the append is deleted).</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2878,7 +2944,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture.</maml:para>
+          <maml:para>Culture name used when a file has to be detected, such as ko-KR: the -EncodingFrom reference file, the output file for an explicit -Encoding Auto, and the file appended to with -Append. Combinations that the bytes alone cannot tell apart are resolved with the culture. The name and the accepted values are the same as Resolve-Encoding -Culture. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           <maml:para>-Culture is not the same as -UseCulture: -Culture only affects character encoding detection, and -UseCulture only decides the delimiter.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -3169,6 +3235,24 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <maml:alert>
         <maml:para>When the inherited character encoding (from the destination or the file being appended to, the -EncodingFrom reference, or an EncodingInformation passed to -Encoding) is us-ascii, the text is written as UTF-8 without a BOM. A file whose bytes are all below 0x80 is also valid UTF-8, so you can add non-ASCII text to a log or CSV that contains only ASCII characters. When only ASCII characters are written, the bytes are the same as us-ascii. An explicit -Encoding ascii stays us-ascii. The append consistency check also treats a us-ascii file being appended to as UTF-8 without a BOM.</maml:para>
       </maml:alert>
+      <maml:alert>
+        <maml:para>An overwrite is written to a temporary file in the same folder as the target (.&lt;name&gt;.&lt;8 hex digits&gt;.probedtmp), which replaces the target only when writing is complete, so the original file is unchanged if writing fails midway. Symbolic links and junctions are followed to the end, and the target of the link is replaced (the link itself remains). For a hard link (two or more links) and for a folder in which files cannot be created, the original file is first copied to the temporary folder and then written directly; if writing fails, it is restored from the copy. Copying takes time for a large file. With every method, the attributes (read-only, hidden), the creation time, alternate data streams and the ACL are kept. On Linux / macOS the permissions of the original file are carried over, but the owner is not, and hard links are broken.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Appending writes directly to the existing file. Symbolic links are followed and the target is appended to; when the target of a link does not exist, a file is created there, as Add-Content / Out-File -Append do. When the command stops with an error (an unrepresentable character, the consistency check EncodingChangeOnAppend, or a write failure), everything written to the file by that call is removed and the file returns to its length before the append (a file created by the append is deleted).</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>When another process has the target open, an overwrite fails not when the file is opened but when writing is completed and the file is replaced (WriteFailed and so on). The original file is still unchanged, and no temporary file is left.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>When the destination is a symbolic link whose target does not exist, the file is created at the target of the link, as Out-File / Export-Csv do (the link itself remains).</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>Whether two paths are the same file (writing to a file that is being read, SamePathRoundTrip; a -Destination of Convert-ProbedContent that is the source itself) is decided by the file itself, not by the path string. \\?\, administrative UNC shares (\\localhost\C$\...), \\.\, subst drives, symbolic links, junctions, hard links and differences in case are all recognized as the same file. On Linux / macOS paths are compared after resolving links, so hard links are regarded as different files.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>A main-stream name such as a.txt::$DATA is treated as the same file as a.txt. Alternate data streams (such as a.txt:alt) are not read or written; they cause the error AlternateDataStreamNotSupported (the same on Windows PowerShell 5.1 and PowerShell 7.x).</maml:para>
+      </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
@@ -3307,7 +3391,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:example>
         <maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
         <dev:code>PS C:\&gt; $enc = Resolve-Encoding .\a.txt | ConvertTo-DotNetEncoding
-[System.IO.File]::ReadAllText('.\a.txt', $enc)</dev:code>
+[System.IO.File]::ReadAllText((Convert-Path -LiteralPath .\a.txt), $enc)</dev:code>
         <dev:remarks>
           <maml:para>Detects the file and passes the result straight to a .NET API.</maml:para>
         </dev:remarks>
@@ -3366,21 +3450,21 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>Culture name used to resolve ambiguities that the bytes alone cannot settle, such as EUC-JP versus Shift_JIS. Defaults to the culture of the current session.</maml:para>
+            <maml:para>Culture name used to resolve ambiguities that the bytes alone cannot settle, such as EUC-JP versus Shift_JIS. Defaults to the culture of the current session. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>Detection strategy: Combined (default), NativeOnly or UtfUnknownOnly. Combined runs the built-in detector first and falls back to UTF.Unknown only when it cannot decide.</maml:para>
+            <maml:para>Detection strategy: Combined (default), NativeOnly or UtfUnknownOnly. Combined runs the built-in detector first and falls back to UTF.Unknown only when it cannot decide. A value that cannot be interpreted causes the terminating error InvalidStrategy, the same as the other commands.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>DetectionLineCount</maml:name>
           <maml:description>
-            <maml:para>Number of lines at the beginning of the file used for detection. When omitted, the whole file is used (as before). A file without a BOM that is 64 KiB or smaller, contains 0x00 and cannot be identified as UTF-16 or UTF-32 is detected from the whole file.</maml:para>
+            <maml:para>Number of lines at the beginning of the file used for detection. When omitted, the whole file is used (as before). A file without a BOM that is 64 KiB or smaller, contains 0x00 and cannot be identified as UTF-16 or UTF-32 is detected from the whole file. When us-ascii is reported, LineBreak is also counted as us-ascii (byte by byte). It is not recounted as UTF-16 / UTF-32, as Import-ProbedCsv / Export-ProbedCsv do when they reinterpret us-ascii.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -3408,7 +3492,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>Culture name used to resolve ambiguities that the bytes alone cannot settle, such as EUC-JP versus Shift_JIS. Defaults to the culture of the current session.</maml:para>
+          <maml:para>Culture name used to resolve ambiguities that the bytes alone cannot settle, such as EUC-JP versus Shift_JIS. Defaults to the culture of the current session. Whether a name is accepted is decided by its form (BCP 47), the same on Windows PowerShell 5.1 and PowerShell 7.x. Names such as C, root and POSIX are not accepted and cause the terminating error InvalidCulture. A well-formed name that does not exist (such as xx-YY) is accepted, but it matches none of the East Asian language areas. An extended language subtag right after the language (yue in zh-yue) is used as the language, as RFC 5646 defines, so zh-yue is treated as Cantonese (Traditional Chinese, Hong Kong).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -3420,7 +3504,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>DetectionLineCount</maml:name>
         <maml:description>
-          <maml:para>Number of lines at the beginning of the file used for detection. When omitted, the whole file is used (as before).</maml:para>
+          <maml:para>Number of lines at the beginning of the file used for detection. When omitted, the whole file is used (as before). When us-ascii is reported, LineBreak is also counted as us-ascii (byte by byte). It is not recounted as UTF-16 / UTF-32, as Import-ProbedCsv / Export-ProbedCsv do when they reinterpret us-ascii.</maml:para>
           <maml:para>The count is of physical lines, separated by CR-LF, LF or CR. It is not the number of CSV records: a line break inside a quoted CSV field also counts as a line.</maml:para>
           <maml:para>The result reflects only the first N lines. Characters that appear only later in the file (for example Japanese text after ASCII lines) are not taken into account. If the first N lines are ASCII only, the result is us-ascii. This also applies to UTF-16 and UTF-32 files without a BOM whose first N lines contain, among alphanumeric characters, a character whose two bytes are both below 0x80 (such as U+4E0A); UTF-16 and UTF-32 files without a BOM that contain only alphanumeric characters are reported as UTF-16 or UTF-32. LineBreak is also detected from the first N lines only.</maml:para>
           <maml:para>A file without line breaks is read as a whole. If the range to detect is 2 GB or larger, the character encoding cannot be detected and an error is returned. A file without a BOM that is 64 KiB or smaller, contains 0x00 and cannot be identified as UTF-16 or UTF-32 is detected from the whole file.</maml:para>
@@ -3458,7 +3542,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>Detection strategy: Combined (default), NativeOnly or UtfUnknownOnly. Combined runs the built-in detector first and falls back to UTF.Unknown only when it cannot decide.</maml:para>
+          <maml:para>Detection strategy: Combined (default), NativeOnly or UtfUnknownOnly. Combined runs the built-in detector first and falls back to UTF.Unknown only when it cannot decide. A value that cannot be interpreted causes the terminating error InvalidStrategy, the same as the other commands.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -3514,6 +3598,9 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       </maml:alert>
       <maml:alert>
         <maml:para>A UTF-16 or UTF-32 file without a BOM in which every byte is below 0x80 is detected as UTF-16 or UTF-32 only when every unit has the form of an alphanumeric character (for UTF-16LE, a byte other than 00 followed by 00); otherwise it is reported as us-ascii. Known limitations: (1) A file that also contains a character whose two bytes are both below 0x80, such as U+4E0A (0A 4E in UTF-16LE), U+5B57, U+3042 or U+3001, is reported as us-ascii. Import-ProbedCsv and Export-ProbedCsv read such a file correctly when -DetectionLineCount is specified. (2) A file of only a few bytes, such as 41 00, cannot be told apart from ASCII followed by 00; it is reported as UTF-16 or UTF-32 when it has that form. (3) A file that contains the character U+0000 is reported as us-ascii.</maml:para>
+      </maml:alert>
+      <maml:alert>
+        <maml:para>A main-stream name such as a.txt::$DATA is treated as the same file as a.txt. Alternate data streams (such as a.txt:alt) are not read or written; they cause the error AlternateDataStreamNotSupported (the same on Windows PowerShell 5.1 and PowerShell 7.x).</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
