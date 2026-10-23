@@ -2221,6 +2221,289 @@ foreach ($header in @('A,,B', ',A,B', 'A,B,')) {
 }
 
 # ---------------------------------------------------------------------------
+# 1.3.0 第五次の後半: パスの束縛・同じファイルの判定（実体で比べる）・リンクと権限・追記の取り消し・-Culture の検証
+#
+# リンクは cmd の mklink で作る（両ホストで同じ）。作れない環境では両ホストとも「(作れない)」を記録する。
+# 同じファイルの往復は、エラーの ID と、元のファイルの長さが変わっていないか（unchanged / changed）で比べる。
+# ---------------------------------------------------------------------------
+
+$script:f2Dir = Join-Path $script:WorkRoot 'fifth2'
+$null = New-Item -ItemType Directory -Path $script:f2Dir
+
+function New-F2Folder {
+    param([string]$Name)
+
+    $folder = Join-Path $script:f2Dir $Name
+    $null = New-Item -ItemType Directory -Path $folder
+    return $folder
+}
+
+function New-F2Link {
+    param([string]$Kind, [string]$Link, [string]$Target)
+
+    $switch = switch ($Kind) { 'symlink' { '' } 'hardlink' { '/H' } 'junction' { '/J' } 'dirlink' { '/D' } }
+    $null = cmd /c "mklink $switch `"$Link`" `"$Target`"" 2>&1
+    return (Test-Path -LiteralPath $Link)
+}
+
+function Invoke-F2 {
+    param([scriptblock]$Body)
+
+    $outcome = @()
+
+    try {
+        $outcome = @(& $Body 2>&1 | ForEach-Object {
+            if ($_ -is [System.Management.Automation.ErrorRecord]) { 'ERR ' + $_.FullyQualifiedErrorId.Split(',')[0] } else { [string]$_ }
+        })
+    }
+    catch {
+        $outcome += 'TERM ' + $_.FullyQualifiedErrorId.Split(',')[0]
+    }
+
+    return ($outcome -join ' | ')
+}
+
+# BUG-0003: [ ] を含む名前のファイルをパイプラインで渡す（a1.csv / b1.txt はワイルドカードとして一致してしまう別のファイル）
+$bindDir = New-F2Folder 'bind'
+$bindCsv = Join-Path $bindDir 'a[1].csv'
+[IO.File]::WriteAllBytes($bindCsv, [byte[]](0x41, 0x0D, 0x0A, 0x78, 0x0D, 0x0A))
+[IO.File]::WriteAllBytes((Join-Path $bindDir 'a1.csv'), [byte[]](0x41, 0x0D, 0x0A, 0x79, 0x0D, 0x0A))
+$bindTxt = Join-Path $bindDir 'b[1].txt'
+$bindOther = Join-Path $bindDir 'b1.txt'
+Add-Scenario 'Fifth2/Bind/Get-Item|Get' { Invoke-F2 { Get-Item -LiteralPath $bindCsv | Get-ProbedContent } }.GetNewClosure()
+Add-Scenario 'Fifth2/Bind/Get-Item|Import' { Invoke-F2 { Get-Item -LiteralPath $bindCsv | Import-ProbedCsv | ForEach-Object { $_.A } } }.GetNewClosure()
+Add-Scenario 'Fifth2/Bind/FileInfo|Get' { Invoke-F2 { New-Object System.IO.FileInfo $bindCsv | Get-ProbedContent } }.GetNewClosure()
+Add-Scenario 'Fifth2/Bind/gci|Import' { Invoke-F2 { Get-ChildItem -LiteralPath $bindDir -Filter '*.csv' | Import-ProbedCsv | ForEach-Object { $_.A } | Sort-Object } }.GetNewClosure()
+foreach ($bindCommand in @('Set', 'Add')) {
+    $bc = $bindCommand
+    Add-Scenario "Fifth2/Bind/Get-Item|$bc" {
+        [IO.File]::WriteAllBytes($bindTxt, [byte[]](0x78, 0x0D, 0x0A))
+        [IO.File]::WriteAllBytes($bindOther, [byte[]](0x79, 0x0D, 0x0A))
+        $r = Invoke-F2 { Get-Item -LiteralPath $bindTxt | & "$bc-ProbedContent" -Value z -Encoding utf8NoBOM -LineBreak CrLf }
+        '{0} // b[1]={1} // b1={2}' -f $r, (Format-FileBytes $bindTxt), (Format-FileBytes $bindOther)
+    }.GetNewClosure()
+}
+Add-Scenario 'Fifth2/Bind/string|Get (wildcard)' { Invoke-F2 { (Join-Path $bindDir 'a?.csv') | Get-ProbedContent } }.GetNewClosure()
+
+# BUG-0015: 書き込み側のワイルドカードが 0 件（標準と同じ ItemNotFound の非終了エラー。読み込み側はエラーにしない）
+$wildDir = New-F2Folder 'wild'
+foreach ($wildCommand in @('Set', 'Add')) {
+    foreach ($pattern in @('c[1].txt', 'x*.txt')) {
+        $wc = $wildCommand
+        $wp = Join-Path $wildDir $pattern
+        Add-Scenario "Fifth2/WildcardNoMatch/$wc/$pattern" {
+            $r = Invoke-F2 { & "$wc-ProbedContent" -Path $wp -Value x -Encoding utf8NoBOM }
+            '{0} // files={1}' -f $r, @(Get-ChildItem -LiteralPath $wildDir -Force).Count
+        }.GetNewClosure()
+    }
+}
+Add-Scenario 'Fifth2/WildcardNoMatch/Get' { Invoke-F2 { Get-ProbedContent -Path (Join-Path $wildDir 'x*.txt') } }.GetNewClosure()
+
+# BUG-0004: 読み込み中のファイルに、別の書き方で書く（どれも SamePathRoundTrip で止まり、元のファイルは変わらない）
+$sameDir = New-F2Folder 'same'
+$sameSub = Join-Path $sameDir 'sub'
+$null = New-Item -ItemType Directory -Path $sameSub
+$sameData = Join-Path $sameSub 'data.txt'
+$sameBytes = [byte[]][Text.Encoding]::ASCII.GetBytes(('line' + "`r`n") * 2000)
+$sameFull = (Resolve-Path -LiteralPath $sameSub).ProviderPath
+$sameSpellings = [ordered]@{
+    'extended' = '\\?\' + (Join-Path $sameFull 'data.txt')
+    'device' = '\\.\' + (Join-Path $sameFull 'data.txt')
+    'unc' = '\\localhost\' + $sameFull.Substring(0, 1) + '$' + $sameFull.Substring(2) + '\data.txt'
+    'mainstream' = (Join-Path $sameFull 'data.txt') + '::$DATA'
+    'symlink' = Join-Path $sameDir 'link.txt'
+    'hardlink' = Join-Path $sameDir 'hard.txt'
+    'junction' = Join-Path (Join-Path $sameDir 'junction') 'data.txt'
+}
+[IO.File]::WriteAllBytes($sameData, $sameBytes)
+$sameAvailable = @{
+    'extended' = $true; 'device' = $true; 'mainstream' = $true
+    'unc' = (Test-Path -LiteralPath $sameSpellings['unc'])
+    'symlink' = (New-F2Link 'symlink' $sameSpellings['symlink'] $sameData)
+    'hardlink' = (New-F2Link 'hardlink' $sameSpellings['hardlink'] $sameData)
+    'junction' = (New-F2Link 'junction' (Join-Path $sameDir 'junction') $sameSub)
+}
+foreach ($spelling in $sameSpellings.Keys) {
+    foreach ($writer in @('Set', 'Add', 'Out', 'OutAppend')) {
+        $other = $sameSpellings[$spelling]
+        $available = $sameAvailable[$spelling]
+        $w = $writer
+        Add-Scenario "Fifth2/SameFile/$spelling/$w" {
+            if (-not $available) { return '(作れない)' }
+            [IO.File]::WriteAllBytes($sameData, $sameBytes)
+            $r = Invoke-F2 {
+                switch ($w) {
+                    'Set' { Get-ProbedContent -LiteralPath $sameData | Set-ProbedContent -LiteralPath $other -Encoding utf8NoBOM }
+                    'Add' { Get-ProbedContent -LiteralPath $sameData | Add-ProbedContent -LiteralPath $other -Encoding utf8NoBOM }
+                    'Out' { Get-ProbedContent -LiteralPath $sameData | Out-ProbedFile -LiteralPath $other -Encoding utf8NoBOM }
+                    'OutAppend' { Get-ProbedContent -LiteralPath $sameData | Out-ProbedFile -LiteralPath $other -Encoding utf8NoBOM -Append }
+                }
+            }
+            $state = if ((Get-Item -LiteralPath $sameData).Length -eq $sameBytes.Length) { 'unchanged' } else { 'changed' }
+            '{0} // {1}' -f $r, $state
+        }.GetNewClosure()
+    }
+}
+Add-Scenario 'Fifth2/SameFile/Csv/extended' {
+    $csv = Join-Path $sameSub 'data.csv'
+    [IO.File]::WriteAllBytes($csv, [byte[]][Text.Encoding]::ASCII.GetBytes("A,B`r`n" + ('1,2' + "`r`n") * 2000))
+    $len = (Get-Item -LiteralPath $csv).Length
+    $r = Invoke-F2 { Import-ProbedCsv -LiteralPath $csv | Export-ProbedCsv -LiteralPath ('\\?\' + (Join-Path $sameFull 'data.csv')) }
+    '{0} // {1}' -f $r, ($(if ((Get-Item -LiteralPath $csv).Length -eq $len) { 'unchanged' } else { 'changed' }))
+}.GetNewClosure()
+
+# BUG-0016: 同じ実体を 2 回（Set は 1 回書いたのと同じ。Add は 1 回の指定の中では 1 回、レコードをまたげば 2 回）
+$dupFile = Join-Path $script:f2Dir 'dup.txt'
+foreach ($dup in @(
+    @('Set/a,A', { Set-ProbedContent -LiteralPath $dupFile, $dupFile.ToUpperInvariant() -Value Z -Encoding utf8NoBOM -LineBreak CrLf }),
+    @('Set/pipeline', { (Get-Item -LiteralPath $dupFile), (Get-Item -LiteralPath $dupFile) | Set-ProbedContent -Value Z -Encoding utf8NoBOM -LineBreak CrLf }),
+    @('Set/values', { 'p', 'q' | Set-ProbedContent -LiteralPath $dupFile -Encoding utf8NoBOM -LineBreak CrLf }),
+    @('Add/a,A', { Add-ProbedContent -LiteralPath $dupFile, $dupFile.ToUpperInvariant() -Value Z -Encoding utf8NoBOM -LineBreak CrLf }),
+    @('Add/pipeline', { (Get-Item -LiteralPath $dupFile), (Get-Item -LiteralPath $dupFile) | Add-ProbedContent -Value Z -Encoding utf8NoBOM -LineBreak CrLf }))) {
+    $dupName = $dup[0]
+    $dupBody = $dup[1]
+    Add-Scenario "Fifth2/Duplicate/$dupName" {
+        [IO.File]::WriteAllBytes($dupFile, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+        '{0} // {1}' -f (Invoke-F2 $dupBody), (Format-FileBytes $dupFile)
+    }.GetNewClosure()
+}
+
+# BUG-0017: Convert-ProbedContent -Destination に変換元のフォルダーを別の書き方で渡す（-Force でも N9）
+$convDir = New-F2Folder 'conv'
+$convSrc = Join-Path $convDir 'src'
+$null = New-Item -ItemType Directory -Path $convSrc
+$convFile = Join-Path $convSrc 'a.txt'
+$convFull = (Resolve-Path -LiteralPath $convSrc).ProviderPath
+$convJunction = Join-Path $convDir 'junction'
+$convJunctionOk = New-F2Link 'junction' $convJunction $convSrc
+$convDestinations = [ordered]@{
+    'upper' = $convFull.ToUpperInvariant()
+    'extended' = '\\?\' + $convFull
+    'device' = '\\.\' + $convFull
+    'unc' = '\\localhost\' + $convFull.Substring(0, 1) + '$' + $convFull.Substring(2)
+    'junction' = $convJunction
+}
+foreach ($dest in $convDestinations.GetEnumerator()) {
+    foreach ($force in @($false, $true)) {
+        $destName = $dest.Key
+        $destPath = $dest.Value
+        $f = $force
+        Add-Scenario "Fifth2/ConvertDestination/$destName/Force=$f" {
+            if ($destName -eq 'junction' -and -not $convJunctionOk) { return '(作れない)' }
+            if (-not (Test-Path -LiteralPath $destPath)) { return '(作れない)' }
+            [IO.File]::WriteAllBytes($convFile, [byte[]](0x61, 0x62, 0x63, 0x0D, 0x0A))
+            $r = Invoke-F2 { Convert-ProbedContent -LiteralPath $convFile -Encoding utf8BOM -Destination $destPath -Force:$f }
+            '{0} // {1}' -f $r, (Format-FileBytes $convFile)
+        }.GetNewClosure()
+    }
+}
+
+# 書き込みのリンク・権限（実装記録 9.9 節の 4、H-17）
+$linkDir = New-F2Folder 'links'
+$linkSub = Join-Path $linkDir 'sub'
+$null = New-Item -ItemType Directory -Path $linkSub
+$linkTarget = Join-Path $linkSub 't.txt'
+$linkWriters = [ordered]@{
+    'Set' = { param($p) Set-ProbedContent -LiteralPath $p -Value new -Encoding utf8NoBOM -LineBreak CrLf }
+    'Add' = { param($p) Add-ProbedContent -LiteralPath $p -Value new -Encoding utf8NoBOM -LineBreak CrLf }
+    'Out' = { param($p) 'new' | Out-ProbedFile -LiteralPath $p -Encoding utf8NoBOM -LineBreak CrLf }
+    'Export' = { param($p) [pscustomobject]@{ A = 'new' } | Export-ProbedCsv -LiteralPath $p }
+    'Convert' = { param($p) Convert-ProbedContent -LiteralPath $p -Encoding utf8BOM }
+}
+$linkIndex = 0
+foreach ($kind in @('symlink-relative-chain', 'hardlink')) {
+    foreach ($writerName in $linkWriters.Keys) {
+        $linkIndex++
+        $k = $kind
+        $wb = $linkWriters[$writerName]
+        $n = $linkIndex
+        Add-Scenario "Fifth2/Link/$k/$writerName" {
+            [IO.File]::WriteAllBytes($linkTarget, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+            if ($k -eq 'hardlink') {
+                $entry = Join-Path $linkDir ("hard{0}.txt" -f $n)
+                if (-not (New-F2Link 'hardlink' $entry $linkTarget)) { return '(作れない)' }
+            }
+            else {
+                $mid = Join-Path $linkDir ("mid{0}.txt" -f $n)
+                $entry = Join-Path $linkDir ("link{0}.txt" -f $n)
+                if (-not (New-F2Link 'symlink' $mid 'sub\t.txt') -or -not (New-F2Link 'symlink' $entry ("mid{0}.txt" -f $n))) { return '(作れない)' }
+            }
+            $r = Invoke-F2 { & $wb $entry }
+            $linkType = (Get-Item -LiteralPath $entry -Force).LinkType
+            '{0} // target={1} // entry={2} // linktype={3} // tmp={4}' -f $r, (Format-FileBytes $linkTarget), (Format-FileBytes $entry), $linkType, @(Get-ChildItem -LiteralPath $linkDir -Recurse -Force -Filter '*.probedtmp').Count
+        }.GetNewClosure()
+    }
+}
+foreach ($writerName in @('Set', 'Add', 'Out', 'Export')) {
+    $linkIndex++
+    $wb = $linkWriters[$writerName]
+    $n = $linkIndex
+    Add-Scenario "Fifth2/Link/dangling/$writerName" {
+        $entry = Join-Path $linkDir ("dangling{0}.txt" -f $n)
+        $missing = Join-Path $linkSub ("missing{0}.txt" -f $n)
+        if (-not (New-F2Link 'symlink' $entry ("sub\missing{0}.txt" -f $n))) { return '(作れない)' }
+        $r = Invoke-F2 { & $wb $entry }
+        '{0} // target={1} // linktype={2}' -f $r, (Format-FileBytes $missing), (Get-Item -LiteralPath $entry -Force).LinkType
+    }.GetNewClosure()
+}
+Add-Scenario 'Fifth2/Link/hardlink/Set-rollback' {
+    [IO.File]::WriteAllBytes($linkTarget, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+    $entry = Join-Path $linkDir 'hard-rollback.txt'
+    if (-not (New-F2Link 'hardlink' $entry $linkTarget)) { return '(作れない)' }
+    $r = Invoke-F2 { Set-ProbedContent -LiteralPath $entry -Value 'a', "$([char]0xD55C)" -Encoding shift_jis }
+    '{0} // target={1} // entry={2}' -f $r, (Format-FileBytes $linkTarget), (Format-FileBytes $entry)
+}.GetNewClosure()
+
+# 2 章: EncodingChangeOnAppend でも、その呼び出しで書いた分を残さない
+$appendDir = New-F2Folder 'append'
+$appendSjis = [byte[]](0x82, 0xA0, 0x0A)
+foreach ($appendCase in @(
+    @('Add', { param($p) 'x', "$([char]0x3044)", 'y' | Add-ProbedContent -LiteralPath $p -Encoding utf8NoBOM -Culture ja-JP -LineBreak Lf }),
+    @('Add-Stop', { param($p) 'x', "$([char]0x3044)" | Add-ProbedContent -LiteralPath $p -Encoding utf8NoBOM -Culture ja-JP -LineBreak Lf -ErrorAction Stop }),
+    @('OutAppend', { param($p) 'x', "$([char]0x3044)" | Out-ProbedFile -LiteralPath $p -Encoding utf8NoBOM -Append -Culture ja-JP -LineBreak Lf }),
+    @('ExportAppend', { param($p) [pscustomobject]@{ A = 'x' }, [pscustomobject]@{ A = "$([char]0x3044)" } | Export-ProbedCsv -LiteralPath $p -Encoding utf8NoBOM -Append -Culture ja-JP }))) {
+    $an = $appendCase[0]
+    $ab = $appendCase[1]
+    $ap = Join-Path $appendDir ("{0}.txt" -f $an)
+    $initial = if ($an -eq 'ExportAppend') { [byte[]](0x41, 0x0A, 0x82, 0xA0, 0x0A) } else { $appendSjis }
+    Add-Scenario "Fifth2/AppendRollback/$an" {
+        [IO.File]::WriteAllBytes($ap, $initial)
+        '{0} // {1}' -f (Invoke-F2 { & $ab $ap }), (Format-FileBytes $ap)
+    }.GetNewClosure()
+}
+
+# 代替データストリーム（主ストリームの名前はそのファイル。ほかのストリームは両ホストで AlternateDataStreamNotSupported）
+$streamFile = Join-Path $script:f2Dir 'stream.txt'
+[IO.File]::WriteAllBytes($streamFile, [byte[]](0x61, 0x62, 0x63, 0x0D, 0x0A))
+Add-Scenario 'Fifth2/Stream/Get-main' { Invoke-F2 { Get-ProbedContent -LiteralPath ($streamFile + '::$DATA') } }.GetNewClosure()
+Add-Scenario 'Fifth2/Stream/Resolve-main' { Invoke-F2 { (Resolve-Encoding -Path ($streamFile + '::$DATA')).CodePage } }.GetNewClosure()
+Add-Scenario 'Fifth2/Stream/Get-alt' { Invoke-F2 { Get-ProbedContent -LiteralPath ($streamFile + ':alt') } }.GetNewClosure()
+Add-Scenario 'Fifth2/Stream/Set-alt' { Invoke-F2 { Set-ProbedContent -LiteralPath ($streamFile + ':alt') -Value x -Encoding utf8NoBOM } }.GetNewClosure()
+Add-Scenario 'Fifth2/Stream/Out-alt' { Invoke-F2 { 'x' | Out-ProbedFile -LiteralPath ($streamFile + ':alt') } }.GetNewClosure()
+
+# BUG-0006・0007: -Culture / -Strategy の検証（Resolve-Encoding もほかのコマンドと同じ ID。受け付ける名前は形で決める）
+$cultureFile = Join-Path $script:f2Dir 'culture.txt'
+[IO.File]::WriteAllBytes($cultureFile, [byte[]](0xC7, 0xD1, 0xB1, 0xB9, 0xBE, 0xEE, 0x0D, 0x0A))
+foreach ($cultureName in @('C', 'c', 'root', 'POSIX', 'xx-YY', 'ko-KR', 'ko_KR', 'art-lojban', 'zh-yue', 'zh-min-nan', 'und-u-ca-gregory', 'c-JP', 'ja-JP-x', 'i-klingon', 'x-test', 'en-u', 'not a culture!', 'cel-gaulish', 'zh-min', 'no-bok', 'zh-cmn', 'zh-guoyu', 'zh-yue-HK')) {
+    $cn = $cultureName
+    Add-Scenario "Fifth2/Culture/$cn/Resolve" { Invoke-F2 { $r = Resolve-Encoding -Path $cultureFile -Culture $cn; '{0} {1}' -f $r.CodePage, $r.Culture } }.GetNewClosure()
+    Add-Scenario "Fifth2/Culture/$cn/Get" { Invoke-F2 { (Get-ProbedContent -LiteralPath $cultureFile -Culture $cn -Raw).Length } }.GetNewClosure()
+    Add-Scenario "Fifth2/Culture/$cn/Import" { Invoke-F2 { @(Import-ProbedCsv -LiteralPath $cultureFile -Culture $cn).Count } }.GetNewClosure()
+    Add-Scenario "Fifth2/Culture/$cn/Convert" { Invoke-F2 { (Convert-ProbedContent -LiteralPath $cultureFile -Culture $cn -Encoding utf8BOM -WhatIf -PassThru | Measure-Object).Count } }.GetNewClosure()
+}
+Add-Scenario 'Fifth2/Strategy/Resolve-invalid' {
+    try { Resolve-Encoding -Path $cultureFile -Strategy Nonexistent; 'no error' }
+    catch { '{0} [{1}] {2} :: {3}' -f $_.FullyQualifiedErrorId.Split(',')[0], $_.CategoryInfo.Category, $_.Exception.GetType().Name, (Get-InnermostMessage $_.Exception) }
+}.GetNewClosure()
+Add-Scenario 'Fifth2/Culture/Resolve-invalid-message' {
+    try { Resolve-Encoding -Path $cultureFile -Culture 'not a culture!'; 'no error' }
+    catch { '{0} [{1}] {2} :: {3}' -f $_.FullyQualifiedErrorId.Split(',')[0], $_.CategoryInfo.Category, $_.Exception.GetType().Name, (Get-InnermostMessage $_.Exception) }
+}.GetNewClosure()
+
+# BUG-0008 (5): OS の説明に前後の空白が無い
+Add-Scenario 'Fifth2/PlatformInfo/OsDescriptionTrimmed' { $d = (Get-EncodingProbePlatformInfo).Os.Description; [string]($d -ceq $d.Trim()) }
+
+# ---------------------------------------------------------------------------
 # 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
 #
 # UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。
