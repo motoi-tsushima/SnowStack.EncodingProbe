@@ -29,7 +29,9 @@ internal static class PlatformInfoResolver
         IsWindows = PlatformInfo.IsWindows,
         IsMacOs = PlatformInfo.IsMacOs,
         IsLinux = PlatformInfo.IsLinux,
-        Description = RuntimeInformation.OSDescription,
+        // .NET Framework の OSDescription は末尾に空白が付く（"Microsoft Windows 10.0.26300 "）。
+        // .NET Core と同じ文字列にするため、前後の空白を除く（1.3.0。BUG-0008）
+        Description = RuntimeInformation.OSDescription.Trim(),
     };
 
     private static DotNetRuntimeInformation ResolveRuntime()

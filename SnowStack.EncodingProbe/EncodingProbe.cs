@@ -30,7 +30,7 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE OTHER DEALINGS IN THE
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 https://github.com/motoi-tsushima/SnowStack.EncodingProbe
@@ -70,6 +70,12 @@ altered here.
         /// <summary>
         /// カルチャー名の妥当性を検証する
         /// </summary>
+        /// <remarks>
+        /// 1.3.0 から、<see cref="System.Globalization.CultureInfo"/> で作れるかどうかではなく、名前の形（BCP 47）で決める
+        /// （<see cref="CultureNameSubtags.IsWellFormed(string)"/>）。.NET Framework と .NET Core で受け付ける名前が違い、
+        /// net48 と net10.0 のビルドで同じ名前の扱いが違っていたため（<c>C</c>・<c>root</c> は .NET Core だけが受け付けていた）。
+        /// 判定はカルチャー名をサブタグに分解して行い、CultureInfo を使わない。
+        /// </remarks>
         /// <param name="culture">カルチャー名</param>
         /// <returns>検証済みのカルチャー名</returns>
         /// <exception cref="ArgumentException"></exception>
@@ -80,14 +86,12 @@ altered here.
                 //空白設定ならば、何もしない。
                 return string.Empty;
             }
-            try
+
+            if (!CultureNameSubtags.IsWellFormed(culture))
             {
-                _ = new System.Globalization.CultureInfo(culture);
+                throw new ArgumentException($"The specified culture '{culture}' is not supported.");
             }
-            catch (System.Globalization.CultureNotFoundException ex)
-            {
-                throw new ArgumentException($"The specified culture '{culture}' is not supported.", ex);
-            }
+
             return culture;
         }
 

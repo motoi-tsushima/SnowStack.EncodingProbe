@@ -126,6 +126,12 @@ namespace EncodingProbe.Tests.DetectorTests
         [InlineData("yue",          "yue", null,   null)]
         [InlineData("es-419",       "es",  null,   "419")]
         [InlineData("zh-Hant-HK-u-nu-hanidec", "zh", "Hant", "HK")]
+        // 拡張言語（言語サブタグの直後の英字 3 文字）は、それを言語として扱う（1.3.0 第五次の後半。RFC 5646 では zh-yue = yue）
+        [InlineData("zh-yue",       "yue", null,   null)]
+        [InlineData("zh-yue-HK",    "yue", null,   "HK")]
+        [InlineData("zh-yue-Hant-HK", "yue", "Hant", "HK")]
+        [InlineData("zh-cmn-Hans-CN", "cmn", "Hans", "CN")]
+        [InlineData("zh-min-nan",   "min", null,   null)]
         [InlineData("",             "",    null,   null)]
         public void Parse(string culture, string language, string? script, string? region)
         {
@@ -134,6 +140,23 @@ namespace EncodingProbe.Tests.DetectorTests
             Assert.Equal(language, subtags.Language);
             Assert.Equal(script, subtags.Script);
             Assert.Equal(region, subtags.Region);
+        }
+
+        /// <summary>
+        /// 拡張言語を言語として扱った結果のカルチャー圏（表は増やしていない。yue は香港、表に無い言語は None）
+        /// </summary>
+        [Theory]
+        [InlineData("zh-yue", "ChineseHongKong")]
+        [InlineData("zh-yue-HK", "ChineseHongKong")]
+        [InlineData("zh-yue-Hans-CN", "ChineseSimplified")]
+        [InlineData("zh-cmn", "None")]
+        [InlineData("zh-cmn-Hans-CN", "None")]
+        [InlineData("zh-min-nan", "None")]
+        [InlineData("zh-CHT", "ChineseTraditional")]
+        [InlineData("zh-CHS", "ChineseSimplified")]
+        public void Resolve_ExtendedLanguage(string culture, string expected)
+        {
+            Assert.Equal(expected, EncodingDetector.ResolveEastAsianLegacyRegion(culture).ToString());
         }
     }
 }
