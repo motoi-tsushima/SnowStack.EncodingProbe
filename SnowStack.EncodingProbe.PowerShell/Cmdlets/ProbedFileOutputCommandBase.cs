@@ -227,6 +227,13 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
             ThrowTerminatingError(RollbackNotice.Attach(
                 CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this.OutputPath), this.OutputPath, kept));
         }
+        catch (UnauthorizedAccessException exception)
+        {
+            // 書く内容が境目を超えて書き方を切り替えたときに、切り替えた先を開けなかった（第五次の仕上げ）
+            string? kept = RollbackOutput();
+            ThrowTerminatingError(RollbackNotice.Attach(
+                CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath), this.OutputPath, kept));
+        }
     }
 
     /// <summary>

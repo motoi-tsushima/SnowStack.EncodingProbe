@@ -639,16 +639,16 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請不要從寫入目標或 -EncodingFrom 的參照檔案繼承，而以 -Encoding 明確指定字碼頁。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入該檔案，回報非終止錯誤 UnrepresentableCharacter，並繼續寫入其他檔案（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。先前的記錄已寫入的內容也會取消，並將檔案還原為寫入前的狀態（覆寫時先寫入同一資料夾的暫存檔再取代，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
+        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入該檔案，回報非終止錯誤 UnrepresentableCharacter，並繼續寫入其他檔案（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。先前的記錄已寫入的內容也會取消，並將檔案還原為寫入前的狀態（覆寫時還原為原本的內容，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。符號連結與連接點會追蹤到底，取代連結目標的實體（連結本身保留）。若是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且硬式連結會中斷。</maml:para>
+        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。但若要寫入的內容與原始檔案都在 1 MiB 以內，則不使用暫存檔，而是先將原始檔案的內容複製到記憶體，再直接寫入原始檔案，失敗時從記憶體中的複本寫回（尚不存在的檔案會直接建立並寫入，失敗時刪除）。若寫回也失敗，會將複本保留在暫存資料夾，並在錯誤訊息中顯示其路徑。使用此方式時，若在寫入途中處理序被強制結束（例如停電），1 MiB 以內的檔案可能會以寫到一半的狀態留下。符號連結與連接點會追蹤到底，寫入連結目標的實體（連結本身保留）。若超過 1 MiB 的檔案是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且超過 1 MiB 的檔案的硬式連結會中斷。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入並取代時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。</maml:para>
+        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。取代超過 1 MiB 的檔案時，若對方不允許刪除共用就會失敗；直接寫入 1 MiB 以內的檔案時，若對方不允許寫入共用就會失敗。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>寫入目標是目標不存在的符號連結時，與標準的 Set-Content 相同不會寫入，並回報非終止錯誤 LinkTargetNotFound（若要建立連結目標，請使用 Out-ProbedFile 或指定連結目標的路徑）。</maml:para>
@@ -1106,7 +1106,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請不要從寫入目標或 -EncodingFrom 的參照檔案繼承，而以 -Encoding 明確指定字碼頁。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入該檔案，回報非終止錯誤 UnrepresentableCharacter，並繼續寫入其他檔案（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。先前的記錄已寫入的內容也會取消，並將檔案還原為寫入前的狀態（覆寫時先寫入同一資料夾的暫存檔再取代，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
+        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入該檔案，回報非終止錯誤 UnrepresentableCharacter，並繼續寫入其他檔案（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。先前的記錄已寫入的內容也會取消，並將檔案還原為寫入前的狀態（覆寫時還原為原本的內容，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。附加的一致性檢查也會將附加目的地的 us-ascii 視為無 BOM 的 UTF-8。</maml:para>
@@ -1618,19 +1618,19 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>單位元組字元編碼（windows-1252、ISO-8859 等）無法從位元組序列的結構判別，而是以文章的統計來推定。因此判斷成功與否取決於內容多於長度。包含字元清單、大量符號與數字的行，或該語言通常不使用的字元的文字，即使有數百位元組也可能無法判斷（CodePage 為 -1）。此時請不要使用 Auto 或 -Append 的繼承，而以 -Encoding 明確指定字碼頁。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入檔案，回報終止錯誤 UnrepresentableCharacter（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。已寫入的行也會取消，並將檔案還原為寫入前的狀態（覆寫時先寫入同一資料夾的暫存檔再取代，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
+        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入檔案，回報終止錯誤 UnrepresentableCharacter（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。已寫入的行也會取消，並將檔案還原為寫入前的狀態（覆寫時還原為原本的內容，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。附加的一致性檢查也會將附加目的地的 us-ascii 視為無 BOM 的 UTF-8。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。符號連結與連接點會追蹤到底，取代連結目標的實體（連結本身保留）。若是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且硬式連結會中斷。</maml:para>
+        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。但若要寫入的內容與原始檔案都在 1 MiB 以內，則不使用暫存檔，而是先將原始檔案的內容複製到記憶體，再直接寫入原始檔案，失敗時從記憶體中的複本寫回（尚不存在的檔案會直接建立並寫入，失敗時刪除）。若寫回也失敗，會將複本保留在暫存資料夾，並在錯誤訊息中顯示其路徑。使用此方式時，若在寫入途中處理序被強制結束（例如停電），1 MiB 以內的檔案可能會以寫到一半的狀態留下。符號連結與連接點會追蹤到底，寫入連結目標的實體（連結本身保留）。若超過 1 MiB 的檔案是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且超過 1 MiB 的檔案的硬式連結會中斷。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>附加時會直接寫入附加目標檔案。會追蹤符號連結並附加到實體；連結目標不存在時，與標準的 Add-Content / Out-File -Append 相同，會在連結目標建立檔案。因錯誤（無法表示的字元、一致性檢查不符 EncodingChangeOnAppend、寫入失敗）而停止時，會取消該次呼叫寫入的內容，還原為附加前的長度（附加目標原本不存在時，會刪除建立的檔案）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入並取代時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。</maml:para>
+        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。取代超過 1 MiB 的檔案時，若對方不允許刪除共用就會失敗；直接寫入 1 MiB 以內的檔案時，若對方不允許寫入共用就會失敗。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>輸出目標是目標不存在的符號連結時，與標準的 Out-File / Export-Csv 相同，會在連結目標建立檔案（連結本身保留）。</maml:para>
@@ -1704,7 +1704,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
     <maml:description>
       <maml:para>以不同的字元編碼、BOM 或換行重寫文字檔。字元本身不會改變。目標檔案以 -Path / -LiteralPath 指定，或以管線傳入 Get-ChildItem 的輸出。這個 Cmdlet 本身沒有 -Recurse 或篩選功能。</maml:para>
       <maml:para>絕不會遺失字元。含有對來源字元編碼而言無效的位元組序列，或含有無法以目標字元編碼表示之字元的檔案不會轉換，而是保持原狀。錯誤訊息會指出其位置。沒有將這類字元取代後再轉換的選項。</maml:para>
-      <maml:para>每個檔案都會先寫入同一資料夾的暫存檔再取代原始檔案，因此即使中途失敗，原始檔案也不會損壞。符號連結會取代連結目標的實體（連結保留），硬式連結則不會中斷，而是直接寫入原始檔案（請參閱附註）。若轉換結果與原始位元組序列完全相同，則不會重寫，修改時間也不會改變。</maml:para>
+      <maml:para>每個檔案都會先寫入同一資料夾的暫存檔再取代原始檔案（1 MiB 以內的檔案則先將原始內容複製到記憶體再直接寫入），因此即使中途失敗，原始檔案也不會損壞。符號連結會取代連結目標的實體（連結保留），硬式連結則不會中斷，而是直接寫入原始檔案（請參閱附註）。若轉換結果與原始位元組序列完全相同，則不會重寫，修改時間也不會改變。</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -2106,10 +2106,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>即使使用 -WhatIf / -Confirm，也會執行不變更檔案的檢查（唯讀、-Destination 中已有同名檔案、同一次執行中檔名重複、輸出目標與來源相同、無效的位元組序列、無法表示的字元），並以錯誤回報。-WhatIf / -Confirm 的訊息是在求得轉換結果之後、寫入之前顯示，因此轉換結果與原檔相同而不重寫的檔案也會顯示。這是為了在指定 -Confirm 時不省略確認而有意設計的行為。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。符號連結與連接點會追蹤到底，取代連結目標的實體（連結本身保留）。若是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且硬式連結會中斷。</maml:para>
+        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。但若要寫入的內容與原始檔案都在 1 MiB 以內，則不使用暫存檔，而是先將原始檔案的內容複製到記憶體，再直接寫入原始檔案，失敗時從記憶體中的複本寫回（尚不存在的檔案會直接建立並寫入，失敗時刪除）。若寫回也失敗，會將複本保留在暫存資料夾，並在錯誤訊息中顯示其路徑。使用此方式時，若在寫入途中處理序被強制結束（例如停電），1 MiB 以內的檔案可能會以寫到一半的狀態留下。符號連結與連接點會追蹤到底，寫入連結目標的實體（連結本身保留）。若超過 1 MiB 的檔案是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且超過 1 MiB 的檔案的硬式連結會中斷。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入並取代時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。</maml:para>
+        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。取代超過 1 MiB 的檔案時，若對方不允許刪除共用就會失敗；直接寫入 1 MiB 以內的檔案時，若對方不允許寫入共用就會失敗。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>是否為同一個檔案（寫入正在讀取的檔案 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否與來源相同）是以檔案的實體比較，而不是路徑字串。即使以 \\?\、UNC 系統管理共用（\\localhost\C$\…）、\\.\、subst 磁碟機、符號連結、連接點、硬式連結或大小寫差異改變寫法，也會判定為同一個檔案。在 Linux / macOS 上以解析連結後的路徑比較，因此硬式連結視為不同的檔案。</maml:para>
@@ -3230,19 +3230,19 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:para>-DetectionLineCount 的驗證可能無法找出單位元組字元編碼的誤判。這是因為在單位元組字元編碼中，幾乎所有位元組序列都能解碼為正確的字元。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入檔案，回報終止錯誤 UnrepresentableCharacter（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。已寫入的行也會取消，並將檔案還原為寫入前的狀態（覆寫時先寫入同一資料夾的暫存檔再取代，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
+        <maml:para>若要寫入的字串中有無法以目的地的字元編碼表示的字元，就不寫入檔案，回報終止錯誤 UnrepresentableCharacter（與 Convert-ProbedContent 相同的 ID）。訊息會顯示第一個這類字元的字碼指標（U+XXXX）與字元編碼的名稱。不會以 '?' 或相似的字元（例如 é → e）取代後寫入。已寫入的行也會取消，並將檔案還原為寫入前的狀態（覆寫時還原為原本的內容，附加時還原為原本的長度）。即使將 System.Text.Encoding 執行個體傳給 -Encoding，也不會使用該執行個體的後援（fallback）設定。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>繼承的字元編碼（寫入目的地·附加目的地、-EncodingFrom 的參照檔案、傳給 -Encoding 的 EncodingInformation）為 us-ascii 時，會視為無 BOM 的 UTF-8 寫入。所有位元組都小於 0x80 的檔案也是正確的 UTF-8，因此可以在只有 ASCII 字元的記錄檔或 CSV 中加入中文等文字。只寫入 ASCII 字元時，位元組序列與 us-ascii 相同。明確指定 -Encoding ascii 時仍為 us-ascii。附加的一致性檢查也會將附加目的地的 us-ascii 視為無 BOM 的 UTF-8。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。符號連結與連接點會追蹤到底，取代連結目標的實體（連結本身保留）。若是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且硬式連結會中斷。</maml:para>
+        <maml:para>覆寫時會先完整寫入與寫入目標相同資料夾中的暫存檔（.&lt;名稱&gt;.&lt;8 位十六進位&gt;.probedtmp）再取代，因此即使中途失敗，原始檔案也不會改變。但若要寫入的內容與原始檔案都在 1 MiB 以內，則不使用暫存檔，而是先將原始檔案的內容複製到記憶體，再直接寫入原始檔案，失敗時從記憶體中的複本寫回（尚不存在的檔案會直接建立並寫入，失敗時刪除）。若寫回也失敗，會將複本保留在暫存資料夾，並在錯誤訊息中顯示其路徑。使用此方式時，若在寫入途中處理序被強制結束（例如停電），1 MiB 以內的檔案可能會以寫到一半的狀態留下。符號連結與連接點會追蹤到底，寫入連結目標的實體（連結本身保留）。若超過 1 MiB 的檔案是硬式連結（連結數為 2 以上），或沒有在資料夾中建立檔案的權限，會先將原始檔案複製到暫存資料夾，再直接寫入原始檔案，失敗時從複本寫回。因此大型檔案需要花時間複製。不論哪種方式，屬性（唯讀、隱藏）、建立時間、替代資料流與 ACL 都會保留。在 Linux / macOS 上會沿用原始檔案的存取權限，但無法沿用擁有者，且超過 1 MiB 的檔案的硬式連結會中斷。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>附加時會直接寫入附加目標檔案。會追蹤符號連結並附加到實體；連結目標不存在時，與標準的 Add-Content / Out-File -Append 相同，會在連結目標建立檔案。因錯誤（無法表示的字元、一致性檢查不符 EncodingChangeOnAppend、寫入失敗）而停止時，會取消該次呼叫寫入的內容，還原為附加前的長度（附加目標原本不存在時，會刪除建立的檔案）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入並取代時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。</maml:para>
+        <maml:para>其他處理序開啟寫入目標時，覆寫失敗的時間點不是開啟檔案時，而是完成寫入時（WriteFailed 等）。此時原始檔案同樣不會改變，也不會留下暫存檔。取代超過 1 MiB 的檔案時，若對方不允許刪除共用就會失敗；直接寫入 1 MiB 以內的檔案時，若對方不允許寫入共用就會失敗。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>輸出目標是目標不存在的符號連結時，與標準的 Out-File / Export-Csv 相同，會在連結目標建立檔案（連結本身保留）。</maml:para>

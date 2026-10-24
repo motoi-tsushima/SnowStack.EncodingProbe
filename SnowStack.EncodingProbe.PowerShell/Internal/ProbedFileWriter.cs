@@ -20,12 +20,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// <br/>
     /// 失敗したときは <see cref="Rollback"/> でファイルを元に戻す。
     /// <list type="bullet">
-    /// <item>上書き・新規作成: <see cref="SafeFileOverwrite"/> に任せる（一時ファイルで置き換える。ハードリンク・権限・リンク切れの場合は書き方を切り替える。1.3.0 第五次の後半）</item>
+    /// <item>上書き・新規作成: <see cref="SafeFileOverwrite"/> に任せる（小さなファイルはメモリに写してから直接書き、それ以外は一時ファイルで置き換える。ハードリンク・権限・リンク切れの場合は書き方を切り替える。1.3.0 第五次の後半・仕上げ）</item>
     /// <item>追記: 追記先を直接開き、開いたときの長さを覚えておく。元に戻すときはその長さに切り詰める。追記先が無かった場合は、作ったファイルを消す。
     /// シンボリックリンクはたどって実体に追記する（リンク切れならリンクの先に作る。標準の Add-Content と同じ）</item>
     /// </list>
     /// どちらも、書き込み先が同じパイプラインで読み取り中のファイルと同じ実体なら <see cref="SameFileRoundTripException"/> を投げる。
-    /// 上書きは一時ファイルに書き始める前に、追記は「切り詰めずに開く → 開いたハンドルで比べる → 書く」の順に比べる。
+    /// 上書きは書き始める前（開く前）に、追記は「切り詰めずに開く → 開いたハンドルで比べる → 書く」の順に比べる。
     /// <see cref="Complete"/> も <see cref="Rollback"/> も呼ばずに <see cref="Dispose"/> した場合（パイプラインの停止など）は、
     /// それまでに書いた内容を残す（<see cref="Complete"/> と同じ。第四次までと同じ挙動）。
     /// </remarks>
@@ -34,7 +34,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <summary>FileStream に与えるバッファサイズ</summary>
         private const int WriteBufferSize = 4096;
 
-        private readonly FileStream _stream;
+        /// <summary>追記のときのストリーム。上書き・新規作成のときは null（<see cref="SafeFileOverwrite.Write"/> に書く）。</summary>
+        private readonly FileStream? _stream;
         private readonly Encoder _encoder;
         private readonly string _path;
 
@@ -56,7 +57,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         private bool _finished;
 
         private ProbedFileWriter(
-            FileStream stream,
+            FileStream? stream,
             Encoding encoding,
             string path,
             SafeFileOverwrite? overwrite,
@@ -177,13 +178,20 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 else
                 {
                     overwrite = SafeFileOverwrite.Begin(path, danglingLink, WriteBufferSize);
-                    stream = overwrite.Stream;
                 }
 
                 if (emitBom)
                 {
                     byte[] preamble = EncodingVocabulary.BuildEncoding(codePage, emitBom: true).GetPreamble();
-                    stream.Write(preamble, 0, preamble.Length);
+
+                    if (overwrite != null)
+                    {
+                        overwrite.Write(preamble, 0, preamble.Length);
+                    }
+                    else
+                    {
+                        stream!.Write(preamble, 0, preamble.Length);
+                    }
                 }
 
                 return new ProbedFileWriter(
@@ -247,7 +255,17 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             }
         }
 
-        private void WriteBytes(byte[] bytes) => this._stream.Write(bytes, 0, bytes.Length);
+        private void WriteBytes(byte[] bytes)
+        {
+            if (this._overwrite != null)
+            {
+                this._overwrite.Write(bytes, 0, bytes.Length);
+            }
+            else
+            {
+                this._stream!.Write(bytes, 0, bytes.Length);
+            }
+        }
 
         /// <summary>
         /// 書き込みを完了する。Encoder に残った内容（ISO-2022 の ASCII へ戻すエスケープシーケンスなど）を書き出し、
@@ -273,7 +291,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 }
                 else
                 {
-                    this._stream.Flush();
+                    this._stream!.Flush();
                     this._stream.Dispose();
                 }
 
@@ -317,13 +335,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 else if (this._originalLength < 0)
                 {
                     // 追記先が無かった: 作ったファイル（リンク切れなら、リンクの先に作った実体）を消す
-                    DisposeQuietly(this._stream);
+                    DisposeQuietly(this._stream!);
                     DeleteQuietly(this._appendTargetPath);
                 }
                 else
                 {
                     // まだバッファに残っている分も含めて、元の長さに切り詰める
-                    this._stream.SetLength(this._originalLength);
+                    this._stream!.SetLength(this._originalLength);
                     this._stream.Dispose();
                 }
             }

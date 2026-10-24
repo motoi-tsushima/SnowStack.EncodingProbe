@@ -4,7 +4,7 @@
     GUID                 = 'c807b12c-ca2a-4964-a3fe-b5f8823f78e8'
     Author               = 'motoi.tsushima'
     CompanyName          = 'motoi.tsushima'
-    Copyright            = 'Copyright © 2026 motoi.tsushima'
+    Copyright            = 'Copyright (c) 2026 Motoi Tsushima'
     Description          = 'A PowerShell module for detecting the character encoding of text files. テキストファイルの文字エンコーディングを判定する PowerShell モジュールです。'
 
     PowerShellVersion    = '5.1'
@@ -69,6 +69,9 @@ CSV の読み書きコマンドを 2 つ追加し、Resolve-Encoding で先頭�
 - 挙動の変更: 追記の整合性検査（EncodingChangeOnAppend）で止まった場合も、ファイルを追記の前に戻します。
 - 挙動の変更: シンボリックリンクに上書きするとリンクの先の実体を書き換え、リンクを残します。ハードリンクは
   切りません（Convert-ProbedContent を含む）。リンク切れへの Set-ProbedContent はエラー LinkTargetNotFound です。
+- 挙動の変更: 上書きは同じフォルダーの一時ファイルに書いてから置き換えます。ただし書く内容と元のファイルが
+  どちらも 1 MiB 以内なら、元のファイルの中身をメモリに写してから直接書き、失敗したら書き戻します
+  （小さなファイルを速く書くため。書いている最中にプロセスが強制終了されると、書きかけで残ることがあります）。
 - 挙動の変更: a.txt::$DATA は a.txt として扱い、代替データストリームはエラー AlternateDataStreamNotSupported
   にします。Resolve-Encoding の -Strategy / -Culture の誤りは、ほかのコマンドと同じ ID のエラーにします。
   -Culture に受け付ける名前は、名前の形（BCP 47）で決めます（C・root は両ホストで InvalidCulture）。

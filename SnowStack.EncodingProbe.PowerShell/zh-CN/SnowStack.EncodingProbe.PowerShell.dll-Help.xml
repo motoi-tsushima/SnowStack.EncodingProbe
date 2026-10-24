@@ -639,16 +639,16 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <maml:para>单字节字符编码（windows-1252、ISO-8859 等）无法从字节序列的结构判别，而是根据文章的统计进行推测。因此判断成功与否更多取决于内容而非长度。包含字符列表、大量符号和数字的行，或该语言通常不使用的字符的文本，即使有数百字节也可能无法判断（CodePage 为 -1）。此时请不要从写入目标或 -EncodingFrom 的参照文件继承，而用 -Encoding 明确指定代码页。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>如果要写入的字符串中有无法用目标的字符编码表示的字符，就不写入该文件，报告非终止错误 UnrepresentableCharacter，并继续写入其他文件（与 Convert-ProbedContent 相同的 ID）。消息会显示第一个此类字符的码位（U+XXXX）和字符编码的名称。不会替换为 '?' 或相似的字符（例如 é → e）后写入。之前的记录已写入的内容也会撤销，并将文件恢复为写入前的状态（覆盖时先写入同一文件夹的临时文件再替换，追加时恢复为原来的长度）。即使将 System.Text.Encoding 实例传给 -Encoding，也不会使用该实例的回退（fallback）设置。</maml:para>
+        <maml:para>如果要写入的字符串中有无法用目标的字符编码表示的字符，就不写入该文件，报告非终止错误 UnrepresentableCharacter，并继续写入其他文件（与 Convert-ProbedContent 相同的 ID）。消息会显示第一个此类字符的码位（U+XXXX）和字符编码的名称。不会替换为 '?' 或相似的字符（例如 é → e）后写入。之前的记录已写入的内容也会撤销，并将文件恢复为写入前的状态（覆盖时恢复为原来的内容，追加时恢复为原来的长度）。即使将 System.Text.Encoding 实例传给 -Encoding，也不会使用该实例的回退（fallback）设置。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>继承的字符编码（写入目标·追加目标、-EncodingFrom 的参照文件、传给 -Encoding 的 EncodingInformation）为 us-ascii 时，会视为无 BOM 的 UTF-8 写入。所有字节都小于 0x80 的文件也是正确的 UTF-8，因此可以在只有 ASCII 字符的日志或 CSV 中添加中文等文字。只写入 ASCII 字符时，字节序列与 us-ascii 相同。明确指定 -Encoding ascii 时仍为 us-ascii。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>覆盖时会先完整写入与写入目标相同文件夹中的临时文件（.&lt;名称&gt;.&lt;8 位十六进制&gt;.probedtmp）再替换，因此即使中途失败，原始文件也不会改变。符号链接与联接会跟踪到底，替换链接目标的实体（链接本身保留）。若是硬链接（链接数为 2 以上），或没有在文件夹中创建文件的权限，会先将原始文件复制到临时文件夹，再直接写入原始文件，失败时从副本写回。因此大型文件需要花时间复制。不论哪种方式，属性（只读、隐藏）、创建时间、备用数据流与 ACL 都会保留。在 Linux / macOS 上会沿用原始文件的访问权限，但无法沿用所有者，且硬链接会断开。</maml:para>
+        <maml:para>覆盖时会先完整写入与写入目标相同文件夹中的临时文件（.&lt;名称&gt;.&lt;8 位十六进制&gt;.probedtmp）再替换，因此即使中途失败，原始文件也不会改变。但如果要写入的内容与原始文件都在 1 MiB 以内，则不使用临时文件，而是先将原始文件的内容复制到内存，再直接写入原始文件，失败时从内存中的副本写回（尚不存在的文件会直接创建并写入，失败时删除）。如果写回也失败，会将副本保留在临时文件夹，并在错误消息中显示其路径。使用此方式时，如果在写入途中进程被强制结束（例如断电），1 MiB 以内的文件可能会以写到一半的状态留下。符号链接与联接会跟踪到底，写入链接目标的实体（链接本身保留）。如果超过 1 MiB 的文件是硬链接（链接数为 2 以上），或没有在文件夹中创建文件的权限，会先将原始文件复制到临时文件夹，再直接写入原始文件，失败时从副本写回。因此大型文件需要花时间复制。不论哪种方式，属性（只读、隐藏）、创建时间、备用数据流与 ACL 都会保留。在 Linux / macOS 上会沿用原始文件的访问权限，但无法沿用所有者，且超过 1 MiB 的文件的硬链接会断开。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>其他进程打开写入目标时，覆盖失败的时间点不是打开文件时，而是完成写入并替换时（WriteFailed 等）。此时原始文件同样不会改变，也不会留下临时文件。</maml:para>
+        <maml:para>其他进程打开写入目标时，覆盖失败的时间点不是打开文件时，而是完成写入时（WriteFailed 等）。此时原始文件同样不会改变，也不会留下临时文件。替换超过 1 MiB 的文件时，如果对方不允许删除共享就会失败；直接写入 1 MiB 以内的文件时，如果对方不允许写入共享就会失败。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>写入目标是目标不存在的符号链接时，与标准的 Set-Content 相同不会写入，并报告非终止错误 LinkTargetNotFound（若要创建链接目标，请使用 Out-ProbedFile 或指定链接目标的路径）。</maml:para>
@@ -1106,7 +1106,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>单字节字符编码（windows-1252、ISO-8859 等）无法从字节序列的结构判别，而是根据文章的统计进行推测。因此判断成功与否更多取决于内容而非长度。包含字符列表、大量符号和数字的行，或该语言通常不使用的字符的文本，即使有数百字节也可能无法判断（CodePage 为 -1）。此时请不要从写入目标或 -EncodingFrom 的参照文件继承，而用 -Encoding 明确指定代码页。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>如果要写入的字符串中有无法用目标的字符编码表示的字符，就不写入该文件，报告非终止错误 UnrepresentableCharacter，并继续写入其他文件（与 Convert-ProbedContent 相同的 ID）。消息会显示第一个此类字符的码位（U+XXXX）和字符编码的名称。不会替换为 '?' 或相似的字符（例如 é → e）后写入。之前的记录已写入的内容也会撤销，并将文件恢复为写入前的状态（覆盖时先写入同一文件夹的临时文件再替换，追加时恢复为原来的长度）。即使将 System.Text.Encoding 实例传给 -Encoding，也不会使用该实例的回退（fallback）设置。</maml:para>
+        <maml:para>如果要写入的字符串中有无法用目标的字符编码表示的字符，就不写入该文件，报告非终止错误 UnrepresentableCharacter，并继续写入其他文件（与 Convert-ProbedContent 相同的 ID）。消息会显示第一个此类字符的码位（U+XXXX）和字符编码的名称。不会替换为 '?' 或相似的字符（例如 é → e）后写入。之前的记录已写入的内容也会撤销，并将文件恢复为写入前的状态（覆盖时恢复为原来的内容，追加时恢复为原来的长度）。即使将 System.Text.Encoding 实例传给 -Encoding，也不会使用该实例的回退（fallback）设置。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>继承的字符编码（写入目标·追加目标、-EncodingFrom 的参照文件、传给 -Encoding 的 EncodingInformation）为 us-ascii 时，会视为无 BOM 的 UTF-8 写入。所有字节都小于 0x80 的文件也是正确的 UTF-8，因此可以在只有 ASCII 字符的日志或 CSV 中添加中文等文字。只写入 ASCII 字符时，字节序列与 us-ascii 相同。明确指定 -Encoding ascii 时仍为 us-ascii。追加的一致性检查也会将追加目标的 us-ascii 视为无 BOM 的 UTF-8。</maml:para>
@@ -1618,19 +1618,19 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>单字节字符编码（windows-1252、ISO-8859 等）无法从字节序列的结构判别，而是根据文章的统计进行推测。因此判断成功与否更多取决于内容而非长度。包含字符列表、大量符号和数字的行，或该语言通常不使用的字符的文本，即使有数百字节也可能无法判断（CodePage 为 -1）。此时请不要使用 Auto 或 -Append 的继承，而用 -Encoding 明确指定代码页。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>如果要写入的字符串中有无法用目标的字符编码表示的字符，就不写入文件，报告终止错误 UnrepresentableCharacter（与 Convert-ProbedContent 相同的 ID）。消息会显示第一个此类字符的码位（U+XXXX）和字符编码的名称。不会替换为 '?' 或相似的字符（例如 é → e）后写入。已写入的行也会撤销，并将文件恢复为写入前的状态（覆盖时先写入同一文件夹的临时文件再替换，追加时恢复为原来的长度）。即使将 System.Text.Encoding 实例传给 -Encoding，也不会使用该实例的回退（fallback）设置。</maml:para>
+        <maml:para>如果要写入的字符串中有无法用目标的字符编码表示的字符，就不写入文件，报告终止错误 UnrepresentableCharacter（与 Convert-ProbedContent 相同的 ID）。消息会显示第一个此类字符的码位（U+XXXX）和字符编码的名称。不会替换为 '?' 或相似的字符（例如 é → e）后写入。已写入的行也会撤销，并将文件恢复为写入前的状态（覆盖时恢复为原来的内容，追加时恢复为原来的长度）。即使将 System.Text.Encoding 实例传给 -Encoding，也不会使用该实例的回退（fallback）设置。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>继承的字符编码（写入目标·追加目标、-EncodingFrom 的参照文件、传给 -Encoding 的 EncodingInformation）为 us-ascii 时，会视为无 BOM 的 UTF-8 写入。所有字节都小于 0x80 的文件也是正确的 UTF-8，因此可以在只有 ASCII 字符的日志或 CSV 中添加中文等文字。只写入 ASCII 字符时，字节序列与 us-ascii 相同。明确指定 -Encoding ascii 时仍为 us-ascii。追加的一致性检查也会将追加目标的 us-ascii 视为无 BOM 的 UTF-8。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>覆盖时会先完整写入与写入目标相同文件夹中的临时文件（.&lt;名称&gt;.&lt;8 位十六进制&gt;.probedtmp）再替换，因此即使中途失败，原始文件也不会改变。符号链接与联接会跟踪到底，替换链接目标的实体（链接本身保留）。若是硬链接（链接数为 2 以上），或没有在文件夹中创建文件的权限，会先将原始文件复制到临时文件夹，再直接写入原始文件，失败时从副本写回。因此大型文件需要花时间复制。不论哪种方式，属性（只读、隐藏）、创建时间、备用数据流与 ACL 都会保留。在 Linux / macOS 上会沿用原始文件的访问权限，但无法沿用所有者，且硬链接会断开。</maml:para>
+        <maml:para>覆盖时会先完整写入与写入目标相同文件夹中的临时文件（.&lt;名称&gt;.&lt;8 位十六进制&gt;.probedtmp）再替换，因此即使中途失败，原始文件也不会改变。但如果要写入的内容与原始文件都在 1 MiB 以内，则不使用临时文件，而是先将原始文件的内容复制到内存，再直接写入原始文件，失败时从内存中的副本写回（尚不存在的文件会直接创建并写入，失败时删除）。如果写回也失败，会将副本保留在临时文件夹，并在错误消息中显示其路径。使用此方式时，如果在写入途中进程被强制结束（例如断电），1 MiB 以内的文件可能会以写到一半的状态留下。符号链接与联接会跟踪到底，写入链接目标的实体（链接本身保留）。如果超过 1 MiB 的文件是硬链接（链接数为 2 以上），或没有在文件夹中创建文件的权限，会先将原始文件复制到临时文件夹，再直接写入原始文件，失败时从副本写回。因此大型文件需要花时间复制。不论哪种方式，属性（只读、隐藏）、创建时间、备用数据流与 ACL 都会保留。在 Linux / macOS 上会沿用原始文件的访问权限，但无法沿用所有者，且超过 1 MiB 的文件的硬链接会断开。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>追加时会直接写入追加目标文件。会跟踪符号链接并追加到实体；链接目标不存在时，与标准的 Add-Content / Out-File -Append 相同，会在链接目标创建文件。因错误（无法表示的字符、一致性检查不符 EncodingChangeOnAppend、写入失败）而停止时，会取消该次调用写入的内容，还原为追加前的长度（追加目标原本不存在时，会删除创建的文件）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>其他进程打开写入目标时，覆盖失败的时间点不是打开文件时，而是完成写入并替换时（WriteFailed 等）。此时原始文件同样不会改变，也不会留下临时文件。</maml:para>
+        <maml:para>其他进程打开写入目标时，覆盖失败的时间点不是打开文件时，而是完成写入时（WriteFailed 等）。此时原始文件同样不会改变，也不会留下临时文件。替换超过 1 MiB 的文件时，如果对方不允许删除共享就会失败；直接写入 1 MiB 以内的文件时，如果对方不允许写入共享就会失败。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>输出目标是目标不存在的符号链接时，与标准的 Out-File / Export-Csv 相同，会在链接目标创建文件（链接本身保留）。</maml:para>
@@ -1704,7 +1704,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
     <maml:description>
       <maml:para>以不同的字符编码、BOM 或换行重写文本文件。字符本身不会改变。目标文件以 -Path / -LiteralPath 指定，或以管道传入 Get-ChildItem 的输出。该 Cmdlet 本身没有 -Recurse 或筛选功能。</maml:para>
       <maml:para>绝不会丢失字符。含有对源字符编码而言无效的字节序列，或含有无法用目标字符编码表示的字符的文件不会转换，而是保持原样。错误消息会指出其位置。没有将这类字符替换后再转换的选项。</maml:para>
-      <maml:para>每个文件都会先写入同一文件夹的临时文件再替换原始文件，因此即使中途失败，原始文件也不会损坏。符号链接会替换链接目标的实体（链接保留），硬链接则不会断开，而是直接写入原始文件（请参阅说明）。若转换结果与原始字节序列完全相同，则不会重写，修改时间也不会改变。</maml:para>
+      <maml:para>每个文件都会先写入同一文件夹的临时文件再替换原始文件（1 MiB 以内的文件则先将原始内容复制到内存再直接写入），因此即使中途失败，原始文件也不会损坏。符号链接会替换链接目标的实体（链接保留），硬链接则不会断开，而是直接写入原始文件（请参阅说明）。若转换结果与原始字节序列完全相同，则不会重写，修改时间也不会改变。</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -2106,10 +2106,10 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>即使使用 -WhatIf / -Confirm，也会执行不更改文件的检查（只读、-Destination 中已有同名文件、同一次执行中文件名重复、输出目标与源相同、无效的字节序列、无法表示的字符），并作为错误报告。-WhatIf / -Confirm 的消息是在求得转换结果之后、写入之前显示的，因此转换结果与原文件相同而不重写的文件也会显示。这是为了在指定 -Confirm 时不省略确认而有意设计的行为。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>覆盖时会先完整写入与写入目标相同文件夹中的临时文件（.&lt;名称&gt;.&lt;8 位十六进制&gt;.probedtmp）再替换，因此即使中途失败，原始文件也不会改变。符号链接与联接会跟踪到底，替换链接目标的实体（链接本身保留）。若是硬链接（链接数为 2 以上），或没有在文件夹中创建文件的权限，会先将原始文件复制到临时文件夹，再直接写入原始文件，失败时从副本写回。因此大型文件需要花时间复制。不论哪种方式，属性（只读、隐藏）、创建时间、备用数据流与 ACL 都会保留。在 Linux / macOS 上会沿用原始文件的访问权限，但无法沿用所有者，且硬链接会断开。</maml:para>
+        <maml:para>覆盖时会先完整写入与写入目标相同文件夹中的临时文件（.&lt;名称&gt;.&lt;8 位十六进制&gt;.probedtmp）再替换，因此即使中途失败，原始文件也不会改变。但如果要写入的内容与原始文件都在 1 MiB 以内，则不使用临时文件，而是先将原始文件的内容复制到内存，再直接写入原始文件，失败时从内存中的副本写回（尚不存在的文件会直接创建并写入，失败时删除）。如果写回也失败，会将副本保留在临时文件夹，并在错误消息中显示其路径。使用此方式时，如果在写入途中进程被强制结束（例如断电），1 MiB 以内的文件可能会以写到一半的状态留下。符号链接与联接会跟踪到底，写入链接目标的实体（链接本身保留）。如果超过 1 MiB 的文件是硬链接（链接数为 2 以上），或没有在文件夹中创建文件的权限，会先将原始文件复制到临时文件夹，再直接写入原始文件，失败时从副本写回。因此大型文件需要花时间复制。不论哪种方式，属性（只读、隐藏）、创建时间、备用数据流与 ACL 都会保留。在 Linux / macOS 上会沿用原始文件的访问权限，但无法沿用所有者，且超过 1 MiB 的文件的硬链接会断开。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>其他进程打开写入目标时，覆盖失败的时间点不是打开文件时，而是完成写入并替换时（WriteFailed 等）。此时原始文件同样不会改变，也不会留下临时文件。</maml:para>
+        <maml:para>其他进程打开写入目标时，覆盖失败的时间点不是打开文件时，而是完成写入时（WriteFailed 等）。此时原始文件同样不会改变，也不会留下临时文件。替换超过 1 MiB 的文件时，如果对方不允许删除共享就会失败；直接写入 1 MiB 以内的文件时，如果对方不允许写入共享就会失败。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>是否为同一个文件（写入正在读取的文件 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否与源相同）是以文件的实体比较，而不是路径字符串。即使以 \\?\、UNC 管理共享（\\localhost\C$\…）、\\.\、subst 驱动器、符号链接、联接、硬链接或大小写差异改变写法，也会判定为同一个文件。在 Linux / macOS 上以解析链接后的路径比较，因此硬链接视为不同的文件。</maml:para>
@@ -3230,19 +3230,19 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:para>-DetectionLineCount 的验证可能无法发现单字节字符编码的误判。这是因为在单字节字符编码中，几乎所有字节序列都能解码为正确的字符。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>如果要写入的字符串中有无法用目标的字符编码表示的字符，就不写入文件，报告终止错误 UnrepresentableCharacter（与 Convert-ProbedContent 相同的 ID）。消息会显示第一个此类字符的码位（U+XXXX）和字符编码的名称。不会替换为 '?' 或相似的字符（例如 é → e）后写入。已写入的行也会撤销，并将文件恢复为写入前的状态（覆盖时先写入同一文件夹的临时文件再替换，追加时恢复为原来的长度）。即使将 System.Text.Encoding 实例传给 -Encoding，也不会使用该实例的回退（fallback）设置。</maml:para>
+        <maml:para>如果要写入的字符串中有无法用目标的字符编码表示的字符，就不写入文件，报告终止错误 UnrepresentableCharacter（与 Convert-ProbedContent 相同的 ID）。消息会显示第一个此类字符的码位（U+XXXX）和字符编码的名称。不会替换为 '?' 或相似的字符（例如 é → e）后写入。已写入的行也会撤销，并将文件恢复为写入前的状态（覆盖时恢复为原来的内容，追加时恢复为原来的长度）。即使将 System.Text.Encoding 实例传给 -Encoding，也不会使用该实例的回退（fallback）设置。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>继承的字符编码（写入目标·追加目标、-EncodingFrom 的参照文件、传给 -Encoding 的 EncodingInformation）为 us-ascii 时，会视为无 BOM 的 UTF-8 写入。所有字节都小于 0x80 的文件也是正确的 UTF-8，因此可以在只有 ASCII 字符的日志或 CSV 中添加中文等文字。只写入 ASCII 字符时，字节序列与 us-ascii 相同。明确指定 -Encoding ascii 时仍为 us-ascii。追加的一致性检查也会将追加目标的 us-ascii 视为无 BOM 的 UTF-8。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>覆盖时会先完整写入与写入目标相同文件夹中的临时文件（.&lt;名称&gt;.&lt;8 位十六进制&gt;.probedtmp）再替换，因此即使中途失败，原始文件也不会改变。符号链接与联接会跟踪到底，替换链接目标的实体（链接本身保留）。若是硬链接（链接数为 2 以上），或没有在文件夹中创建文件的权限，会先将原始文件复制到临时文件夹，再直接写入原始文件，失败时从副本写回。因此大型文件需要花时间复制。不论哪种方式，属性（只读、隐藏）、创建时间、备用数据流与 ACL 都会保留。在 Linux / macOS 上会沿用原始文件的访问权限，但无法沿用所有者，且硬链接会断开。</maml:para>
+        <maml:para>覆盖时会先完整写入与写入目标相同文件夹中的临时文件（.&lt;名称&gt;.&lt;8 位十六进制&gt;.probedtmp）再替换，因此即使中途失败，原始文件也不会改变。但如果要写入的内容与原始文件都在 1 MiB 以内，则不使用临时文件，而是先将原始文件的内容复制到内存，再直接写入原始文件，失败时从内存中的副本写回（尚不存在的文件会直接创建并写入，失败时删除）。如果写回也失败，会将副本保留在临时文件夹，并在错误消息中显示其路径。使用此方式时，如果在写入途中进程被强制结束（例如断电），1 MiB 以内的文件可能会以写到一半的状态留下。符号链接与联接会跟踪到底，写入链接目标的实体（链接本身保留）。如果超过 1 MiB 的文件是硬链接（链接数为 2 以上），或没有在文件夹中创建文件的权限，会先将原始文件复制到临时文件夹，再直接写入原始文件，失败时从副本写回。因此大型文件需要花时间复制。不论哪种方式，属性（只读、隐藏）、创建时间、备用数据流与 ACL 都会保留。在 Linux / macOS 上会沿用原始文件的访问权限，但无法沿用所有者，且超过 1 MiB 的文件的硬链接会断开。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>追加时会直接写入追加目标文件。会跟踪符号链接并追加到实体；链接目标不存在时，与标准的 Add-Content / Out-File -Append 相同，会在链接目标创建文件。因错误（无法表示的字符、一致性检查不符 EncodingChangeOnAppend、写入失败）而停止时，会取消该次调用写入的内容，还原为追加前的长度（追加目标原本不存在时，会删除创建的文件）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>其他进程打开写入目标时，覆盖失败的时间点不是打开文件时，而是完成写入并替换时（WriteFailed 等）。此时原始文件同样不会改变，也不会留下临时文件。</maml:para>
+        <maml:para>其他进程打开写入目标时，覆盖失败的时间点不是打开文件时，而是完成写入时（WriteFailed 等）。此时原始文件同样不会改变，也不会留下临时文件。替换超过 1 MiB 的文件时，如果对方不允许删除共享就会失败；直接写入 1 MiB 以内的文件时，如果对方不允许写入共享就会失败。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>输出目标是目标不存在的符号链接时，与标准的 Out-File / Export-Csv 相同，会在链接目标创建文件（链接本身保留）。</maml:para>

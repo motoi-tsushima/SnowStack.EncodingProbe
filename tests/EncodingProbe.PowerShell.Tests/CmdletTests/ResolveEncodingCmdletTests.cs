@@ -159,6 +159,11 @@ public class ResolveEncodingCmdletTests : IClassFixture<RunspaceFixture>
         // 既存の表示（本モジュールとクラスライブラリ・UTF.Unknown）は残っていること
         Assert.Contains("SnowStack.EncodingProbe.PowerShell is licensed under MIT License.", text);
         Assert.Contains("UTF.Unknown", text);
+
+        // 本プロジェクトの著作権の表記（1.3.0 第五次の仕上げで、すべての箇所をこの表記にそろえた）。
+        // モジュール（LicenseAndHelp.License）とクラスライブラリ（EncodingProbe.License）の 2 か所に出る
+        Assert.Equal(2, text.Split(new[] { "Copyright (c) 2026 Motoi Tsushima" }, StringSplitOptions.None).Length - 1);
+        Assert.DoesNotContain("motoi.tsushima", text);
     }
 
     // ─── DetectionLineCount パラメーター（1.3.0） ────────────────────────────

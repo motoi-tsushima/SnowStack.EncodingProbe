@@ -865,7 +865,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
         try
         {
             overwrite = SafeFileOverwrite.Begin(target, DanglingLinkPolicy.CreateTarget, 4096);
-            overwrite.Stream.Write(content, 0, content.Length);
+            overwrite.Write(content, 0, content.Length);
             overwrite.Commit();
 
             return true;

@@ -22,6 +22,7 @@ namespace EncodingProbe.PowerShell.Tests.CmdletTests;
 public class LinkAndPermissionWriteTests : IClassFixture<ProbedCommandRunspaceFixture>, IDisposable
 {
     private static readonly byte[] Old = Encoding.ASCII.GetBytes("old\r\n");
+    private static readonly byte[] NewLine = Encoding.ASCII.GetBytes("new\r\n");
 
     private readonly ProbedCommandRunspaceFixture _fixture;
     private readonly TemporaryDirectory _directory = new TemporaryDirectory();
@@ -32,6 +33,14 @@ public class LinkAndPermissionWriteTests : IClassFixture<ProbedCommandRunspaceFi
     }
 
     public void Dispose() => this._directory.Dispose();
+
+    /// <summary>境目（<see cref="SnowStack.EncodingProbe.PowerShell.Internal.SafeFileOverwrite.DirectWriteThreshold"/>）より 1 バイト大きい、元のファイルの内容</summary>
+    private static byte[] LargeOriginal()
+    {
+        var content = new byte[SnowStack.EncodingProbe.PowerShell.Internal.SafeFileOverwrite.DefaultDirectWriteThreshold + 1];
+        content.AsSpan().Fill((byte)'x');
+        return content;
+    }
 
     public static IEnumerable<object[]> Writers()
     {
@@ -86,14 +95,18 @@ public class LinkAndPermissionWriteTests : IClassFixture<ProbedCommandRunspaceFi
     }
 
     /// <summary>
-    /// ハードリンクに書いている途中で失敗したら、写しから書き戻す（どちらの名前からも元の内容）
+    /// ハードリンクに書いている途中で失敗したら、元に戻す（どちらの名前からも元の内容）。
+    /// 境目以内ならメモリに写してから直接書く方法で、境目を超えるなら写してから直接書く方法で書く（第五次の仕上げ）
     /// </summary>
     [Theory]
-    [InlineData("Set")]
-    [InlineData("Out")]
-    public void HardLink_Failure_IsRestoredFromCopy(string writer)
+    [InlineData("Set", false)]
+    [InlineData("Out", false)]
+    [InlineData("Set", true)]
+    [InlineData("Out", true)]
+    public void HardLink_Failure_IsRestoredFromCopy(string writer, bool large)
     {
-        string target = this._directory.Write("t.txt", Old);
+        byte[] original = large ? LargeOriginal() : Old;
+        string target = this._directory.Write("t.txt", original);
         string hard = this._directory.Combine("hard.txt");
         Assert.True(FileLinks.TryCreateHardLink(hard, target));
 
@@ -102,21 +115,23 @@ public class LinkAndPermissionWriteTests : IClassFixture<ProbedCommandRunspaceFi
             : $"'a', '한' | Out-ProbedFile -LiteralPath {Quote(hard)} -Encoding shift_jis";
 
         Assert.Equal("UnrepresentableCharacter", RunExpectingError(script));
-        Assert.Equal(Old, File.ReadAllBytes(target));
-        Assert.Equal(Old, File.ReadAllBytes(hard));
+        Assert.Equal(original, File.ReadAllBytes(target));
+        Assert.Equal(original, File.ReadAllBytes(hard));
         AssertNoBackupLeft();
     }
 
     /// <summary>
     /// ハードリンクに書いている途中で失敗し、さらに写しから書き戻せなかった場合（書いている間に読み取り専用にされた）は、
-    /// 写しを一時フォルダーに残し、エラーのメッセージに写しのパスと「この写しから元に戻す」ことを示す。ID は変えない（1.3.0 第五次の後半）
+    /// 写しを一時フォルダーに残し、エラーのメッセージに写しのパスと「この写しから元に戻す」ことを示す。ID は変えない（1.3.0 第五次の後半）。
+    /// 写してから直接書く方法を通すため、元のファイルを境目より大きくする（境目以内では 1 件目をメモリにためるだけなので、元のファイルに触れない）
     /// </summary>
     [Theory]
     [InlineData("Set")]
     [InlineData("Out")]
     public void HardLink_RestoreFails_MessageShowsTheCopy(string writer)
     {
-        string target = this._directory.Write("t.txt", Old);
+        byte[] original = LargeOriginal();
+        string target = this._directory.Write("t.txt", original);
         string hard = this._directory.Combine("hard.txt");
         Assert.True(FileLinks.TryCreateHardLink(hard, target));
 
@@ -142,7 +157,7 @@ public class LinkAndPermissionWriteTests : IClassFixture<ProbedCommandRunspaceFi
         Assert.NotNull(error.ErrorDetails);
 
         string kept = Directory.GetFiles(Path.GetTempPath(), "SnowStack.EncodingProbe.*.probedbak")
-            .Where(p => File.ReadAllBytes(p).SequenceEqual(Old) && error.ErrorDetails.Message.Contains(p))
+            .Where(p => File.ReadAllBytes(p).SequenceEqual(original) && error.ErrorDetails.Message.Contains(p))
             .Single();
 
         try
@@ -150,7 +165,7 @@ public class LinkAndPermissionWriteTests : IClassFixture<ProbedCommandRunspaceFi
             Assert.Equal(
                 error.Exception.Message + " " + SnowStack.EncodingProbe.PowerShell.ValidationMessages.RestoreFromBackupFailed(hard, kept),
                 error.ErrorDetails.Message);
-            Assert.NotEqual(Old, File.ReadAllBytes(target));  // 元のファイルは書きかけ
+            Assert.NotEqual(original, File.ReadAllBytes(target));  // 元のファイルは書きかけ
         }
         finally
         {
@@ -260,22 +275,85 @@ public class LinkAndPermissionWriteTests : IClassFixture<ProbedCommandRunspaceFi
         }
     }
 
+    /// <summary>
+    /// フォルダーにファイルを作る権限が無く、境目を超えるファイルの場合は、写してから直接書く（失敗したら写しから書き戻す）
+    /// </summary>
+    [Fact]
+    public void FolderWithoutCreatePermission_LargeFile_CopiesThenWritesDirectly()
+    {
+        string folder = this._directory.Combine("locked");
+        Directory.CreateDirectory(folder);
+        byte[] original = LargeOriginal();
+        string path = this._directory.Write(@"locked\f.txt", original);
+        SecurityIdentifier user = WindowsIdentity.GetCurrent().User!;
+        var rule = new FileSystemAccessRule(user, FileSystemRights.CreateFiles, AccessControlType.Deny);
+        var info = new DirectoryInfo(folder);
+        DirectorySecurity security = info.GetAccessControl();
+        security.AddAccessRule(rule);
+        info.SetAccessControl(security);
+
+        try
+        {
+            Assert.Equal("UnrepresentableCharacter", RunExpectingError($"Set-ProbedContent -LiteralPath {Quote(path)} -Value 'a', '한' -Encoding shift_jis"));
+            Assert.Equal(original, File.ReadAllBytes(path));
+
+            Assert.Empty(Run(Build("Set", path)).Errors);
+            Assert.Equal("6E 65 77 0D 0A", Hex(File.ReadAllBytes(path)));
+            Assert.Equal(new[] { "f.txt" }, Directory.GetFiles(folder).Select(Path.GetFileName).ToArray());
+            AssertNoBackupLeft();
+        }
+        finally
+        {
+            security.RemoveAccessRule(rule);
+            info.SetAccessControl(security);
+        }
+    }
+
     public static IEnumerable<object[]> PreservationCases()
     {
-        foreach (string method in new[] { "Replace", "CopyThenDirect", "Append" })
+        foreach (bool fail in new[] { false, true })
         {
-            yield return new object[] { method };
+            // 置き換えはハードリンクに使わない（ハードリンクで境目を超えるものは、写してから直接書く）
+            yield return new object[] { "MemoryThenDirect", "Path", fail };
+            yield return new object[] { "MemoryThenDirect", "HardLink", fail };
+            yield return new object[] { "MemoryThenDirect", "SymbolicLink", fail };
+            yield return new object[] { "Replace", "Path", fail };
+            yield return new object[] { "Replace", "SymbolicLink", fail };
+            yield return new object[] { "CopyThenDirect", "HardLink", fail };
+            yield return new object[] { "Append", "Path", fail };
+            yield return new object[] { "Append", "HardLink", fail };
+            yield return new object[] { "Append", "SymbolicLink", fail };
         }
     }
 
     /// <summary>
-    /// 3 つの書き方（置き換え・写してから直接・追記）のどれでも、属性（隠し・読み取り専用）・作成日時・代替データストリーム・ACL が保たれる
+    /// 4 つの書き方（メモリに写してから直接・置き換え・写してから直接・追記）のどれでも、そのまま・ハードリンク・シンボリックリンクのどの経路でも、
+    /// 書けた場合も失敗して元に戻した場合も、属性（隠し・読み取り専用）・作成日時・代替データストリーム・ACL が保たれる（第五次の仕上げで書き方を 4 つにした）
     /// </summary>
     [Theory]
     [MemberData(nameof(PreservationCases))]
-    public void Metadata_IsPreserved(string method)
+    public void Metadata_IsPreserved(string method, string via, bool fail)
     {
-        string path = this._directory.Write("p.txt", Old);
+        // メモリに写してから直接書くのは境目以内、置き換えと写してから直接書くのは境目を超えるファイル
+        byte[] original = method == "Replace" || method == "CopyThenDirect" ? LargeOriginal() : Old;
+        string path = this._directory.Write("p.txt", original);
+        string written = path;
+
+        if (via == "HardLink")
+        {
+            written = this._directory.Combine("p-hard.txt");
+            Assert.True(FileLinks.TryCreateHardLink(written, path));
+        }
+        else if (via == "SymbolicLink")
+        {
+            written = this._directory.Combine("p-link.txt");
+
+            if (!FileLinks.TryCreateFileSymbolicLink(written, "p.txt"))
+            {
+                return;
+            }
+        }
+
         File.WriteAllText(path + ":meta", "adsdata");
         var everyone = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
         var info = new FileInfo(path);
@@ -283,28 +361,45 @@ public class LinkAndPermissionWriteTests : IClassFixture<ProbedCommandRunspaceFi
         security.AddAccessRule(new FileSystemAccessRule(everyone, FileSystemRights.ReadData, AccessControlType.Allow));
         info.SetAccessControl(security);
 
-        if (method == "CopyThenDirect")
-        {
-            Assert.True(FileLinks.TryCreateHardLink(this._directory.Combine("p-hard.txt"), path));
-        }
-
         var created = new DateTime(2001, 2, 3, 4, 5, 6, DateTimeKind.Local);
         File.SetCreationTime(path, created);
         File.SetAttributes(path, FileAttributes.Hidden | FileAttributes.ReadOnly);
+        string? entity = SnowStack.EncodingProbe.PowerShell.Internal.FileIdentity.Of(path).EntityKey;
 
+        // 失敗させる場合は、1 件目を書いた後の表現できない文字で元に戻させる
+        string value = fail ? "'new', '한' -Encoding shift_jis" : "new -Encoding utf8NoBOM";
         string script = method == "Append"
-            ? $"Add-ProbedContent -LiteralPath {Quote(path)} -Value new -Encoding utf8NoBOM -LineBreak CrLf -Force"
-            : $"Set-ProbedContent -LiteralPath {Quote(path)} -Value new -Encoding utf8NoBOM -LineBreak CrLf -Force";
+            ? $"Add-ProbedContent -LiteralPath {Quote(written)} -Value {value} -LineBreak CrLf -Force"
+            : $"Set-ProbedContent -LiteralPath {Quote(written)} -Value {value} -LineBreak CrLf -Force";
 
-        Assert.Empty(Run(script).Errors);
+        InvocationResult result = Run(script);
 
-        Assert.Equal(method == "Append" ? "6F 6C 64 0D 0A 6E 65 77 0D 0A" : "6E 65 77 0D 0A", Hex(File.ReadAllBytes(path)));
+        byte[] expected = fail
+            ? original
+            : method == "Append" ? original.Concat(NewLine).ToArray() : NewLine;
+
+        if (fail)
+        {
+            Assert.Equal("UnrepresentableCharacter", Assert.Single(result.Errors).FullyQualifiedErrorId.Split(',')[0]);
+        }
+        else
+        {
+            Assert.Empty(result.Errors);
+        }
+
+        Assert.Equal(expected, File.ReadAllBytes(path));
+        Assert.Equal(expected, File.ReadAllBytes(written));
         Assert.Equal(FileAttributes.Hidden | FileAttributes.ReadOnly, File.GetAttributes(path) & (FileAttributes.Hidden | FileAttributes.ReadOnly));
         Assert.Equal(created, File.GetCreationTime(path));
         Assert.Equal("adsdata", File.ReadAllText(path + ":meta"));
         Assert.Contains(
             new FileInfo(path).GetAccessControl().GetAccessRules(true, false, typeof(SecurityIdentifier)).Cast<FileSystemAccessRule>(),
             r => r.IdentityReference.Equals(everyone) && (r.FileSystemRights & FileSystemRights.ReadData) != 0);
+
+        // 置き換えて書けた場合だけ実体が変わる（ほかの書き方は元のファイルそのものに書く）
+        Assert.Equal(method == "Replace" && !fail, entity != SnowStack.EncodingProbe.PowerShell.Internal.FileIdentity.Of(path).EntityKey);
+        AssertNoTemporaryFile();
+        AssertNoBackupLeft();
     }
 
     /// <summary>
