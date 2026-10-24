@@ -13,7 +13,7 @@ namespace SnowStack.EncodingProbe
         public static readonly string License =
  @"MIT License
 
-Copyright (c) 2026 motoi.tsushima
+Copyright (c) 2026 Motoi Tsushima
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the ""Software""), to deal

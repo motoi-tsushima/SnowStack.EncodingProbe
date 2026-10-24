@@ -22,7 +22,7 @@
             テキストファイルの文字エンコーディングを判定するクラスライブラリです。
         </Description>
         <PackageTags>encoding;chardet;charset;text;shift-jis;euc-jp;japanese</PackageTags>
-        <Copyright>Copyright © 2026 motoi.tsushima</Copyright>
+        <Copyright>Copyright (c) 2026 Motoi Tsushima</Copyright>
 
         <!-- ライセンス / URL（README に表示される） -->
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -30,7 +30,7 @@
         <RepositoryUrl>https://github.com/motoi-tsushima/SnowStack.EncodingProbe</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageReleaseNotes>1.3.0: BOM 無しの UTF-16 / UTF-32 で英数字だけのテキストが us-ascii と判定される不具合を修正した（0x00 を含み、すべてのバイトが 0x80 未満の入力を、すべての単位が UTF-16 / UTF-32 の形に合うときだけ UTF-16 / UTF-32 と判定する）。UTF-16 / UTF-32 と判定したときの改行コード（LineBreak）を、その単位（2 / 4 バイト）で数えるようにした（「上」U+4E0A などのバイトを改行と数えていた）。挙動の変更: カルチャー名（EncodingDetectorOptions.Culture）を受け付けるかどうかを、CultureInfo ではなく名前の形（BCP 47）で決めるようにした（ArgumentException になる名前の集合が変わる。net48 と net10.0 でそろう。C・root は受け付けない）。言語の直後の拡張言語を言語として扱う（zh-yue は yue。広東語・香港）。PlatformInformation.Os.Description の前後の空白を除いた。License 定数の MIT License の本文を原文どおりに直した（THE USE OR が抜けていた）。公開 API（型・メソッド・プロパティ、引数と戻り値の型）の変更は無い。詳細は CHANGELOG.md を参照。</PackageReleaseNotes>
+        <PackageReleaseNotes>1.3.0: BOM 無しの UTF-16 / UTF-32 で英数字だけのテキストが us-ascii と判定される不具合を修正した（0x00 を含み、すべてのバイトが 0x80 未満の入力を、すべての単位が UTF-16 / UTF-32 の形に合うときだけ UTF-16 / UTF-32 と判定する）。UTF-16 / UTF-32 と判定したときの改行コード（LineBreak）を、その単位（2 / 4 バイト）で数えるようにした（「上」U+4E0A などのバイトを改行と数えていた）。挙動の変更: カルチャー名（EncodingDetectorOptions.Culture）を受け付けるかどうかを、CultureInfo ではなく名前の形（BCP 47）で決めるようにした（ArgumentException になる名前の集合が変わる。net48 と net10.0 でそろう。C・root は受け付けない）。言語の直後の拡張言語を言語として扱う（zh-yue は yue。広東語・香港）。PlatformInformation.Os.Description の前後の空白を除いた。License 定数の MIT License の本文を原文どおりに直した（THE USE OR が抜けていた）。著作権の表記（License 定数・パッケージの Copyright）を Copyright (c) 2026 Motoi Tsushima にそろえた。公開 API（型・メソッド・プロパティ、引数と戻り値の型）の変更は無い。詳細は CHANGELOG.md を参照。</PackageReleaseNotes>
 
         <!-- パッケージ生成は dotnet pack で明示的に行う -->
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
