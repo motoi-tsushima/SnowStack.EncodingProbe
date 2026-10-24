@@ -2504,6 +2504,151 @@ Add-Scenario 'Fifth2/Culture/Resolve-invalid-message' {
 Add-Scenario 'Fifth2/PlatformInfo/OsDescriptionTrimmed' { $d = (Get-EncodingProbePlatformInfo).Os.Description; [string]($d -ceq $d.Trim()) }
 
 # ---------------------------------------------------------------------------
+# 1.3.0 第五次の仕上げ: 小さなファイルはメモリに写してから直接書く（実装記録 10.16 節）
+#
+# 境目（SafeFileOverwrite.DefaultDirectWriteThreshold）ちょうどと 1 バイト超えたところで、書き方が両ホストで同じに切り替わること、
+# 失敗したときに元どおりになることを確かめる。書き方は、実体（ファイル ID）が変わったかどうか（置き換えなら変わる）で記録する。
+# ファイル ID そのものはホストや実行ごとに違うので、変わったかどうかだけを記録する。
+# ---------------------------------------------------------------------------
+$f3Assembly = [SnowStack.EncodingProbe.PowerShell.Cmdlets.ResolveEncodingCmdlet].Assembly
+$f3Threshold = [int]$f3Assembly.GetType('SnowStack.EncodingProbe.PowerShell.Internal.SafeFileOverwrite').GetField('DefaultDirectWriteThreshold').GetValue($null)
+$f3IdentityOf = $f3Assembly.GetType('SnowStack.EncodingProbe.PowerShell.Internal.FileIdentity').GetMethod('Of', [Reflection.BindingFlags]'Public, NonPublic, Static')
+$f3Dir = New-F2Folder 'directwrite'
+
+function Get-F3FileId {
+    param([string]$Path)
+
+    # 実体の鍵（ボリュームのシリアル番号とファイル ID）。モジュールの内部の FileIdentity を使う（fsutil は環境によって使えない）
+    return $f3IdentityOf.Invoke($null, @($Path)).EntityKey
+}
+
+function Format-F3File {
+    param([string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) { return '(ファイルなし)' }
+    $bytes = [IO.File]::ReadAllBytes($Path)
+    if ($bytes.Length -le 16) { return (Format-FileBytes $Path) }
+    $sha = [Security.Cryptography.SHA256]::Create()
+    $hash = (($sha.ComputeHash($bytes) | ForEach-Object { $_.ToString('X2') }) -join '').Substring(0, 16)
+    return ('{0} bytes sha256={1}' -f $bytes.Length, $hash)
+}
+
+$f3Writers = [ordered]@{
+    'Set' = { param($p, $v) Set-ProbedContent -LiteralPath $p -Value $v -Encoding utf8NoBOM -NoNewline }
+    'Out' = { param($p, $v) $v | Out-ProbedFile -LiteralPath $p -Encoding utf8NoBOM -NoNewline }
+    'Export' = { param($p, $v) [pscustomobject]@{ A = $v } | Export-ProbedCsv -LiteralPath $p -Encoding utf8NoBOM }
+}
+$f3Index = 0
+# 書く内容の大きさと、元のファイルの大きさ（-1 はまだ無いファイル）。Export は見出しと引用符・改行の 9 バイトを引いて、ファイルの大きさをそろえる
+foreach ($f3Case in @(
+    @('content=T', $f3Threshold, 5),
+    @('content=T+1', ($f3Threshold + 1), 5),
+    @('original=T', 3, $f3Threshold),
+    @('original=T+1', 3, ($f3Threshold + 1)),
+    @('new-small', 3, -1),
+    @('new-T+1', ($f3Threshold + 1), -1))) {
+    foreach ($writerName in $f3Writers.Keys) {
+        $f3Index++
+        $cn = $f3Case[0]
+        $contentLength = $f3Case[1]
+        $originalLength = $f3Case[2]
+        $wb = $f3Writers[$writerName]
+        $valueLength = if ($writerName -eq 'Export' -and $contentLength -gt 9) { $contentLength - 9 } else { $contentLength }
+        $p = Join-Path $f3Dir ("size{0}.txt" -f $f3Index)
+        Add-Scenario "Finish/DirectWrite/Size/$cn/$writerName" {
+            if ($originalLength -ge 0) { [IO.File]::WriteAllBytes($p, [byte[]]@(0x6F) * $originalLength) }
+            $before = if ($originalLength -ge 0) { Get-F3FileId $p } else { $null }
+            $r = Invoke-F2 { & $wb $p ('n' * $valueLength) }
+            $entity = if ($null -eq $before) { 'new' } elseif ($before -eq (Get-F3FileId $p)) { 'same' } else { 'changed' }
+            '{0} // {1} // entity={2} // tmp={3}' -f $r, (Format-F3File $p), $entity, @(Get-ChildItem -LiteralPath $f3Dir -Force -Filter '*.probedtmp').Count
+        }.GetNewClosure()
+    }
+}
+
+# Convert-ProbedContent（その場の変換と -Destination）も、小さなファイルには直接書く
+$f3ConvertDest = Join-Path $f3Dir 'dest'
+$null = New-Item -ItemType Directory -Path $f3ConvertDest
+Add-Scenario 'Finish/DirectWrite/Convert/inplace' {
+    $p = Join-Path $f3Dir 'convert.txt'
+    [IO.File]::WriteAllBytes($p, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+    $before = Get-F3FileId $p
+    $r = Invoke-F2 { Convert-ProbedContent -LiteralPath $p -Encoding utf8BOM }
+    '{0} // {1} // same={2}' -f $r, (Format-FileBytes $p), ($before -eq (Get-F3FileId $p))
+}.GetNewClosure()
+Add-Scenario 'Finish/DirectWrite/Convert/destination' {
+    $p = Join-Path $f3Dir 'convert2.txt'
+    $d = Join-Path $f3ConvertDest 'convert2.txt'
+    [IO.File]::WriteAllBytes($p, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+    [IO.File]::WriteAllBytes($d, [byte[]](0x70, 0x0D, 0x0A))
+    $before = Get-F3FileId $d
+    $r = Invoke-F2 { Convert-ProbedContent -LiteralPath $p -Destination $f3ConvertDest -Encoding utf8BOM -Force }
+    '{0} // {1} // same={2}' -f $r, (Format-FileBytes $d), ($before -eq (Get-F3FileId $d))
+}.GetNewClosure()
+
+# 表現できない文字で失敗したら、元のファイルはバイト単位で元どおり（まだ無かったファイルは残らない）。-ErrorAction Stop も
+$f3Original = [byte[]](0..255)
+foreach ($f3Fail in @(
+    @('Set', { param($p) Set-ProbedContent -LiteralPath $p -Value 'a', "$([char]0xD55C)" -Encoding shift_jis }),
+    @('Set-Stop', { param($p) 'a', "$([char]0xD55C)" | Set-ProbedContent -LiteralPath $p -Encoding shift_jis -ErrorAction Stop }),
+    @('Out', { param($p) 'a', "$([char]0xD55C)" | Out-ProbedFile -LiteralPath $p -Encoding shift_jis }),
+    @('Export', { param($p) [pscustomobject]@{ A = 'a' }, [pscustomobject]@{ A = "$([char]0xD55C)" } | Export-ProbedCsv -LiteralPath $p -Encoding shift_jis }))) {
+    foreach ($newFile in @($false, $true)) {
+        $f3Index++
+        $fn = $f3Fail[0]
+        $fb = $f3Fail[1]
+        $nf = $newFile
+        $p = Join-Path $f3Dir ("fail{0}.txt" -f $f3Index)
+        Add-Scenario "Finish/DirectWrite/Unrepresentable/$fn/new=$nf" {
+            if (-not $nf) { [IO.File]::WriteAllBytes($p, $f3Original) }
+            '{0} // {1}' -f (Invoke-F2 { & $fb $p }), (Format-F3File $p)
+        }.GetNewClosure()
+    }
+}
+
+# 直接書いている途中の IOException（ほかのハンドルが、元のファイルの末尾より先の範囲をロックしている）は WriteFailed で、元どおり
+foreach ($writerName in $f3Writers.Keys) {
+    $f3Index++
+    $wb = $f3Writers[$writerName]
+    $p = Join-Path $f3Dir ("lock{0}.txt" -f $f3Index)
+    Add-Scenario "Finish/DirectWrite/LockedRange/$writerName" {
+        [IO.File]::WriteAllBytes($p, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+        $locker = New-Object IO.FileStream($p, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+        try {
+            $locker.Lock(50, 10)
+            $r = Invoke-F2 { & $wb $p ('n' * 100) }
+            $locker.Unlock(50, 10)
+        }
+        finally { $locker.Dispose() }
+        '{0} // {1}' -f $r, (Format-FileBytes $p)
+    }.GetNewClosure()
+}
+
+# ほかのハンドルが開いているとき: 直接書く方法は相手が書き込みの共有を、置き換えは削除の共有を許していないと、完了の時点で失敗する
+foreach ($f3Share in @('Read', 'ReadWrite', 'Read, Delete')) {
+    foreach ($large in @($false, $true)) {
+        $f3Index++
+        $share = [IO.FileShare]$f3Share
+        $lg = $large
+        $p = Join-Path $f3Dir ("busy{0}.txt" -f $f3Index)
+        Add-Scenario "Finish/DirectWrite/OpenedByAnother/$f3Share/large=$lg" {
+            [IO.File]::WriteAllBytes($p, [byte[]]@(0x6F) * $(if ($lg) { $f3Threshold + 1 } else { 5 }))
+            $other = New-Object IO.FileStream($p, [IO.FileMode]::Open, [IO.FileAccess]::Read, $share)
+            try { $r = Invoke-F2 { Set-ProbedContent -LiteralPath $p -Value new -Encoding utf8NoBOM -LineBreak CrLf } }
+            finally { $other.Dispose() }
+            '{0} // {1}' -f $r, (Format-F3File $p)
+        }.GetNewClosure()
+    }
+}
+
+# 1 回の Set-ProbedContent で複数のファイルに書く（パイプラインの各要素を、すべてのファイルに書く）
+Add-Scenario 'Finish/DirectWrite/MultipleFiles' {
+    $files = 1..5 | ForEach-Object { Join-Path $f3Dir ("multi{0}.txt" -f $_) }
+    foreach ($f in $files[0..2]) { [IO.File]::WriteAllBytes($f, [byte[]](0x6F, 0x0D, 0x0A)) }
+    $r = Invoke-F2 { 'a', 'b' | Set-ProbedContent -LiteralPath $files -Encoding utf8NoBOM -LineBreak CrLf }
+    '{0} // {1}' -f $r, (($files | ForEach-Object { Format-FileBytes $_ }) -join ' / ')
+}.GetNewClosure()
+
+# ---------------------------------------------------------------------------
 # 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
 #
 # UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。
