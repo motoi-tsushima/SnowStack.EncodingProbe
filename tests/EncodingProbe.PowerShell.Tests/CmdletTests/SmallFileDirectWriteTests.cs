@@ -223,6 +223,52 @@ public class SmallFileDirectWriteTests : IClassFixture<ProbedCommandRunspaceFixt
     }
 
     /// <summary>
+    /// ファイルに WriteData の拒否の ACL があると、大きさによらず WriteAccessDenied で、元のファイルは変わらない（ファイルの ACL に従う。標準の Set-Content と同じ）。
+    /// 境目を超えるファイルも、置き換え（フォルダーの権限で行われる）の前に書き込み用に開けるかを確かめるので、書けてしまわない（第五次の仕上げ）
+    /// </summary>
+    [Theory]
+    [InlineData("Set", false)]
+    [InlineData("Set", true)]
+    [InlineData("Add", false)]
+    [InlineData("Add", true)]
+    [InlineData("Out", false)]
+    [InlineData("Out", true)]
+    [InlineData("Export", false)]
+    [InlineData("Export", true)]
+    [InlineData("Convert", false)]
+    [InlineData("Convert", true)]
+    public void WriteDataDenied_IsWriteAccessDenied_RegardlessOfSize(string writer, bool large)
+    {
+        byte[] original = large ? Filled(Threshold + 1, (byte)'o') : Old;
+        string path = this._directory.Write("denied.txt", original);
+        string? before = Entity(path);
+        var user = System.Security.Principal.WindowsIdentity.GetCurrent().User!;
+        var rule = new System.Security.AccessControl.FileSystemAccessRule(
+            user, System.Security.AccessControl.FileSystemRights.WriteData, System.Security.AccessControl.AccessControlType.Deny);
+        var info = new FileInfo(path);
+        System.Security.AccessControl.FileSecurity security = info.GetAccessControl();
+        security.AddAccessRule(rule);
+        info.SetAccessControl(security);
+        string script = writer == "Add"
+            ? $"Add-ProbedContent -LiteralPath {Quote(path)} -Value new -Encoding utf8NoBOM -LineBreak CrLf"
+            : Build(writer, path);
+
+        try
+        {
+            Assert.Equal("WriteAccessDenied", RunExpectingError(script));
+        }
+        finally
+        {
+            security.RemoveAccessRule(rule);
+            info.SetAccessControl(security);
+        }
+
+        Assert.Equal(original, File.ReadAllBytes(path));
+        Assert.Equal(before, Entity(path));
+        AssertNoTemporaryFile();
+    }
+
+    /// <summary>
     /// -ErrorAction Stop でも、元に戻してからエラーにする（後始末が、ためていた分を書いてしまわない）。
     /// パイプラインの 1 件目でためた分も残さない（既存のファイルは元どおり、まだ無かったファイルは残らない）
     /// </summary>

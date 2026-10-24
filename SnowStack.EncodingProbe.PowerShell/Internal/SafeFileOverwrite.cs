@@ -367,6 +367,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 return BeginCopyThenDirect(path, target, policy, bufferSize);
             }
 
+            EnsureWritable(target);
+
             try
             {
                 return BeginReplace(path, target, policy, bufferSize, File.GetAttributes(target));
@@ -374,6 +376,32 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             catch (UnauthorizedAccessException)
             {
                 return BeginCopyThenDirect(path, target, policy, bufferSize);
+            }
+        }
+
+        /// <summary>
+        /// 置き換える前に、元のファイルを書き込み用に（切り詰めずに）開けるかを確かめ、すぐに閉じる（1.3.0 第五次の仕上げ。実装記録 10.16 節）
+        /// </summary>
+        /// <remarks>
+        /// 置き換え（ReplaceFile）はフォルダーの権限で行われるので、ファイルに WriteData の拒否の ACL があっても書けてしまう。
+        /// 直接書く方法（境目以内・写してから直接）はファイルの ACL に従って失敗するので、大きさで結果が変わらないようにそろえる
+        /// （標準の Set-Content と同じ。1.2.0 仕様書 2.9「-Force はセキュリティ上の制限を越えない」）。
+        /// 権限の拒否（<see cref="UnauthorizedAccessException"/>）だけを失敗とし、共有違反などの <see cref="IOException"/> は無視する
+        /// （ほかのハンドルが開いているときに失敗する条件を、置き換えの条件より厳しくしないため。その場合は今までどおり完了の時点で分かる）。
+        /// 確かめるハンドルは、ほかのハンドルを妨げないよう、すべての共有を許して開く。
+        /// </remarks>
+        /// <exception cref="UnauthorizedAccessException">書き込み用に開く権限が無い場合</exception>
+        private static void EnsureWritable(string target)
+        {
+            try
+            {
+                using (new FileStream(target, FileMode.Open, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete, 1, FileOptions.None))
+                {
+                }
+            }
+            catch (IOException)
+            {
+                // 共有違反など。権限の問題ではないので、置き換えを試みる
             }
         }
 
