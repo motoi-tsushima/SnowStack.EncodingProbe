@@ -108,13 +108,19 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
   - 読み取り専用の検査と `-Force` は、リンクではなくリンクの先の実体に対して行います
   - Linux / macOS では、置き換える前に元のファイルのアクセス権（UnixFileMode）を一時ファイルに写します（所有者は写せません。ハードリンクは切れます。既知の限界）
   - `Convert-ProbedContent` の一時ファイルの名前は、ほかのコマンドと同じ `.<名前>.<8 桁の 16 進>.probedtmp` になりました（これまでは `.<名前>.<GUID>.tmp`）
-- **`a.txt::$DATA`（主ストリームの名前）は `a.txt` として扱います**（BUG-0004）。Windows PowerShell 5.1 では生の `NotSupportedException` で止まり、7.x では同じファイルの検出をすり抜けていました。
+- **書く内容と元のファイルがどちらも 1 MiB 以内なら、一時ファイルを使わず、元のファイルの中身をメモリに写してから直接書きます**（第五次の仕上げ。`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`（`-Append` なし）・`Convert-ProbedContent`）。
+  上の一時ファイルによる置き換え（`File.Replace`）で、小さなファイルへの書き込みが第四次の約 10 倍遅くなっていたためです。失敗したらメモリの写しから書き戻します（まだ無いファイルは直接作り、失敗したら消します）。
+  書く内容が途中で 1 MiB を超えたら、その時点で一時ファイルによる置き換えなどに切り替えます。1 MiB 以内のハードリンクも切らずに直接書きます（写しを作りません）
+  - 書いている最中にプロセスが強制終了されると、1 MiB 以内のファイルが書きかけで残ることがあります（既知の限界）
+  - ほかのプロセスが開いているときに失敗する条件が変わります（置き換えは削除の共有、直接の書き込みは書き込みの共有を相手が許していないと失敗します。どちらも完了の時点）
+  - まだ無いファイルは、開いた時点で（空のファイルとして）作ります。メモリにためる量は、プロセス全体で 64 MiB までです- **`a.txt::$DATA`（主ストリームの名前）は `a.txt` として扱います**（BUG-0004）。Windows PowerShell 5.1 では生の `NotSupportedException` で止まり、7.x では同じファイルの検出をすり抜けていました。
   代替データストリーム（`a.txt:alt` など）は、両ホストでエラー `AlternateDataStreamNotSupported`（新しい ID、InvalidArgument）にします
 - **`Resolve-Encoding` の `-Strategy` / `-Culture` の検証を、ほかのコマンドと同じ部品にしました**（BUG-0006）。解釈できない値は、生の `ArgumentException`（分類 NotSpecified、英語の文言）ではなく、
   `InvalidStrategy` / `InvalidCulture`（InvalidArgument、5 言語のメッセージ）の終了エラーです
 - **`-Culture` に受け付ける名前を、名前の形（BCP 47）で決めます**（BUG-0007。クラスライブラリと同じ規則）。`-Culture C` / `root` は両ホストで `InvalidCulture` です（7.x では判定に進んでいました）。
   `-Culture zh-yue` は広東語（香港）として判定します（拡張言語を言語として扱う）
-- `Resolve-Encoding -License` の表示の誤りを直しました（`Copyright c` → `Copyright (c)`。クラスライブラリの `EncodingProbe.License` と `LICENSE.txt` の MIT License の本文に抜けていた `THE USE OR` を、原文どおりに戻しました）
+- `Resolve-Encoding -License` の表示の誤りを直しました（`Copyright c` → `Copyright (c)`。クラスライブラリの `EncodingProbe.License` と `LICENSE.txt` の MIT License の本文に抜けていた `THE USE OR` を、原文どおりに戻しました）。
+  著作権の表記を、すべての箇所（`LICENSE.txt`・`EncodingProbe.License`・`-License`・NuGet パッケージとモジュールのアセンブリの Copyright・`.psd1`）で `Copyright (c) 2026 Motoi Tsushima` にそろえました（年が 2025 と 2026、名前が `Motoi Tsushima` と `motoi.tsushima`、記号が `(c)` と `©` で混在していました）
 - ヘルプ: `-AllowEncodingChange` で `-Encoding` を省略すると判定する（追記先から継承する）ことを書きました（BUG-0011。挙動は変えていません）。
   `Resolve-Encoding -DetectionLineCount` が `us-ascii` と報告する場合は `LineBreak` も `us-ascii` として数えた値であること、`ConvertTo-DotNetEncoding` の例 2 を `Convert-Path` を使う形にしたこと（BUG-0008）、
   上書きの書き方・リンク・ほかのプロセスが開いているときに失敗する時点（完了の時点）・同じファイルの判定・代替データストリームを、注意事項に書きました
