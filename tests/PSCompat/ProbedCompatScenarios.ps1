@@ -2750,6 +2750,41 @@ Add-Scenario 'Sixth/DoubleBom/ExportAppend' {
     '{0} // {1}' -f $r, (Format-FileBytes $p)
 }.GetNewClosure()
 
+# BUG-0042: 途中で切れたファイルの末尾は、5.1 でも 7.x と同じく置換フォールバックの文字として読む（以前の 5.1 は黙って捨てていた）。
+# GB18030 の途中で切れた 4 バイトの列は、.NET Framework と .NET の復号器の違いで両ホストの結果が違う（直さない。実装記録 11 章）ので入れない。
+# Convert-ProbedContent は今のまま（InvalidSourceBytes）
+$f6Truncated = [ordered]@{
+    'utf8-2of3'     = @('utf8NoBOM', [byte[]](0x41, 0x0D, 0x0A, 0xE6, 0x97))
+    'utf8-3of4'     = @('utf8NoBOM', [byte[]](0x41, 0x0D, 0x0A, 0xF0, 0x9F, 0x98))
+    'utf16le-odd'   = @('Auto', [byte[]](0xFF, 0xFE, 0x41, 0, 0x0D, 0, 0x0A, 0, 0x31, 0, 0x32))
+    'utf16be-odd'   = @('bigendianunicodeNoBOM', [byte[]](0, 0x41, 0, 0x0D, 0, 0x0A, 0, 0x31, 0x32))
+    'utf16le-hisur' = @('unicodeNoBOM', [byte[]](0x41, 0, 0x0D, 0, 0x0A, 0, 0x3D, 0xD8))
+    'utf32le-1'     = @('utf32NoBOM', [byte[]](0x41, 0, 0, 0, 0x0A, 0, 0, 0, 0x31))
+    'utf32le-3'     = @('utf32NoBOM', [byte[]](0x41, 0, 0, 0, 0x0A, 0, 0, 0, 0x31, 0, 0))
+    'sjis-lead'     = @('shift_jis', [byte[]](0x41, 0x0D, 0x0A, 0x93, 0xFA, 0x93))
+    'eucjp-lead'    = @('euc-jp', [byte[]](0x41, 0x0D, 0x0A, 0xC6))
+    'cp949-lead'    = @('ks_c_5601-1987', [byte[]](0x41, 0x0D, 0x0A, 0xC7))
+    'big5-lead'     = @('big5', [byte[]](0x41, 0x0D, 0x0A, 0xA4))
+    'jis-half'      = @('iso-2022-jp', [byte[]](0x41, 0x0D, 0x0A, 0x1B, 0x24, 0x42, 0x46))
+    'jis-esc'       = @('iso-2022-jp', [byte[]](0x41, 0x0D, 0x0A, 0x1B, 0x24))
+    'kr-so-half'    = @('iso-2022-kr', [byte[]](0x1B, 0x24, 0x29, 0x43, 0x41, 0x0D, 0x0A, 0x0E, 0x30))
+}
+foreach ($f6Name in $f6Truncated.Keys) {
+    $f6Index++
+    $en = $f6Truncated[$f6Name][0]; $bytes = $f6Truncated[$f6Name][1]
+    $p = Join-Path $f6Dir ("trunc_{0}.txt" -f $f6Index)
+    Add-Scenario "Sixth/Truncated/$f6Name" {
+        [IO.File]::WriteAllBytes($p, $bytes)
+        $cp = { param($t) (($t.ToCharArray()) | ForEach-Object { '{0:X4}' -f [int]$_ }) -join ' ' }
+        $lines = (Get-ProbedContent -LiteralPath $p -Encoding $en | ForEach-Object { & $cp $_ }) -join ' | '
+        $raw = & $cp (Get-ProbedContent -LiteralPath $p -Encoding $en -Raw)
+        $csv = (Import-ProbedCsv -LiteralPath $p -Encoding $en -Header H | ForEach-Object { & $cp $_.H }) -join ' | '
+        $q = $p + '.c'; Copy-Item -LiteralPath $p -Destination $q
+        $conv = Invoke-F2 { Convert-ProbedContent -LiteralPath $q -SourceEncoding $en -Encoding utf8NoBOM }
+        'lines={0} raw={1} csv={2} convert={3} // {4}' -f $lines, $raw, $csv, $conv, (Format-FileBytes $q)
+    }.GetNewClosure()
+}
+
 # （第六次 A のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

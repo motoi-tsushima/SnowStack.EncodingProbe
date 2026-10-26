@@ -97,10 +97,18 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 // BOM の直後から復号を始めることで、U+FEFF が本文に混入するのを防ぐ
                 stream.Seek(bomLength, SeekOrigin.Begin);
 
-                // 渡す Encoding に preamble があると、StreamReader が BOM の後ろでもう一度読み飛ばす（BUG-0021）
+                // 渡す Encoding に preamble があると、StreamReader が BOM の後ろでもう一度読み飛ばす（BUG-0021）。
+                // .NET Framework では、終わりで Decoder を flush させるため、目印を足すストリームを挟む（BUG-0042。.NET は StreamReader が flush する）
+#if NETFRAMEWORK
+                var signal = new EndOfStreamSignal(stream);
+                var reader = new StreamReader(
+                    signal,
+                    new ReaderEncoding(encoding, signal),
+#else
                 var reader = new StreamReader(
                     stream,
                     new ReaderEncoding(encoding),
+#endif
                     detectEncodingFromByteOrderMarks: false,
                     bufferSize: ReadBufferSize,
                     leaveOpen: true);
