@@ -256,6 +256,8 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
 - **判定・変換のためにファイル全体を読むときは `Internal/SharedFileReader.ReadAll`（`FileShare.ReadWrite`、長さちょうど）を使う（第六次 B。BUG-0026）。** `File.ReadAllBytes` とクラスライブラリの `Detect(path)` は `FileShare.Read` なので使わない（ほかのプログラムが書き込み中のファイルを読めない）。読み書きの失敗は `Internal/FileErrors` で 5 言語のメッセージに包み直す（内部例外は持たない）。全体を読む判定のメモリ不足は `EncodingDetectionException.GuardMemory`（BUG-0030）
 - **逆向きの往復（書き込み中のファイルを、同じパイプラインの読み込み側が後から開く）は `Internal/ActiveWriteRegistry` で検出する（第六次 B。BUG-0028。案 A）。** `ProbedFileWriter` が開いた時点で登録し、読み込み側（`ProbedContentCommandBase.ReportIfBeingWritten`。Get・Import・Convert）が当たれば、書き込み側を元に戻させてから両方が `SamePathRoundTrip` を出す。読み込み側で見つからないファイルも LocationKey で引く
 - **書き込みに成功したら Archive 属性を付け、元に戻したら書き込みの前の属性に戻す（`Internal/FileAttributeKeeper`。第六次 B。BUG-0025）**
+- **前後の空白は、`-Encoding`・`-SourceEncoding`・`-Strategy`・`-Culture`（`ResolveEncodingOptions.TrimCulture`。第六次 C。BUG-0038）で除く。** パス・列名・`-Delimiter` は除かない。クラスライブラリのカルチャー名の検証は変えない
+- **列名の重複のメッセージは、移植したコードを変えずに `Internal/CsvDuplicateColumnName` で差し替える（パスと、ファイルのヘッダーか `-Header` か。第六次 C。BUG-0045）。** 例外の型・ID・対象は変えない。`EncodingChangeOnAppend` の名前は `AppendConsistency.DescribeForMessage`（統一語彙名）。追記の整合性検査の相手は BOM の有無を持つ `EncodingSpec`
 - **継承した us-ascii は BOM 無しの UTF-8 とみなす（1.3.0 第五次）。** `EncodingVocabulary.TreatInheritedAsciiAsUtf8` を `EncodingInheritance.FromFile`（Auto・`-EncodingFrom`・追記の整合性検査の相手）と、
   書き込み用途で `EncodingInformation` を解決したときに通す。`-Encoding ascii` の明示と読み取り（`ConvertTo-DotNetEncoding` を含む）は置き換えない
 - 文字エンコーディングの判定は**ファイル全体**を対象とする。先頭の一定量に制限すると、
@@ -540,11 +542,12 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
 
 **PowerShell モジュールとクラスライブラリの両方を 1.3.0 としてリリースする**（当初はモジュールだけの予定だった。第四次で改めた）。作業ブランチは `feature/1.3.0-csv`。
 
-**現在の状態（2026-10-26 時点）: 第六次 A（実装記録 11 章）と第六次 B（BUG-0025・0026・0027・0028・0030・0035、ACL の時点、文書。実装記録 12 章）を実装して feature/1.3.0-csv にコミットした（プッシュしていない）。第六次は A・B・C の 3 回に分けて依頼される。次は C の依頼を待っている。master へは未マージ・未リリース。**
+**現在の状態（2026-10-26 時点）: 第六次 A（実装記録 11 章）・B（12 章）・C（BUG-0038・0039・0041・0045、WriteFailed、文書の BUG、文書のそろえ直し。13 章）を実装して feature/1.3.0-csv にコミットした（プッシュしていない）。第六次は C で終わり。次の依頼（手動確認の課題、またはリリースの指示）を待っている。master へは未マージ・未リリース。**
 第五次の仕上げ（実装記録 10.16 節）までは 2026-10-24 に開発用ブランチ（origin/feature/1.3.0-csv）へプッシュ済み。
 第五次の後半（テスト担当の BUG-0003〜0008・0011・0015〜0017、H-17、9.9 節の 1〜4、報告の後の修正 10.14 節）は 2026-10-23 に origin/feature/1.3.0-csv へプッシュ済み。
 
-- 両 TFM のテスト（コア net48 2139 / net10.0 2129 件、モジュール 2002 件）と PSCompat（1205 シナリオ）が通っている（第六次 B を含む。pwsh 7.6.9）。
+- 両 TFM のテスト（コア net48 2139 / net10.0 2129 件、モジュール 2038 件）と PSCompat（1234 シナリオ）が通っている（第六次 C を含む。pwsh 7.6.9）。
+  第六次 C では、テスト担当のスクリプト 13 本を両ホストで確かめた（実装記録 13.10 節）。
   第六次 B では、テスト担当のスクリプト 6 本を両ホスト（BUG-0030 は 32 ビット版の 5.1）で確かめた（実装記録 12.11 節）。
   第六次 A では、テスト担当のスクリプト 8 本を作業フォルダーに作った配布の構成で両ホストで確かめた（実装記録 11.11 節）。
   Linux の実測のため、WSL の Ubuntu-24.04 のホームに `~/.dotnet`（.NET 10.0.14）と `~/powershell-7.6.9` を入れてある（11.4 節）
@@ -584,6 +587,7 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
   コアの改行の判定を単位で数える、読み替えたときの `LineBreak` の数え直し、ISO-2022 の検査、空の列名の ID。実装記録 9 章
 - 第五次（後半）: パスの束縛（`FullName` を `-LiteralPath` に）、書き込みの 0 件のワイルドカード、同じファイルの判定を実体で、`EncodingChangeOnAppend` の取り消し、
 - 第五次（仕上げ）: 小さなファイル（1 MiB 以内）はメモリに写してから直接書く（性能の修正）、著作権の表記を `Copyright (c) 2026 Motoi Tsushima` にそろえた。実装記録 10.15 節・10.16 節
+- 第六次 C: `-Culture` の前後の空白を除く、逆シリアル化した判定結果のメッセージ、`-TotalCount` の別名 `-Head`・`-First`、列名の重複のメッセージにパス、`EncodingChangeOnAppend` を統一語彙名で、中国語・英語のメッセージ、`WriteFailed` をエラー コードの 5 言語のメッセージに、文書だけの BUG（0022・0023・0029・0034・0036・0040・0043・0044）、文書のそろえ直し。実装記録 13 章、仕様書 27 章
 - 第六次 B: 逆向きの往復も SamePathRoundTrip（書き込みを元に戻す）、判定・変換の読み取りを ReadWrite の共有に、読み書きの失敗を 5 言語のメッセージに、一時ファイルの名前を固定長に、大きなファイルとメモリ不足を ID の付いたエラーに、Archive 属性、内部の Out-String を $PSDefaultParameterValues から守る、ACL の拒否を開く時点に。実装記録 12 章、仕様書 26 章
 - 第六次 A: ISO-2022 の追記先を ASCII に戻す、CSV の列名の比較を .NET 10 にそろえる、BOM は先頭の 1 個だけ取り除く、曖昧解消で厳密に復号できない候補を選ばない（コア）、
   `ansi` / `oem` をシステムのロケールに（コアの `Locale` も）、`-Value` の `$null` を飛ばす、UTF-7 のインスタンスを拒否、5.1 でも途中で切れた末尾を置き換えの文字で読む。実装記録 11 章、仕様書 18.4・25 章

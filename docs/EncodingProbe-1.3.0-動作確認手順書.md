@@ -1,6 +1,6 @@
 # EncodingProbe.PowerShell 1.3.0 動作確認手順書
 
-- 作成日: 2026-10-15
+- 作成日: 2026-10-15（第六次の後の挙動を 4 章に足した: 2026-10-26）
 - 対象: 利用者（人間）が、Claude Code の各段階の作業の後に、手元の PC で動作を確かめるための手順
 - 仕様書: `docs/EncodingProbe-1.3.0-仕様書.md`
 
@@ -190,6 +190,9 @@ Show-Bytes .\nofinal.csv
 
 期待: `41 2C 42 0D 0A 31 2C 32 0D 0A 22 78 22 2C 22 79 22 0D 0A`（改行を補ってから追記。標準は `1,2"x","y"` とつながる）。
 
+最後の値の引用符が閉じていない追記先（`41 2C 42 0D 0A 31 2C 22 32`。`1,"2` で終わる）では、補った改行と追記したレコードが引用符の中に入り、読み直すと 1 件（B が `2` CRLF `x"`）になる。
+警告もエラーも出ないのは既知の限界（仕様書 18.3。第六次 C で文書にした。1.4.0 で検討）。
+
 ### 3.4 同じファイルの読み書き
 
 ```powershell
@@ -225,11 +228,139 @@ Show-Bytes .\same.csv
 Show-Bytes .\same_asneeded.csv
 ```
 
-期待: 両ホストで完全に同じバイト列。
+期待: 両ホストで完全に同じバイト列。日付・数値の書式（ko-KR・ar-SA など）と、`-UseCulture` の区切り文字（ms-ID など。4.8）は、ホストの .NET のカルチャーのデータで違うことがある（仕様書 1.5・17 章）。
+
+## 4. 第六次の後 — 改めた挙動（A・B・C）
+
+テスト担当のブラックボックステスト（第 2 段階）への対応で変えた挙動を確かめる。根拠は仕様書 25〜27 章、実装記録 11〜13 章。
+
+### 4.1 `ansi` / `oem`（第六次 A。BUG-0032）
+
+```powershell
+(ConvertTo-DotNetEncoding ansi).CodePage
+(ConvertTo-DotNetEncoding oem).CodePage
+(Get-EncodingProbePlatformInfo).Locale | Format-List *
+[System.Text.Encoding]::Default.CodePage        # 5.1 だけ
+ConvertTo-DotNetEncoding 0                      # エラー
+```
+
+期待: 日本語の Windows では `ansi` が 932、`oem` が 932（`Locale` の `AnsiCodePage` / `OemCodePage` も同じ。5.1 の `Default` も 932）。`0` はエラー。
+可能なら、設定 → 時刻と言語 → 言語と地域 の「地域設定」の「形式」を「英語（米国）」にして新しいウィンドウで同じことを行い、`ansi` / `oem` が 932 のままであることを確かめる（以前は 1252 / 437 になっていた）。確かめたら「形式」を元に戻す。
+
+### 4.2 BOM が 2 個続くファイル・途中で切れたファイル（第六次 A。BUG-0021・0042）
+
+```powershell
+[System.IO.File]::WriteAllBytes("$t\bom2.txt", [byte[]](0xEF,0xBB,0xBF,0xEF,0xBB,0xBF,0x41))
+(Get-ProbedContent .\bom2.txt -Encoding utf8BOM -Raw).Length   # 2（2 個目の U+FEFF が残る）
+[System.IO.File]::WriteAllBytes("$t\odd16.txt", [byte[]](0xFF,0xFE,0x41,0x00,0x42))
+[int[]][char[]](Get-ProbedContent .\odd16.txt -Raw)            # 65, 65533（5.1 でも U+FFFD がある）
+```
+
+### 4.3 JIS のまま終わっているファイルへの追記（第六次 A。BUG-0018）
+
+```powershell
+$jis = [System.Text.Encoding]::GetEncoding(50220)
+[System.IO.File]::WriteAllBytes("$t\jis.txt", [byte[]](0x1B,0x24,0x42,0x46,0x7C,0x4B,0x5C))   # 「日本」（ESC ( B で戻していない）
+Add-ProbedContent .\jis.txt -Value 'abc'
+Show-Bytes .\jis.txt
+Get-ProbedContent .\jis.txt
+```
+
+期待: 追記の前に `1B 28 42`（`ESC ( B`）が書かれ、読み直すと「日本abc」。
+
+### 4.4 逆向きの往復（第六次 B。BUG-0028）
+
+```powershell
+Set-Content .\a.txt -Value 'a1'; Set-Content .\z.txt -Value 'z1'
+Get-ProbedContent .\a.txt, .\z.txt | Out-ProbedFile .\z.txt
+Get-Content .\z.txt
+```
+
+期待: `SamePathRoundTrip` のエラー（`Out-ProbedFile` は書き込みを取り消して終了エラー）。z.txt は `z1` のまま（1.2.0 までは z.txt の元の内容が消えていた）。
+
+### 4.5 属性・一時ファイル・ほかのプログラムが開いているファイル（第六次 B。BUG-0025・0026・0027）
+
+```powershell
+Set-Content .\attr.txt -Value 'x'
+attrib -A +H .\attr.txt
+Set-ProbedContent .\attr.txt -Value 'y' -Encoding utf8NoBOM    # -Force なしで隠しファイルに書ける
+(Get-Item .\attr.txt -Force).Attributes                         # Hidden, Archive
+attrib -H .\attr.txt
+
+$fs = [System.IO.File]::Open("$t\attr.txt", 'Open', 'ReadWrite', 'ReadWrite')   # 書き込み用に開いたまま
+Resolve-Encoding .\attr.txt                                     # 読める
+$fs.Dispose()
+```
+
+1 MiB を超える上書きの一時ファイルは `.~probed<8 桁の 16 進>.probedtmp`（元の名前を含めない）で、完了すると残らない。
+書き込み中にプロセスを強制終了したときに残った場合は、名前からはどのファイルのものか分からない（同じフォルダーにある）。
+
+### 4.6 パラメーター（第六次 C。BUG-0038・0041・0039）
+
+```powershell
+Resolve-Encoding .\sjis.csv -Culture ' ko-KR' | Select-Object CodePage, Culture   # Culture は ko-KR（エラーにならない）
+Get-ProbedContent .\sjis.csv -Head 1
+Get-ProbedContent .\sjis.csv -First 1
+Get-ProbedContent .\sjis.csv -TotalCount -1                   # 今までどおりパラメーターの検証エラー
+Get-Help Get-ProbedContent -Parameter TotalCount               # 別名 Head, First。既定値 None (all lines)
+
+Resolve-Encoding .\sjis.csv | Export-Clixml .\info.xml
+Get-ProbedContent .\sjis.csv -Encoding (Import-Clixml .\info.xml)
+```
+
+期待: 最後のコマンドは、型（`Deserialized.SnowStack.EncodingProbe.EncodingInformation`）が違うことと、`CodePage` の値か BOM を明示した統一語彙名を渡す案内のエラー（以前は「文字エンコーディング '' を解決できませんでした」）。
+
+### 4.7 メッセージ（第六次 C。BUG-0045、WriteFailed）
+
+```powershell
+[System.IO.File]::WriteAllBytes("$t\dup.csv", [byte[]](0x41,0x2C,0x61,0x0D,0x0A,0x31,0x2C,0x32,0x0D,0x0A))
+Import-ProbedCsv .\utf8.csv, .\dup.csv                       # dup.csv のパスと列名 "a" を示すエラー。utf8.csv は読める
+Import-ProbedCsv .\utf8.csv -Header 'N', 'n'                 # -Header の値が重複していると分かるエラー
+
+[System.IO.File]::WriteAllBytes("$t\u16bom.txt", [byte[]](0xFF,0xFE,0x41,0x00,0x0D,0x00,0x0A,0x00))
+Add-ProbedContent .\u16bom.txt -Value 'あ' -Encoding utf8NoBOM   # 'utf8NoBOM' と 'unicodeBOM' で示す（以前は 'utf-8' と 'utf-16'）
+```
+
+UI カルチャーを en-US・zh-TW・zh-CN に変えて Import-Module し直し（CLAUDE.md の手順）、`Import-ProbedCsv .\head_ascii_sjis.csv -DetectionLineCount 1` の `DetectionVerificationFailed` の文を読む。
+英語は「the beginning of the file (with -DetectionLineCount 1)」（「first 1 lines」ではない）、中国語は「根據前 1 行判斷…」「根据前 1 行判断…」で始まる。
+ディスクの空き不足の書き込みの失敗（`WriteFailed`）は手元では起こしにくいので、自動テストで確かめている（エラー コードを示す 5 言語のメッセージ）。
+
+### 4.8 文書に書いた点（第六次 C。挙動は変えていない）
+
+```powershell
+# BUG-0034: 既定値の裸の utf8 は書き込みでは無視される（警告だけ）
+$PSDefaultParameterValues['*:Encoding'] = 'utf8'
+Set-ProbedContent .\u16bom.txt -Value 'B'          # 警告の後、UTF-16LE（追記先から継承）で書く
+$PSDefaultParameterValues.Remove('*:Encoding')
+
+# BUG-0040: 空のファイルの -Raw は空の文字列
+New-Item .\empty.txt -ItemType File -Force | Out-Null
+$null -eq (Get-ProbedContent .\empty.txt -Raw)       # False（標準の Get-Content -Raw は True）
+
+# BUG-0043: BOM だけのファイルは -Bom Add でも 0 バイトになる
+[System.IO.File]::WriteAllBytes("$t\bomonly.txt", [byte[]](0xEF,0xBB,0xBF))
+Convert-ProbedContent .\bomonly.txt -Bom Add -PassThru | Select-Object Changed
+Show-Bytes .\bomonly.txt                               # <0 bytes>
+
+# BUG-0044: HZ は既定の判定では us-ascii
+[System.IO.File]::WriteAllBytes("$t\hz.txt", [System.Text.Encoding]::ASCII.GetBytes('~{<:Ky2;S{#,NR2;PhR*~}'))
+Resolve-Encoding .\hz.txt -Culture zh-CN                         # 20127
+Resolve-Encoding .\hz.txt -Culture zh-CN -Strategy UtfUnknownOnly  # 52936
+Get-ProbedContent .\hz.txt -Encoding 52936
+
+# BUG-0029: -UseCulture の区切り文字はホストで違うことがある（両ホストで実行して比べる）
+$c = [System.Globalization.CultureInfo]::CurrentCulture
+[System.Threading.Thread]::CurrentThread.CurrentCulture = 'ms-ID'
+[pscustomobject]@{ Name = 'x'; Price = '1,5' } | Export-ProbedCsv .\ms.csv -UseCulture
+[System.Threading.Thread]::CurrentThread.CurrentCulture = $c
+Show-Bytes .\ms.csv                                    # 5.1 は ; （3B）、7.x は , （2C）
+```
+
+各ヘルプ（`Get-Help <コマンド> -Full`）に、上の点が書かれていることも確かめる（`-Encoding`・`-UseCulture`・`-Append`（`Export-ProbedCsv`。引用符が閉じていない追記先の既知の限界）・`-Raw`・`-Strategy`・`Convert-ProbedContent` の注意事項）。
 
 ---
 
-## 4. リリース前のチェック
+## 5. リリース前のチェック
 
 | # | 項目 |
 |---|---|
@@ -244,6 +375,6 @@ Show-Bytes .\same_asneeded.csv
 
 ---
 
-## 5. 確認の記録
+## 6. 確認の記録
 
 確認で見つけた課題は、1.1.0 / 1.2.0 と同じく `docs/EncodingProbe-1.3.0-課題_人間記述用.md` に書き、Claude Code に渡す。

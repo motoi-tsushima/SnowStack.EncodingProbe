@@ -654,7 +654,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <maml:para>写入目标是目标不存在的符号链接时，与标准的 Set-Content 相同不会写入，并报告非终止错误 LinkTargetNotFound（若要创建链接目标，请使用 Out-ProbedFile 或指定链接目标的路径）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>是否为同一个文件（写入正在读取的文件 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否与源相同）是以文件的实体比较，而不是路径字符串。即使以 \\?\、UNC 管理共享（\\localhost\C$\…）、\\.\、subst 驱动器、符号链接、联接、硬链接或大小写差异改变写法，也会判定为同一个文件。在 Linux / macOS 上以解析链接后的路径比较，因此硬链接视为不同的文件。</maml:para>
+        <maml:para>是否为同一个文件（写入正在读取的文件 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否与源相同）是以文件的实体比较，而不是路径字符串。即使以 \\?\、UNC 管理共享（\\localhost\C$\…）、\\.\、subst 驱动器、符号链接、联接、硬链接或大小写差异改变写法，也会判定为同一个文件。在 Linux / macOS 上以解析链接后的路径比较，因此硬链接视为不同的文件。在同一管道中，之后才打开正在写入的文件进行读取的反向情况（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt）也是 SamePathRoundTrip。会撤销写入，读取方与写入方都报告 SamePathRoundTrip，文件保持原样。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>在一次调用中多次指定同一个文件时（a.txt 与 A.TXT、硬链接的两个名称等），会视为一个写入目标，结果与写入一次相同。从管道接收路径时也相同（与标准的 Set-Content 相同）。</maml:para>
@@ -1115,7 +1115,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>追加时会直接写入追加目标文件。会跟踪符号链接并追加到实体；链接目标不存在时，与标准的 Add-Content / Out-File -Append 相同，会在链接目标创建文件。因错误（无法表示的字符、一致性检查不符 EncodingChangeOnAppend、写入失败）而停止时，会取消该次调用写入的内容，还原为追加前的长度（追加目标原本不存在时，会删除创建的文件）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>是否为同一个文件（写入正在读取的文件 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否与源相同）是以文件的实体比较，而不是路径字符串。即使以 \\?\、UNC 管理共享（\\localhost\C$\…）、\\.\、subst 驱动器、符号链接、联接、硬链接或大小写差异改变写法，也会判定为同一个文件。在 Linux / macOS 上以解析链接后的路径比较，因此硬链接视为不同的文件。</maml:para>
+        <maml:para>是否为同一个文件（写入正在读取的文件 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否与源相同）是以文件的实体比较，而不是路径字符串。即使以 \\?\、UNC 管理共享（\\localhost\C$\…）、\\.\、subst 驱动器、符号链接、联接、硬链接或大小写差异改变写法，也会判定为同一个文件。在 Linux / macOS 上以解析链接后的路径比较，因此硬链接视为不同的文件。在同一管道中，之后才打开正在写入的文件进行读取的反向情况（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt）也是 SamePathRoundTrip。会撤销写入，读取方与写入方都报告 SamePathRoundTrip，文件保持原样。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>在一次指定（-LiteralPath a.txt, A.TXT 等）中同一个文件重复出现时，只追加一次（与 7.x 的标准 Add-Content 相同；5.1 的标准会将第二个视为错误）。在管道的每条记录中传入同一个文件时，会针对每条记录追加（与两个主机的标准相同）。</maml:para>
@@ -1636,7 +1636,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>输出目标是目标不存在的符号链接时，与标准的 Out-File / Export-Csv 相同，会在链接目标创建文件（链接本身保留）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>是否为同一个文件（写入正在读取的文件 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否与源相同）是以文件的实体比较，而不是路径字符串。即使以 \\?\、UNC 管理共享（\\localhost\C$\…）、\\.\、subst 驱动器、符号链接、联接、硬链接或大小写差异改变写法，也会判定为同一个文件。在 Linux / macOS 上以解析链接后的路径比较，因此硬链接视为不同的文件。</maml:para>
+        <maml:para>是否为同一个文件（写入正在读取的文件 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否与源相同）是以文件的实体比较，而不是路径字符串。即使以 \\?\、UNC 管理共享（\\localhost\C$\…）、\\.\、subst 驱动器、符号链接、联接、硬链接或大小写差异改变写法，也会判定为同一个文件。在 Linux / macOS 上以解析链接后的路径比较，因此硬链接视为不同的文件。在同一管道中，之后才打开正在写入的文件进行读取的反向情况（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt）也是 SamePathRoundTrip。会撤销写入，读取方与写入方都报告 SamePathRoundTrip，文件保持原样。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>a.txt::$DATA 之类的主数据流名称，会视为与 a.txt 相同的文件。不会读写备用数据流（a.txt:alt 等），并产生错误 AlternateDataStreamNotSupported（在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同）。</maml:para>
@@ -2112,7 +2112,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>其他进程打开写入目标时，覆盖失败的时间点不是打开文件时，而是完成写入时（WriteFailed 等）。此时原始文件同样不会改变，也不会留下临时文件。替换超过 1 MiB 的文件时，如果对方不允许删除共享就会失败；直接写入 1 MiB 以内的文件时，如果对方不允许写入共享就会失败。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>是否为同一个文件（写入正在读取的文件 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否与源相同）是以文件的实体比较，而不是路径字符串。即使以 \\?\、UNC 管理共享（\\localhost\C$\…）、\\.\、subst 驱动器、符号链接、联接、硬链接或大小写差异改变写法，也会判定为同一个文件。在 Linux / macOS 上以解析链接后的路径比较，因此硬链接视为不同的文件。</maml:para>
+        <maml:para>是否为同一个文件（写入正在读取的文件 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否与源相同）是以文件的实体比较，而不是路径字符串。即使以 \\?\、UNC 管理共享（\\localhost\C$\…）、\\.\、subst 驱动器、符号链接、联接、硬链接或大小写差异改变写法，也会判定为同一个文件。在 Linux / macOS 上以解析链接后的路径比较，因此硬链接视为不同的文件。在同一管道中，之后才打开正在写入的文件进行读取的反向情况（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt）也是 SamePathRoundTrip。会撤销写入，读取方与写入方都报告 SamePathRoundTrip，文件保持原样。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>a.txt::$DATA 之类的主数据流名称，会视为与 a.txt 相同的文件。不会读写备用数据流（a.txt:alt 等），并产生错误 AlternateDataStreamNotSupported（在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同）。</maml:para>
@@ -3248,7 +3248,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:para>输出目标是目标不存在的符号链接时，与标准的 Out-File / Export-Csv 相同，会在链接目标创建文件（链接本身保留）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>是否为同一个文件（写入正在读取的文件 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否与源相同）是以文件的实体比较，而不是路径字符串。即使以 \\?\、UNC 管理共享（\\localhost\C$\…）、\\.\、subst 驱动器、符号链接、联接、硬链接或大小写差异改变写法，也会判定为同一个文件。在 Linux / macOS 上以解析链接后的路径比较，因此硬链接视为不同的文件。</maml:para>
+        <maml:para>是否为同一个文件（写入正在读取的文件 SamePathRoundTrip、Convert-ProbedContent 的 -Destination 是否与源相同）是以文件的实体比较，而不是路径字符串。即使以 \\?\、UNC 管理共享（\\localhost\C$\…）、\\.\、subst 驱动器、符号链接、联接、硬链接或大小写差异改变写法，也会判定为同一个文件。在 Linux / macOS 上以解析链接后的路径比较，因此硬链接视为不同的文件。在同一管道中，之后才打开正在写入的文件进行读取的反向情况（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt）也是 SamePathRoundTrip。会撤销写入，读取方与写入方都报告 SamePathRoundTrip，文件保持原样。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>a.txt::$DATA 之类的主数据流名称，会视为与 a.txt 相同的文件。不会读写备用数据流（a.txt:alt 等），并产生错误 AlternateDataStreamNotSupported（在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同）。</maml:para>

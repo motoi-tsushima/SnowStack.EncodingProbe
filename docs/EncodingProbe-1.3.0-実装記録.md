@@ -1884,3 +1884,164 @@ net10.0 の単体テストは、BUG-0025 の主題なので `Zone.Identifier` �
 - 1.3.0 仕様書: 1.1〜1.3（12.10）、16.4・16.5 の注記（一時ファイルの名前、ACL の時点、逆向きの往復）、26 章（第六次 B で改めた挙動）
 - ヘルプ（5 言語と zh-HK / zh-MO の複製）: Set・Out・Convert・Export の注意事項（一時ファイルの名前と、名前から書き込み先が分からないこと、長いパスの切り替え、Archive 属性）、Resolve-Encoding の注意事項（エラーの種類が混ざること・ほかのプログラムが開いているファイル）
 - README（読み書きの細部の修正に追記）、CHANGELOG（挙動の変更。第六次 B）、`PackageReleaseNotes`、`.psd1` の `ReleaseNotes`、CLAUDE.md
+
+## 13. 第六次 C — パラメーター・メッセージ・文書（BUG-0038・0039・0041・0045、WriteFailed、文書の BUG、文書のそろえ直し。2026-10-26）
+
+仕様は 1.3.0 仕様書 27 章、変えた挙動は CHANGELOG の「挙動の変更（PowerShell モジュール。第六次 C）」。第六次の最後の回。
+テストに使った版: PowerShell **7.6.9**（.NET 10.0.14）、Windows PowerShell **5.1.26100.9711**（64 ビット）、Windows 11 Pro 10.0.26300、ja-JP。
+
+### 13.1 利用者の決定（計画の確認のとき）
+
+1. BUG-0045 (c) の中国語は、案のとおり語順だけを直す（「以前 N 行」が「以前は」と読めるのを直す）。「以…而言」はそのままにし、「以→對（对）」の見直しは残したことに入れる
+2. BUG-0045 (d) の英語は、行数による出し分けではなく言い換えにする。ただし先頭だけを見たことが分かる言い方を残し、3 つのメッセージで表現をそろえる（「the beginning of the file (with -DetectionLineCount N)」）
+3. BUG-0045 (a) で `-Header` の値が重複した場合は、「'…' のヘッダー」とは書かず、`-Header` の値が重複していると分かる文にする（5 言語）。どちらの場合も、ID（`AlreadyPresentPSMemberInfoInternalCollectionAdd`）・分類・対象が今までと変わらないことをテストで確かめる
+4. BUG-0039 は PSCustomObject 全体を対象にする。判定結果と関係の無い PSCustomObject（`[pscustomobject]@{ A = 1 }`）でも不自然にならない文にする
+
+### 13.2 BUG-0038（`-Culture` の前後の空白）
+
+- `ResolveEncodingOptions.ValidateCulture` が `TrimCulture`（`string.Trim()`）の後の名前で形を調べ、`ProbedContentCommandBase`・`ResolveEncodingCmdlet` は除いた名前を判定に渡す
+- メッセージと対象（`TargetObject`）には渡された元の値を出す（`' ko KR '` → `InvalidCulture`、対象は `' ko KR '`）。空白だけの値は今までどおり省略と同じ（`IsNullOrWhiteSpace`）
+- 列挙型（`-Bom`・`-LineBreak`・`-UseQuotes`）は、PowerShell の型変換が前後の空白を除く（両ホストで確かめた: `[IO.FileAttributes]' Hidden '`）。前後の空白を除くパラメーターの一覧は仕様書 27.1
+- テスト: `CultureValidationTests`（`SurroundingWhitespace_IsTrimmed`・`InnerWhitespace_IsStillRejected_WithOriginalValue`）、PSCompat `SixthC/CultureTrim/*`
+
+### 13.3 BUG-0039（逆シリアル化した判定結果）
+
+- `EncodingVocabulary.Resolve` で、`PSObject` を外した値が `PSCustomObject` なら `EncodingObjectNotUsable`（型名は `PSObject.TypeNames[0]`）を投げる。ID は今までどおり `ParameterArgumentTransformationError`
+- 逆シリアル化した `EncodingInformation`（`Import-Clixml`・`Receive-Job`）は、両ホストで `PSCustomObject` を元にした `PSObject` だった（5.1 でも同じ。ジョブで確かめた）
+- 文は「文字エンコーディングとして渡された値は '<型名>' のオブジェクトで、文字エンコーディングとして使えません。EncodingInformation オブジェクト（Resolve-Encoding の結果）はそのまま渡せますが、…を通した判定結果は、EncodingInformation オブジェクトではなくなります。その場合は、…」。
+  判定結果と関係の無い PSCustomObject でも、前半（型名と使えないこと）が当てはまり、後半は「その場合は」で判定結果の場合に限った案内になる
+- 案内する渡し方: `CodePage` の値（読み込み）と、BOM を明示した統一語彙名（書き込み。数値の Unicode のコードページは BOM が決まらないので書き込みで拒否される）
+- `-Encoding` の解決はパラメーター名を知らないので、メッセージでは「文字エンコーディングとして渡された値」と書いた（`-SourceEncoding` にも同じ文が出る）
+- テスト: `EncodingObjectNotUsableTests`（5 つの形 × 4 つのコマンド、案内した渡し方が通ること）、PSCompat `SixthC/EncodingObject/*`
+
+### 13.4 BUG-0041（`-TotalCount` の別名）
+
+- `[Alias("Head", "First")]`。ヘルプの `aliases` 属性を 5 言語で `Head, First` にし、既定値（`dev:defaultValue`。5 言語で同じ値）を「None (all lines)」にした
+- テスト: `GetProbedContentTests.Read_TotalCountAliases`、PSCompat `SixthC/TotalCount/*`
+
+### 13.5 BUG-0045（メッセージの細部）
+
+- **(a)** 移植したコード（`Internal/Csv/ImportCsvHelper.ValidatePropertyNames`）は変えず、新しい `Internal/CsvDuplicateColumnName` で、コマンドが受け止めた `ExtendedTypeSystemException` のメッセージだけを差し替える。
+  重複した列名は `helper.Header` から同じ比較器（`CsvNameComparer`）で求め直す（移植元と同じく空の列名は数えない）。`-Header` を指定したかどうか（`this.Header != null`）で文を選ぶ。
+  例外の型は同じなので、ID・分類（NotSpecified）・対象（パス）は変わらない。`Export-ProbedCsv -Append` の追記先のヘッダーも同じ部品でパスを示す
+- **(b)** 追記の整合性検査の相手を `Encoding` から `EncodingSpec`（BOM の有無を持つ）にし、`AppendConsistency.DescribeForMessage` で `GetUnifiedName(コードページ, BOM)` にする。
+  BOM の方針が決まっていない Unicode 系（`Add-ProbedContent` に裸の `unicode` など）は WebName（`utf-16`）で示す（BOM を付けない名前にすると、指定と違って見えるため）
+- **(c)** 繁体字: 「根據前 {2} 行判斷 '{0}' 的字元編碼為 '{1}'，但檔案含有以字元編碼 '{1}' 而言無效的位元組序列（位元組位置 {3}：{4}），因此未處理。…」。簡体字も同じ形
+- **(d)** 英語のメッセージ 65 件をすべて調べた。数を入れて名詞の単数・複数が変わるのは、`-DetectionLineCount` の 3 件（`first {n} lines`）だけだった（`matches {1} files` は 2 以上のときだけ出る）
+- テスト: `MessageDetailTests`、既存の `AddProbedContentTests.Append_EncodingChange_ReportsBothEncodings` の期待を `utf-8` から `utf8NoBOM` に改めた。PSCompat `SixthC/DuplicateColumn/*`・`SixthC/EncodingChangeOnAppend/*`・`SixthC/DetectionVerificationFailed/OneLine`
+
+**(d) で直した英語の文:**
+
+| キー | 前 | 後 |
+|---|---|---|
+| `DetectionLinesTooLarge` | from its first {1} lines, because they are larger than the detection limit | from the beginning of the file (with -DetectionLineCount {1}), because the lines to read are larger than the detection limit |
+| `DetectionVerificationFailed` | which was detected from its first {2} lines | which was detected from the beginning of the file (with -DetectionLineCount {2}) |
+| `DetectionVerificationIso2022Escape` | although its first {2} lines contain only ASCII characters and were read as '{1}' | although the beginning of the file (with -DetectionLineCount {2}) contains only ASCII characters and was read as '{1}' |
+
+### 13.6 WriteFailed のメッセージ
+
+- `FileErrors.WriteFailed` を `ReadFailed` と同じ形にし、共有違反・ロック違反以外は `FileWriteFailed`（「'{0}' に書き込めませんでした（エラー コード {1}）。」）。内部例外は持たせず、HRESULT を引き継ぐ
+- ディスクの空き不足はテストで起こせないので、HRESULT を指定した `IOException` を直接渡して確かめた（`FileErrorsTests`）。PSCompat のシナリオは作っていない
+
+### 13.7 文書だけの BUG（挙動は変えていない）
+
+**BUG-0022 の標準の挙動（両ホストで実測）:** 列名が重複した追記先への `Export-Csv -Append` は、7.6.9 と 5.1 のどちらも `RuntimeException`（NotSpecified）。
+
+**BUG-0036 の `0.1 + 0.2`（依頼と違った点）:** 依頼は「0.1+0.2 が 5.1 で 0.3・7.x で 0.30000000000000004」を `Set-` / `Add-ProbedContent` の既知の限界とするものだったが、
+実測では `Set-ProbedContent -Value (0.1 + 0.2)` は**両ホストで `0.3`**（PowerShell の型変換）だった。違うのは `Export-ProbedCsv`（値の `ToString()`）で、5.1 が `0.3`、7.x が `0.30000000000000004`。
+そのため、`0.1 + 0.2` は 1.3.0 仕様書 17 章（`Export-ProbedCsv`）の既知の限界に書き、1.1.0 仕様書 5.8 には「`Set-` / `Add-ProbedContent` では両ホストで `0.3`、`Export-ProbedCsv` では違う」と書いた。
+`-0.0` は両方のコマンドで 7.x が `-0`、5.1 が `0`。
+
+**BUG ごとの書いた場所:**
+
+| BUG | 書いた場所 |
+|---|---|
+| 0022 | 1.3.0 仕様書 20 章の表（事象・時点・ID）、21 章の差異、27 章の冒頭、CHANGELOG |
+| 0023 | 1.3.0 仕様書 18.3（既知の限界。1.4.0 で検討）、`Export-ProbedCsv -Append` のヘルプ（5 言語と複製）、動作確認手順書 3.3、CHANGELOG |
+| 0029 | 1.3.0 仕様書 1.5・14・17・21 章、`Import-ProbedCsv` / `Export-ProbedCsv` の `-UseCulture` のヘルプ、README（1.3.0 の CSV の節）、`.psd1`、動作確認手順書 3.6・4.8、CHANGELOG |
+| 0034 | 1.1.0 仕様書 3.6、書き込みのヘルプ（`Set-` / `Add-ProbedContent` の注意事項、`Out-ProbedFile` / `Export-ProbedCsv` の `-Encoding`）、README（知っておく必要のある点）、`.psd1`、動作確認手順書 4.8、CHANGELOG |
+| 0036 | 1.1.0 仕様書 5.8（標準との差異・既知の限界）、1.3.0 仕様書 17 章（`Export-ProbedCsv` の数値の表記）、`Set-` / `Add-ProbedContent` の `-Value` のヘルプ、CHANGELOG |
+| 0040 | 1.1.0 仕様書 4.6（標準との差異）、`Get-ProbedContent -Raw` のヘルプ、動作確認手順書 4.8、CHANGELOG |
+| 0043 | 1.2.0 仕様書 13.1、`Convert-ProbedContent` の注意事項（`-Encoding` と `-Bom`）のヘルプ、動作確認手順書 4.8、CHANGELOG |
+| 0044 | 1.1.0 仕様書 4.4（7 ビットの文字エンコーディング。`ascii` / `us-ascii` の名前の不統一も）、`-Strategy` のヘルプ（判定する 8 コマンド）、動作確認手順書 4.8、CHANGELOG |
+| 0008 の追記 | README の 1.2.0 の節（`Out-ProbedFile` の例の注釈）、1.2.0 仕様書 2.3、CHANGELOG |
+| 0038 | `-Culture` のヘルプ（25 か所）、1.3.0 仕様書 27.1、README、`.psd1`、動作確認手順書 4.6、CHANGELOG |
+| 0039 | `-Encoding` のヘルプ（25 か所）、1.3.0 仕様書 27.2、README、`.psd1`、動作確認手順書 4.6、CHANGELOG |
+| 0041 | `-TotalCount` のヘルプ（別名・既定値・説明）、1.1.0 仕様書 4.1・4.5・4.6、1.3.0 仕様書 27.3、README、`.psd1`、動作確認手順書 4.6、CHANGELOG |
+| 0045 | 1.3.0 仕様書 12 章・20 章・27.4、README、`.psd1`、動作確認手順書 4.7、CHANGELOG |
+| WriteFailed | 1.3.0 仕様書 26.2・27.5、README、`.psd1`、CHANGELOG |
+
+### 13.8 文書のそろえ直し（第六次 A・B・C）
+
+テスト担当の `regression-plan.md` の「文書で解決とする条件（見る所）」を、第六次 A・B・C の BUG について確かめた（ブログは対象外）。
+挙動で直した BUG は、見る所に書くことは必須ではないが、文書が挙動と食い違っていないかを確かめた。足りなかった所を足した:
+
+| BUG | 足りなかった所 | 書いたこと |
+|---|---|---|
+| 0028 | ヘルプ、1.3.0 仕様書 19 章 | 逆向きの往復も `SamePathRoundTrip`（書き込みを取り消す）（書き込みの 4 コマンドと Convert の同じファイルの判定の注意事項、19 章の表） |
+| 0030 | ヘルプ（32 ビット版のメモリの目安） | 全体の判定は約 3.6 倍のメモリを使い、32 ビット版の 5.1 では数百 MB で `NotEnoughMemoryToDetect` になりうる（`Resolve-Encoding`）。`Convert-ProbedContent` の上限と `NotEnoughMemoryToConvert` |
+| 0035 | 1.2.0 仕様書 2.2 | 内部の `Out-String` に利用者の既定値が効かないこと |
+| 0036・0040 | 1.1.0 仕様書の標準との差異 | 1.1.0 仕様書には標準との差異の一覧が無かったので、4.6（`Get-Content`）と 5.8（`Set-Content` / `Add-Content`）を作った |
+
+ほかの BUG の見る所（A・B の分）:
+
+| BUG | 書かれている所 |
+|---|---|
+| 0018 | 1.3.0 仕様書 18.1・18.3・18.4、追記の 3 コマンドのヘルプ、README、CHANGELOG |
+| 0020 | 1.3.0 仕様書 18.2・25.3、README、CHANGELOG（両ホストで同じにしたので「ホストに従う」とは書かない） |
+| 0021 | 1.3.0 仕様書 18.2・25.1、`-Encoding` のヘルプ（先頭の 1 個だけ取り除く）、README、CHANGELOG |
+| 0025 | 1.3.0 仕様書 26.1、書き込みのヘルプの注意事項（Archive 属性）、README、CHANGELOG（隠しファイルに書け、ストリームを保つので 1.1.0 仕様書の差異には書かない） |
+| 0026 | 1.3.0 仕様書 26.2、`Resolve-Encoding` のヘルプ、README、CHANGELOG |
+| 0027 | 1.3.0 仕様書 26.3、書き込みのヘルプの注意事項（一時ファイルの名前・長いパス）、README、CHANGELOG |
+| 0031 | 1.3.0 仕様書 25.7、README、CHANGELOG（直したので `-Culture` のヘルプの既知の限界には書かない） |
+| 0032 | 1.1.0 仕様書 3.3、1.3.0 仕様書 25.5、ヘルプ、README（Linux の実測値も）、CHANGELOG |
+| 0033 | 1.3.0 仕様書 25.4、`-Value` のヘルプ、1.1.0 仕様書 5.8 の表 |
+| 0037 | 1.3.0 仕様書 25.6、1.1.0 仕様書 3.3 の注記、CHANGELOG |
+| 0042 | 1.3.0 仕様書 25.2、`-Encoding` のヘルプ（途中で切れた末尾）、README、CHANGELOG |
+
+### 13.9 動作確認手順書
+
+`docs/EncodingProbe-1.3.0-動作確認手順書.md` に 4 章「第六次の後 — 改めた挙動（A・B・C）」を足し、もとの 4・5 章を 5・6 章にした。
+`ansi` / `oem`（地域の形式を変える手順も）、BOM が 2 個続くファイル・途中で切れたファイル、JIS の追記、逆向きの往復、属性・一時ファイル・ほかのプログラムが開いているファイル、
+第六次 C のパラメーター・メッセージ・文書に書いた点。期待値は両ホストで確かめた（コンソールの文字化けを除いて期待どおり）。
+3.3 に引用符が閉じていない追記先の既知の限界、3.6 にホストで違いうる書式と区切り文字を足した。
+
+### 13.10 テストと確認の結果
+
+| 件数 | コア net48 | コア net10.0 | モジュール | PSCompat |
+|---|---|---|---|---|
+| 第六次 B の後 | 2139 | 2129 | 2002 | 1205 |
+| 第六次 C の後 | **2139** | **2129** | **2038** | **1234** |
+| 増えた数 | 0 | 0 | 36 | 29 |
+
+足したテスト: `EncodingObjectNotUsableTests`・`MessageDetailTests`・`FileErrorsTests`、`CultureValidationTests` に 2 件、`GetProbedContentTests` に 1 件。PSCompat は「第六次 C」の節。クラスライブラリは変えていない。
+
+テスト担当のスクリプト 13 本（BUG-0008・0022・0023・0029・0034・0036・0038・0039・0040・0041・0043・0044・0045）を、作業フォルダーに作った配布の構成で両ホストで実行した。
+BUG-0029 は 2 回流した（2 回目で他方のホストのファイルを読む）。BUG-0008 は作業フォルダーの `docs\repo\` に今の README・CHANGELOG を写して流した。
+
+| BUG | 結果 |
+|---|---|
+| 0038 | 両ホストで `' ko-KR'`・`'ko-KR '` も受け付ける |
+| 0039 | 両ホストで `Import-Clixml`・`Receive-Job`・`Select-Object *` が新しいメッセージ（型名と渡し方） |
+| 0041 | `-Head 2`・`-First 2` が `a,b`、`-TotalCount -1` は両ホストでエラー、ヘルプの既定値は `None (all lines)` |
+| 0045 | 4 言語 × (a)(b)(c)(d) が直った文。両ホストで同じ文面 |
+| 0008 | (1)(4)(5) の文書は直っている（(4) の行はスクリプト自身が .NET の相対パスを試すもの）、5.1 の `Os.Description` に末尾の空白が無い |
+| 0022・0023・0029・0034・0036・0040・0043・0044 | 挙動は報告のとおり（文書だけで扱った）。0029 は 5.1 が `;`、7.x が `,`、他方のファイルを読むと列が分かれない |
+
+### 13.11 決めきれなかったこと・残したこと
+
+1. **PackageReleaseNotes（クラスライブラリ）は変えていない。** 依頼は「PackageReleaseNotes と `.psd1` の ReleaseNotes に第六次 C を足す」だったが、PackageReleaseNotes はクラスライブラリ（NuGet パッケージ）だけの文で、第六次 C はクラスライブラリを変えていないため。`.psd1` には足した
+2. 中国語の「以…而言」を「對…而言」（对…而言）にそろえるかは見直していない（`InvalidSourceBytes`・`InvalidBytesDuringImport`・`DetectionVerificationFailed`。中国語の話者の確認が要る）
+3. BUG-0036 の `0.1 + 0.2` は依頼と実測が違ったので、実測に合わせて書いた（13.7）
+4. BUG-0023（引用符が閉じていない追記先）、BUG-0043（BOM だけのファイル）、BUG-0044（HZ を条件付きで採るか）は 1.4.0 で検討する
+5. BUG-0044 の `EncodingWebName` の `ascii` / `us-ascii` の不統一は、文書に書いただけで直していない
+6. ディスクの空き不足の `WriteFailed` は、実際の書き込みでは確かめていない（部品のテストだけ）
+7. BUG-0039 のメッセージは、`-Encoding` の解決がパラメーター名を知らないので「文字エンコーディングとして渡された値」と書いた（PowerShell が「パラメーター 'Encoding' の引数変換を処理できません。」を前に付ける）
+
+### 13.12 直した文書
+
+- 1.3.0 仕様書: 1.3・1.5・12・14・17・18.3・19・20・21 章、26.2、27 章（第六次 C で改めた挙動）
+- 1.1.0 仕様書: 3.6、4.1、4.4（7 ビットの文字エンコーディング）、4.5、4.6・5.8（標準との差異。新しい節）
+- 1.2.0 仕様書: 2.2、2.3、13.1
+- ヘルプ（5 言語と zh-HK / zh-MO の複製）: `-Culture`・`-Encoding`・`-TotalCount`・`-UseCulture`・`-Append`（Export）・`-Raw`・`-Strategy`・`-Value`・書き込みの注意事項（裸の utf8 と既定値、逆向きの往復）・`Resolve-Encoding` と `Convert-ProbedContent` のメモリ
+- README、CHANGELOG（挙動の変更。第六次 C）、`.psd1` の `ReleaseNotes`、動作確認手順書、CLAUDE.md

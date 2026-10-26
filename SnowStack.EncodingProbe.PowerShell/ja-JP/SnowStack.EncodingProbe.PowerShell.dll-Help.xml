@@ -654,7 +654,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <maml:para>書き込み先がリンク先の存在しないシンボリックリンクの場合は、標準の Set-Content と同じく書き込まず、非終了エラー LinkTargetNotFound を報告します（リンク先を作るには、Out-ProbedFile を使うか、リンク先のパスを指定してください）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。</maml:para>
+        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。同じパイプラインで、書き込み中のファイルを後から読もうとした逆向きの場合（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt）も SamePathRoundTrip です。書き込みを取り消し、読み込み側と書き込み側の両方が SamePathRoundTrip を出し、ファイルは元のままです。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>1 回の呼び出しで同じファイルを 2 回以上指定した場合（a.txt と A.TXT、ハードリンクの 2 つの名前など）は 1 つの書き込み先として扱い、1 回書いたのと同じ結果になります。パスをパイプラインから受け取る場合も同じです（標準の Set-Content と同じ）。</maml:para>
@@ -1115,7 +1115,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>追記は、追記先のファイルに直接書きます。シンボリックリンクはたどって実体に追記し、リンク先が存在しない場合は、標準の Add-Content / Out-File -Append と同じくリンクの先にファイルを作ります。エラー（表現できない文字、整合性検査の不一致 EncodingChangeOnAppend、書き込みの失敗）で止まった場合は、その呼び出しで書いた分を取り消し、追記の前の長さに戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。</maml:para>
+        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。同じパイプラインで、書き込み中のファイルを後から読もうとした逆向きの場合（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt）も SamePathRoundTrip です。書き込みを取り消し、読み込み側と書き込み側の両方が SamePathRoundTrip を出し、ファイルは元のままです。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>1 回の指定（-LiteralPath a.txt, A.TXT など）の中で同じファイルが重なった場合は、1 回だけ追記します（7.x の標準の Add-Content と同じ。5.1 の標準は 2 件目をエラーにします）。パイプラインのレコードごとに同じファイルを渡した場合は、レコードごとに追記します（両ホストの標準と同じ）。</maml:para>
@@ -1636,7 +1636,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>出力先がリンク先の存在しないシンボリックリンクの場合は、標準の Out-File / Export-Csv と同じく、リンクの先にファイルを作ります（リンクはそのまま残ります）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。</maml:para>
+        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。同じパイプラインで、書き込み中のファイルを後から読もうとした逆向きの場合（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt）も SamePathRoundTrip です。書き込みを取り消し、読み込み側と書き込み側の両方が SamePathRoundTrip を出し、ファイルは元のままです。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。</maml:para>
@@ -2112,7 +2112,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>ほかのプロセスが書き込み先を開いている場合、上書きが失敗するのは、ファイルを開く時点ではなく、書き込みを完了する時点です（WriteFailed など）。そのときも元のファイルは変わらず、一時ファイルも残りません。1 MiB を超えるファイルの置き換えは、相手が削除の共有を許していないと失敗し、1 MiB 以内のファイルへの直接の書き込みは、相手が書き込みの共有を許していないと失敗します。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。</maml:para>
+        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。同じパイプラインで、書き込み中のファイルを後から読もうとした逆向きの場合（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt）も SamePathRoundTrip です。書き込みを取り消し、読み込み側と書き込み側の両方が SamePathRoundTrip を出し、ファイルは元のままです。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。</maml:para>
@@ -3248,7 +3248,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:para>出力先がリンク先の存在しないシンボリックリンクの場合は、標準の Out-File / Export-Csv と同じく、リンクの先にファイルを作ります（リンクはそのまま残ります）。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。</maml:para>
+        <maml:para>同じファイルかどうか（読み取り中のファイルへの書き込み SamePathRoundTrip、Convert-ProbedContent の -Destination が変換元と同じか）は、パスの文字列ではなくファイルの実体で比べます。\\?\、UNC の管理共有（\\localhost\C$\…）、\\.\、subst のドライブ、シンボリックリンク、ジャンクション、ハードリンク、大文字小文字の違いで書き方を変えても、同じファイルと判定します。Linux / macOS ではリンクを解決したパスで比べるため、ハードリンクは別のファイルとみなします。同じパイプラインで、書き込み中のファイルを後から読もうとした逆向きの場合（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt）も SamePathRoundTrip です。書き込みを取り消し、読み込み側と書き込み側の両方が SamePathRoundTrip を出し、ファイルは元のままです。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。</maml:para>
