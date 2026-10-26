@@ -311,6 +311,13 @@ public sealed class OutProbedFileCommand : ProbedFileOutputCommandBase
     /// <remarks>
     /// モジュール修飾名で呼び、利用者が同名の関数を定義していても影響を受けないようにする。
     /// -Width は指定されたときだけ渡し、省略時は Out-String の既定（ホスト依存）に任せる。
+    /// <br/>
+    /// 利用者の <c>$PSDefaultParameterValues</c>（<c>'Out-String:Width'</c> など）が内部の Out-String に効かないよう、
+    /// 新しいスコープで <c>$PSDefaultParameterValues</c> を空のローカル変数にしてから、その中でステッパブルパイプラインを組み立てる（1.3.0 第六次 B。BUG-0035）。
+    /// 標準の Out-File は Out-String を呼ばないので、この設定の影響を受けない。
+    /// 幅を自分で計算して渡す方法は採らない（5.1 のコンソールでは、-Width 省略時の幅がバッファーの幅より 1 小さいなど、既定の求め方がホストで違う）。
+    /// ステッパブルパイプラインはスクリプトブロックのスコープを作らないので、外側を <c>&amp; { }</c> にする必要がある。
+    /// 本コマンド自身の -Width への既定値（<c>'Out-ProbedFile:Width'</c>・<c>'*:Width'</c>）は、BoundParameters に入るので今までどおり効く。
     /// </remarks>
     private SteppablePipeline CreateFormatter()
     {
@@ -321,7 +328,18 @@ public sealed class OutProbedFileCommand : ProbedFileOutputCommandBase
             command += " -Width " + this.Width.ToString(CultureInfo.InvariantCulture);
         }
 
-        return ScriptBlock.Create(command).GetSteppablePipeline(CommandOrigin.Internal);
+        string wrapper =
+            "& {\n"
+            + "    begin {\n"
+            + "        $PSDefaultParameterValues = @{}\n"
+            + "        $__probedFormatter = [System.Management.Automation.ScriptBlock]::Create('" + command + "').GetSteppablePipeline([System.Management.Automation.CommandOrigin]::Internal)\n"
+            + "        $__probedFormatter.Begin($true)\n"
+            + "    }\n"
+            + "    process { $__probedFormatter.Process($_) }\n"
+            + "    end { $__probedFormatter.End(); $__probedFormatter.Dispose() }\n"
+            + "}";
+
+        return ScriptBlock.Create(wrapper).GetSteppablePipeline(CommandOrigin.Internal);
     }
 
     /// <summary>

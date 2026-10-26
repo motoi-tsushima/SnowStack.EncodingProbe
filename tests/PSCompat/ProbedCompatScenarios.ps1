@@ -3017,6 +3017,25 @@ Add-Scenario 'SixthB/TooLarge' {
     'resolve={0} get={1} convert={2} head={3} // {4}' -f $resolve, $get, $convert, $head, (Format-FileBytes (Join-Path $d 'a.csv'))
 }.GetNewClosure()
 
+# BUG-0035: 利用者の $PSDefaultParameterValues は、内部の Out-String に効かない（Out-File と同じ）。Out-ProbedFile 自身の -Width への既定値は効く
+foreach ($f7Key in @('Out-String:Width', 'Out-String:*', 'Out-ProbedFile:Width', '*:Width')) {
+    $f7Index++
+    $key = $f7Key
+    $p = Join-Path $f7Dir ("width_{0}.txt" -f $f7Index)
+    $q = Join-Path $f7Dir ("width_{0}s.txt" -f $f7Index)
+    Add-Scenario "SixthB/DefaultParameterValues/$key" {
+        $objects = [pscustomobject]@{ Name = ('a' * 20); Value = ('b' * 40); N = 1 }, [pscustomobject]@{ Name = 'c'; Value = 'd'; N = 2 }
+        $global:PSDefaultParameterValues[$key] = 30
+        try {
+            $objects | Out-ProbedFile -LiteralPath $p -Encoding utf8NoBOM -Width 200 -ErrorAction Stop
+            $objects | Out-ProbedFile -LiteralPath $q -Encoding utf8NoBOM -ErrorAction Stop
+        }
+        finally { $global:PSDefaultParameterValues.Remove($key) }
+        $max = ([IO.File]::ReadAllLines($q) | ForEach-Object { $_.TrimEnd().Length } | Measure-Object -Maximum).Maximum
+        'explicitWidthKept={0} maxLineLength={1}' -f (([IO.File]::ReadAllLines($p) | Where-Object { $_ -like 'aaa*' }) -match ' 1$').Count, $max
+    }.GetNewClosure()
+}
+
 # （第六次 B のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------
