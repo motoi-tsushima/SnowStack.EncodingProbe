@@ -232,7 +232,7 @@ Show-Bytes .\same_asneeded.csv
 
 ## 4. 第六次の後 — 改めた挙動（A・B・C）
 
-テスト担当のブラックボックステスト（第 2 段階）への対応で変えた挙動を確かめる。根拠は仕様書 25〜27 章、実装記録 11〜13 章。
+テスト担当のブラックボックステスト（第 1 段階）への対応で変えた挙動を確かめる。根拠は仕様書 25〜27 章、実装記録 11〜13 章。
 
 ### 4.1 `ansi` / `oem`（第六次 A。BUG-0032）
 
@@ -370,7 +370,7 @@ Show-Bytes .\ms.csv                                    # 5.1 は ; （3B）、7.
 | 4 | **配布フォルダー（`publish/SnowStack.EncodingProbe.PowerShell/`）に `LICENSE.txt` と `THIRD-PARTY-NOTICES.txt` を置いた**（MIT License の表示の条件。仕様書 5.3） |
 | 5 | `THIRD-PARTY-NOTICES.txt` に PowerShell の節があり、ライセンス本文が原文のまま |
 | 6 | MAML ヘルプを `core\` と `desktop\` の下の 7 フォルダー（計 14 か所）に配置した |
-| 7 | クリーンな環境（Windows Sandbox など）で、PSGallery 形式のモジュールを 5.1 と 7.x にインストールし、1〜3 章の主要な項目を再確認した |
+| 7 | クリーンな環境（Windows Sandbox など）で、PSGallery 形式のモジュールを 5.1 と 7.x にインストールし、1〜4 章の主要な項目を再確認した |
 | 8 | CHANGELOG.md、README.md に 1.3.0 の節がある |
 
 ---

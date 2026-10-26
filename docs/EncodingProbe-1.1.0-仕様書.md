@@ -539,7 +539,7 @@ $raw -replace 'foo','bar' | Set-ProbedContent b.txt -NoNewline
 | 裸の `utf8` | 5.1 は BOM 付き、7.x は BOM 無し | 拒否する（3.6） | ホストで意味が違う |
 | 文字列以外の値の文字列化（BUG-0036） | 現在のカルチャーの書式（ja-JP の日付は `2026/10/15 14:30:00`、de-DE の `1.5` は `1,5`） | **不変カルチャーの書式**（日付は `10/15/2026 14:30:00`、`1.5` は `1.5`。カルチャーによらない） | PowerShell の型変換（`LanguagePrimitives`）で文字列にするため。ヘルプの `-Value` に書いてある。挙動は変えない |
 | 表現できない文字 | `?` などに置き換えて書く | `UnrepresentableCharacter` で止め、書いた分を元に戻す（1.3.0 仕様書 16.4） | 文字を黙って失わない |
-| `-Value` の配列の `$null` の要素 | 空行として書く | 空行として書く（1.3.0 第六次 A で標準にそろえた。BUG-0033） | — |
+| `-Value` の配列の `$null` の要素 | 飛ばす（書かない） | 飛ばす（1.3.0 第六次 A で標準にそろえた。BUG-0033。それまでは空行を書いていた） | — |
 
 **同じモジュールの中でも、文字列化の規則は 2 通りある。** `Set-` / `Add-ProbedContent` は不変カルチャー、`Out-ProbedFile`（`Out-String` の整形）と
 `Export-ProbedCsv`（1.3.0 仕様書 17 章）は現在のカルチャー。同じ日付を `Set-ProbedContent` と `Export-ProbedCsv` で書くと書式が違う。
