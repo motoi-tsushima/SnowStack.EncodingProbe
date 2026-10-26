@@ -290,6 +290,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.CsvHeaderAlreadyPresentInParameter] =
                     "'{0}' was not read because the column name \"{1}\" is specified more than once in -Header (column names are not case-sensitive).",
+
+                [MessageKey.FileWriteFailed] =
+                    "'{0}' could not be written (error code {1}).",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -525,6 +528,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.CsvHeaderAlreadyPresentInParameter] =
                     "-Header に列名 \"{1}\" が複数回指定されているため、'{0}' を読み込みませんでした（列名の大文字と小文字は区別しません）。",
+
+                [MessageKey.FileWriteFailed] =
+                    "'{0}' に書き込めませんでした（エラー コード {1}）。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -762,6 +768,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.CsvHeaderAlreadyPresentInParameter] =
                     "-Header에 열 이름 \"{1}\"이(가) 여러 번 지정되어 있으므로 '{0}'을(를) 읽지 않았습니다(열 이름은 대/소문자를 구분하지 않습니다).",
+
+                [MessageKey.FileWriteFailed] =
+                    "'{0}'에 쓰지 못했습니다(오류 코드 {1}).",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -990,6 +999,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.CsvHeaderAlreadyPresentInParameter] =
                     "-Header 中欄位名稱 \"{1}\" 指定了多次，因此未讀取 '{0}'（欄位名稱不區分大小寫）。",
+
+                [MessageKey.FileWriteFailed] =
+                    "無法寫入 '{0}'（錯誤碼 {1}）。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -1218,6 +1230,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.CsvHeaderAlreadyPresentInParameter] =
                     "-Header 中列名 \"{1}\" 指定了多次，因此未读取 '{0}'（列名不区分大小写）。",
+
+                [MessageKey.FileWriteFailed] =
+                    "无法写入 '{0}'（错误代码 {1}）。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

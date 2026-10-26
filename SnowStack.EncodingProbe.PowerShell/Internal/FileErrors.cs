@@ -52,13 +52,25 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         }
 
         /// <summary>
-        /// 書き込めなかった場合の例外（エラー ID WriteFailed に使う）。共有違反・ロック違反だけを「ほかのプログラムが使用中」に包み直し、
-        /// それ以外（ディスクの空き不足など）は元の例外のまま返す。
+        /// 書き込めなかった場合の例外（エラー ID WriteFailed に使う）。共有違反・ロック違反は「ほかのプログラムが使用中」、
+        /// それ以外（ディスクの空き不足など）はエラー コードを示す（読み込みの <see cref="ReadFailed"/> と同じ形。1.3.0 第六次 C）。
         /// </summary>
+        /// <remarks>
+        /// 第六次 B までは、共有違反以外は .NET の例外のまま返していた（文言が 5.1 と 7.x で違い、7.x では英語になる）。
+        /// </remarks>
         public static IOException WriteFailed(string path, IOException original)
-            => original is LocalizedIOException || !IsInUse(original)
-                ? original
-                : new LocalizedIOException(ValidationMessages.FileInUseForWrite(path), original.HResult);
+        {
+            if (original is LocalizedIOException)
+            {
+                return original;
+            }
+
+            string message = IsInUse(original)
+                ? ValidationMessages.FileInUseForWrite(path)
+                : ValidationMessages.FileWriteFailed(path, "0x" + original.HResult.ToString("X8", CultureInfo.InvariantCulture));
+
+            return new LocalizedIOException(message, original.HResult);
+        }
 
         private static bool IsInUse(IOException exception)
             => exception.HResult == SharingViolation || exception.HResult == LockViolation;

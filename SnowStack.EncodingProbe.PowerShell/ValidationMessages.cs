@@ -429,5 +429,11 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string CsvHeaderAlreadyPresentInParameter(string path, string name)
             => MessageCatalog.Format(MessageKey.CsvHeaderAlreadyPresentInParameter, path, name);
+
+        /// <summary>
+        /// 共有違反以外の理由（ディスクの空き不足など）で書き込めなかった（エラー コードを示す。1.3.0 第六次 C）
+        /// </summary>
+        public static string FileWriteFailed(string path, string code)
+            => MessageCatalog.Format(MessageKey.FileWriteFailed, path, code);
     }
 }

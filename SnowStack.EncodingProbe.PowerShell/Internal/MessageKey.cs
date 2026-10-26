@@ -230,5 +230,10 @@
 
         /// <summary>-Header の値で列名が重複している（読まなかったファイルのパスを示す。1.3.0 第六次 C。BUG-0045 (a)）</summary>
         CsvHeaderAlreadyPresentInParameter,
+
+        // ---- 1.3.0 第六次 C（書き込みの失敗） ----
+
+        /// <summary>共有違反以外の理由（ディスクの空き不足など）で書き込めなかった（エラー コードを示す。1.3.0 第六次 C）</summary>
+        FileWriteFailed,
     }
 }
