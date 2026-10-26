@@ -82,9 +82,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             HeadLineCut cut = HeadLineCutter.Cut(path, lineCount);
 
             // 0 バイトのファイルは、既存の規則（全体の判定）と同じに扱う（仕様書 2.6）
-            EncodingInformation information = cut.Bytes.Length == 0
-                ? EncodingProbe.Detect(path, detectorOptions)
-                : EncodingProbe.Detect(cut.Bytes, detectorOptions);
+            // 0 バイトのファイルは、全体の判定と同じ（切り出した 0 バイトがファイル全体）。
+            // クラスライブラリの Detect(path) は FileShare.Read で開くので使わない（1.3.0 第六次 B。BUG-0026）
+            EncodingInformation information = EncodingProbe.Detect(cut.Bytes, detectorOptions);
 
             return new HeadLineDetectionResult(information, cut.Unit, cut.Bytes);
         }

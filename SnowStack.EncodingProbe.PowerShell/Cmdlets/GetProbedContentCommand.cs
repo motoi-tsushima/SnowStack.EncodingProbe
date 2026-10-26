@@ -130,11 +130,11 @@ public sealed class GetProbedContentCommand : ProbedContentCommandBase
         }
         catch (IOException exception)
         {
-            WriteError(CreateError(exception, "ReadFailed", ErrorCategory.ReadError, file));
+            WriteError(CreateError(FileErrors.ReadFailed(file, exception), "ReadFailed", ErrorCategory.ReadError, file));
         }
         catch (UnauthorizedAccessException exception)
         {
-            WriteError(CreateError(exception, "ReadAccessDenied", ErrorCategory.PermissionDenied, file));
+            WriteError(CreateError(FileErrors.ReadAccessDenied(file, exception), "ReadAccessDenied", ErrorCategory.PermissionDenied, file));
         }
     }
 

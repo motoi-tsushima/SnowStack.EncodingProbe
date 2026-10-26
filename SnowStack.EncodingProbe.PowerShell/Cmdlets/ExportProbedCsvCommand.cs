@@ -427,6 +427,15 @@ public sealed class ExportProbedCsvCommand : ProbedFileOutputCommandBase
             ThrowTerminatingError(CreateError(
                 exception, DetectionVerificationException.ErrorId, ErrorCategory.InvalidData, this.OutputPath));
         }
+        catch (IOException exception)
+        {
+            // 追記先を読めない（1.3.0 第六次 B。BUG-0026）
+            ThrowTerminatingError(CreateError(FileErrors.ReadFailed(this.OutputPath, exception), "ReadFailed", ErrorCategory.ReadError, this.OutputPath));
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            ThrowTerminatingError(CreateError(FileErrors.ReadAccessDenied(this.OutputPath, exception), "ReadAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath));
+        }
 
         throw new InvalidOperationException();  // ThrowTerminatingError は戻らないが、コンパイラには分からない
     }
@@ -486,11 +495,11 @@ public sealed class ExportProbedCsvCommand : ProbedFileOutputCommandBase
         }
         catch (IOException exception)
         {
-            ThrowTerminatingError(CreateError(exception, "ReadFailed", ErrorCategory.ReadError, this.OutputPath));
+            ThrowTerminatingError(CreateError(FileErrors.ReadFailed(this.OutputPath, exception), "ReadFailed", ErrorCategory.ReadError, this.OutputPath));
         }
         catch (UnauthorizedAccessException exception)
         {
-            ThrowTerminatingError(CreateError(exception, "ReadAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath));
+            ThrowTerminatingError(CreateError(FileErrors.ReadAccessDenied(this.OutputPath, exception), "ReadAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath));
         }
 
         throw new InvalidOperationException();  // ThrowTerminatingError は戻らないが、コンパイラには分からない

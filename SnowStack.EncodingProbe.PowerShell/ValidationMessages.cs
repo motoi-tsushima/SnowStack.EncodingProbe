@@ -357,5 +357,29 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string WriteAccessDenied(string path)
             => MessageCatalog.Format(MessageKey.WriteAccessDenied, path);
+
+        /// <summary>
+        /// ほかのプログラムが共有を許さずに開いているため、読み込めなかった
+        /// </summary>
+        public static string FileInUseForRead(string path)
+            => MessageCatalog.Format(MessageKey.FileInUseForRead, path);
+
+        /// <summary>
+        /// 読み込めなかった（共有違反・権限以外の理由。{1} は HRESULT）
+        /// </summary>
+        public static string FileReadFailed(string path, string code)
+            => MessageCatalog.Format(MessageKey.FileReadFailed, path, code);
+
+        /// <summary>
+        /// 読み込む権限が無い
+        /// </summary>
+        public static string ReadAccessDenied(string path)
+            => MessageCatalog.Format(MessageKey.ReadAccessDenied, path);
+
+        /// <summary>
+        /// ほかのプログラムが共有を許さずに開いているため、書き込めなかった
+        /// </summary>
+        public static string FileInUseForWrite(string path)
+            => MessageCatalog.Format(MessageKey.FileInUseForWrite, path);
     }
 }

@@ -407,16 +407,17 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
 
         try
         {
-            original = File.ReadAllBytes(file);
+            // Get-ProbedContent と同じ共有モードで読む（1.3.0 第六次 B。BUG-0026）
+            original = SharedFileReader.ReadAll(file, long.MaxValue, () => new InvalidOperationException());
         }
         catch (IOException exception)
         {
-            WriteError(CreateError(exception, "ReadFailed", ErrorCategory.ReadError, file));
+            WriteError(CreateError(FileErrors.ReadFailed(file, exception), "ReadFailed", ErrorCategory.ReadError, file));
             return;
         }
         catch (UnauthorizedAccessException exception)
         {
-            WriteError(CreateError(exception, "ReadAccessDenied", ErrorCategory.PermissionDenied, file));
+            WriteError(CreateError(FileErrors.ReadAccessDenied(file, exception), "ReadAccessDenied", ErrorCategory.PermissionDenied, file));
             return;
         }
 
@@ -881,7 +882,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
         {
             overwrite?.Rollback();
             WriteError(RollbackNotice.Attach(
-                CreateError(exception, "WriteFailed", ErrorCategory.WriteError, target), target, overwrite?.KeptBackupPath));
+                CreateError(FileErrors.WriteFailed(target, exception), "WriteFailed", ErrorCategory.WriteError, target), target, overwrite?.KeptBackupPath));
         }
         catch (UnauthorizedAccessException exception)
         {

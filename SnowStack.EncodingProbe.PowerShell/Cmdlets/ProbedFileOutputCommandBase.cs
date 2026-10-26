@@ -170,6 +170,19 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
 
             throw;  // ThrowTerminatingError は戻らないが、コンパイラには分からない
         }
+        catch (IOException exception)
+        {
+            // 出力先・追記先を読めない（1.3.0 第六次 B。BUG-0026）
+            ThrowTerminatingError(CreateError(FileErrors.ReadFailed(this.OutputPath, exception), "ReadFailed", ErrorCategory.ReadError, this.OutputPath));
+
+            throw;
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            ThrowTerminatingError(CreateError(FileErrors.ReadAccessDenied(this.OutputPath, exception), "ReadAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath));
+
+            throw;
+        }
     }
 
     /// <summary>
@@ -225,7 +238,7 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
             // 書きかけのファイルを残さない（第五次）
             string? kept = RollbackOutput();
             ThrowTerminatingError(RollbackNotice.Attach(
-                CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this.OutputPath), this.OutputPath, kept));
+                CreateError(FileErrors.WriteFailed(this.OutputPath, exception), "WriteFailed", ErrorCategory.WriteError, this.OutputPath), this.OutputPath, kept));
         }
         catch (UnauthorizedAccessException exception)
         {
@@ -263,7 +276,7 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
         {
             Cleanup();
             ThrowTerminatingError(RollbackNotice.Attach(
-                CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this.OutputPath), this.OutputPath, writer.KeptBackupPath));
+                CreateError(FileErrors.WriteFailed(this.OutputPath, exception), "WriteFailed", ErrorCategory.WriteError, this.OutputPath), this.OutputPath, writer.KeptBackupPath));
         }
         catch (UnauthorizedAccessException exception)
         {
@@ -392,7 +405,7 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
         }
         catch (IOException exception)
         {
-            ThrowTerminatingError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this.OutputPath));
+            ThrowTerminatingError(CreateError(FileErrors.WriteFailed(this.OutputPath, exception), "WriteFailed", ErrorCategory.WriteError, this.OutputPath));
         }
         catch (UnauthorizedAccessException exception)
         {

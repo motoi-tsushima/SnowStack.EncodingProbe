@@ -2935,6 +2935,38 @@ foreach ($f7Name in $f7Writers.Keys) {
     }.GetNewClosure()
 }
 
+# BUG-0026: ほかのプログラムが開いているファイル。判定・変換の読み取りは Get-ProbedContent と同じ共有（ReadWrite）で開き、開けなければ ID の付いた 5 言語のメッセージ
+$f7Readers = [ordered]@{
+    'Resolve'      = { param($p, $d) Get-ChildItem -LiteralPath $d -Filter *.csv | Resolve-Encoding | ForEach-Object { $_.CodePage } }
+    'Get'          = { param($p, $d) @(Get-ProbedContent -LiteralPath $p).Count }
+    'Import'       = { param($p, $d) @(Import-ProbedCsv -LiteralPath $p).Count }
+    'Convert'      = { param($p, $d) Convert-ProbedContent -LiteralPath $p -Destination (Join-Path $d 'out') -Encoding utf8BOM -PassThru | ForEach-Object { $_.Changed } }
+    'EncodingFrom' = { param($p, $d) Set-ProbedContent -LiteralPath (Join-Path $d 'new.txt') -Value x -EncodingFrom $p }
+    'Add'          = { param($p, $d) Add-ProbedContent -LiteralPath $p -Value '9,9' }
+    'OutAppend'    = { param($p, $d) '9,9' | Out-ProbedFile -LiteralPath $p -Append }
+    'ExportAppend' = { param($p, $d) [pscustomobject]@{ A = '9'; B = '9' } | Export-ProbedCsv -LiteralPath $p -Append }
+}
+foreach ($f7Share in @('ReadWrite', 'None')) {
+    foreach ($f7Name in $f7Readers.Keys) {
+        $f7Index++
+        $rb = $f7Readers[$f7Name]; $share = $f7Share
+        $d = Join-Path $f7Dir ("open_{0}" -f $f7Index)
+        Add-Scenario "SixthB/OpenedByAnother/$f7Share/$f7Name" {
+            [void](New-Item -ItemType Directory -Path $d)
+            [void](New-Item -ItemType Directory -Path (Join-Path $d 'out'))
+            foreach ($n in 'a', 'b', 'c') { [IO.File]::WriteAllBytes((Join-Path $d "$n.csv"), [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A)) }
+            $p = Join-Path $d 'b.csv'
+            $other = New-Object IO.FileStream($p, [IO.FileMode]::Open, [IO.FileAccess]::ReadWrite, [IO.FileShare]$share)
+            try {
+                $messages = New-Object System.Collections.Generic.List[string]
+                $outcome = @(try { & $rb $p $d 2>&1 | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $messages.Add($_.Exception.Message); 'ERR ' + $_.FullyQualifiedErrorId.Split(',')[0] } else { [string]$_ } } } catch { $messages.Add($_.Exception.Message); 'TERM ' + $_.FullyQualifiedErrorId.Split(',')[0] })
+            }
+            finally { $other.Dispose() }
+            '{0} // {1} // {2}' -f ($outcome -join ','), ($messages -join ' | '), (Format-FileBytes $p)
+        }.GetNewClosure()
+    }
+}
+
 # （第六次 B のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

@@ -257,6 +257,18 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.WriteAccessDenied] =
                     "'{0}' was not written because access to it was denied. Check the permissions of the file (for a new file, of the folder).",
+
+                [MessageKey.FileInUseForRead] =
+                    "'{0}' could not be read because another program has it open without allowing others to read it. Close the program and try again.",
+
+                [MessageKey.FileReadFailed] =
+                    "'{0}' could not be read (error code {1}).",
+
+                [MessageKey.ReadAccessDenied] =
+                    "'{0}' could not be read because access to it was denied. Check the permissions of the file.",
+
+                [MessageKey.FileInUseForWrite] =
+                    "'{0}' was not written because another program has it open without allowing others to write to it. Close the program and try again.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -456,6 +468,18 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.WriteAccessDenied] =
                     "'{0}' へのアクセスが拒否されたため、書き込みませんでした。ファイル（新しいファイルの場合はフォルダー）のアクセス権を確かめてください。",
+
+                [MessageKey.FileInUseForRead] =
+                    "'{0}' はほかのプログラムが読み込みを許さずに開いているため、読み込めませんでした。そのプログラムを閉じてから、もう一度実行してください。",
+
+                [MessageKey.FileReadFailed] =
+                    "'{0}' を読み込めませんでした（エラー コード {1}）。",
+
+                [MessageKey.ReadAccessDenied] =
+                    "'{0}' へのアクセスが拒否されたため、読み込めませんでした。ファイルのアクセス権を確かめてください。",
+
+                [MessageKey.FileInUseForWrite] =
+                    "'{0}' はほかのプログラムが書き込みを許さずに開いているため、書き込みませんでした。そのプログラムを閉じてから、もう一度実行してください。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -657,6 +681,18 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.WriteAccessDenied] =
                     "'{0}'에 대한 액세스가 거부되어 쓰지 않았습니다. 파일(새 파일인 경우에는 폴더)의 액세스 권한을 확인하십시오.",
+
+                [MessageKey.FileInUseForRead] =
+                    "'{0}'은(는) 다른 프로그램이 읽기를 허용하지 않고 열어 두었기 때문에 읽지 못했습니다. 그 프로그램을 닫은 후 다시 실행하십시오.",
+
+                [MessageKey.FileReadFailed] =
+                    "'{0}'을(를) 읽지 못했습니다(오류 코드 {1}).",
+
+                [MessageKey.ReadAccessDenied] =
+                    "'{0}'에 대한 액세스가 거부되어 읽지 못했습니다. 파일의 액세스 권한을 확인하십시오.",
+
+                [MessageKey.FileInUseForWrite] =
+                    "'{0}'은(는) 다른 프로그램이 쓰기를 허용하지 않고 열어 두었기 때문에 쓰지 않았습니다. 그 프로그램을 닫은 후 다시 실행하십시오.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -849,6 +885,18 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.WriteAccessDenied] =
                     "存取 '{0}' 遭到拒絕，因此未寫入。請確認檔案（若為新檔案，則為資料夾）的存取權限。",
+
+                [MessageKey.FileInUseForRead] =
+                    "'{0}' 已由其他程式以不允許讀取的方式開啟，因此無法讀取。請關閉該程式後再執行一次。",
+
+                [MessageKey.FileReadFailed] =
+                    "無法讀取 '{0}'（錯誤碼 {1}）。",
+
+                [MessageKey.ReadAccessDenied] =
+                    "存取 '{0}' 遭到拒絕，因此無法讀取。請確認檔案的存取權限。",
+
+                [MessageKey.FileInUseForWrite] =
+                    "'{0}' 已由其他程式以不允許寫入的方式開啟，因此未寫入。請關閉該程式後再執行一次。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -1041,6 +1089,18 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.WriteAccessDenied] =
                     "访问 '{0}' 被拒绝，因此未写入。请确认文件（若为新文件，则为文件夹）的访问权限。",
+
+                [MessageKey.FileInUseForRead] =
+                    "'{0}' 已被其他程序以不允许读取的方式打开，因此无法读取。请关闭该程序后再执行一次。",
+
+                [MessageKey.FileReadFailed] =
+                    "无法读取 '{0}'（错误代码 {1}）。",
+
+                [MessageKey.ReadAccessDenied] =
+                    "访问 '{0}' 被拒绝，因此无法读取。请确认文件的访问权限。",
+
+                [MessageKey.FileInUseForWrite] =
+                    "'{0}' 已被其他程序以不允许写入的方式打开，因此未写入。请关闭该程序后再执行一次。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

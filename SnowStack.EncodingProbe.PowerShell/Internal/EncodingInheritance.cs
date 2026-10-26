@@ -61,7 +61,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 throw new EncodingDetectionException(ValidationMessages.FileTooLargeToDetect(path), path);
             }
 
-            EncodingInformation information = EncodingProbe.Detect(File.ReadAllBytes(path), detectorOptions);
+            // Get-ProbedContent と同じ共有モードで読む（ほかのプログラムが書き込み用に開いていても読める。1.3.0 第六次 B。BUG-0026）
+            byte[] content = SharedFileReader.ReadAll(
+                path, MaxDetectableLength, () => new EncodingDetectionException(ValidationMessages.FileTooLargeToDetect(path), path));
+            EncodingInformation information = EncodingProbe.Detect(content, detectorOptions);
 
             if (information.CodePage < 0)
             {

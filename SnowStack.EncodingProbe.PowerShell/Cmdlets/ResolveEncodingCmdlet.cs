@@ -145,13 +145,63 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
                     resolvedPath));
                 return;
             }
+            catch (IOException exception)
+            {
+                ReportReadFailure(exception, resolvedPath);
+                return;
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                ReportReadFailure(exception, resolvedPath);
+                return;
+            }
         }
         else
         {
-            encodingInfomation = EncodingProbe.Detect(resolvedPath, detectorOptions);
+            // ファイル全体を、Get-ProbedContent と同じ共有モードで読んでから判定する（1.3.0 第六次 B。BUG-0026）。
+            // 読む前に大きさを調べ、上限を超えていれば -DetectionLineCount を案内する（BUG-0030）。
+            // 読めない・大きすぎるは、ファイルごとの失敗として非終了エラーにして次のファイルへ進む
+            // （既存の「ファイルが無い」と、-DetectionLineCount の上限を超える場合は、終了エラーのまま。利用者の決定）
+            try
+            {
+                byte[] content = SharedFileReader.ReadAll(
+                    resolvedPath,
+                    EncodingInheritance.MaxDetectableLength,
+                    () => new EncodingDetectionException(ValidationMessages.FileTooLargeToDetectUseLineCount(resolvedPath), resolvedPath));
+                encodingInfomation = EncodingProbe.Detect(content, detectorOptions);
+            }
+            catch (EncodingDetectionException exception)
+            {
+                WriteError(new ErrorRecord(exception, exception.ErrorId, ErrorCategory.InvalidData, resolvedPath));
+                return;
+            }
+            catch (IOException exception)
+            {
+                ReportReadFailure(exception, resolvedPath);
+                return;
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                ReportReadFailure(exception, resolvedPath);
+                return;
+            }
         }
 
         // 結果をパイプラインに出力
         WriteObject(encodingInfomation);
+    }
+
+    /// <summary>
+    /// 読めなかったファイルを、5 言語のメッセージの非終了エラーとして報告する（1.3.0 第六次 B。BUG-0026）
+    /// </summary>
+    private void ReportReadFailure(Exception exception, string path)
+    {
+        if (exception is UnauthorizedAccessException denied)
+        {
+            WriteError(new ErrorRecord(FileErrors.ReadAccessDenied(path, denied), "ReadAccessDenied", ErrorCategory.PermissionDenied, path));
+            return;
+        }
+
+        WriteError(new ErrorRecord(FileErrors.ReadFailed(path, (IOException)exception), "ReadFailed", ErrorCategory.ReadError, path));
     }
 }

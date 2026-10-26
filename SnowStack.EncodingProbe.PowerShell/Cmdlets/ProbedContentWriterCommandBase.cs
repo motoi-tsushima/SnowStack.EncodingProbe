@@ -265,7 +265,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
             catch (IOException exception)
             {
                 WriteError(RollbackNotice.Attach(
-                    CreateError(exception, "WriteFailed", ErrorCategory.WriteError, entry.Path), entry.Path, writer.KeptBackupPath));
+                    CreateError(FileErrors.WriteFailed(entry.Path, exception), "WriteFailed", ErrorCategory.WriteError, entry.Path), entry.Path, writer.KeptBackupPath));
             }
             catch (UnauthorizedAccessException exception)
             {
@@ -339,6 +339,19 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
 
             return null;
         }
+        catch (IOException exception)
+        {
+            // 書き込み先・追記先を判定のために読めない（1.3.0 第六次 B。BUG-0026。以前は生の IOException の終了エラーだった）
+            WriteError(CreateError(FileErrors.ReadFailed(file, exception), "ReadFailed", ErrorCategory.ReadError, file));
+
+            return null;
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            WriteError(CreateError(FileErrors.ReadAccessDenied(file, exception), "ReadAccessDenied", ErrorCategory.PermissionDenied, file));
+
+            return null;
+        }
 
         // ファイルを開かずに分かる失敗は、ShouldProcess より前に報告する。
         // -WhatIf でも、実行すれば失敗することが分かるようにするため（1.2.0 手動確認後の修正）
@@ -372,7 +385,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         }
         catch (IOException exception)
         {
-            WriteError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, file));
+            WriteError(CreateError(FileErrors.WriteFailed(file, exception), "WriteFailed", ErrorCategory.WriteError, file));
         }
         catch (UnauthorizedAccessException exception)
         {
@@ -560,7 +573,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         {
             // 書きかけのファイルを残さない（第五次）。-ErrorAction Stop では WriteError が戻らないので、先に元に戻す
             string? kept = RollbackTarget(entry);
-            WriteError(RollbackNotice.Attach(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, file), file, kept));
+            WriteError(RollbackNotice.Attach(CreateError(FileErrors.WriteFailed(file, exception), "WriteFailed", ErrorCategory.WriteError, file), file, kept));
         }
         catch (UnauthorizedAccessException exception)
         {

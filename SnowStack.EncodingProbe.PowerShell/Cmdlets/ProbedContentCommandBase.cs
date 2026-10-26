@@ -183,6 +183,19 @@ public abstract class ProbedContentCommandBase : PSCmdlet
 
             throw;  // ThrowTerminatingError は戻らないが、コンパイラには分からない
         }
+        catch (IOException exception)
+        {
+            // 参照ファイルを読めない（1.3.0 第六次 B。BUG-0026）
+            ThrowTerminatingError(CreateError(FileErrors.ReadFailed(reference, exception), "ReadFailed", ErrorCategory.ReadError, reference));
+
+            throw;
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            ThrowTerminatingError(CreateError(FileErrors.ReadAccessDenied(reference, exception), "ReadAccessDenied", ErrorCategory.PermissionDenied, reference));
+
+            throw;
+        }
     }
 
     /// <summary>

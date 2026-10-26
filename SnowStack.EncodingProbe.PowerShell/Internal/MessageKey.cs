@@ -184,5 +184,19 @@
 
         /// <summary>書き込む権限が無い（ファイルの ACL・フォルダーの権限など。読み取り専用属性は FileIsReadOnly）</summary>
         WriteAccessDenied,
+
+        // ---- 1.3.0 第六次 B（BUG-0026） ----
+
+        /// <summary>ほかのプログラムが共有を許さずに開いているため、読み込めなかった</summary>
+        FileInUseForRead,
+
+        /// <summary>読み込めなかった（共有違反・権限以外の理由。{1} は HRESULT）</summary>
+        FileReadFailed,
+
+        /// <summary>読み込む権限が無い</summary>
+        ReadAccessDenied,
+
+        /// <summary>ほかのプログラムが共有を許さずに開いているため、書き込めなかった</summary>
+        FileInUseForWrite,
     }
 }
