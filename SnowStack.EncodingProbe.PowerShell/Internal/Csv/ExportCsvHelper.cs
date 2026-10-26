@@ -48,7 +48,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal.Csv
         {
             _delimiter = delimiter;
             _quoteKind = quoteKind;
-            _quoteFields = quoteFields == null ? null : new HashSet<string>(quoteFields, StringComparer.OrdinalIgnoreCase);
+            // 移植元: StringComparer.OrdinalIgnoreCase。5.1 でも .NET 10 と同じ結果にするため、本プロジェクトの比較器にした（第六次。BUG-0020）
+            _quoteFields = quoteFields == null ? null : new HashSet<string>(quoteFields, CsvNameComparer.Instance);
             _outputString = new StringBuilder(128);
             _asNeededQuoteTriggers = new[] { delimiter, '\n', '"' };
         }
@@ -196,12 +197,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal.Csv
                     {
                         value = dictionary[propertyName]?.ToString();
                     }
-                    else if (mshObject.Properties[propertyName] is PSPropertyInfo property)
+                    // 移植元: mshObject.Properties[propertyName]。列名の照合と同じ規則で引く（第六次。BUG-0020）
+                    else if (CsvPropertyViews.FindProperty(mshObject, propertyName) is PSPropertyInfo property)
                     {
                         value = GetToStringValueForProperty(property);
                     }
                 }
-                else if (mshObject.Properties[propertyName] is PSPropertyInfo property)
+                // 移植元: mshObject.Properties[propertyName]。列名の照合と同じ規則で引く（第六次。BUG-0020）
+                else if (CsvPropertyViews.FindProperty(mshObject, propertyName) is PSPropertyInfo property)
                 {
                     value = GetToStringValueForProperty(property);
                 }

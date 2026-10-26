@@ -2812,6 +2812,57 @@ foreach ($f6Name in $f6Iso.Keys) {
     }.GetNewClosure()
 }
 
+# BUG-0020: CSV の列名の比較（Import の重複の検査・-Append の照合と値・-QuoteFields）は、5.1 でも .NET 10 の OrdinalIgnoreCase と同じ。
+foreach ($f6Pair in @(@(0xC4, 0xE4), @(0x1C5, 0x1C6), @(0x1C5, 0x1C4), @(0x3C2, 0x3A3), @(0x10400, 0x10428), @(0xDF, 0x53), @(0x130, 0x69), @(0x212A, 0x6B), @(0xAD, 0x2D))) {
+    $f6Index++
+    $h = [char]::ConvertFromUtf32($f6Pair[0]); $pn = [char]::ConvertFromUtf32($f6Pair[1])
+    $p = Join-Path $f6Dir ("name_{0}.csv" -f $f6Index)
+    $q = Join-Path $f6Dir ("name_{0}q.csv" -f $f6Index)
+    Add-Scenario ("Sixth/CsvName/{0:X4}-{1:X4}" -f $f6Pair[0], $f6Pair[1]) {
+        $utf8 = New-Object System.Text.UTF8Encoding($false)
+        [IO.File]::WriteAllText($p, "$h,$pn`r`n1,2`r`n", $utf8)
+        $import = Invoke-F2 { @(Import-ProbedCsv -LiteralPath $p).Count }
+        [IO.File]::WriteAllText($p, "$h,Z`r`n1,2`r`n", $utf8)
+        $o = New-Object psobject; $o | Add-Member NoteProperty $pn 'x'; $o | Add-Member NoteProperty 'Z' 'y'
+        $append = Invoke-F2 { $o | Export-ProbedCsv -LiteralPath $p -Append }
+        $quote = Invoke-F2 { $o | Export-ProbedCsv -LiteralPath $q -QuoteFields $h }
+        'import={0} append={1} // {2} quote={3} // {4}' -f $import, $append, (Format-FileBytes $p), $quote, (Format-FileBytes $q)
+    }.GetNewClosure()
+}
+
+# 全符号位置: 列名の比較器が表の同値類どおりに比べること（7.x は実行環境の OrdinalIgnoreCase、5.1 は表）。
+# ホストの .NET の大文字・小文字の組でも、比較器の結果が表と一致すること。結果は不一致の数だけを記録する（組の数はホストで違う）
+Add-Type -TypeDefinition @'
+using System; using System.Collections.Generic;
+public static class ProbedCompatCsvNameProbe {
+    static string S(int cp) { return (cp >= 0xD800 && cp <= 0xDFFF) ? ((char)cp).ToString() : char.ConvertFromUtf32(cp); }
+    public static string Run(IEqualityComparer<string> comparer, int[] pairs) {
+        var rep = new Dictionary<int, int>();
+        for (int i = 0; i < pairs.Length; i += 2) { rep[pairs[i]] = pairs[i + 1]; }
+        Func<int, int> r = c => rep.ContainsKey(c) ? rep[c] : c;
+        int byTable = 0, byHostCase = 0, hostOnly = 0;
+        for (int c = 0; c <= 0x10FFFF; c++) {
+            string s = S(c);
+            if (!comparer.Equals(s, S(r(c)))) { byTable++; }
+            foreach (string d in new[] { s.ToUpperInvariant(), s.ToLowerInvariant() }) {
+                if (d == s) { continue; }
+                int dc = (d.Length == 2 && char.IsSurrogatePair(d[0], d[1])) ? char.ConvertToUtf32(d[0], d[1]) : (d.Length == 1 ? d[0] : -1);
+                bool tableEqual = dc >= 0 && r(c) == r(dc);
+                if (comparer.Equals(s, d) != tableEqual) { byHostCase++; }
+                if (string.Equals(s, d, StringComparison.OrdinalIgnoreCase) && !tableEqual) { hostOnly++; }
+            }
+        }
+        return string.Format("comparerVsTable={0} comparerVsTableOnHostCasePairs={1} hostEqualButTableNot={2}", byTable, byHostCase, hostOnly);
+    }
+}
+'@
+Add-Scenario 'Sixth/CsvName/AllCodePoints' {
+    $asm = [SnowStack.EncodingProbe.PowerShell.Cmdlets.ImportProbedCsvCommand].Assembly
+    $comparer = $asm.GetType('SnowStack.EncodingProbe.PowerShell.Internal.CsvNameComparer').GetField('Instance', [Reflection.BindingFlags]'Static,Public').GetValue($null)
+    $pairs = $asm.GetType('SnowStack.EncodingProbe.PowerShell.Internal.CsvNameCaseTable').GetField('Pairs', [Reflection.BindingFlags]'Static,NonPublic').GetValue($null)
+    [ProbedCompatCsvNameProbe]::Run($comparer, $pairs)
+}
+
 # （第六次 A のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

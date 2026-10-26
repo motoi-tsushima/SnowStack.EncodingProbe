@@ -250,7 +250,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal.Csv
                 }
                 else
                 {
-                    HashSet<string> headers = new(StringComparer.OrdinalIgnoreCase);
+                    // 移植元: StringComparer.OrdinalIgnoreCase。5.1 でも .NET 10 と同じ結果にするため、本プロジェクトの比較器にした（第六次。BUG-0020）
+                    HashSet<string> headers = new(CsvNameComparer.Instance);
                     foreach (string currentHeader in names)
                     {
                         if (!string.IsNullOrEmpty(currentHeader))

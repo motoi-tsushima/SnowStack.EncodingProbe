@@ -75,6 +75,34 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             return result;
         }
 
+        /// <summary>
+        /// CSV の列名でプロパティを引く（移植元の <c>mshObject.Properties[propertyName]</c>）。
+        /// </summary>
+        /// <remarks>
+        /// 列名の照合（Export-ProbedCsv -Append）は <see cref="CsvNameComparer"/> で行うので、値を取り出すときも同じ規則で引く
+        /// （1.3.0 第六次。BUG-0020）。PSObject のメンバー名の引き方はホストの .NET の OrdinalIgnoreCase なので、
+        /// 5.1 では照合が通った列（追記先の ǅ とプロパティの ǆ など）の値を引けず、空で書いていた。
+        /// まずホストの規則で引き、見つからなければ <see cref="CsvNameComparer"/> で一覧から探す（7.x では両者が同じなので、結果は移植元と同じ）。
+        /// 5.1 でホストの規則で等しい名前は、すべて <see cref="CsvNameComparer"/> でも等しい（実装記録 11 章の測定）。
+        /// </remarks>
+        public static PSPropertyInfo? FindProperty(PSObject source, string name)
+        {
+            if (source.Properties[name] is PSPropertyInfo property)
+            {
+                return property;
+            }
+
+            foreach (PSPropertyInfo candidate in source.Properties)
+            {
+                if (CsvNameComparer.Instance.Equals(candidate.Name, name))
+                {
+                    return candidate;
+                }
+            }
+
+            return null;
+        }
+
         private static bool IsExtended(PSPropertyInfo property)
         {
             switch (property.MemberType)
