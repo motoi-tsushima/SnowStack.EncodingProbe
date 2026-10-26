@@ -738,7 +738,11 @@ namespace SnowStack.EncodingProbe
                             useShiftJis = (encInfo.LineBreak == LineBreakType.CrLf);
                         }
 
-                        encInfo.CodePage = useShiftJis ? CodePageShiftJis : CodePageEucJp;
+                        // 標本を厳密に復号できない候補は選ばない（1.3.0 第六次。BUG-0031）。
+                        // バイト構造だけでは Shift_JIS として成り立っても、CP932 に無い 2 バイト（FC CB など）を含むことがある
+                        encInfo.CodePage = useShiftJis
+                            ? ExcludeUndecodableCandidate(CodePageShiftJis, CodePageEucJp)
+                            : ExcludeUndecodableCandidate(CodePageEucJp, CodePageShiftJis);
                         encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                         encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
@@ -749,8 +753,8 @@ namespace SnowStack.EncodingProbe
                     // 韓国語カルチャーの場合、EUC-KR と CP949 の両方に該当するか確認する
                     if (eucCodePage == CodePageEucKr && !CP949_Detection())
                     {
-                        // 両方に該当 → CP949 を優先
-                        encInfo.CodePage = CodePageCp949;
+                        // 両方に該当 → CP949 を優先（標本を厳密に復号できなければ EUC-KR。1.3.0 第六次）
+                        encInfo.CodePage = ExcludeUndecodableCandidate(CodePageCp949, CodePageEucKr);
                         encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                         encInfo.Bom = false;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
@@ -763,8 +767,8 @@ namespace SnowStack.EncodingProbe
                     // （香港カルチャーは EUC-TW を候補にしないので、ここには来ない）
                     if (eucCodePage == CodePageEucTw && !CP950_Detection())
                     {
-                        // 両方に該当 → CP950 を優先
-                        encInfo.CodePage = CodePageCp950;
+                        // 両方に該当 → CP950 を優先（標本を厳密に復号できなければ EUC-TW。1.3.0 第六次）
+                        encInfo.CodePage = ExcludeUndecodableCandidate(CodePageCp950, CodePageEucTw);
                         encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                         encInfo.Bom = false;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
@@ -799,6 +803,74 @@ namespace SnowStack.EncodingProbe
 
             // 不明
             return encInfo;
+        }
+
+        /// <summary>
+        /// バイト列だけでは区別できない 2 つの候補から、カルチャーや改行で決めた候補（<paramref name="preferred"/>）を返す。
+        /// ただし、判定に使った標本をその候補で厳密に（例外フォールバックで）復号できず、もう一方では復号できる場合は、もう一方を返す
+        /// （1.3.0 第六次。BUG-0031）。
+        /// </summary>
+        /// <remarks>
+        /// 曖昧解消（EUC-JP と Shift_JIS、EUC-KR と CP949、EUC-TW と CP950）はバイト構造の妥当性しか見ていないため、
+        /// 構造上は成り立つが文字の割り当てが無いバイト列（短い EUC-JP の FC CB など）を、改行が CRLF・改行なしのときに Shift_JIS と判定し、
+        /// 黙って化けて読んでいた。
+        /// <list type="bullet">
+        /// <item>どちらの候補も厳密に復号できない場合は、今までどおり <paramref name="preferred"/></item>
+        /// <item>その TFM で作れない候補（.NET に無い EUC-TW の 51950 など）は、外さない（「復号できない」とみなさない）</item>
+        /// </list>
+        /// 復号を確かめるのは判定に使った標本（<see cref="_buffer"/> の先頭 <see cref="BufferSize"/> バイト）だけ。
+        /// </remarks>
+        private int ExcludeUndecodableCandidate(int preferred, int other)
+        {
+            if (CanDecodeStrictly(this._buffer, this.BufferSize, preferred) == false
+                && CanDecodeStrictly(this._buffer, this.BufferSize, other) != false)
+            {
+                return other;
+            }
+
+            return preferred;
+        }
+
+        /// <summary>
+        /// 標本（<paramref name="buffer"/> の先頭 <paramref name="length"/> バイト）をコードページで厳密に復号できるか。
+        /// その TFM でコードページを作れない場合は null。
+        /// </summary>
+        /// <remarks>
+        /// クラスライブラリは CodePagesEncodingProvider をグローバルに登録しない（ホストの登録状況で判定が変わらないようにする）。
+        /// .NET では提供者から直接取り出し、.NET Framework は標準で持っているものを使う。両 TFM で同じ結果になる。
+        /// </remarks>
+        internal static bool? CanDecodeStrictly(byte[] buffer, int length, int codePage)
+        {
+            Encoding? strict;
+
+            try
+            {
+#if NETFRAMEWORK
+                strict = Encoding.GetEncoding(codePage, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
+#else
+                strict = CodePagesEncodingProvider.Instance.GetEncoding(
+                    codePage, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
+#endif
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is NotSupportedException)
+            {
+                strict = null;
+            }
+
+            if (strict == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                strict.GetCharCount(buffer, 0, length);
+                return true;
+            }
+            catch (DecoderFallbackException)
+            {
+                return false;
+            }
         }
 
         /// <summary>

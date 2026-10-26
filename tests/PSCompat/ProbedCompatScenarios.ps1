@@ -2863,6 +2863,19 @@ Add-Scenario 'Sixth/CsvName/AllCodePoints' {
     [ProbedCompatCsvNameProbe]::Run($comparer, $pairs)
 }
 
+# BUG-0031: 短い EUC-JP（CP932 では割り当ての無い 2 バイトを含む）は、ja-JP でも改行によらず EUC-JP（20932）。-DetectionLineCount も同じ
+$f6EucText = [byte[]](0xC6, 0xFC, 0xCB, 0xDC, 0xB8, 0xEC, 0xA4, 0xCE, 0xCA, 0xB8, 0xBD, 0xF1, 0xA4, 0xC7, 0xA4, 0xB9)
+foreach ($f6Lb in @('CRLF', 'LF', 'None')) {
+    $f6Index++
+    $bytes = [byte[]]($f6EucText + $(switch ($f6Lb) { 'CRLF' { [byte[]](0x0D, 0x0A) } 'LF' { [byte[]](0x0A) } default { [byte[]]@() } }))
+    $p = Join-Path $f6Dir ("euc_{0}.txt" -f $f6Index)
+    Add-Scenario "Sixth/ShortEucJp/$f6Lb" {
+        [IO.File]::WriteAllBytes($p, $bytes)
+        $cp = { param($t) (($t.ToCharArray()) | ForEach-Object { '{0:X4}' -f [int]$_ }) -join ' ' }
+        'resolve={0} head={1} text={2}' -f (Resolve-Encoding -Path $p -Culture ja-JP).CodePage, (Resolve-Encoding -Path $p -Culture ja-JP -DetectionLineCount 1).CodePage, (& $cp (Get-ProbedContent -LiteralPath $p -Culture ja-JP -Raw))
+    }.GetNewClosure()
+}
+
 # （第六次 A のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------
