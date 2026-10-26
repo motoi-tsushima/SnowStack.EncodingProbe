@@ -2902,13 +2902,14 @@ foreach ($f7Name in $f7Writers.Keys) {
             $p = Join-Path $f7Dir ("attr_{0}.txt" -f $f7Index)
             Add-Scenario "SixthB/Archive/$f7Name/large=$lg/fail=$fl" {
                 [IO.File]::WriteAllText($p, ('o' * $(if ($lg) { $f7Threshold + 10 } else { 3 })) + "`r`n")
-                Set-Content -LiteralPath $p -Stream Zone.Identifier -Value '[ZoneTransfer]', 'ZoneId=3'
+                # Zone.Identifier（ZoneId=3）を付けた大きなファイルはウイルス対策の検査の対象になり、検査と重なると 5.1 の標準の -Stream が失敗することがあるので、別の名前のストリームを使う
+                Set-Content -LiteralPath $p -Stream probedmeta -Value 'meta1', 'meta2'
                 [IO.File]::SetAttributes($p, 'Hidden, System')
                 $first = if ($lg) { 'y' * ($f7Threshold + 10) } else { 'y' }
                 $records = if ($fl) { @($first, [string][char]0xD55C) } else { @($first) }
                 $r = Invoke-F2 { & $wb $p $records }
                 $len = (New-Object IO.FileInfo $p).Length
-                $stream = (Get-Content -LiteralPath $p -Stream Zone.Identifier) -join '|'
+                $stream = (Get-Content -LiteralPath $p -Stream probedmeta) -join '|'
                 $attr = Format-F7Attributes $p
                 [IO.File]::SetAttributes($p, 'Normal')
                 '{0} // len={1} attr={2} stream={3}' -f $r, $len, $attr, $stream

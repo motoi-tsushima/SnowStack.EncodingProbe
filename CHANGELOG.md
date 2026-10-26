@@ -119,7 +119,7 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
     `Out-ProbedFile`・`Export-ProbedCsv`・追記は、標準の `Out-File`・`Export-Csv`・`Add-Content` と同じく、リンクの先にファイルを作ります
   - 読み取り専用の検査と `-Force` は、リンクではなくリンクの先の実体に対して行います
   - Linux / macOS では、置き換える前に元のファイルのアクセス権（UnixFileMode）を一時ファイルに写します（所有者は写せません。ハードリンクは切れます。既知の限界）
-  - `Convert-ProbedContent` の一時ファイルの名前は、ほかのコマンドと同じ `.<名前>.<8 桁の 16 進>.probedtmp` になりました（これまでは `.<名前>.<GUID>.tmp`）
+  - `Convert-ProbedContent` の一時ファイルの名前は、ほかのコマンドと同じ `.<名前>.<8 桁の 16 進>.probedtmp` になりました（第六次 B で `.~probed<8 桁>.probedtmp` に改めました）（これまでは `.<名前>.<GUID>.tmp`）
 - **書く内容と元のファイルがどちらも 1 MiB 以内なら、一時ファイルを使わず、元のファイルの中身をメモリに写してから直接書きます**（第五次の仕上げ。`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`（`-Append` なし）・`Convert-ProbedContent`）。
   上の一時ファイルによる置き換え（`File.Replace`）で、小さなファイルへの書き込みが第四次の約 10 倍遅くなっていたためです。失敗したらメモリの写しから書き戻します（まだ無いファイルは直接作り、失敗したら消します）。
   書く内容が途中で 1 MiB を超えたら、その時点で一時ファイルによる置き換えなどに切り替えます。1 MiB 以内のハードリンクも切らずに直接書きます（写しを作りません）
@@ -169,6 +169,32 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
   これまでは `$null` ごとに改行だけを書いていました。すべて `$null` なら `-Value $null` と同じく何も書きません（`Set-` は空のファイル）。パイプラインで渡した場合は、もともと標準と同じでした
 - **`Convert-ProbedContent` は、UTF-7 の `System.Text.Encoding` のインスタンス（`UTF7Encoding` など、コードページが 65000 のもの）を、名前の `utf7` と同じ `EncodingNotAllowedForWrite` で拒否します**（BUG-0037）。
   これまでは受け付けて UTF-7 で書いていました。ほかの書き込みのコマンドは、もともとインスタンスも拒否していました（`ParameterArgumentTransformationError`）
+
+### 挙動の変更（PowerShell モジュール。第六次 B）
+
+テスト担当のブラックボックステスト（BUG-0025・0026・0027・0028・0030・0035）と、前回の引き継ぎ（ACL の時点）への対応です。実装記録 12 章、1.3.0 仕様書 26 章に、実測と決定の根拠があります。
+
+- **同じパイプラインで、書き込み側が先に開いたファイルを読み込み側が後から開いた場合（逆向きの往復）も `SamePathRoundTrip` にします**（BUG-0028）。
+  `Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt`、`Import-ProbedCsv a.csv, z.csv | Export-ProbedCsv z.csv`、`Get-ChildItem *.txt | Get-ProbedContent | Out-ProbedFile z.txt` などです
+  - 読み込み側（`Get-ProbedContent`・`Import-ProbedCsv`・`Convert-ProbedContent`）は読まずに非終了エラーを出して次へ進み、書き込み側（`Set-`・`Add-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`、`-Append` を含む）は書き込みを元に戻して `SamePathRoundTrip` を出します（Set / Add は非終了、Out / Export は終了エラー）。ファイルは元のままです（まだ無かったファイルは残りません）
+  - **1 MiB 以内の上書きと、1 MiB を超える置き換えもエラーになります。** 第五次（1.3.0 の開発中）までは元のファイルに触れていなかったのでエラーにならず、z.txt は「a.txt の内容 + z.txt の元の内容」になっていました（1.2.0 までは z.txt の元の内容が消えていました）
+  - 1 MiB を超える新しいファイルは、完了まで書き込み先が無いので、読み込み側では「ファイルが無い」ではなく `SamePathRoundTrip` にします
+- **ほかのプログラムが書き込み用に開いているファイル（書き込み中のログなど）も、判定・変換のために読めます**（BUG-0026）。
+  `Resolve-Encoding`・追記先や書き込み先の判定・`-EncodingFrom` の参照ファイル・`Convert-ProbedContent` の変換元を、`Get-ProbedContent` と同じ共有モードで開きます
+  - それでも開けない場合は、ID の付いたエラー（`ReadFailed`・`ReadAccessDenied`。5 言語のメッセージ）です。**`Resolve-Encoding` は非終了エラーにして、残りのファイルを処理します**（これまでは生の `IOException` の終了エラーで、残りのファイルを処理しませんでした）。追記の 3 コマンドも、生の `IOException` の終了エラーではなくなりました
+  - 追記（`Add-ProbedContent`・`-Append`）は、ほかのプログラムが書き込み用に開いている間は、今までどおり書けません（`WriteFailed`。5 言語のメッセージ）。7.x の標準の `Add-Content` は書きます
+- **大きなファイルとメモリ不足を、ID の付いたエラーにしました**（BUG-0030）。`Resolve-Encoding` は読む前に大きさを調べ、上限（2 GB）を超えれば `-DetectionLineCount` を案内する非終了エラーにします。
+  全体を読む判定のメモリ不足は `NotEnoughMemoryToDetect`、`Convert-ProbedContent` は `FileTooLargeToConvert` / `NotEnoughMemoryToConvert` です（Windows PowerShell 5.1 では生の `OutOfMemoryException` / `IOException` でした）
+  - **`Resolve-Encoding` のエラーの種類が混ざります。** ファイルが無い場合と、`-DetectionLineCount` で切り出す範囲が上限を超える場合は、今までどおり終了エラーです
+- **書き込みに成功したファイルに、Archive 属性を付けます**（BUG-0025）。1 MiB を超える上書き（置き換え）で、元のファイルに無かった Archive 属性が付いていませんでした（標準の `Set-Content` は付けます）。元に戻した場合は、書き込みの前の属性のままです
+- **`WriteAccessDenied` のメッセージを、本モジュールの 5 言語のメッセージにしました**（BUG-0025）。.NET の例外の文面（PowerShell 7.x では英語）でした
+- **隠し・システム属性のファイルへの書き込みと代替データストリーム**（BUG-0025。第五次で直っていたことを確かめました）: 書き込みの 4 コマンドと `Convert-ProbedContent` は、`-Force` なしで書け、代替データストリーム（`Zone.Identifier` など）を保ちます。
+  **標準の `Out-File` / `Export-Csv` は、隠し・システム属性のファイルに書けず（`-Force` でも同じ）、代替データストリームを消すので、`Out-ProbedFile` / `Export-ProbedCsv` はこれと違います**（両ホストで実測）。標準の `Set-Content` とは同じです
+- **置き換えに使う一時ファイルの名前を、元の名前によらない `.~probed<8 桁の 16 進>.probedtmp` にしました**（BUG-0027）。名前の長いファイル（7.x では名前が 218 文字以上、5.1 ではパスが 222 文字以上）に 1 MiB を超えて書けませんでした（`Convert-ProbedContent` も同じ）。
+  一時ファイルのパスが長さの上限を超える場合は、元のファイルを一時フォルダーに写してから直接書きます
+  - **書いている最中にプロセスが強制終了されて一時ファイルが残った場合、名前からはどのファイルのものかが分かりません**（書き込み先と同じフォルダーにあります）
+- **`Out-ProbedFile` の結果が、利用者の `$PSDefaultParameterValues['Out-String:Width']` などの影響を受けないようにしました**（BUG-0035。標準の `Out-File` と同じ）。`Out-ProbedFile -Width` への既定値（`'Out-ProbedFile:Width'`・`'*:Width'`）は、今までどおり効きます
+- **ACL で書き込みを拒否したファイルの `WriteAccessDenied` を、大きさによらず開く時点で出します**（第五次の仕上げでは、1 MiB 以内は完了の時点でした）。ほかのハンドルが開いているときに失敗する条件は変わりません
 
 ### 追加したコマンド
 

@@ -144,6 +144,11 @@ UTF-16 / UTF-32 と判定したファイルの改行コード（`LineBreak`）�
 - 短い EUC-JP のファイルを、日本語の環境で Shift_JIS と判定しなくなりました（Shift_JIS として読めないバイト列は、Shift_JIS を選びません）
 - `Set-ProbedContent` / `Add-ProbedContent` の `-Value` の配列の `$null` は、標準と同じく飛ばします（空行を書いていました）
 - `Convert-ProbedContent` は、`UTF7Encoding` のインスタンスでも UTF-7 で書きません（`utf7` と同じエラー）
+- **同じパイプラインで、書き込み中のファイルを後から読もうとした場合も `SamePathRoundTrip` にし、書き込みを取り消します**（`Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt` など。z.txt は元のままです）
+- **ほかのプログラムが書き込み用に開いているファイル（書き込み中のログなど）も、判定・変換のために読めます。** 読めない・大きすぎる・メモリが足りない場合は ID の付いたエラーで、`Resolve-Encoding` は次のファイルに進みます（追記は、今までどおりほかのプログラムが書き込み中の間は書けません）
+- 書き込んだファイルには Archive 属性が付きます。隠し・システム属性のファイルにも `-Force` なしで書け、代替データストリームを保ちます（標準の `Out-File` / `Export-Csv` は書けず、ストリームを消します）
+- 置き換えに使う一時ファイルの名前は `.~probed<8 桁>.probedtmp` です（名前の長いファイルにも書けます。残った一時ファイルの名前からは、どのファイルのものかは分かりません）
+- `Out-ProbedFile` は、`$PSDefaultParameterValues['Out-String:Width']` などの影響を受けません（標準の `Out-File` と同じ）
 
 #### Linux / macOS での `ansi` / `oem`
 

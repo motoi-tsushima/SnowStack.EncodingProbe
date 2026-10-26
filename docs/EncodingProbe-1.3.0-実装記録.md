@@ -1705,3 +1705,182 @@ PSCompat は `Sixth/*`（`ProbedCompatScenarios.ps1` の「1.3.0 第六次 A」�
 - README: 「読み書きの細部の修正」と Linux / macOS の `ansi` / `oem` の表
 - CHANGELOG: 1.3.0 の「不具合の修正（クラスライブラリ）」「挙動の変更（クラスライブラリ）」「挙動の変更（PowerShell モジュール。第六次 A）」
 - CLAUDE.md: 1.3.0 の作業記録の現在の状態
+
+## 12. 第六次 B — ファイルシステムとエラーの扱い（BUG-0025・0026・0027・0028・0030・0035、ACL の時点、文書。2026-10-26）
+
+仕様は 1.3.0 仕様書 26 章、変えた挙動は CHANGELOG の「挙動の変更（PowerShell モジュール。第六次 B）」。
+テストに使った版: PowerShell **7.6.9**（.NET 10.0.14）、Windows PowerShell **5.1.26100.9711**（64 ビット。BUG-0030 だけ 32 ビット版も）、Windows 11 Pro 10.0.26300、ja-JP。
+
+### 12.1 利用者の決定（計画の確認のとき）
+
+1. **BUG-0028 は案 A**（読み込み側・書き込み側の両方がエラーを出し、書き込みを元に戻す）。読み込み側でファイルが見つからなかった場合も LocationKey で書き込み中の表を引き、当たれば SamePathRoundTrip にする。比べる箇所・比べない箇所を理由付きで一覧にする
+2. **`Resolve-Encoding` のエラーの種類:** 新しく足すエラー（読めない・全体の判定の上限を超える・メモリ不足）は非終了、既存のもの（ファイルが無い・`-DetectionLineCount` の上限を超える）は終了エラーのまま。混ざることをヘルプと仕様書に書く
+3. クラスライブラリの `EncodingDetector(string path)` の共有モードは変えない
+4. `.psd1` の `ReleaseNotes` は文面だけ直してよい（`publish\` の中で触れるのはこれだけ。`deps.json`・`LICENSE.txt` などには触れない）
+5. 計画への指摘: BUG-0025 の Archive 属性は直す（4 つの書き方すべてで付け、元に戻したら元の属性のまま）。BUG-0027 の一時ファイルの名前から書き込み先が分からなくなることを CHANGELOG とヘルプに書く。
+   BUG-0035 で `Out-ProbedFile -Width` への既定値が効くことをテストで確かめる
+
+### 12.2 今のビルドの挙動（直す前に確かめたこと）
+
+テスト担当の報告は第五次より前のモジュールで実行したものなので、第五次の後のビルドでスクリプトを両ホストで流した。
+
+| BUG | 第五次の後のビルド |
+|---|---|
+| 0025 | 隠し・システム属性のファイルに書け、代替データストリームも保つ（1 MiB 以内・超える、4 コマンドと Convert、両ホスト）。**1 MiB を超える上書きで Archive 属性が付かない**（置き換えが元の属性を写す）。`WriteAccessDenied` は .NET の文面 |
+| 0026 | 変わらず（`Resolve-Encoding`・追記の 3 コマンドが生の `IOException` の終了エラー） |
+| 0027 | 1 MiB 以内は一時ファイルを使わないので、240 文字の名前でも変換できる。1 MiB を超えると今も失敗する |
+| 0028 | 1 MiB 以内の上書き・1 MiB を超える置き換えは元のファイルに触れないので、読み込み側は元の内容を読み、z は `a1 z1` になる（エラーにはならない）。写してから直接書く方法と追記は、書きかけを読む |
+| 0035 | 変わらず |
+
+**標準の Out-File / Export-Csv（BUG-0025。両ホストで実測、`tools` ではなく作業フォルダーのスクリプト）。** 隠し・システム属性のファイルは、`-Force` の有無によらず `FileOpenFailure` で書けない。代替データストリームを消す（ふつうのファイル）。
+`Set-Content` は書けて、ストリームを保ち、Archive を付ける。両ホストで同じ（違いは 5.1 の `Out-File` の既定が UTF-16 で長さが違うことだけ）。
+
+### 12.3 BUG-0025（Archive 属性・WriteAccessDenied のメッセージ）
+
+- `Internal/FileErrors.WriteAccessDenied` で、`WriteAccessDenied` を出す 6 か所（Set / Add の開く時点・書く時点・完了の時点、Out / Export の書く時点・完了の時点・開く時点、Convert）の例外を、5 言語のメッセージ（`MessageKey.WriteAccessDenied`）の `LocalizedAccessDeniedException` に包み直した。
+  内部例外は持たず、HRESULT は引き継ぐ。読み取り専用の検査の 3 か所は、もともと 5 言語のメッセージ（`FileIsReadOnly`）
+- `Internal/FileAttributeKeeper`: 書き込みに成功したら Archive 属性を付ける（`SafeFileOverwrite.Commit`・追記の `ProbedFileWriter.Complete`。追記は 1 バイト以上書いた場合だけ）。
+  元に戻したら、書き込みの前の属性に戻す（メモリの写し・写しからの書き戻し・追記の切り詰めの後。書き戻しでファイルシステムが Archive を付けるため）。読み取り専用は `ReadOnlyAttributeScope` が戻すので触れない。Windows 以外では何もしない
+- テスト `ArchiveAttributeAndAccessDeniedTests`（7 コマンド × 大きさ × ハードリンク × 成功・失敗、隠し・システム＋ストリーム、ACL の拒否のメッセージ）。PSCompat `SixthB/Archive/*`・`SixthB/WriteAccessDenied/*`
+- **テストの干渉（直した）:** このテストの写してから直接書く場合は一時フォルダーに写しを作るので、写しが残っていないかを一時フォルダー全体で調べる `LinkAndPermissionWriteTests` と並行に動くと、時々そちらが落ちた（全体を流したときだけ）。
+  並行に動かさないコレクション（`OverwriteStateCollection`）に入れた（BUG-0027 のコミット）
+
+### 12.4 BUG-0026（ほかのプログラムが開いているファイル）
+
+**ファイルを開いている箇所の一覧（依頼の報告の項目）。**
+
+| 箇所 | 用途 | 共有モード（第六次 B） | 開けないとき |
+|---|---|---|---|
+| `ProbedFileReader.Open` | Get-ProbedContent・Import-ProbedCsv・Export -Append のヘッダー | ReadWrite（変えない） | ReadFailed / ReadAccessDenied（Get・Import は非終了、Export は終了） |
+| `HeadLineCutter.Cut`・`StrictDecodeVerifier.Verify` | -DetectionLineCount の切り出し・全体の検証 | ReadWrite（変えない） | 各コマンドの ReadFailed（Resolve は非終了、Import は非終了、Export・-EncodingFrom は終了） |
+| `SharedFileReader.ReadAll`（新） | Resolve-Encoding・`EncodingInheritance.FromFile`（書き込み先・追記先・-EncodingFrom の判定）・Convert の変換元 | **ReadWrite（Read から変えた）** | ReadFailed / ReadAccessDenied（Resolve・Set・Add・Convert は非終了、Out・Export・-EncodingFrom は終了） |
+| `HeadLineDetection`（0 バイト） | 0 バイトのファイル | クラスライブラリの Detect(path)（Read）をやめ、切り出した 0 バイトを渡す | — |
+| Export の `ReadBomLength`・`EndsWithLineBreak` | 追記先の BOM・末尾 | ReadWrite（変えない） | ReadFailed（終了） |
+| `Iso2022TailState` | ISO-2022 の追記先の末尾の状態 | ReadWrite\|Delete（変えない） | WriteFailed（開く時点） |
+| `FileIdentity`（CreateFileW、属性の読み取り） | 同じファイルの判定 | すべて許す（属性だけを読むハンドルは共有の検査の対象外） | 開けなければパスの文字列から作った鍵 |
+| `ProbedFileWriter`（追記の FileStream） | 追記 | Read（変えない） | WriteFailed（共有違反は 5 言語のメッセージ） |
+| `SafeFileOverwrite`（一時ファイル・直接書く・写しの `File.Copy`・`EnsureWritable`） | 上書き | Read / EnsureWritable は ReadWrite\|Delete（変えない） | WriteFailed / WriteAccessDenied |
+| クラスライブラリの `EncodingDetector(string)` | 公開 API | Read（変えない。利用者の決定） | — |
+
+- `Resolve-Encoding` は、`Detect(path)` ではなく、モジュールで読んだバイト列を `Detect(bytes)` に渡す。テストデータ 50 ファイル × 8 カルチャー × 3 方式の 1200 件で、両 TFM とも結果が同じであることを確かめた（UTF.Unknown にファイルではなくバイト列を渡すことになるため）
+- `SharedFileReader` は、バッファを持たずに長さちょうどを読む。最初は 4 KiB のバッファで読み、ほかのハンドルが末尾より先をロックしている場合に失敗した（`SmallFileDirectWriteTests` が検出。`File.ReadAllBytes` は長さちょうどを読む）
+- 読み込みの失敗は `FileErrors.ReadFailed`（共有違反・ロック違反は `FileInUseForRead`、それ以外は `FileReadFailed` でエラー コードを示す）・`ReadAccessDenied` の 5 言語のメッセージ。書き込みの `WriteFailed` は、共有違反・ロック違反だけを `FileInUseForWrite` に包み直す（それ以外は .NET の文面のまま。残した点）
+- テスト担当のスクリプト: `Get-ChildItem *.csv | Resolve-Encoding` は 3 件とも結果が出る。Convert -Destination は変換できる。追記の 3 コマンドは `WriteFailed`（5 言語のメッセージ）。7.x の標準の `Add-Content` は書く、5.1 の標準は `GetContentWriterIOError`
+
+### 12.5 BUG-0027（一時ファイルの名前）
+
+- `SafeFileOverwrite.CreateTemporaryPath` の名前を `.~probed<8 桁>.probedtmp`（26 文字）にした（`TemporaryPrefix`）。`CreateNew` で作れなかったときに同じ名前のファイルがあれば、5 回まで作り直す
+- 一時ファイルを作るときに `PathTooLongException`・`ERROR_FILENAME_EXCED_RANGE`・`ERROR_INVALID_NAME`・（フォルダーが実在するのに）`DirectoryNotFoundException` になったら、既存のファイルは写してから直接書く方法、まだ無いファイルは直接作る方法に切り替える
+- 確かめたこと: 7.x では長いパスを .NET が扱うので、名前 218〜250 文字の 1 MiB を超える上書きが置き換えで書ける（`TemporaryFileNameTests`）。
+  5.1 では、240 文字のフォルダーの `a.txt`（パス 246 文字、一時ファイル 267 文字）が書けることを PSCompat で、**切り替えを一時的に外したビルドでは `WriteFailed` になることも確かめた**
+- `TemporaryFileRegistry` はパスで登録しているので変更は要らない。テスト・PSCompat の `*.probedtmp` の検索もそのまま使える
+
+### 12.6 BUG-0028（逆向きの往復。案 A）
+
+**設計（承認した案 A）。** 1.3.0 仕様書 26.4。`Internal/ActiveWriteRegistry`（スレッド単位）に、`ProbedFileWriter` が開いた時点で書き込み先の実体（追記は開いたハンドル、上書きはパスの実体。まだ無ければ親フォルダーと名前）と「元に戻して止める」処理を登録し、完了・元に戻す・閉じるで外す。
+
+- 読み込み側（`ProbedContentCommandBase.ReportIfBeingWritten`）: `Get-ProbedContent`・`Import-ProbedCsv` は `ResolveExistingFiles` で、ファイルがある場合は読む直前に、無い場合は「ファイルが無い」の代わりに比べる。
+  `Convert-ProbedContent` は変換を始める時点で比べる。当たれば書き込み側を元に戻させ（読み込み側はまだ開いていないので、新しいファイルも消せる）、非終了エラー `SamePathRoundTrip`（`SamePathReadWhileWriting`）
+- 書き込み側: `ProbedFileWriter.AbortedByRoundTrip`。Set / Add は次の入力か EndProcessing で非終了エラー、Out / Export は次の行か完了の時点で終了エラー（`SamePathWriteCancelled`）。書き込み側のエラーは、読み込み側の呼び出しの中では書けない（WriteError は自分の処理の中でしか呼べない）ので後になるが、ファイルはその時点で戻っている
+- 比べる箇所・比べない箇所と理由は仕様書 26.4 の表（Get・Import・Convert は比べる。-EncodingFrom・書き込み側の自分の書き込み先の読み取り・Resolve-Encoding は比べない）
+
+**標準の挙動（両ホストで実測。各ケースを別のジョブで実行し、10 秒で打ち切り）。**
+
+| パイプライン | 7.x | 5.1 |
+|---|---|---|
+| `Get-Content a,z \| Out-File z` | 止まらずに増え続ける（10 秒で 1.2 MB） | 同じ（0.9 MB） |
+| `… \| Set-Content z`・`-Raw \| Set-Content z` | `z1` だけ（a1 が消える） | 同じ |
+| `… \| Add-Content z` | `z1 a1 z1` | `GetContentWriterIOError`、`z1` のまま |
+| `Import-Csv a,z \| Export-Csv z` | `a1` だけ | 止まらずに増え続ける |
+| `… \| Export-Csv z -Append` | `z1 a1 z1` | 止まらずに増え続ける |
+| `gci *.txt \| Get-Content \| Out-File z` | 増え続ける | 増え続ける |
+| 対照: `Get-Content z,a \| Out-File z` | `a1` | 同じ |
+
+**結果。** `ReverseRoundTripTests`（6 つの書き込み × 4 つの読み込み × 大きさ × 既存・ハードリンク・まだ無い、130 件）で、両方が SamePathRoundTrip、ファイルは元のまま（まだ無いファイルは残らない）、一時ファイルも残らず、書き込み中の表が空になることを確かめた。
+1 MiB を超えるまだ無いファイルは、読み込み側で「ファイルが無い」の代わりに LocationKey で当たる。PSCompat `SixthB/ReverseRoundTrip/*`（24 件）。テスト担当のスクリプトの 4 つのパイプラインは、両ホストとも SamePathRoundTrip が 2 件、z は元のまま
+
+### 12.7 BUG-0030（大きなファイル・メモリ不足）
+
+- `EncodingInheritance.MaxDetectableLength` を、テストのために内部で変えられる静的なプロパティにした（既定 `DefaultMaxDetectableLength` = 0x7FFFFFC7）
+- `Resolve-Encoding` は `SharedFileReader.ReadAll` で読む前に大きさを調べ、上限を超えれば `FileTooLargeToDetectUseLineCount` の非終了エラー（`EncodingDetectionFailed`）
+- `EncodingDetectionException.GuardMemory`: 全体を読む判定（`ProbedFileReader`・`EncodingInheritance.FromFile`・`Resolve-Encoding`・`HeadLineDetection`）の `OutOfMemoryException` を `NotEnoughMemoryToDetect` にする。
+  `Resolve-Encoding -DetectionLineCount` でも、メモリ不足は非終了（新しいエラーのため）
+- `Convert-ProbedContent`: 上限を超えれば読む前に `FileTooLargeToConvert`、読み込み・変換のメモリ不足は `NotEnoughMemoryToConvert`（LimitsExceeded の非終了）
+- テスト用の差し込み口 `SharedFileReader.BeforeAllocateForTests`（全体を読む配列を作る直前に、大きさを渡して呼ぶ）で OutOfMemoryException を起こして確かめた（`LargeFileAndMemoryTests`）。PSCompat `SixthB/TooLarge`（リフレクションで上限を 5 バイトにする）
+- **32 ビット版の 5.1 でのテスト担当のスクリプト**（600 MB と 2 GB + 1 バイトのファイル。空きメモリ約 3.9 GB を確かめてから最後に実行した）
+
+  | ファイル | コマンド | 第五次の前（報告） | 第六次 B |
+  |---|---|---|---|
+  | 600 MB | `Resolve-Encoding` | 生の OutOfMemoryException | **932 で成功**（258 秒） |
+  | 600 MB | `Convert-ProbedContent -Destination` | 生の OutOfMemoryException | `NotEnoughMemoryToConvert` |
+  | 600 MB | `Resolve-Encoding -DetectionLineCount 10` | 20127 | 20127（37 ミリ秒） |
+  | 2 GB + 1 | `Get-ProbedContent -TotalCount 1` | `EncodingDetectionFailed` | 同じ |
+  | 2 GB + 1 | `Resolve-Encoding` | 生の OutOfMemoryException | `EncodingDetectionFailed`（上限の案内。26 ミリ秒） |
+
+  600 MB の `Resolve-Encoding` が成功するようになったのは、クラスライブラリの `Detect(path)`（ファイルを `MemoryStream` に写してから配列にする）を使わなくなり、ファイルの大きさの配列を 1 つだけ作るようになったため。
+  約 3.6 倍のメモリを使う点（1.4.0 で扱う）は直していない。PowerShell 7.x と 64 ビット版の 5.1 では、大きなファイルを作る測定はしていない（上限を小さくした単体テストと PSCompat で確かめた）
+
+### 12.8 BUG-0035（内部で呼ぶコマンド）
+
+**内部で呼ぶコマンドの一覧（依頼の報告の項目）。** 本モジュールが内部で呼ぶ PowerShell のコマンドは `Out-ProbedFile` の `Microsoft.PowerShell.Utility\Out-String -Stream` だけ（`ScriptBlock.Create`・`InvokeCommand`・`InvokeScript` をほかに使っていない）。
+
+| 利用者の状態 | 影響 | 扱い |
+|---|---|---|
+| `$PSDefaultParameterValues['Out-String:…']`（`Out-String:*` を含む） | Out-ProbedFile の結果が変わっていた | **直した**（新しいスコープで空のローカル変数にしてから組み立てる） |
+| `$PSDefaultParameterValues['Out-ProbedFile:Width']`・`'*:Width'` | 本コマンドの -Width に入る | 今までどおり効く（`'*:Width'` は Out-File にも効く）。テストで固定 |
+| 同名の関数・別名 `Out-String` | 影響しない | モジュール修飾名で呼ぶ（1.2.0 から） |
+| `$FormatEnumerationLimit`・書式データ・型データ | 整形が変わる | Out-File も同じ影響を受けるので、そのまま |
+| PSDrive・現在の場所（パスの解決） | 解決されるパス | 標準と同じ（意図どおり） |
+| `-Value` の文字列化（型データの ToString） | 書く文字列 | 標準の Set-Content と同じ（そのまま） |
+
+- 幅を計算して `-Width` を渡す方法は採らなかった。5.1 のコンソールでは `-Width` 省略時の幅が `BufferSize.Width - 1`（バッファー 120 で 119）、7.x は 120、ホストの UI の無いランスペースは両方 120 で、計算で再現すると今の Out-File との一致を崩すおそれがある
+- スクリプトブロックの引数（`param($PSDefaultParameterValues)`）で隠す方法は効かなかった（ステッパブルパイプラインはスクリプトブロックのスコープを作らない）。`& { begin { … } process { … } end { … } }` の中で内側のステッパブルパイプラインを組み立てると効く（両ホストで確かめた）
+- テスト `OutStringDefaultParameterTests`（5 件）。PSCompat `SixthB/DefaultParameterValues/*`
+
+### 12.9 ACL で拒否されたファイルの時点（前回の引き継ぎ）
+
+`SafeFileOverwrite.Begin` で、1 MiB 以内の既存のファイルにも `EnsureWritable` を呼ぶ（1 MiB を超える場合と同じく、書き込み用に切り詰めずに、すべての共有を許して開き、すぐ閉じる。共有違反は無視）。
+テスト `SmallFileDirectWriteTests.WriteDataDenied_IsReportedAtOpen_RegardlessOfSize`（パイプラインの 2 件目を処理する前に止まる）は、この変更を外すと 1 MiB 以内の 2 件が落ちることを確かめた。
+ほかのハンドルが開いているときに失敗する条件（実装記録 10.16 節の表）が変わっていないことは、PSCompat の既存のシナリオ（`Finish/DirectWrite/OpenedByAnother/*`）の値が変更の前後で同じことで確かめた。
+
+### 12.10 文書の食い違い（第六次 A の分）
+
+- 1.3.0 仕様書 1.1 の表に BUG-0031・0032 の 2 行、1.2 を「次の 6 点」（5・6 を追加）、1.3 を「1.2 の 6 点だけ」にした
+- `PackageReleaseNotes`（クラスライブラリ）と `.psd1` の `ReleaseNotes` には、第六次 A の内容が入っていなかった。どちらも足した（`.psd1` は B の内容も。`publish\` の中で直したのは `.psd1` の文面だけ）
+
+### 12.11 テストと確認の結果
+
+| 件数 | コア net48 | コア net10.0 | モジュール | PSCompat |
+|---|---|---|---|---|
+| 第六次 A の後 | 2139 | 2129 | 1771 | 1135 |
+| 第六次 B の後 | **2139** | **2129** | **2002** | **1205** |
+| 増えた数 | 0 | 0 | 231 | 70 |
+
+足したテスト: `ArchiveAttributeAndAccessDeniedTests`・`OpenedByAnotherProgramTests`・`TemporaryFileNameTests`・`LargeFileAndMemoryTests`・`OutStringDefaultParameterTests`・`ReverseRoundTripTests`・`SmallFileDirectWriteTests` に 4 件。
+PSCompat は「1.3.0 第六次 B」の節。クラスライブラリは変えていない。
+
+テスト担当のスクリプト（BUG-0025・0026・0027・0028・0035 を両ホスト、BUG-0030 を 32 ビット版の 5.1）を、作業フォルダーに作った配布の構成で実行し、期待どおりになった。
+両ホストの標準出力の違いは、0026 の標準の Add-Content の行と、0035 のコンソールの空行だけ。
+
+**時々起きた PSCompat の失敗（直した）。** 5.1 の `SixthB/Archive/*` の 1 MiB を超えるシナリオが、2 回（別のシナリオで）「Stream was not readable.」になった。
+どちらも、モジュールのコマンドの外側（シナリオの中の標準の `Set-Content -Stream` / `Get-Content -Stream`）で起きていた（モジュールのエラーは `Invoke-F2` が ID に変える）。
+シナリオは `Zone.Identifier`（ZoneId=3。インターネットから来た印）を付けた 1 MiB を超えるファイルを作っており、ウイルス対策の検査と重なったときに 5.1 の標準の `-Stream` が失敗したと考えられる
+（同じ操作を 5.1 で 75 回繰り返しても再現しなかった）。シナリオのストリームの名前を `probedmeta` に変えた後、PSCompat の全体を 3 回流して一度も起きていない。
+net10.0 の単体テストは、BUG-0025 の主題なので `Zone.Identifier` のままにした（12.12 の 4）。
+
+### 12.12 決めきれなかったこと・残したこと
+
+1. **追記は、ほかのプログラムが書き込み用に開いている間は書けない**（今までどおり。7.x の標準の Add-Content は書く）。交互に書いて壊さないためと、取り消し（切り詰め）がほかのプログラムの書いた分を消すおそれがあるため、変えていない
+2. `WriteFailed` は、共有違反・ロック違反以外（ディスクの空き不足など）は .NET の文面のまま
+3. 書き込みのコマンドどうしの衝突（同じパイプラインの 2 つの書き込みのコマンドが同じファイルに書く）は、SamePathRoundTrip の対象にしていない
+4. 12.11 の PSCompat の失敗の原因は見立てで、確かめていない（ウイルス対策の検査との重なり。シナリオのストリームの名前を変えて避けた）
+5. `Resolve-Encoding` のエラーの種類が混ざる（利用者の決定。ヘルプと仕様書に書いた）
+6. 一時ファイルの名前から書き込み先が分からない（既知の限界。CHANGELOG とヘルプに書いた）
+7. 全体の判定がファイルの約 3.6 倍のメモリを使う（1.4.0）
+8. 標準の Out-File / Export-Csv は隠しファイルに書けず、ストリームを消すが、Out-ProbedFile / Export-ProbedCsv は書けて保つ（標準と違う。受け入れた）
+
+### 12.13 直した文書
+
+- 1.3.0 仕様書: 1.1〜1.3（12.10）、16.4・16.5 の注記（一時ファイルの名前、ACL の時点、逆向きの往復）、26 章（第六次 B で改めた挙動）
+- ヘルプ（5 言語と zh-HK / zh-MO の複製）: Set・Out・Convert・Export の注意事項（一時ファイルの名前と、名前から書き込み先が分からないこと、長いパスの切り替え、Archive 属性）、Resolve-Encoding の注意事項（エラーの種類が混ざること・ほかのプログラムが開いているファイル）
+- README（読み書きの細部の修正に追記）、CHANGELOG（挙動の変更。第六次 B）、`PackageReleaseNotes`、`.psd1` の `ReleaseNotes`、CLAUDE.md

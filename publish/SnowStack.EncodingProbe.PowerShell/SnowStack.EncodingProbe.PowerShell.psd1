@@ -35,7 +35,7 @@
             ReleaseNotes = @'
 1.3.0
 CSV の読み書きコマンドを 2 つ追加し、Resolve-Encoding で先頭の行だけを判定できるようにしました。
-同梱のクラスライブラリも 1.3.0 です（判定処理の不具合を 2 件修正し、カルチャー名の検証を改めました）。
+同梱のクラスライブラリも 1.3.0 です（判定処理の不具合を 3 件修正し、カルチャー名の検証と ANSI / OEM コードページを改めました）。
 
 - Import-ProbedCsv : 文字エンコーディングを判定して CSV ファイルを読み込みます。解析は PowerShell 7.x の
   Import-Csv から移植した処理で行うため、PowerShell 5.1 でも 7.x と同じ結果になります（CR だけの改行の
@@ -75,6 +75,21 @@ CSV の読み書きコマンドを 2 つ追加し、Resolve-Encoding で先頭�
 - 挙動の変更: a.txt::$DATA は a.txt として扱い、代替データストリームはエラー AlternateDataStreamNotSupported
   にします。Resolve-Encoding の -Strategy / -Culture の誤りは、ほかのコマンドと同じ ID のエラーにします。
   -Culture に受け付ける名前は、名前の形（BCP 47）で決めます（C・root は両ホストで InvalidCulture）。
+- 不具合の修正（クラスライブラリ）: 短い EUC-JP の日本語を、日本語のカルチャーで Shift_JIS と判定していた
+  問題を直しました（Shift_JIS として読めないバイト列は、Shift_JIS を選びません）。
+- 挙動の変更: ansi / oem は、Windows ではシステムのロケールの ANSI / OEM コードページです（標準の 7.x の
+  -Encoding ansi・5.1 の Default と同じ）。Get-EncodingProbePlatformInfo の Locale も同じ値です。-Encoding 0 はエラーです。
+- 挙動の変更: BOM が 2 個続くファイルは、先頭の 1 個だけを取り除きます。5.1 でも、途中で切れたファイルの末尾を
+  7.x と同じく置き換えの文字（U+FFFD など）として読みます。CSV の列名の大文字小文字の比べ方を 5.1 でも 7.x と同じに
+  しました。JIS のまま終わっているファイルに追記するときは、先に ASCII に戻すエスケープシーケンスを書きます。
+  -Value の配列の $null は標準と同じく飛ばします。Convert-ProbedContent は UTF7Encoding のインスタンスでも書きません。
+- 挙動の変更: 同じパイプラインで、書き込み中のファイルを後から読もうとした場合も SamePathRoundTrip にし、
+  書き込みを取り消します（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt など）。
+- 挙動の変更: ほかのプログラムが書き込み用に開いているファイルも、判定・変換のために読めます。読めない場合や、
+  大きすぎる・メモリが足りない場合は ID の付いたエラーで、Resolve-Encoding は次のファイルに進みます。
+- 挙動の変更: 書き込んだファイルには Archive 属性が付きます。WriteAccessDenied のメッセージを 5 言語にしました。
+  一時ファイルの名前は元の名前によらない .~probed<8 桁>.probedtmp です（名前の長いファイルにも書けます）。
+  Out-ProbedFile は $PSDefaultParameterValues['Out-String:Width'] などの影響を受けません。
 
 CSV の読み書き処理には、PowerShell（Copyright (c) Microsoft Corporation、MIT License）のコードの
 一部を改変して含めています。詳細は THIRD-PARTY-NOTICES.txt を参照してください。
