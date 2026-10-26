@@ -22,7 +22,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// <list type="bullet">
     /// <item>上書き・新規作成: <see cref="SafeFileOverwrite"/> に任せる（小さなファイルはメモリに写してから直接書き、それ以外は一時ファイルで置き換える。ハードリンク・権限・リンク切れの場合は書き方を切り替える。1.3.0 第五次の後半・仕上げ）</item>
     /// <item>追記: 追記先を直接開き、開いたときの長さを覚えておく。元に戻すときはその長さに切り詰める。追記先が無かった場合は、作ったファイルを消す。
-    /// シンボリックリンクはたどって実体に追記する（リンク切れならリンクの先に作る。標準の Add-Content と同じ）</item>
+    /// シンボリックリンクはたどって実体に追記する（リンク切れならリンクの先に作る。標準の Add-Content と同じ）。
+    /// ISO-2022 で書く追記で、追記先が ASCII 以外の状態のまま終わっていれば、最初に書く内容の前に ASCII に戻すシーケンスを書く（<see cref="Iso2022TailState"/>。1.3.0 第六次）</item>
     /// </list>
     /// どちらも、書き込み先が同じパイプラインで読み取り中のファイルと同じ実体なら <see cref="SameFileRoundTripException"/> を投げる。
     /// 上書きは書き始める前（開く前）に、追記は「切り詰めずに開く → 開いたハンドルで比べる → 書く」の順に比べる。
@@ -54,6 +55,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <summary>エラーメッセージに示す文字エンコーディングの名前</summary>
         private readonly string _encodingName;
 
+        /// <summary>
+        /// 追記で、最初に書く内容の前に書くバイト列（ISO-2022 の追記先を ASCII に戻すシーケンス。<see cref="Iso2022TailState"/>）。
+        /// 書いた後・不要なら null。
+        /// </summary>
+        private byte[]? _pendingPrefix;
+
         private bool _finished;
 
         private ProbedFileWriter(
@@ -64,8 +71,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             long originalLength,
             string appendTargetPath,
             ReadOnlyAttributeScope? readOnlyScope,
-            string encodingName)
+            string encodingName,
+            byte[]? pendingPrefix)
         {
+            this._pendingPrefix = pendingPrefix != null && pendingPrefix.Length > 0 ? pendingPrefix : null;
             this._stream = stream;
             this.Encoding = encoding;
             this._encoder = encoding.GetEncoder();
@@ -150,6 +159,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             SafeFileOverwrite? overwrite = null;
             bool createdByAppend = false;
             string appendTargetPath = path;
+            byte[]? resetPrefix = null;
 
             try
             {
@@ -174,6 +184,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     }
 
                     originalLength = existed ? stream.Length : -1;
+
+                    if (originalLength > 0 && Iso2022TailState.AppliesTo(codePage))
+                    {
+                        // ISO-2022 の追記先が ASCII 以外の状態のまま終わっていれば、追記の前に戻す（第六次。BUG-0018）。
+                        // 書く文字エンコーディングが ISO-2022 のときだけ（-AllowEncodingChange で別の文字エンコーディングを足す場合は手を入れない）
+                        resetPrefix = Iso2022TailState.GetResetSequence(appendTargetPath, originalLength, codePage);
+                    }
                 }
                 else
                 {
@@ -195,7 +212,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 }
 
                 return new ProbedFileWriter(
-                    stream, body, path, overwrite, originalLength, appendTargetPath, readOnlyScope, encodingName);
+                    stream, body, path, overwrite, originalLength, appendTargetPath, readOnlyScope, encodingName, resetPrefix);
             }
             catch
             {
@@ -257,6 +274,15 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         private void WriteBytes(byte[] bytes)
         {
+            if (this._pendingPrefix != null && bytes.Length > 0)
+            {
+                // 戻すシーケンスは、1 バイト以上書くときにだけ先に書く（何も書かない呼び出しでは追記先を変えない）。
+                // 補う改行（Export-ProbedCsv の 18.3）も追記する内容もこの後ろになる。取り消しは元の長さへの切り詰めで一緒に消える
+                byte[] prefix = this._pendingPrefix;
+                this._pendingPrefix = null;
+                this._stream!.Write(prefix, 0, prefix.Length);
+            }
+
             if (this._overwrite != null)
             {
                 this._overwrite.Write(bytes, 0, bytes.Length);

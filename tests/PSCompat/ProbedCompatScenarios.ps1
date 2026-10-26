@@ -2785,6 +2785,33 @@ foreach ($f6Name in $f6Truncated.Keys) {
     }.GetNewClosure()
 }
 
+# BUG-0018: ISO-2022 の追記先が ASCII 以外の状態のまま終わっていれば、追記の前に戻すシーケンスを書く（戻す → 補う改行 → 内容）。
+# エラーで止まったら戻すシーケンスも残さない。-AllowEncodingChange で別の文字エンコーディングを足すときは書かない
+$f6JisTail = [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x1B, 0x24, 0x42, 0x46, 0x7C)
+$f6Iso = [ordered]@{
+    'Add'            = @($f6JisTail, { param($p) Add-ProbedContent -LiteralPath $p -Value 'xy' })
+    'Out'            = @($f6JisTail, { param($p) 'xy' | Out-ProbedFile -LiteralPath $p -Append })
+    'Export'         = @($f6JisTail, { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append })
+    'Add/CrLf'       = @([byte[]]($f6JisTail + [byte[]](0x0D, 0x0A)), { param($p) Add-ProbedContent -LiteralPath $p -Value 'xy' })
+    'Export/CrLf'    = @([byte[]]($f6JisTail + [byte[]](0x0D, 0x0A)), { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append })
+    'Add/Japanese'   = @($f6JisTail, { param($p) Add-ProbedContent -LiteralPath $p -Value ('x' + [char]0x672C) })
+    'Add/50222-SO'   = @([byte[]](0x41, 0x0D, 0x0A, 0x1B, 0x29, 0x49, 0x0E, 0x31), { param($p) Add-ProbedContent -LiteralPath $p -Value 'xy' -Encoding 50222 })
+    'Add/KR-SO'      = @([byte[]](0x1B, 0x24, 0x29, 0x43, 0x41, 0x0D, 0x0A, 0x0E, 0x30, 0x21), { param($p) Add-ProbedContent -LiteralPath $p -Value 'xy' -Encoding iso-2022-kr })
+    'Add/Rollback'   = @($f6JisTail, { param($p) Add-ProbedContent -LiteralPath $p -Value 'ok', ([string][char]0xD55C) })
+    'Export/Rollback'= @($f6JisTail, { param($p) 'ok', ([string][char]0xD55C) | ForEach-Object { [pscustomobject]@{ A = $_; B = 'y' } } | Export-ProbedCsv -LiteralPath $p -Append })
+    'Add/Empty'      = @($f6JisTail, { param($p) Add-ProbedContent -LiteralPath $p -Value @() })
+    'Add/AllowChange'= @($f6JisTail, { param($p) Add-ProbedContent -LiteralPath $p -Value 'xy' -Encoding utf8NoBOM -AllowEncodingChange })
+}
+foreach ($f6Name in $f6Iso.Keys) {
+    $f6Index++
+    $bytes = $f6Iso[$f6Name][0]; $wb = $f6Iso[$f6Name][1]
+    $p = Join-Path $f6Dir ("iso_{0}.txt" -f $f6Index)
+    Add-Scenario "Sixth/Iso2022Append/$f6Name" {
+        [IO.File]::WriteAllBytes($p, $bytes)
+        '{0} // {1}' -f (Invoke-F2 { & $wb $p }), (Format-FileBytes $p)
+    }.GetNewClosure()
+}
+
 # （第六次 A のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------
