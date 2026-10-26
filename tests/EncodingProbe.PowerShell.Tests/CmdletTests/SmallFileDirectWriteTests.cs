@@ -269,6 +269,46 @@ public class SmallFileDirectWriteTests : IClassFixture<ProbedCommandRunspaceFixt
     }
 
     /// <summary>
+    /// ACL で書き込みを拒否したファイルの WriteAccessDenied は、大きさによらず開く時点で出る（1.3.0 第六次 B。以前は境目以内だけ完了の時点だった）。
+    /// パイプラインの 2 件目以降を処理する前に止まる
+    /// </summary>
+    [Theory]
+    [InlineData("Out", false)]
+    [InlineData("Out", true)]
+    [InlineData("Export", false)]
+    [InlineData("Export", true)]
+    public void WriteDataDenied_IsReportedAtOpen_RegardlessOfSize(string writer, bool large)
+    {
+        byte[] original = large ? Filled(Threshold + 1, (byte)'o') : Old;
+        string path = this._directory.Write("denied.txt", original);
+        var user = System.Security.Principal.WindowsIdentity.GetCurrent().User!;
+        var rule = new System.Security.AccessControl.FileSystemAccessRule(
+            user, System.Security.AccessControl.FileSystemRights.WriteData, System.Security.AccessControl.AccessControlType.Deny);
+        var info = new FileInfo(path);
+        System.Security.AccessControl.FileSecurity security = info.GetAccessControl();
+        security.AddAccessRule(rule);
+        info.SetAccessControl(security);
+        string sink = writer == "Out"
+            ? $"Out-ProbedFile -LiteralPath {Quote(path)} -Encoding utf8NoBOM"
+            : $"ForEach-Object {{ [pscustomobject]@{{ A = $_ }} }} | Export-ProbedCsv -LiteralPath {Quote(path)}";
+
+        try
+        {
+            InvocationResult result = this._fixture.InvokeScriptCapturingErrors(
+                "$script:seen = 0; try { 1..3 | ForEach-Object { $script:seen++; $_ } | " + sink + " } catch { $_.FullyQualifiedErrorId.Split(',')[0] }; $script:seen");
+
+            Assert.Equal(new[] { "WriteAccessDenied", "1" }, result.Output.Select(o => o.ToString()));
+        }
+        finally
+        {
+            security.RemoveAccessRule(rule);
+            info.SetAccessControl(security);
+        }
+
+        Assert.Equal(original, File.ReadAllBytes(path));
+    }
+
+    /// <summary>
     /// -ErrorAction Stop でも、元に戻してからエラーにする（後始末が、ためていた分を書いてしまわない）。
     /// パイプラインの 1 件目でためた分も残さない（既存のファイルは元どおり、まだ無かったファイルは残らない）
     /// </summary>

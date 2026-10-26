@@ -199,7 +199,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 if (GetLength(target) <= DirectWriteThreshold)
                 {
-                    // 完了するまで元のファイルに触れない（ほかのハンドルとの衝突は、今までどおり完了の時点で分かる）
+                    // 書き込み用に開く権限があるかは、境目を超える場合と同じく開く時点で確かめる（ファイルの ACL に従う。1.3.0 第六次 B）。
+                    // 共有違反は失敗としないので、ほかのハンドルとの衝突は、今までどおり完了の時点で分かる。それ以外は完了するまで元のファイルに触れない
+                    EnsureWritable(target);
+
                     var memory = new SafeFileOverwrite(path, policy, bufferSize, OverwriteMethod.MemoryThenDirect, target);
                     memory._pending = new MemoryStream();
                     memory._attributesBefore = FileAttributeKeeper.TryGet(target);
