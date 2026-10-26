@@ -624,10 +624,10 @@ public class SetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
     }
 
     /// <summary>
-    /// null の要素は空行として出力されること。
+    /// null の要素は飛ばすこと（標準の Set-Content と同じ。1.3.0 第六次で改めた。BUG-0033。以前は空行を書いていた）。
     /// </summary>
     [Fact]
-    public void Write_NullElement_WritesEmptyLine()
+    public void Write_NullElement_IsSkipped()
     {
         using var file = ByteExactFile.CreateMissing();
 
@@ -638,7 +638,7 @@ public class SetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
                 ["LineBreak"] = LineBreakOption.Lf,
             });
 
-        Assert.Equal(new byte[] { 0x41, 0x0A, 0x0A, 0x42, 0x0A }, file.ReadBytes());
+        Assert.Equal(new byte[] { 0x41, 0x0A, 0x42, 0x0A }, file.ReadBytes());
     }
 
     /// <summary>

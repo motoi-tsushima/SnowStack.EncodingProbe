@@ -2677,6 +2677,27 @@ foreach ($f6Name in $f6Utf7Writers.Keys) {
     }
 }
 
+# BUG-0033: -Value の配列の $null の要素は飛ばす（標準の Set-Content / Add-Content と同じ）。パイプラインで渡した場合と同じになる
+foreach ($f6Cmd in @('Set-ProbedContent', 'Add-ProbedContent')) {
+    foreach ($f6Shape in @('a,null,b', 'null,null', 'null')) {
+        foreach ($f6Nn in @($false, $true)) {
+            foreach ($f6Via in @('Value', 'Pipeline')) {
+                $f6Index++
+                $cmd = $f6Cmd; $nn = $f6Nn; $via = $f6Via
+                $arr = switch ($f6Shape) { 'a,null,b' { @('a', $null, 'b') } 'null,null' { @($null, $null) } default { @($null) } }
+                $p = Join-Path $f6Dir ("null_{0}.txt" -f $f6Index)
+                Add-Scenario "Sixth/NullElement/$cmd/$f6Shape/NoNewline=$nn/$via" {
+                    [IO.File]::WriteAllBytes($p, [byte[]](0x4F, 0x4C, 0x44, 0x0D, 0x0A))
+                    $x = @{ LiteralPath = $p; Encoding = 'utf8NoBOM'; LineBreak = 'CrLf' }
+                    if ($nn) { $x.NoNewline = $true; $x.Remove('LineBreak') }
+                    if ($via -eq 'Value') { $r = Invoke-F2 { & $cmd -Value $arr @x } } else { $r = Invoke-F2 { $arr | & $cmd @x } }
+                    '{0} // {1}' -f $r, (Format-FileBytes $p)
+                }.GetNewClosure()
+            }
+        }
+    }
+}
+
 # （第六次 A のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

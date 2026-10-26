@@ -500,6 +500,13 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
 
         foreach (object? item in this.Value)
         {
+            if (item == null)
+            {
+                // 配列の $null の要素は飛ばす（標準の Set-Content / Add-Content と同じ。1.3.0 第六次。BUG-0033）。
+                // 以前は改行だけを書いていた。すべて $null なら -Value $null と同じく何も書かない
+                continue;
+            }
+
             texts.Add(this.NoNewline.IsPresent
                 ? ToText(item)
                 : ToText(item) + target.LineBreak);
