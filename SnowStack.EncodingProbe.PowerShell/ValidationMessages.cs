@@ -351,5 +351,11 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string CannotSpecifyPathAndLiteralPath()
             => MessageCatalog.Get(MessageKey.CannotSpecifyPathAndLiteralPath);
+
+        /// <summary>
+        /// 書き込む権限が無い（ファイルの ACL・フォルダーの権限など。読み取り専用属性は FileIsReadOnly）
+        /// </summary>
+        public static string WriteAccessDenied(string path)
+            => MessageCatalog.Format(MessageKey.WriteAccessDenied, path);
     }
 }

@@ -254,6 +254,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.LinkTargetNotFound] =
                     "'{0}' was not written because it is a symbolic link whose target does not exist. Like Set-Content, this command "
                     + "does not create the target of a broken link. Write to the target path, or use Out-ProbedFile.",
+
+                [MessageKey.WriteAccessDenied] =
+                    "'{0}' was not written because access to it was denied. Check the permissions of the file (for a new file, of the folder).",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -450,6 +453,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.LinkTargetNotFound] =
                     "'{0}' はリンク先が存在しないシンボリックリンクのため、書き込みませんでした。標準の Set-Content と同じく、リンク切れのリンク先は作りません。"
                     + "リンク先のパスに書き込むか、Out-ProbedFile を使用してください。",
+
+                [MessageKey.WriteAccessDenied] =
+                    "'{0}' へのアクセスが拒否されたため、書き込みませんでした。ファイル（新しいファイルの場合はフォルダー）のアクセス権を確かめてください。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -648,6 +654,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 [MessageKey.LinkTargetNotFound] =
                     "'{0}'은(는) 대상이 존재하지 않는 기호 링크이므로 쓰지 않았습니다. 표준 Set-Content와 마찬가지로 끊어진 링크의 대상은 만들지 않습니다. "
                     + "대상 경로에 쓰거나 Out-ProbedFile을 사용하십시오.",
+
+                [MessageKey.WriteAccessDenied] =
+                    "'{0}'에 대한 액세스가 거부되어 쓰지 않았습니다. 파일(새 파일인 경우에는 폴더)의 액세스 권한을 확인하십시오.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -837,6 +846,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.LinkTargetNotFound] =
                     "'{0}' 是目標不存在的符號連結，因此未寫入。與標準的 Set-Content 相同，不會建立中斷連結的目標。請寫入目標路徑，或使用 Out-ProbedFile。",
+
+                [MessageKey.WriteAccessDenied] =
+                    "存取 '{0}' 遭到拒絕，因此未寫入。請確認檔案（若為新檔案，則為資料夾）的存取權限。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -1026,6 +1038,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.LinkTargetNotFound] =
                     "'{0}' 是目标不存在的符号链接，因此未写入。与标准的 Set-Content 相同，不会创建断开链接的目标。请写入目标路径，或使用 Out-ProbedFile。",
+
+                [MessageKey.WriteAccessDenied] =
+                    "访问 '{0}' 被拒绝，因此未写入。请确认文件（若为新文件，则为文件夹）的访问权限。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

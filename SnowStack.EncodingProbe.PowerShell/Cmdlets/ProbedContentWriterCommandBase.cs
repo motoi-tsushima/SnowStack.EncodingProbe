@@ -270,7 +270,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
             catch (UnauthorizedAccessException exception)
             {
                 WriteError(RollbackNotice.Attach(
-                    CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, entry.Path), entry.Path, writer.KeptBackupPath));
+                    CreateError(FileErrors.WriteAccessDenied(entry.Path, exception), "WriteAccessDenied", ErrorCategory.PermissionDenied, entry.Path), entry.Path, writer.KeptBackupPath));
             }
         }
 
@@ -376,7 +376,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         }
         catch (UnauthorizedAccessException exception)
         {
-            WriteError(CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, file));
+            WriteError(CreateError(FileErrors.WriteAccessDenied(file, exception), "WriteAccessDenied", ErrorCategory.PermissionDenied, file));
         }
 
         return null;
@@ -566,7 +566,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         {
             // 書く内容が境目を超えて書き方を切り替えたときに、切り替えた先を開けなかった（第五次の仕上げ）
             string? kept = RollbackTarget(entry);
-            WriteError(RollbackNotice.Attach(CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, file), file, kept));
+            WriteError(RollbackNotice.Attach(CreateError(FileErrors.WriteAccessDenied(file, exception), "WriteAccessDenied", ErrorCategory.PermissionDenied, file), file, kept));
         }
     }
 

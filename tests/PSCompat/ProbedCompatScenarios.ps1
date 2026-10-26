@@ -2879,6 +2879,65 @@ foreach ($f6Lb in @('CRLF', 'LF', 'None')) {
 # （第六次 A のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------
+# 1.3.0 第六次 B（実装記録 12 章）
+# ---------------------------------------------------------------------------
+$f7Dir = Join-Path $script:WorkRoot 'sixthB'
+[void](New-Item -ItemType Directory -Path $f7Dir)
+$f7Index = 0
+$f7Threshold = 1048576
+function Format-F7Attributes { param([string]$Path) ([IO.File]::GetAttributes($Path) -band ([IO.FileAttributes]'Hidden, System, Archive, ReadOnly')).ToString() }
+
+# BUG-0025: 隠し・システム属性のファイルに -Force なしで書け、代替データストリームを保ち、書いたら Archive 属性が付く。取り消しでは元の属性のまま
+$f7Writers = [ordered]@{
+    'Set'    = { param($p, $r) $r | Set-ProbedContent -LiteralPath $p -Encoding shift_jis }
+    'Out'    = { param($p, $r) $r | Out-ProbedFile -LiteralPath $p -Encoding shift_jis }
+    'Export' = { param($p, $r) $r | ForEach-Object { [pscustomobject]@{ A = $_ } } | Export-ProbedCsv -LiteralPath $p -Encoding shift_jis }
+    'Add'    = { param($p, $r) $r | Add-ProbedContent -LiteralPath $p -Encoding shift_jis }
+}
+foreach ($f7Name in $f7Writers.Keys) {
+    foreach ($f7Large in @($false, $true)) {
+        foreach ($f7Fail in @($false, $true)) {
+            $f7Index++
+            $wb = $f7Writers[$f7Name]; $lg = $f7Large; $fl = $f7Fail
+            $p = Join-Path $f7Dir ("attr_{0}.txt" -f $f7Index)
+            Add-Scenario "SixthB/Archive/$f7Name/large=$lg/fail=$fl" {
+                [IO.File]::WriteAllText($p, ('o' * $(if ($lg) { $f7Threshold + 10 } else { 3 })) + "`r`n")
+                Set-Content -LiteralPath $p -Stream Zone.Identifier -Value '[ZoneTransfer]', 'ZoneId=3'
+                [IO.File]::SetAttributes($p, 'Hidden, System')
+                $first = if ($lg) { 'y' * ($f7Threshold + 10) } else { 'y' }
+                $records = if ($fl) { @($first, [string][char]0xD55C) } else { @($first) }
+                $r = Invoke-F2 { & $wb $p $records }
+                $len = (New-Object IO.FileInfo $p).Length
+                $stream = (Get-Content -LiteralPath $p -Stream Zone.Identifier) -join '|'
+                $attr = Format-F7Attributes $p
+                [IO.File]::SetAttributes($p, 'Normal')
+                '{0} // len={1} attr={2} stream={3}' -f $r, $len, $attr, $stream
+            }.GetNewClosure()
+        }
+    }
+}
+
+# BUG-0025: ACL で書き込みを拒否したファイルの WriteAccessDenied は、本モジュールのメッセージ（.NET の例外の文面ではない）
+foreach ($f7Name in $f7Writers.Keys) {
+    $f7Index++
+    $wb = $f7Writers[$f7Name]
+    $p = Join-Path $f7Dir ("acl_{0}.txt" -f $f7Index)
+    Add-Scenario "SixthB/WriteAccessDenied/$f7Name" {
+        [IO.File]::WriteAllText($p, "o`r`n")
+        $user = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+        & icacls.exe $p /deny "${user}:(WD,AD)" | Out-Null
+        try {
+            $message = $null
+            $outcome = try { & $wb $p @('x') 2>&1 | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $message = $_.Exception.Message; 'ERR ' + $_.FullyQualifiedErrorId.Split(',')[0] } } } catch { $message = $_.Exception.Message; 'TERM ' + $_.FullyQualifiedErrorId.Split(',')[0] }
+        }
+        finally { & icacls.exe $p /remove:d $user | Out-Null }
+        '{0} // {1} // {2}' -f ($outcome -join ','), $message, (Format-FileBytes $p)
+    }.GetNewClosure()
+}
+
+# （第六次 B のシナリオはここより前に足す）
+
+# ---------------------------------------------------------------------------
 # 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
 #
 # UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。

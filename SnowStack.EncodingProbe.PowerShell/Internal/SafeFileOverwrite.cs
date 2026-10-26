@@ -118,6 +118,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <summary><see cref="OverwriteMethod.MemoryThenDirect"/> で、完了したときに実体が無くなっていたので作った場合は true</summary>
         private bool _createdAtCommit;
 
+        /// <summary>
+        /// 書き込みの前の、既存の実体の属性。元に戻したときにこの属性に戻す（書き戻すとファイルシステムが Archive 属性を付けるため。1.3.0 第六次 B）。
+        /// まだ無いファイル・求められなかった場合は null。
+        /// </summary>
+        private FileAttributes? _attributesBefore;
+
         private bool _finished;
 
         private SafeFileOverwrite(string path, DanglingLinkPolicy policy, int bufferSize, OverwriteMethod method, string targetPath)
@@ -191,6 +197,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     // 完了するまで元のファイルに触れない（ほかのハンドルとの衝突は、今までどおり完了の時点で分かる）
                     var memory = new SafeFileOverwrite(path, policy, bufferSize, OverwriteMethod.MemoryThenDirect, target);
                     memory._pending = new MemoryStream();
+                    memory._attributesBefore = FileAttributeKeeper.TryGet(target);
 
                     return memory;
                 }
@@ -271,6 +278,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     }
                 }
 
+                // 書き換えたファイルには Archive 属性を付ける（Windows のふつうの挙動。標準の Set-Content も付ける。1.3.0 第六次 B）。
+                // 置き換えは元の属性を写すので、付けないと消えたままになり、バックアップのツールが変更を見落とす
+                FileAttributeKeeper.MarkArchive(this.TargetPath);
+
                 this._finished = true;
             }
             catch
@@ -309,6 +320,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     if (RestoreFromBackup())
                     {
                         DeleteQuietly(this._backupPath!);
+                        FileAttributeKeeper.Restore(this.TargetPath, this._attributesBefore);
                     }
                     else
                     {
@@ -441,6 +453,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         private static SafeFileOverwrite BeginCopyThenDirect(string path, string target, DanglingLinkPolicy policy, int bufferSize)
         {
             string backupPath = CreateBackupPath();
+            FileAttributes? attributesBefore = FileAttributeKeeper.TryGet(target);
 
             File.Copy(target, backupPath);
 
@@ -466,6 +479,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 {
                     _stream = stream,
                     _backupPath = backupPath,
+                    _attributesBefore = attributesBefore,
                 };
             }
             catch
@@ -515,6 +529,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             this._temporaryPath = streaming._temporaryPath;
             this._backupPath = streaming._backupPath;
             this._originalAttributes = streaming._originalAttributes;
+            this._attributesBefore = streaming._attributesBefore;
 
             pending.WriteTo(this._stream!);
             ReleasePending();
@@ -584,6 +599,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             bool restored = TryRestore(this._directStream!);
             DisposeQuietly(this._directStream!);
 
+            if (restored)
+            {
+                FileAttributeKeeper.Restore(this.TargetPath, this._attributesBefore);
+            }
+
             if (!restored)
             {
                 // 開いたハンドルで書き戻せなかった（閉じてしまっていた場合など）。開き直して書き戻す
@@ -592,6 +612,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     using (var stream = new FileStream(this.TargetPath, FileMode.Open, FileAccess.Write, FileShare.Read, 1, FileOptions.None))
                     {
                         restored = TryRestore(stream);
+                    }
+
+                    if (restored)
+                    {
+                        FileAttributeKeeper.Restore(this.TargetPath, this._attributesBefore);
                     }
                 }
                 catch (IOException)

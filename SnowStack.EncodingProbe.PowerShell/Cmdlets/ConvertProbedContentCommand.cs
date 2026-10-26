@@ -887,7 +887,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
         {
             overwrite?.Rollback();
             WriteError(RollbackNotice.Attach(
-                CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, target), target, overwrite?.KeptBackupPath));
+                CreateError(FileErrors.WriteAccessDenied(target, exception), "WriteAccessDenied", ErrorCategory.PermissionDenied, target), target, overwrite?.KeptBackupPath));
         }
         finally
         {

@@ -232,7 +232,7 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
             // 書く内容が境目を超えて書き方を切り替えたときに、切り替えた先を開けなかった（第五次の仕上げ）
             string? kept = RollbackOutput();
             ThrowTerminatingError(RollbackNotice.Attach(
-                CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath), this.OutputPath, kept));
+                CreateError(FileErrors.WriteAccessDenied(this.OutputPath, exception), "WriteAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath), this.OutputPath, kept));
         }
     }
 
@@ -269,7 +269,7 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
         {
             Cleanup();
             ThrowTerminatingError(RollbackNotice.Attach(
-                CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath), this.OutputPath, writer.KeptBackupPath));
+                CreateError(FileErrors.WriteAccessDenied(this.OutputPath, exception), "WriteAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath), this.OutputPath, writer.KeptBackupPath));
         }
     }
 
@@ -396,7 +396,7 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
         }
         catch (UnauthorizedAccessException exception)
         {
-            ThrowTerminatingError(CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath));
+            ThrowTerminatingError(CreateError(FileErrors.WriteAccessDenied(this.OutputPath, exception), "WriteAccessDenied", ErrorCategory.PermissionDenied, this.OutputPath));
         }
 
         throw new InvalidOperationException();  // ThrowTerminatingError は戻らないが、コンパイラには分からない

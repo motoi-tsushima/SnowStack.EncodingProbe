@@ -179,5 +179,10 @@
 
         /// <summary>写してから直接書く方法で失敗し、写しから書き戻せなかった（写しを一時フォルダーに残した）</summary>
         RestoreFromBackupFailed,
+
+        // ---- 1.3.0 第六次 B ----
+
+        /// <summary>書き込む権限が無い（ファイルの ACL・フォルダーの権限など。読み取り専用属性は FileIsReadOnly）</summary>
+        WriteAccessDenied,
     }
 }

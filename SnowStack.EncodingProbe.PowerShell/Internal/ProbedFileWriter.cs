@@ -61,6 +61,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// </summary>
         private byte[]? _pendingPrefix;
 
+        /// <summary>追記先の、追記の前の属性（元に戻したときにこの属性に戻す。1.3.0 第六次 B）。上書き・追記先が無かった場合は null。</summary>
+        private FileAttributes? _attributesBefore;
+
+        /// <summary>追記で、1 バイト以上書いたかどうか（書いたら Archive 属性を付ける）</summary>
+        private bool _wroteBytes;
+
         private bool _finished;
 
         private ProbedFileWriter(
@@ -160,6 +166,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             bool createdByAppend = false;
             string appendTargetPath = path;
             byte[]? resetPrefix = null;
+            FileAttributes? attributesBefore = null;
 
             try
             {
@@ -184,6 +191,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     }
 
                     originalLength = existed ? stream.Length : -1;
+                    attributesBefore = existed ? FileAttributeKeeper.TryGet(appendTargetPath) : null;
 
                     if (originalLength > 0 && Iso2022TailState.AppliesTo(codePage))
                     {
@@ -212,7 +220,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 }
 
                 return new ProbedFileWriter(
-                    stream, body, path, overwrite, originalLength, appendTargetPath, readOnlyScope, encodingName, resetPrefix);
+                    stream, body, path, overwrite, originalLength, appendTargetPath, readOnlyScope, encodingName, resetPrefix)
+                {
+                    _attributesBefore = attributesBefore,
+                };
             }
             catch
             {
@@ -274,6 +285,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         private void WriteBytes(byte[] bytes)
         {
+            if (bytes.Length > 0)
+            {
+                this._wroteBytes = true;
+            }
+
             if (this._pendingPrefix != null && bytes.Length > 0)
             {
                 // 戻すシーケンスは、1 バイト以上書くときにだけ先に書く（何も書かない呼び出しでは追記先を変えない）。
@@ -319,6 +335,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 {
                     this._stream!.Flush();
                     this._stream.Dispose();
+
+                    if (this._wroteBytes)
+                    {
+                        // 追記したファイルにも Archive 属性を付ける（上書きは SafeFileOverwrite が付ける。1.3.0 第六次 B）
+                        FileAttributeKeeper.MarkArchive(this._appendTargetPath);
+                    }
                 }
 
                 this._finished = true;
@@ -369,6 +391,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     // まだバッファに残っている分も含めて、元の長さに切り詰める
                     this._stream!.SetLength(this._originalLength);
                     this._stream.Dispose();
+                    FileAttributeKeeper.Restore(this._appendTargetPath, this._attributesBefore);
                 }
             }
             catch (IOException)
@@ -385,6 +408,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 if (this._overwrite == null && this._originalLength >= 0)
                 {
                     TruncateQuietly(this._appendTargetPath, this._originalLength);
+                    FileAttributeKeeper.Restore(this._appendTargetPath, this._attributesBefore);
                 }
             }
             finally
