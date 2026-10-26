@@ -2720,6 +2720,36 @@ foreach ($f6Zero in @('0', 0)) {
     Add-Scenario "Sixth/CodePageZero/$($z.GetType().Name)" { Invoke-F2 { ConvertTo-DotNetEncoding $z } }.GetNewClosure()
 }
 
+# BUG-0021: BOM が 2 個続くファイルは、-Encoding の指定によらず先頭の 1 個だけを取り除く（2 個目の U+FEFF は文字として残る）
+$f6DoubleBom = [ordered]@{
+    'utf8'  = @{ Bytes = [byte[]](0xEF, 0xBB, 0xBF, 0xEF, 0xBB, 0xBF, 0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A); Names = @('Auto', 'utf8BOM', 'utf8NoBOM', 'utf-8') }
+    'utf16' = @{ Bytes = [byte[]](0xFF, 0xFE, 0xFF, 0xFE, 0x41, 0, 0x2C, 0, 0x42, 0, 0x0D, 0, 0x0A, 0, 0x31, 0, 0x2C, 0, 0x32, 0, 0x0D, 0, 0x0A, 0); Names = @('Auto', 'unicodeBOM', 'unicodeNoBOM', 'unicode', 'utf-16') }
+}
+foreach ($f6Family in $f6DoubleBom.Keys) {
+    foreach ($f6Name in $f6DoubleBom[$f6Family].Names) {
+        $f6Index++
+        $bytes = $f6DoubleBom[$f6Family].Bytes; $en = $f6Name
+        $p = Join-Path $f6Dir ("dbom_{0}.csv" -f $f6Index)
+        Add-Scenario "Sixth/DoubleBom/$f6Family/$en" {
+            [IO.File]::WriteAllBytes($p, $bytes)
+            $first = (Get-ProbedContent -LiteralPath $p -Encoding $en)[0]
+            $col = (Import-ProbedCsv -LiteralPath $p -Encoding $en).PSObject.Properties.Name[0]
+            $colHead = (Import-ProbedCsv -LiteralPath $p -Encoding $en -DetectionLineCount 1).PSObject.Properties.Name[0]
+            $raw = Get-ProbedContent -LiteralPath $p -Encoding $en -Raw
+            $q = $p + '.out'
+            Set-ProbedContent -LiteralPath $q -Value $raw -NoNewline -EncodingFrom $p
+            'line={0} col={1} head={2} roundtrip={3}' -f ([int][char]$first[0]), ([int][char]$col[0]), ([int][char]$colHead[0]), ((Format-FileBytes $q) -eq (Format-FileBytes $p))
+        }.GetNewClosure()
+    }
+}
+$f6Index++
+$p = Join-Path $f6Dir ("dbom_{0}.csv" -f $f6Index)
+Add-Scenario 'Sixth/DoubleBom/ExportAppend' {
+    [IO.File]::WriteAllBytes($p, [byte[]](0xEF, 0xBB, 0xBF, 0xEF, 0xBB, 0xBF, 0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A))
+    $r = Invoke-F2 { [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }
+    '{0} // {1}' -f $r, (Format-FileBytes $p)
+}.GetNewClosure()
+
 # （第六次 A のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

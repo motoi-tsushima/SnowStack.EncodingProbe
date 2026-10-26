@@ -17,6 +17,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// StreamReader に detectEncodingFromByteOrderMarks: false を渡すと BOM が
     /// U+FEFF として1行目の先頭に混入するため、ストリームの位置を BOM の後ろに
     /// 進めたうえで StreamReader を生成する。
+    /// 取り除く BOM は先頭の 1 個だけで、2 個目の U+FEFF は文字として残す（1.3.0 第六次。BUG-0021）。
+    /// StreamReader は Encoding の preamble と一致する先頭を読み飛ばすので、preamble を持たない包み（<see cref="ReaderEncoding"/>）を渡す。
     /// </remarks>
     internal sealed class ProbedFileReader : IDisposable
     {
@@ -95,9 +97,10 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 // BOM の直後から復号を始めることで、U+FEFF が本文に混入するのを防ぐ
                 stream.Seek(bomLength, SeekOrigin.Begin);
 
+                // 渡す Encoding に preamble があると、StreamReader が BOM の後ろでもう一度読み飛ばす（BUG-0021）
                 var reader = new StreamReader(
                     stream,
-                    encoding,
+                    new ReaderEncoding(encoding),
                     detectEncodingFromByteOrderMarks: false,
                     bufferSize: ReadBufferSize,
                     leaveOpen: true);
