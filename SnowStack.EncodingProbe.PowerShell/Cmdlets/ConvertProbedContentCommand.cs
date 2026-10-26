@@ -419,6 +419,12 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
             return;
         }
 
+        // 同じパイプラインで書き込み中のファイルは変換しない（逆向きの往復。1.3.0 第六次 B。BUG-0028）
+        if (ReportIfBeingWritten(file))
+        {
+            return;
+        }
+
         byte[] original;
 
         try

@@ -399,5 +399,17 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string FileTooLargeToConvert(string path)
             => MessageCatalog.Format(MessageKey.FileTooLargeToConvert, path);
+
+        /// <summary>
+        /// 読み込もうとしたファイルに、同じパイプラインで書き込み中だった（読み込み側。書き込みは取り消した）
+        /// </summary>
+        public static string SamePathReadWhileWriting(string path)
+            => MessageCatalog.Format(MessageKey.SamePathReadWhileWriting, path);
+
+        /// <summary>
+        /// 書き込み中のファイルを同じパイプラインで読み込もうとしたので、書き込みを取り消した（書き込み側）
+        /// </summary>
+        public static string SamePathWriteCancelled(string path)
+            => MessageCatalog.Format(MessageKey.SamePathWriteCancelled, path);
     }
 }

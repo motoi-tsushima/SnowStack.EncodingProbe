@@ -209,5 +209,13 @@
 
         /// <summary>Convert-ProbedContent で変換できる大きさを超えている</summary>
         FileTooLargeToConvert,
+
+        // ---- 1.3.0 第六次 B（BUG-0028） ----
+
+        /// <summary>読み込もうとしたファイルに、同じパイプラインで書き込み中だった（読み込み側。書き込みは取り消した）</summary>
+        SamePathReadWhileWriting,
+
+        /// <summary>書き込み中のファイルを同じパイプラインで読み込もうとしたので、書き込みを取り消した（書き込み側）</summary>
+        SamePathWriteCancelled,
     }
 }

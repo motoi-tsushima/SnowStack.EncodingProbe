@@ -206,6 +206,12 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
                 continue;
             }
 
+            if (entry != null && ReportIfAborted(entry))
+            {
+                // 同じパイプラインの読み込み側が開こうとしたので、元に戻して止めた（BUG-0028）。以後の入力は書かない
+                continue;
+            }
+
             if (entry != null && entry.Target != null && this._pathsFromPipeline && this.RewritesRepeatedPipelinePath)
             {
                 // 前のレコードで書いた内容を取り消して、書き直す（Set-ProbedContent）
@@ -251,7 +257,12 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
                 continue;
             }
 
-            ProbedFileWriter writer = entry.Target.Writer;
+            if (ReportIfAborted(entry))
+            {
+                continue;
+            }
+
+            ProbedFileWriter writer = entry.Target!.Writer;
 
             try
             {
@@ -608,6 +619,27 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// 書き込み先を書き込みの前の状態に戻し、以後そのファイルへは書き込まないようにする（第五次）
     /// </summary>
     /// <returns>写しから書き戻せず、一時フォルダーに残した写しのパス（<see cref="ProbedFileWriter.KeptBackupPath"/>）。無ければ null</returns>
+    /// <summary>
+    /// 書き込み先を、同じパイプラインの読み込み側が開こうとしたので元に戻して止めていたら、SamePathRoundTrip（非終了エラー）を 1 回だけ報告して true を返す
+    /// （1.3.0 第六次 B。BUG-0028）。ファイルはすでに元に戻っている。
+    /// </summary>
+    private bool ReportIfAborted(WriteTargetEntry entry)
+    {
+        if (entry.Target == null || !entry.Target.Writer.AbortedByRoundTrip)
+        {
+            return false;
+        }
+
+        entry.Target = null;
+        WriteError(CreateError(
+            new PSInvalidOperationException(ValidationMessages.SamePathWriteCancelled(entry.Path)),
+            SameFileRoundTripException.ErrorId,
+            ErrorCategory.ResourceExists,
+            entry.Path));
+
+        return true;
+    }
+
     private static string? RollbackTarget(WriteTargetEntry entry)
     {
         ProbedFileWriter? writer = entry.Target?.Writer;

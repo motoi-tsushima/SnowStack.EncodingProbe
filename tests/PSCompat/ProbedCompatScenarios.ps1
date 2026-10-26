@@ -3036,6 +3036,36 @@ foreach ($f7Key in @('Out-String:Width', 'Out-String:*', 'Out-ProbedFile:Width',
     }.GetNewClosure()
 }
 
+# BUG-0028: 書き込み側が先に開いたファイルを、同じパイプラインの読み込み側が後から開く（逆向きの往復）。両方が SamePathRoundTrip、ファイルは元のまま
+$f7Pipelines = [ordered]@{
+    'Get|Out'             = { param($a, $z) Get-ProbedContent -LiteralPath $a, $z | Out-ProbedFile -LiteralPath $z }
+    'Get|Set'             = { param($a, $z) Get-ProbedContent -LiteralPath $a, $z | Set-ProbedContent -LiteralPath $z }
+    'Get|Add'             = { param($a, $z) Get-ProbedContent -LiteralPath $a, $z | Add-ProbedContent -LiteralPath $z }
+    'GetRaw|Set'          = { param($a, $z) Get-ProbedContent -LiteralPath $a, $z -Raw | Set-ProbedContent -LiteralPath $z -NoNewline }
+    'Import|Export'       = { param($a, $z) Import-ProbedCsv -LiteralPath $a, $z | Export-ProbedCsv -LiteralPath $z }
+    'Import|ExportAppend' = { param($a, $z) Import-ProbedCsv -LiteralPath $a, $z | Export-ProbedCsv -LiteralPath $z -Append }
+}
+foreach ($f7Name in $f7Pipelines.Keys) {
+    foreach ($f7Large in @($false, $true)) {
+        foreach ($f7New in @($false, $true)) {
+            $f7Index++
+            $pb = $f7Pipelines[$f7Name]; $lg = $f7Large; $nw = $f7New
+            $d = Join-Path $f7Dir ("rev_{0}" -f $f7Index)
+            Add-Scenario "SixthB/ReverseRoundTrip/$f7Name/large=$lg/new=$nw" {
+                [void](New-Item -ItemType Directory -Path $d)
+                $a = Join-Path $d 'a.csv'; $z = Join-Path $d 'z.csv'
+                [IO.File]::WriteAllText($a, "A`r`n" + ('a' * $(if ($lg) { $f7Threshold + 10 } else { 2 })) + "`r`n")
+                if (-not $nw) { [IO.File]::WriteAllText($z, "A`r`nz1`r`n") }
+                $errors = New-Object System.Collections.Generic.List[string]
+                try { & $pb $a $z 2>&1 | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $errors.Add('ERR ' + $_.FullyQualifiedErrorId.Split(',')[0]) } } }
+                catch { $errors.Add('TERM ' + $_.FullyQualifiedErrorId.Split(',')[0]) }
+                $tmp = @(Get-ChildItem -LiteralPath $d -Force -Filter '*.probedtmp').Count
+                '{0} // {1} // tmp={2}' -f ($errors -join ','), (Format-FileBytes $z), $tmp
+            }.GetNewClosure()
+        }
+    }
+}
+
 # （第六次 B のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

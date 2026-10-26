@@ -67,6 +67,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <summary>追記で、1 バイト以上書いたかどうか（書いたら Archive 属性を付ける）</summary>
         private bool _wroteBytes;
 
+        /// <summary>書き込み中の表（<see cref="ActiveWriteRegistry"/>）への登録。完了・元に戻す・閉じるで外す。</summary>
+        private IDisposable? _writeRegistration;
+
         private bool _finished;
 
         private ProbedFileWriter(
@@ -94,6 +97,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         /// <summary>符号化に使用している文字エンコーディング（BOM を持たない、例外フォールバックのインスタンス）</summary>
         public Encoding Encoding { get; }
+
+        /// <summary>
+        /// 同じパイプラインの読み込み側が、このファイルを後から開こうとしたので、元に戻して止めたかどうか（1.3.0 第六次 B。BUG-0028）。
+        /// true なら、呼び出し側はもう書かずに SamePathRoundTrip を報告する。
+        /// </summary>
+        public bool AbortedByRoundTrip { get; private set; }
 
         /// <summary>元に戻すときに写しから書き戻せず、一時フォルダーに残した写しのパス（<see cref="SafeFileOverwrite.KeptBackupPath"/>）。無ければ null。</summary>
         public string? KeptBackupPath => this._overwrite?.KeptBackupPath;
@@ -219,11 +228,17 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     }
                 }
 
-                return new ProbedFileWriter(
+                var writer = new ProbedFileWriter(
                     stream, body, path, overwrite, originalLength, appendTargetPath, readOnlyScope, encodingName, resetPrefix)
                 {
                     _attributesBefore = attributesBefore,
                 };
+
+                // 書き込み中として登録する。追記は開いたハンドルの実体、上書きは書き込み先の実体（まだ無ければ、親フォルダーと名前）
+                FileIdentity written = stream != null ? FileIdentity.FromHandle(stream.SafeFileHandle, path) : FileIdentity.Of(path);
+                writer._writeRegistration = ActiveWriteRegistry.Register(written, writer.AbortForRoundTrip);
+
+                return writer;
             }
             catch
             {
@@ -354,9 +369,25 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             {
                 if (this._finished)
                 {
+                    this._writeRegistration?.Dispose();
                     this._readOnlyScope?.Dispose();
                 }
             }
+        }
+
+        /// <summary>
+        /// 同じパイプラインの読み込み側がこのファイルを開こうとしたときに、<see cref="ActiveWriteRegistry"/> から呼ばれる（1.3.0 第六次 B。BUG-0028）。
+        /// 書き込みを元に戻し（「エラーで止まったら、そのファイルには、その呼び出しで書いた分を残さない」）、<see cref="AbortedByRoundTrip"/> を立てる。
+        /// </summary>
+        private void AbortForRoundTrip()
+        {
+            if (this._finished)
+            {
+                return;
+            }
+
+            Rollback();
+            this.AbortedByRoundTrip = true;
         }
 
         /// <summary>
@@ -413,6 +444,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             }
             finally
             {
+                this._writeRegistration?.Dispose();
                 this._readOnlyScope?.Dispose();
             }
         }

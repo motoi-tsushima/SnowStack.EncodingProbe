@@ -230,6 +230,14 @@ public abstract class ProbedContentCommandBase : PSCmdlet
                     continue;
                 }
 
+                // 同じパイプラインで書き込み中のファイルは読まない（逆向きの往復。1.3.0 第六次 B。BUG-0028）。
+                // まだ無いファイル（1 MiB を超える新しいファイルは、完了まで一時ファイルに書く）も、親フォルダーと名前で引き、
+                // 当たれば「ファイルが無い」ではなく SamePathRoundTrip にする（利用者の決定）
+                if (ReportIfBeingWritten(fullPath))
+                {
+                    continue;
+                }
+
                 if (!File.Exists(fullPath))
                 {
                     WriteError(CreateError(
@@ -243,6 +251,27 @@ public abstract class ProbedContentCommandBase : PSCmdlet
                 yield return fullPath;
             }
         }
+    }
+
+    /// <summary>
+    /// 同じパイプラインで書き込み中のファイルなら、その書き込みを元に戻して止めさせ、読み込み側として SamePathRoundTrip（非終了エラー）を報告して true を返す
+    /// （1.3.0 第六次 B。BUG-0028）。書き込み側は、次の入力か完了の時点で、自分の SamePathRoundTrip を報告する。
+    /// </summary>
+    /// <remarks>まだファイルを開いていない時点で呼ぶ（新しいファイルを消して元に戻すため）。</remarks>
+    private protected bool ReportIfBeingWritten(string fullPath)
+    {
+        if (!ActiveWriteRegistry.HasActiveWriters || !ActiveWriteRegistry.AbortWritersOf(FileIdentity.Of(fullPath)))
+        {
+            return false;
+        }
+
+        WriteError(CreateError(
+            new PSInvalidOperationException(ValidationMessages.SamePathReadWhileWriting(fullPath)),
+            SameFileRoundTripException.ErrorId,
+            ErrorCategory.ResourceExists,
+            fullPath));
+
+        return true;
     }
 
     /// <summary>

@@ -262,6 +262,8 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
             return;
         }
 
+        ThrowIfAbortedByRoundTrip();
+
         try
         {
             writer.Complete();
@@ -372,6 +374,7 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
     {
         if (this._writer != null)
         {
+            ThrowIfAbortedByRoundTrip();
             return;
         }
 
@@ -413,6 +416,25 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
         }
 
         throw new InvalidOperationException();  // ThrowTerminatingError は戻らないが、コンパイラには分からない
+    }
+
+    /// <summary>
+    /// 出力先を、同じパイプラインの読み込み側が開こうとしたので元に戻して止めていたら、SamePathRoundTrip の終了エラーにする（1.3.0 第六次 B。BUG-0028）。
+    /// ファイルはすでに元に戻っている。
+    /// </summary>
+    private void ThrowIfAbortedByRoundTrip()
+    {
+        if (this._writer == null || !this._writer.AbortedByRoundTrip)
+        {
+            return;
+        }
+
+        Cleanup();
+        ThrowTerminatingError(CreateError(
+            new PSInvalidOperationException(ValidationMessages.SamePathWriteCancelled(this.OutputPath)),
+            SameFileRoundTripException.ErrorId,
+            ErrorCategory.ResourceExists,
+            this.OutputPath));
     }
 
     private void ThrowSameFileRoundTrip()

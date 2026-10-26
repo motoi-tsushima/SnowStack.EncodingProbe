@@ -278,6 +278,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.FileTooLargeToConvert] =
                     "'{0}' is too large to convert (the file must be smaller than 2 GB). Convert-ProbedContent reads the whole file into memory to convert it. The file was not changed.",
+
+                [MessageKey.SamePathReadWhileWriting] =
+                    "'{0}' was not read because it is being written within the same pipeline. The write was cancelled and the file is unchanged. Write to a different file, or receive the content into a variable before writing.",
+
+                [MessageKey.SamePathWriteCancelled] =
+                    "The write to '{0}' was cancelled because the file was opened for reading within the same pipeline while it was being written. The file is unchanged. Write to a different file, or receive the content into a variable before writing.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -498,6 +504,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.FileTooLargeToConvert] =
                     "'{0}' は大きすぎるため変換できません（2 GB 未満のファイルだけを変換できます）。Convert-ProbedContent はファイル全体をメモリに読んで変換します。ファイルは変更していません。",
+
+                [MessageKey.SamePathReadWhileWriting] =
+                    "'{0}' は同じパイプラインで書き込み中のため、読み込みませんでした。書き込みは取り消し、ファイルは元のままです。書き込み先を別のファイルにするか、いったん変数に受けてから書いてください。",
+
+                [MessageKey.SamePathWriteCancelled] =
+                    "'{0}' に書き込んでいる間に、同じパイプラインでこのファイルを読み込もうとしたため、書き込みを取り消しました。ファイルは元のままです。書き込み先を別のファイルにするか、いったん変数に受けてから書いてください。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -720,6 +732,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.FileTooLargeToConvert] =
                     "'{0}'은(는) 너무 커서 변환할 수 없습니다(2GB 미만의 파일만 변환할 수 있습니다). Convert-ProbedContent는 파일 전체를 메모리로 읽어 변환합니다. 파일은 변경하지 않았습니다.",
+
+                [MessageKey.SamePathReadWhileWriting] =
+                    "'{0}'은(는) 같은 파이프라인에서 쓰는 중이므로 읽지 않았습니다. 쓰기는 취소했으며 파일은 원래 상태 그대로입니다. 쓰기 대상을 다른 파일로 하거나, 일단 변수에 받은 후 쓰십시오.",
+
+                [MessageKey.SamePathWriteCancelled] =
+                    "'{0}'에 쓰는 동안 같은 파이프라인에서 이 파일을 읽으려고 했기 때문에 쓰기를 취소했습니다. 파일은 원래 상태 그대로입니다. 쓰기 대상을 다른 파일로 하거나, 일단 변수에 받은 후 쓰십시오.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -933,6 +951,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.FileTooLargeToConvert] =
                     "'{0}' 太大，無法轉換（只能轉換小於 2 GB 的檔案）。Convert-ProbedContent 會將整個檔案讀入記憶體後轉換。檔案未變更。",
+
+                [MessageKey.SamePathReadWhileWriting] =
+                    "'{0}' 正在同一個管線中寫入，因此未讀取。寫入已取消，檔案維持原狀。請改為寫入其他檔案，或先將內容存入變數後再寫入。",
+
+                [MessageKey.SamePathWriteCancelled] =
+                    "寫入 '{0}' 期間，同一個管線嘗試讀取此檔案，因此已取消寫入。檔案維持原狀。請改為寫入其他檔案，或先將內容存入變數後再寫入。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -1146,6 +1170,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.FileTooLargeToConvert] =
                     "'{0}' 太大，无法转换（只能转换小于 2 GB 的文件）。Convert-ProbedContent 会将整个文件读入内存后转换。文件未更改。",
+
+                [MessageKey.SamePathReadWhileWriting] =
+                    "'{0}' 正在同一管道中写入，因此未读取。写入已取消，文件保持原样。请改为写入其他文件，或先将内容存入变量后再写入。",
+
+                [MessageKey.SamePathWriteCancelled] =
+                    "写入 '{0}' 期间，同一管道尝试读取此文件，因此已取消写入。文件保持原样。请改为写入其他文件，或先将内容存入变量后再写入。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =
