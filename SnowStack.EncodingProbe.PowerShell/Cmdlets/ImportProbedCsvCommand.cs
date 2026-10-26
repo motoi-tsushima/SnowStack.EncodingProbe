@@ -234,8 +234,12 @@ public sealed class ImportProbedCsvCommand : ProbedContentCommandBase
             {
                 // 列名の重複。ヘッダーを読んだ時点で分かるので、レコードは 1 件も出力していない。
                 // 標準は終了エラーだが、本モジュールではそのファイルだけを失敗にして次へ進む（24 章 U3）。
-                // ID とカテゴリは標準と同じ。対象は、どのファイルかが分かるようにパスにする
-                WriteError(CreateError(exception, DuplicateHeaderErrorId, ErrorCategory.NotSpecified, file));
+                // ID とカテゴリは標準と同じ。対象は、どのファイルかが分かるようにパスにする。
+                // メッセージにもパスと、重複したのがファイルのヘッダーか -Header の値かを書く（1.3.0 第六次 C。BUG-0045 (a)）
+                ExtendedTypeSystemException located = this.Header != null
+                    ? CsvDuplicateColumnName.InParameter(file, helper.Header, exception)
+                    : CsvDuplicateColumnName.InFile(file, helper.Header, exception);
+                WriteError(CreateError(located, DuplicateHeaderErrorId, ErrorCategory.NotSpecified, file));
             }
             catch (DecoderFallbackException)
             {

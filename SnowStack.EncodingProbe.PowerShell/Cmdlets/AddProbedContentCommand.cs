@@ -64,7 +64,7 @@ public sealed class AddProbedContentCommand : ProbedContentWriterCommandBase
     /// 既存の文字エンコーディングで追記したのとバイト単位で同一になる。
     /// </remarks>
     private protected override string? RejectChunk(
-        string file, EncodingSpec spec, Encoding? baseline, string chunk)
+        string file, EncodingSpec spec, EncodingSpec? baseline, string chunk)
     {
         if (baseline == null)
         {
@@ -72,13 +72,13 @@ public sealed class AddProbedContentCommand : ProbedContentWriterCommandBase
             return null;
         }
 
-        Encoding specified = spec.Encoding!;
-
-        if (AppendConsistency.ProducesSameBytes(specified, baseline, chunk))
+        if (AppendConsistency.ProducesSameBytes(spec.Encoding!, baseline.Encoding!, chunk))
         {
             return null;
         }
 
-        return ValidationMessages.EncodingChangeOnAppend(file, specified.WebName, baseline.WebName);
+        // 名前は統一語彙で示す（1.3.0 第六次 C。BUG-0045 (b)）
+        return ValidationMessages.EncodingChangeOnAppend(
+            file, AppendConsistency.DescribeForMessage(spec), AppendConsistency.DescribeForMessage(baseline));
     }
 }

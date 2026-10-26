@@ -33,10 +33,10 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
     private protected EncodingSpec OutputSpec = default!;
 
     /// <summary>
-    /// 追記の整合性検査に使う、追記先の文字エンコーディング。
+    /// 追記の整合性検査に使う、追記先の文字エンコーディングと BOM の有無（BOM はメッセージの名前にだけ使う。BUG-0045 (b)）。
     /// 検査しない場合（上書き・追記先が無い・0 バイト・-AllowEncodingChange）は null。
     /// </summary>
-    private protected Encoding? AppendBaseline;
+    private protected EncodingSpec? AppendBaseline;
 
     /// <summary>追記先が 1 バイト以上あるかどうか（BOM を書かない条件）</summary>
     private protected bool AppendToExistingContent;
@@ -210,14 +210,14 @@ public abstract class ProbedFileOutputCommandBase : ProbedContentCommandBase, ID
         }
 
         if (this.AppendBaseline != null
-            && !AppendConsistency.ProducesSameBytes(this.OutputSpec.Encoding!, this.AppendBaseline, chunk))
+            && !AppendConsistency.ProducesSameBytes(this.OutputSpec.Encoding!, this.AppendBaseline.Encoding!, chunk))
         {
             // -ErrorAction Stop の場合も含め、元に戻してからエラーにする
             string? kept = RollbackOutput();
 
             ThrowTerminatingError(RollbackNotice.Attach(CreateError(
                 new PSInvalidOperationException(ValidationMessages.EncodingChangeOnAppend(
-                    this.OutputPath, this.OutputSpec.Encoding!.WebName, this.AppendBaseline.WebName)),
+                    this.OutputPath, AppendConsistency.DescribeForMessage(this.OutputSpec), AppendConsistency.DescribeForMessage(this.AppendBaseline))),
                 "EncodingChangeOnAppend",
                 ErrorCategory.InvalidData,
                 this.OutputPath), this.OutputPath, kept));

@@ -136,12 +136,12 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// <param name="file">書き込み先の絶対パス</param>
     /// <param name="spec">使用する文字エンコーディングと BOM 方針</param>
     /// <param name="baseline">
-    /// 書き込みの前にファイルが持っていた文字エンコーディング。
+    /// 書き込みの前にファイルが持っていた文字エンコーディングと BOM の有無（メッセージに統一語彙名で出すため。BUG-0045 (b)）。
     /// 新規作成・空ファイル・検査が不要な場合は null。
     /// </param>
     /// <param name="chunk">1要素分の書き込み内容（改行を含む）</param>
     private protected virtual string? RejectChunk(
-        string file, EncodingSpec spec, Encoding? baseline, string chunk) => null;
+        string file, EncodingSpec spec, EncodingSpec? baseline, string chunk) => null;
 
     /// <summary>
     /// パラメータの組み合わせを検証し、-EncodingFrom の継承情報を求める
@@ -326,7 +326,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         }
 
         EncodingSpec spec;
-        Encoding? baseline;
+        EncodingSpec? baseline;
 
         try
         {
@@ -335,7 +335,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
             EncodingSpec? existing = ResolveExistingSpec(file);
 
             spec = ResolveSpec(file, existing);
-            baseline = this.RequiresExistingEncoding ? existing?.Encoding : null;
+            baseline = this.RequiresExistingEncoding && existing?.Encoding != null ? existing : null;
         }
         catch (FileNotFoundException exception)
         {
@@ -677,7 +677,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// </summary>
     private sealed class WriteTarget : IDisposable
     {
-        public WriteTarget(ProbedFileWriter writer, EncodingSpec spec, string lineBreak, Encoding? baseline)
+        public WriteTarget(ProbedFileWriter writer, EncodingSpec spec, string lineBreak, EncodingSpec? baseline)
         {
             this.Writer = writer;
             this.Spec = spec;
@@ -694,8 +694,8 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         /// <summary>改行として出力する文字列</summary>
         public string LineBreak { get; }
 
-        /// <summary>書き込みの前にファイルが持っていた文字エンコーディング</summary>
-        public Encoding? Baseline { get; }
+        /// <summary>書き込みの前にファイルが持っていた文字エンコーディングと BOM の有無</summary>
+        public EncodingSpec? Baseline { get; }
 
         public void Dispose() => this.Writer.Dispose();
     }

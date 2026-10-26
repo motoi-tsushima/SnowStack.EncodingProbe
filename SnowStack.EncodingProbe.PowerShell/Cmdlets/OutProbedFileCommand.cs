@@ -302,7 +302,7 @@ public sealed class OutProbedFileCommand : ProbedFileOutputCommandBase
         }
 
         this.AppendToExistingContent = append && hasContent;
-        this.AppendBaseline = needsBaseline ? existing?.Encoding : null;
+        this.AppendBaseline = needsBaseline && existing?.Encoding != null ? existing : null;
     }
 
     /// <summary>

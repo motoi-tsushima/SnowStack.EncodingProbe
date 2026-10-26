@@ -417,5 +417,17 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string EncodingObjectNotUsable(string typeName)
             => MessageCatalog.Format(MessageKey.EncodingObjectNotUsable, typeName);
+
+        /// <summary>
+        /// ファイルのヘッダーで列名が重複している（パスを示す。1.3.0 第六次 C。BUG-0045 (a)）
+        /// </summary>
+        public static string CsvHeaderAlreadyPresentInFile(string path, string name)
+            => MessageCatalog.Format(MessageKey.CsvHeaderAlreadyPresentInFile, path, name);
+
+        /// <summary>
+        /// -Header の値で列名が重複している（読まなかったファイルのパスを示す。1.3.0 第六次 C。BUG-0045 (a)）
+        /// </summary>
+        public static string CsvHeaderAlreadyPresentInParameter(string path, string name)
+            => MessageCatalog.Format(MessageKey.CsvHeaderAlreadyPresentInParameter, path, name);
     }
 }

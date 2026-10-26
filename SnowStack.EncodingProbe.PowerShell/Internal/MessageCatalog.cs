@@ -194,13 +194,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "Skipped the directory '{0}'.",
 
                 [MessageKey.DetectionLinesTooLarge] =
-                    "Cannot detect the character encoding of '{0}' from its first {1} lines, because they are larger "
-                    + "than the detection limit (they must be smaller than 2 GB). A file without line breaks is read "
-                    + "as a whole. Specify a smaller -DetectionLineCount. Cmdlets that have -Encoding also let you "
-                    + "specify the character encoding explicitly.",
+                    "Cannot detect the character encoding of '{0}' from the beginning of the file (with -DetectionLineCount {1}), because the lines to read are larger than the detection limit (they must be smaller than 2 GB). "
+                    + "A file without line breaks is read as a whole. Specify a smaller -DetectionLineCount. "
+                    + "Cmdlets that have -Encoding also let you specify the character encoding explicitly.",
                 [MessageKey.DetectionVerificationFailed] =
-                    "'{0}' was not processed because it contains bytes that are invalid in the character encoding "
-                    + "'{1}', which was detected from its first {2} lines, at byte offset {3} ({4}). "
+                    "'{0}' was not processed because it contains bytes that are invalid in the character encoding '{1}', which was detected from the beginning of the file (with -DetectionLineCount {2}), at byte offset {3} ({4}). "
                     + "Increase -DetectionLineCount, or specify the character encoding with -Encoding.",
 
                 [MessageKey.CsvHeaderAlreadyPresent] =
@@ -233,8 +231,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "'{0}' was not written because the character {2} '{3}' cannot be represented in the character encoding '{1}'. "
                     + "The file was left unchanged.",
                 [MessageKey.DetectionVerificationIso2022Escape] =
-                    "'{0}' was not processed because it contains an ISO-2022 escape sequence at byte offset {3} ({4}), "
-                    + "although its first {2} lines contain only ASCII characters and were read as '{1}'. "
+                    "'{0}' was not processed because it contains an ISO-2022 escape sequence at byte offset {3} ({4}), although the beginning of the file (with -DetectionLineCount {2}) contains only ASCII characters and was read as '{1}'. "
                     + "Remove -DetectionLineCount, or increase it so that the lines include the escape sequence.",
                 [MessageKey.CsvAppendEmptyPropertyName] =
                     "Cannot append CSV content to the following file: {0}. The header of the file has an empty column name, "
@@ -287,6 +284,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.EncodingObjectNotUsable] =
                     "The value passed as the character encoding is a '{0}' object, which cannot be used as a character encoding. An EncodingInformation object (the result of Resolve-Encoding) can be passed as it is, but a detection result that has gone through Export-Clixml and Import-Clixml, a job, remoting or Select-Object is no longer an EncodingInformation object. In that case, pass its CodePage (for example, -Encoding $info.CodePage), or a unified vocabulary name that states the BOM (such as unicodeBOM or utf8NoBOM).",
+
+                [MessageKey.CsvHeaderAlreadyPresentInFile] =
+                    "The column name \"{1}\" is specified more than once in the header of '{0}' (column names are not case-sensitive).",
+
+                [MessageKey.CsvHeaderAlreadyPresentInParameter] =
+                    "'{0}' was not read because the column name \"{1}\" is specified more than once in -Header (column names are not case-sensitive).",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -516,6 +519,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.EncodingObjectNotUsable] =
                     "文字エンコーディングとして渡された値は '{0}' のオブジェクトで、文字エンコーディングとして使えません。EncodingInformation オブジェクト（Resolve-Encoding の結果）はそのまま渡せますが、Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなります。その場合は、CodePage の値（-Encoding $info.CodePage など）か、BOM を明示した統一語彙名（unicodeBOM・utf8NoBOM など）を渡してください。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInFile] =
+                    "'{0}' のヘッダーに、列名 \"{1}\" が複数回指定されています（列名の大文字と小文字は区別しません）。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInParameter] =
+                    "-Header に列名 \"{1}\" が複数回指定されているため、'{0}' を読み込みませんでした（列名の大文字と小文字は区別しません）。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -747,6 +756,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.EncodingObjectNotUsable] =
                     "문자 인코딩으로 전달된 값은 '{0}' 개체이므로 문자 인코딩으로 사용할 수 없습니다. EncodingInformation 개체(Resolve-Encoding의 결과)는 그대로 전달할 수 있지만, Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아닙니다. 이 경우에는 CodePage 값(-Encoding $info.CodePage 등) 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM, utf8NoBOM 등)을 전달하십시오.",
+
+                [MessageKey.CsvHeaderAlreadyPresentInFile] =
+                    "'{0}'의 헤더에 열 이름 \"{1}\"이(가) 여러 번 지정되었습니다(열 이름은 대/소문자를 구분하지 않습니다).",
+
+                [MessageKey.CsvHeaderAlreadyPresentInParameter] =
+                    "-Header에 열 이름 \"{1}\"이(가) 여러 번 지정되어 있으므로 '{0}'을(를) 읽지 않았습니다(열 이름은 대/소문자를 구분하지 않습니다).",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -892,7 +907,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "'{0}' 的前 {1} 行超過可判斷字元編碼的大小（必須小於 2 GB），因此無法判斷。沒有換行的檔案會讀取整個檔案。"
                     + "請減少 -DetectionLineCount。在具有 -Encoding 的命令中，也可以明確指定字元編碼。",
                 [MessageKey.DetectionVerificationFailed] =
-                    "'{0}' 含有以前 {2} 行判斷的字元編碼 '{1}' 而言無效的位元組序列（位元組位置 {3}：{4}），因此未處理。"
+                    "根據前 {2} 行判斷 '{0}' 的字元編碼為 '{1}'，但檔案含有以字元編碼 '{1}' 而言無效的位元組序列（位元組位置 {3}：{4}），因此未處理。"
                     + "請增加 -DetectionLineCount，或以 -Encoding 指定字元編碼。",
 
                 [MessageKey.CsvHeaderAlreadyPresent] =
@@ -969,6 +984,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.EncodingObjectNotUsable] =
                     "作為字元編碼傳入的值是 '{0}' 物件，無法作為字元編碼使用。EncodingInformation 物件（Resolve-Encoding 的結果）可以直接傳入，但經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件。在此情況下，請傳入其 CodePage 的值（例如 -Encoding $info.CodePage），或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM、utf8NoBOM）。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInFile] =
+                    "'{0}' 的標頭中，欄位名稱 \"{1}\" 指定了多次（欄位名稱不區分大小寫）。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInParameter] =
+                    "-Header 中欄位名稱 \"{1}\" 指定了多次，因此未讀取 '{0}'（欄位名稱不區分大小寫）。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -1114,7 +1135,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     "'{0}' 的前 {1} 行超过可判断字符编码的大小（必须小于 2 GB），因此无法判断。没有换行的文件会读取整个文件。"
                     + "请减小 -DetectionLineCount。在具有 -Encoding 的命令中，也可以明确指定字符编码。",
                 [MessageKey.DetectionVerificationFailed] =
-                    "'{0}' 含有以前 {2} 行判断的字符编码 '{1}' 而言无效的字节序列（字节位置 {3}：{4}），因此未处理。"
+                    "根据前 {2} 行判断 '{0}' 的字符编码为 '{1}'，但文件含有以字符编码 '{1}' 而言无效的字节序列（字节位置 {3}：{4}），因此未处理。"
                     + "请增大 -DetectionLineCount，或用 -Encoding 指定字符编码。",
 
                 [MessageKey.CsvHeaderAlreadyPresent] =
@@ -1191,6 +1212,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.EncodingObjectNotUsable] =
                     "作为字符编码传入的值是 '{0}' 对象，无法作为字符编码使用。EncodingInformation 对象（Resolve-Encoding 的结果）可以直接传入，但经过 Export-Clixml 与 Import-Clixml、作业（job）、远程或 Select-Object 的判断结果已不再是 EncodingInformation 对象。在这种情况下，请传入其 CodePage 的值（例如 -Encoding $info.CodePage），或明确指定 BOM 的统一词汇名称（例如 unicodeBOM、utf8NoBOM）。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInFile] =
+                    "'{0}' 的标头中，列名 \"{1}\" 指定了多次（列名不区分大小写）。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInParameter] =
+                    "-Header 中列名 \"{1}\" 指定了多次，因此未读取 '{0}'（列名不区分大小写）。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

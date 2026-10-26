@@ -222,5 +222,13 @@
 
         /// <summary>文字エンコーディングとして PSCustomObject（逆シリアル化した判定結果など）が渡された（1.3.0 第六次 C。BUG-0039）</summary>
         EncodingObjectNotUsable,
+
+        // ---- 1.3.0 第六次 C（列名の重複の場所） ----
+
+        /// <summary>ファイルのヘッダーで列名が重複している（パスを示す。1.3.0 第六次 C。BUG-0045 (a)）</summary>
+        CsvHeaderAlreadyPresentInFile,
+
+        /// <summary>-Header の値で列名が重複している（読まなかったファイルのパスを示す。1.3.0 第六次 C。BUG-0045 (a)）</summary>
+        CsvHeaderAlreadyPresentInParameter,
     }
 }

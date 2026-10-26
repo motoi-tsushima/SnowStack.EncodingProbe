@@ -86,6 +86,7 @@ public class AddProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
 
     /// <summary>
     /// エラーメッセージが、指定された側と既存側の両方の文字エンコーディングを示すこと。
+    /// 名前は統一語彙で示す（1.3.0 第六次 C。BUG-0045 (b)。それまでは WebName の 'utf-8'）。
     /// </summary>
     [Fact]
     public void Append_EncodingChange_ReportsBothEncodings()
@@ -98,7 +99,7 @@ public class AddProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
         ErrorRecord error = Assert.Single(result.Errors);
 
         Assert.Equal(
-            ValidationMessages.EncodingChangeOnAppend(file.Path, "shift_jis", "utf-8"),
+            ValidationMessages.EncodingChangeOnAppend(file.Path, "shift_jis", "utf8NoBOM"),
             error.Exception.Message);
     }
 

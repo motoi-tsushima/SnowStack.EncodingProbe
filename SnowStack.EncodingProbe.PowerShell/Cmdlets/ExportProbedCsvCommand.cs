@@ -396,7 +396,7 @@ public sealed class ExportProbedCsvCommand : ProbedFileOutputCommandBase
         }
 
         this.AppendToExistingContent = append && hasContent;
-        this.AppendBaseline = append && !this.AllowEncodingChange.IsPresent ? existing?.Encoding : null;
+        this.AppendBaseline = append && !this.AllowEncodingChange.IsPresent && existing?.Encoding != null ? existing : null;
 
         return existing;
     }
@@ -477,21 +477,27 @@ public sealed class ExportProbedCsvCommand : ProbedFileOutputCommandBase
     /// </summary>
     private IList<string>? ReadExistingHeader(EncodingSpec existing)
     {
+        ImportCsvHelper? helper = null;
+
         try
         {
             using (ProbedFileReader reader = ProbedFileReader.Open(
                 this.OutputPath, EncodingSpec.Create(existing.Encoding!, emitBom: false), this.DetectorOptions))
             {
-                var helper = new ImportCsvHelper(_ => { }, _ => { }, this._delimiter, null, null, reader.Reader);
+                helper = new ImportCsvHelper(_ => { }, _ => { }, this._delimiter, null, null, reader.Reader);
                 helper.ReadHeader();
                 return helper.Header;
             }
         }
         catch (ExtendedTypeSystemException exception)
         {
-            // 追記先のヘッダーに同じ列名が複数ある。Import-ProbedCsv と同じ ID にそろえる
+            // 追記先のヘッダーに同じ列名が複数ある。Import-ProbedCsv と同じ ID にそろえる。
+            // メッセージにはパスを書く（1.3.0 第六次 C。BUG-0045 (a)）
             ThrowTerminatingError(CreateError(
-                exception, "AlreadyPresentPSMemberInfoInternalCollectionAdd", ErrorCategory.NotSpecified, this.OutputPath));
+                CsvDuplicateColumnName.InFile(this.OutputPath, helper?.Header, exception),
+                "AlreadyPresentPSMemberInfoInternalCollectionAdd",
+                ErrorCategory.NotSpecified,
+                this.OutputPath));
         }
         catch (IOException exception)
         {

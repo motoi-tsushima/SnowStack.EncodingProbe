@@ -3123,6 +3123,44 @@ Add-Scenario 'SixthC/TotalCount/Head' { Invoke-F2 { Get-ProbedContent -LiteralPa
 Add-Scenario 'SixthC/TotalCount/First' { Invoke-F2 { Get-ProbedContent -LiteralPath $f8Lines -First 2 } }.GetNewClosure()
 Add-Scenario 'SixthC/TotalCount/Minus1' { Invoke-F2 { Get-ProbedContent -LiteralPath $f8Lines -TotalCount -1 } }.GetNewClosure()
 Add-Scenario 'SixthC/TotalCount/FirstRaw' { Invoke-F2 { Get-ProbedContent -LiteralPath $f8Lines -First 1 -Raw } }.GetNewClosure()
+
+# BUG-0045: メッセージの細部。(a) 列名の重複にパス（ファイルのヘッダーか -Header か）、(b) EncodingChangeOnAppend を統一語彙名で、(d) 行数によらない言い方
+$f8Good = Join-Path $f8Dir 'good.csv'
+$f8Dup = Join-Path $f8Dir 'dup.csv'
+[IO.File]::WriteAllBytes($f8Good, [byte[]](0x58, 0x0D, 0x0A, 0x39, 0x0D, 0x0A))
+[IO.File]::WriteAllBytes($f8Dup, [byte[]](0x41, 0x2C, 0x61, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A))
+function Format-F8Error { param($e, $dir) '{0} // {1} // {2} // target={3}' -f $e.FullyQualifiedErrorId.Split(',')[0], $e.CategoryInfo.Category, $e.Exception.Message.Replace($dir, '<dir>'), ([string]$e.TargetObject).Replace($dir, '<dir>') }
+Add-Scenario 'SixthC/DuplicateColumn/File' {
+    $errors = @(); $null = Import-ProbedCsv -LiteralPath $f8Good, $f8Dup -ErrorVariable errors -ErrorAction SilentlyContinue
+    @($errors | ForEach-Object { Format-F8Error $_ $f8Dir }) -join ' | '
+}.GetNewClosure()
+Add-Scenario 'SixthC/DuplicateColumn/HeaderParameter' {
+    $errors = @(); $null = Import-ProbedCsv -LiteralPath $f8Good, $f8Dup -Header 'Name', 'NAME' -ErrorVariable errors -ErrorAction SilentlyContinue
+    @($errors | ForEach-Object { Format-F8Error $_ $f8Dir }) -join ' | '
+}.GetNewClosure()
+Add-Scenario 'SixthC/DuplicateColumn/ExportAppend' {
+    $t = Join-Path $f8Dir 'dupappend.csv'; [IO.File]::WriteAllBytes($t, [IO.File]::ReadAllBytes($f8Dup))
+    try { [pscustomobject]@{ A = 1 } | Export-ProbedCsv -LiteralPath $t -Append; 'NO-ERROR' } catch { (Format-F8Error $_ $f8Dir) + ' // ' + (Format-FileBytes $t) }
+}.GetNewClosure()
+$f8Appenders = [ordered]@{
+    'Add'          = { param($p) Add-ProbedContent -LiteralPath $p -Value 'あ' -Encoding utf8NoBOM -ErrorAction Stop }
+    'OutAppend'    = { param($p) 'あ' | Out-ProbedFile -LiteralPath $p -Append -Encoding utf8NoBOM }
+    'ExportAppend' = { param($p) [pscustomobject]@{ A = 'あ' } | Export-ProbedCsv -LiteralPath $p -Append -Encoding utf8NoBOM }
+}
+foreach ($f8Name in $f8Appenders.Keys) {
+    $ap = $f8Appenders[$f8Name]
+    Add-Scenario "SixthC/EncodingChangeOnAppend/$f8Name" {
+        $t = Join-Path $f8Dir "change_$f8Name.csv"
+        [IO.File]::WriteAllBytes($t, [byte[]](0xFF, 0xFE, 0x41, 0x00, 0x0D, 0x00, 0x0A, 0x00))
+        try { & $ap $t; 'NO-ERROR' } catch { (Format-F8Error $_ $f8Dir) + ' // ' + (Format-FileBytes $t) }
+    }.GetNewClosure()
+}
+Add-Scenario 'SixthC/DetectionVerificationFailed/OneLine' {
+    $t = Join-Path $f8Dir 'verify.csv'
+    [IO.File]::WriteAllBytes($t, [byte[]](0x41, 0x0D, 0x0A, 0x31, 0x0D, 0x0A, 0x82, 0xA0, 0x0D, 0x0A))
+    $errors = @(); $null = Import-ProbedCsv -LiteralPath $t -DetectionLineCount 1 -ErrorVariable errors -ErrorAction SilentlyContinue
+    @($errors | ForEach-Object { Format-F8Error $_ $f8Dir }) -join ' | '
+}.GetNewClosure()
 # （第六次 C のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

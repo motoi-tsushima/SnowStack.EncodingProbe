@@ -48,6 +48,26 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         }
 
         /// <summary>
+        /// 追記の整合性検査のエラー（EncodingChangeOnAppend）に出す文字エンコーディングの名前（1.3.0 第六次 C。BUG-0045 (b)）
+        /// </summary>
+        /// <remarks>
+        /// 統一語彙の名前（utf8NoBOM、unicodeBOM、shift_jis など）で示す。WebName（utf-8、utf-16）で示すと、
+        /// ほかのメッセージ（DetectionVerificationFailed など）と表記がそろわず、utf-8 は書き込みでは拒否される名前でもあった。
+        /// BOM の方針が決まっていない値（unicode などの裸の名前）は、BOM を付けない名前ではなく WebName で示す。
+        /// </remarks>
+        public static string DescribeForMessage(EncodingSpec spec)
+        {
+            int codePage = spec.Encoding!.CodePage;
+
+            if (!spec.EmitBom.HasValue && EncodingVocabulary.IsUnicodeCodePage(codePage))
+            {
+                return spec.Encoding.WebName.ToLowerInvariant();
+            }
+
+            return EncodingVocabulary.GetUnifiedName(codePage, spec.EmitBom == true);
+        }
+
+        /// <summary>
         /// バイト列が完全に一致するかどうか
         /// </summary>
         private static bool BytesAreEqual(byte[] left, byte[] right)
