@@ -864,6 +864,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     /// 1.3.0 第五次の後半で、自前の一時ファイルと File.Replace をやめた（H-17）。ハードリンクは切らずに元のファイルへ直接書き、
     /// シンボリックリンクはリンクの先の実体を置き換える（リンクは残す）。一時ファイルの名前も、ほかのコマンドと同じ
     /// <c>.&lt;名前&gt;.&lt;8 桁&gt;.probedtmp</c> になった（1.2.0 までは <c>.&lt;名前&gt;.&lt;GUID&gt;.tmp</c>）。
+    /// 第六次 B で、元の名前によらない <c>.~probed&lt;8 桁&gt;.probedtmp</c> にした（名前の長いファイルで上限を超えていた。BUG-0027）。
     /// </remarks>
     private bool WriteAtomically(string target, byte[] content)
     {

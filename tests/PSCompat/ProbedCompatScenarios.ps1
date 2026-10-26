@@ -2967,6 +2967,36 @@ foreach ($f7Share in @('ReadWrite', 'None')) {
     }
 }
 
+# BUG-0027: 一時ファイルの名前は元の名前によらない固定長（.~probed<8 桁>.probedtmp）。1 MiB を超える書き込みで、
+# 名前の長いファイル（パス全体は 260 文字未満）も書け、5.1 で一時ファイルのパスだけが上限を超える場合は写してから直接書く方法に切り替える
+$f7Short = Join-Path ([IO.Path]::GetPathRoot($script:WorkRoot)) ('pe27_' + [Guid]::NewGuid().ToString('N').Substring(0, 8))
+[void](New-Item -ItemType Directory -Path $f7Short)
+$f7Deep = $f7Short
+while ($f7Deep.Length -lt 240) { $f7Deep = Join-Path $f7Deep ('d' * [Math]::Min(40, 239 - $f7Deep.Length)) }
+[void](New-Item -ItemType Directory -Path $f7Deep -Force)
+$f7LongCases = [ordered]@{
+    'LongName240' = Join-Path $f7Short (('n' * 236) + '.txt')
+    'DeepFolder'  = Join-Path $f7Deep 'a.txt'
+}
+$f7LongWriters = [ordered]@{
+    'Set'     = { param($p, $v) Set-ProbedContent -LiteralPath $p -Value $v -Encoding utf8NoBOM -NoNewline }
+    'Convert' = { param($p, $v) Convert-ProbedContent -LiteralPath $p -SourceEncoding utf8NoBOM -Encoding utf8BOM }
+}
+foreach ($f7Case in $f7LongCases.Keys) {
+    foreach ($f7Name in $f7LongWriters.Keys) {
+        $p = $f7LongCases[$f7Case]; $wb = $f7LongWriters[$f7Name]
+        Add-Scenario "SixthB/LongPath/$f7Case/$f7Name" {
+            [IO.File]::WriteAllText($p, 'o' * ($f7Threshold + 10))
+            $r = Invoke-F2 { & $wb $p ('y' * ($f7Threshold + 20)) }
+            $leftovers = @(Get-ChildItem -LiteralPath (Split-Path -Parent $p) -Force -Filter '*.probedtmp').Count
+            $len = (New-Object IO.FileInfo $p).Length
+            [IO.File]::Delete($p)
+            '{0} // len={1} tmp={2} pathLength={3} temporaryPathOver259={4}' -f $r, $len, $leftovers, $p.Length, ((Split-Path -Parent $p).Length + 27 -gt 259)
+        }.GetNewClosure()
+    }
+}
+Add-Scenario 'SixthB/LongPath/Cleanup' { Remove-Item -LiteralPath $f7Short -Recurse -Force; Test-Path -LiteralPath $f7Short }.GetNewClosure()
+
 # （第六次 B のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

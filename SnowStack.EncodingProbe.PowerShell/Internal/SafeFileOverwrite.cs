@@ -61,11 +61,16 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// </list>
     /// メモリにためる量は、プロセス全体で <see cref="MemoryBudget"/> までとする（Set-ProbedContent は完了まで複数のファイルを開いておくため）。
     /// 超えそうになったファイルは、その時点で境目を超えたものとして扱う。
-    /// 一時ファイルの名前は <c>.&lt;名前&gt;.&lt;8 桁の 16 進&gt;.probedtmp</c>、写しは一時フォルダーの <c>SnowStack.EncodingProbe.&lt;8 桁&gt;.probedbak</c>。
+    /// 一時ファイルの名前は、元の名前によらない固定長の <c>.~probed&lt;8 桁の 16 進&gt;.probedtmp</c>（26 文字。1.3.0 第六次 B。BUG-0027）、
+    /// 写しは一時フォルダーの <c>SnowStack.EncodingProbe.&lt;8 桁&gt;.probedbak</c>。
+    /// 一時ファイルのパスが長さの上限を超える場合（.NET Framework の 260 文字など）は、写してから直接書く方法に切り替える。
     /// 書いている間の一時ファイルは <see cref="TemporaryFileRegistry"/> に載せ、ワイルドカードの解決から除く。
     /// </remarks>
     internal sealed class SafeFileOverwrite
     {
+        /// <summary>一時ファイルの名前の接頭辞</summary>
+        public const string TemporaryPrefix = ".~probed";
+
         /// <summary>一時ファイルの名前の接尾辞</summary>
         public const string TemporarySuffix = ".probedtmp";
 
@@ -370,6 +375,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     // フォルダーに一時ファイルを作れない（書き込み先の名前でなら作れる場合に備える）
                     return BeginDirectCreate(path, policy, bufferSize, FileMode.CreateNew);
                 }
+                catch (IOException exception) when (IsPathTooLong(exception, path))
+                {
+                    // 一時ファイルのパスが長さの上限を超える（書き込み先の名前でなら作れる。BUG-0027）
+                    return BeginDirectCreate(path, policy, bufferSize, FileMode.CreateNew);
+                }
             }
 
             string target = identity.FinalPath ?? path;
@@ -389,6 +399,39 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             {
                 return BeginCopyThenDirect(path, target, policy, bufferSize);
             }
+            catch (IOException exception) when (IsPathTooLong(exception, target))
+            {
+                // 一時ファイルのパスが長さの上限を超える（元のファイルの名前が一時ファイルの名前より短く、パスが上限の近くにある場合。BUG-0027）
+                return BeginCopyThenDirect(path, target, policy, bufferSize);
+            }
+        }
+
+        /// <summary>
+        /// 一時ファイルを作れなかった原因が、パスの長さの上限かどうか（1.3.0 第六次 B。BUG-0027）
+        /// </summary>
+        /// <remarks>
+        /// .NET Framework は 260 文字を超えるパスを <see cref="PathTooLongException"/>、またはパスの一部が見つからない
+        /// （<see cref="DirectoryNotFoundException"/>）として報告する。.NET は 1 つの名前が 255 文字を超えると
+        /// ERROR_FILENAME_EXCED_RANGE・ERROR_INVALID_NAME になる。フォルダーが実在するのに見つからないと言われた場合も長さとみなす。
+        /// </remarks>
+        private static bool IsPathTooLong(IOException exception, string target)
+        {
+            if (exception is PathTooLongException)
+            {
+                return true;
+            }
+
+            const int FilenameExceedsRange = unchecked((int)0x800700CE);
+            const int InvalidName = unchecked((int)0x8007007B);
+
+            if (exception.HResult == FilenameExceedsRange || exception.HResult == InvalidName)
+            {
+                return true;
+            }
+
+            string? directory = System.IO.Path.GetDirectoryName(target);
+
+            return exception is DirectoryNotFoundException && !string.IsNullOrEmpty(directory) && Directory.Exists(directory);
         }
 
         /// <summary>
@@ -437,9 +480,27 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         private static SafeFileOverwrite BeginReplace(
             string path, string target, DanglingLinkPolicy policy, int bufferSize, FileAttributes? originalAttributes)
         {
-            string temporaryPath = CreateTemporaryPath(target);
-            var stream = new FileStream(
-                temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, bufferSize, FileOptions.SequentialScan);
+            string temporaryPath;
+            FileStream stream;
+            int attempt = 0;
+
+            while (true)
+            {
+                temporaryPath = CreateTemporaryPath(target);
+
+                try
+                {
+                    stream = new FileStream(
+                        temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, bufferSize, FileOptions.SequentialScan);
+                    break;
+                }
+                catch (IOException exception) when (++attempt < 5 && File.Exists(temporaryPath))
+                {
+                    // 名前が元の名前によらないので、同じフォルダーで別の書き込みの一時ファイルとぶつかることがある。名前を作り直す
+                    _ = exception;
+                }
+            }
+
             TemporaryFileRegistry.Add(temporaryPath);
 
             return new SafeFileOverwrite(path, policy, bufferSize, OverwriteMethod.Replace, target)
@@ -820,7 +881,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         private static string CreateTemporaryPath(string target)
         {
             string directory = System.IO.Path.GetDirectoryName(target) ?? string.Empty;
-            string name = "." + System.IO.Path.GetFileName(target) + "." + NewSuffix() + TemporarySuffix;
+
+            // 元の名前を含めない（名前の長い書き込み先で、一時ファイルの名前が 255 文字・パスが 260 文字を超えていた。BUG-0027）
+            string name = TemporaryPrefix + NewSuffix() + TemporarySuffix;
 
             return System.IO.Path.Combine(directory, name);
         }

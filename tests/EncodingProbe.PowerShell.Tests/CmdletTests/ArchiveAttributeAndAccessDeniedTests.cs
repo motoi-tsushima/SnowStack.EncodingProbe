@@ -18,7 +18,9 @@ namespace EncodingProbe.PowerShell.Tests.CmdletTests;
 /// 書き込みに成功したら、4 つの書き方（メモリに写してから直接・置き換え・写してから直接・追記）のどれでも Archive 属性が付く（標準の Set-Content と同じ）。
 /// 元に戻した場合は、書き込みの前の属性のまま（書き戻しでファイルシステムが付ける Archive も外す）。
 /// 隠し・システム属性のファイルに -Force なしで書け、代替データストリームが保たれることも固定する。
+/// 写してから直接書く方法は一時フォルダーに写しを作るので、写しが残っていないかを調べるほかのテスト（LinkAndPermissionWriteTests）と並行に走らせない。
 /// </remarks>
+[Collection(OverwriteStateCollection.Name)]
 public class ArchiveAttributeAndAccessDeniedTests : IClassFixture<ProbedCommandRunspaceFixture>
 {
     private const string NoError = "NO-ERROR";
