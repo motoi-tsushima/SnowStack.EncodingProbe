@@ -68,25 +68,12 @@ internal static class PlatformInfoResolver
 
     private static LocaleInformation ResolveLocale()
     {
-        var culture = CultureInfo.CurrentCulture;
-        int ansi = -1;
-        int oem = -1;
-
-        try
-        {
-            ansi = culture.TextInfo.ANSICodePage;
-            oem = culture.TextInfo.OEMCodePage;
-        }
-        catch (NotSupportedException)
-        {
-            // 非Windows環境等、取得できない場合は-1のまま
-        }
-
+        // コードページは、Windows ではスレッドのカルチャーではなくシステムのロケールの値（1.3.0 第六次。BUG-0032）
         return new LocaleInformation
         {
-            CurrentCulture = culture.Name,
-            AnsiCodePage = ansi,
-            OemCodePage = oem,
+            CurrentCulture = CultureInfo.CurrentCulture.Name,
+            AnsiCodePage = SystemCodePages.GetAnsiCodePage(),
+            OemCodePage = SystemCodePages.GetOemCodePage(),
         };
     }
 }

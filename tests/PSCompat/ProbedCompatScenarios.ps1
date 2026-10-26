@@ -2698,6 +2698,28 @@ foreach ($f6Cmd in @('Set-ProbedContent', 'Add-ProbedContent')) {
     }
 }
 
+# BUG-0032: ansi / oem と Locale のコードページは、スレッドのカルチャーではなくシステムのロケールの値。
+# ホストによらず同じ値になることを、標準の 7.x の ansi / 5.1 の Default と一致するかで記録する（値そのものはホストの設定による）
+foreach ($f6Culture in @('ja-JP', 'de-DE', 'en-US', 'ru-RU', 'ko-KR', '')) {
+    $cu = $f6Culture
+    Add-Scenario "Sixth/SystemCodePage/culture=$cu" {
+        $old = [Threading.Thread]::CurrentThread.CurrentCulture
+        try {
+            [Threading.Thread]::CurrentThread.CurrentCulture = [Globalization.CultureInfo]::GetCultureInfo($cu)
+            $ansi = (ConvertTo-DotNetEncoding ansi).CodePage
+            $oem = (ConvertTo-DotNetEncoding oem).CodePage
+            $loc = (Get-EncodingProbePlatformInfo).Locale
+            $system = if ($PSVersionTable.PSEdition -eq 'Core') { [Text.Encoding]::GetEncoding([Globalization.CultureInfo]::InstalledUICulture.TextInfo.ANSICodePage).CodePage } else { [Text.Encoding]::Default.CodePage }
+            'ansi=locale:{0} oem=locale:{1} sameAsInstalled:{2}' -f ($ansi -eq $loc.AnsiCodePage), ($oem -eq $loc.OemCodePage), ($ansi -eq $system)
+        }
+        finally { [Threading.Thread]::CurrentThread.CurrentCulture = $old }
+    }.GetNewClosure()
+}
+foreach ($f6Zero in @('0', 0)) {
+    $z = $f6Zero
+    Add-Scenario "Sixth/CodePageZero/$($z.GetType().Name)" { Invoke-F2 { ConvertTo-DotNetEncoding $z } }.GetNewClosure()
+}
+
 # （第六次 A のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

@@ -484,6 +484,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// </summary>
         private static EncodingSpec FromCodePage(int codePage, string original)
         {
+            if (codePage == 0)
+            {
+                // Encoding.GetEncoding(0) は実行環境の既定（.NET Framework は ANSI、.NET は UTF-8）を返すが、
+                // 0 は語彙に無いので、使えないコードページ（1・2・3 など）と同じく拒否する（1.3.0 第六次。BUG-0032）
+                throw Error(ValidationMessages.UnknownEncoding(original));
+            }
+
             if (IsUnicodeCodePage(codePage))
             {
                 // 数値指定にはBOM方針が含まれないため、未指定として扱う
@@ -551,6 +558,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 throw Error(ValidationMessages.CodePageNotAvailable(vocabulary));
             }
 
+            if (codePage == CodePageUtf8)
+            {
+                // システムの ANSI / OEM が 65001（「ベータ: ワールドワイド言語サポートで Unicode UTF-8 を使用」）の場合は、
+                // BOM 無しの UTF-8 とする（1.3.0 第六次）。GetEncoding(65001) は BOM 付きのインスタンスを返す
+                return EncodingSpec.Create(BuildEncoding(CodePageUtf8, emitBom: false), false);
+            }
+
             try
             {
                 return EncodingSpec.Create(Encoding.GetEncoding(codePage), false);
@@ -561,31 +575,17 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             }
         }
 
-        /// <summary>システムのANSIコードページを取得する（取得できない場合は -1）</summary>
-        private static int GetAnsiCodePage()
-        {
-            try
-            {
-                return CultureInfo.CurrentCulture.TextInfo.ANSICodePage;
-            }
-            catch (NotSupportedException)
-            {
-                return -1;
-            }
-        }
+        /// <summary>
+        /// システムのANSIコードページを取得する（取得できない場合は -1）。
+        /// Windows ではシステムのロケールの値で、スレッドのカルチャーには従わない（1.3.0 第六次。BUG-0032）。
+        /// Get-EncodingProbePlatformInfo の Locale.AnsiCodePage と同じ値。
+        /// </summary>
+        private static int GetAnsiCodePage() => SystemCodePages.GetAnsiCodePage();
 
-        /// <summary>システムのOEMコードページを取得する（取得できない場合は -1）</summary>
-        private static int GetOemCodePage()
-        {
-            try
-            {
-                return CultureInfo.CurrentCulture.TextInfo.OEMCodePage;
-            }
-            catch (NotSupportedException)
-            {
-                return -1;
-            }
-        }
+        /// <summary>
+        /// システムのOEMコードページを取得する（取得できない場合は -1）。規則は <see cref="GetAnsiCodePage"/> と同じ。
+        /// </summary>
+        private static int GetOemCodePage() => SystemCodePages.GetOemCodePage();
 
         /// <summary>
         /// 書き込み用途で許されない指定を弾く。
