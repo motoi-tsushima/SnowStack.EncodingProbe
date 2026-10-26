@@ -3115,6 +3115,14 @@ foreach ($f8Shape in $f8Shapes.Keys) {
         }.GetNewClosure()
     }
 }
+
+# BUG-0041: -TotalCount の別名 -Head・-First。-1 は今までどおり拒否する
+$f8Lines = Join-Path $f8Dir 'lines.txt'
+[IO.File]::WriteAllBytes($f8Lines, [byte[]](0x61, 0x0D, 0x0A, 0x62, 0x0D, 0x0A, 0x63, 0x0D, 0x0A))
+Add-Scenario 'SixthC/TotalCount/Head' { Invoke-F2 { Get-ProbedContent -LiteralPath $f8Lines -Head 2 } }.GetNewClosure()
+Add-Scenario 'SixthC/TotalCount/First' { Invoke-F2 { Get-ProbedContent -LiteralPath $f8Lines -First 2 } }.GetNewClosure()
+Add-Scenario 'SixthC/TotalCount/Minus1' { Invoke-F2 { Get-ProbedContent -LiteralPath $f8Lines -TotalCount -1 } }.GetNewClosure()
+Add-Scenario 'SixthC/TotalCount/FirstRaw' { Invoke-F2 { Get-ProbedContent -LiteralPath $f8Lines -First 1 -Raw } }.GetNewClosure()
 # （第六次 C のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

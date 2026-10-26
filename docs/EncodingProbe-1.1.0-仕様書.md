@@ -164,7 +164,7 @@ WebName 経路で解決された Unicode 系（`"utf-8"` など）も同じ扱�
 | `-LiteralPath` | `string[]` | ワイルドカード非対応 |
 | `-Encoding` | 多形 | 省略時は `Auto`（対象ファイルを検出） |
 | `-Raw` | switch | 行分割せず、ファイル全体を 1 個の文字列として返す |
-| `-TotalCount` | `long` | 先頭 N 行のみ読み込む |
+| `-TotalCount` | `long` | 先頭 N 行のみ読み込む。別名 `-Head`・`-First`（標準と同じ。1.3.0 第六次 C で追加。BUG-0041）。省略するとすべての行。`-1` を含む負の値は受け付けない（7.x の標準と同じ。5.1 の標準は `-1` ですべての行を読む） |
 | `-Culture` | `string` | 判定に用いるカルチャー名。省略時は実行環境のカルチャー |
 | `-Strategy` | `string` | 判定方式。`Combined`（既定）/ `NativeOnly` / `UtfUnknownOnly` |
 
@@ -373,6 +373,8 @@ GB18030（54936）のまま残る。UTF.Unknown は HKSCS 固有字が入ると�
 | `-Wait` / `-Stream` / `-ReadCount` | 完全互換を目指さない方針のため |
 | FileSystem 以外のプロバイダー対応 | 同上 |
 | `-NoNewline` | `Get-Content` には存在せず、読み取り側で意味を持たない |
+
+`-TotalCount` の別名 `-Head`・`-First` は採用した（1.3.0 第六次 C。BUG-0041。`Get-Content -Head 10` をそのまま置き換えられるようにするため）。
 
 `-Raw` は利便性ではなく**情報保全**のために必須とする。行分割すると、行末が CRLF か LF か、末尾に改行があったかが失われ、後から復元できない。読み込んだ内容を加工して書き戻す用途では、`-Raw` が唯一の無損失な読み取り手段となる。
 

@@ -352,6 +352,29 @@ public class GetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
         Assert.Equal(new[] { "a1", "b1" }, result.AsStrings());
     }
 
+    /// <summary>
+    /// 別名 -Head・-First は -TotalCount と同じ（標準の Get-Content と同じ。1.3.0 第六次 C。BUG-0041）。
+    /// -1 を含む負の値は今までどおり受け付けず、-Raw との同時指定は別名でも拒否する。
+    /// </summary>
+    [Theory]
+    [InlineData("-TotalCount 2", "a|b")]
+    [InlineData("-Head 2", "a|b")]
+    [InlineData("-First 2", "a|b")]
+    [InlineData("-First 0", "")]
+    [InlineData("", "a|b|c")]
+    [InlineData("-TotalCount -1", "ERR ParameterArgumentValidationError")]
+    [InlineData("-Head -1", "ERR ParameterArgumentValidationError")]
+    [InlineData("-First 1 -Raw", "ERR RawAndTotalCountAreExclusive")]
+    public void Read_TotalCountAliases(string arguments, string expected)
+    {
+        using var file = ByteExactFile.Create(Encoding.ASCII.GetBytes("a\r\nb\r\nc\r\n"));
+
+        InvocationResult result = this._fixture.InvokeScriptCapturingErrors(
+            $"try {{ Get-ProbedContent -LiteralPath '{file.Path}' {arguments} -ErrorAction Stop }} catch {{ 'ERR ' + $_.FullyQualifiedErrorId.Split(',')[0] }}");
+
+        Assert.Equal(expected, string.Join("|", result.AsStrings()));
+    }
+
     #endregion
 
     #region パス指定とパイプライン（仕様書 4.1 / 4.3）

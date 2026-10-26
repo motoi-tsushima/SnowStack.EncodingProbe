@@ -70,7 +70,12 @@ public sealed class GetProbedContentCommand : ProbedContentCommandBase
     /// <summary>
     /// 各ファイルの先頭から読み込む行数
     /// </summary>
+    /// <remarks>
+    /// 別名 -Head・-First は標準の Get-Content と同じ（1.3.0 第六次 C。BUG-0041）。
+    /// 負の値（-1 を含む）は今までどおり受け付けない（7.x の標準と同じ。5.1 の標準は -1 ですべての行を読む）。
+    /// </remarks>
     [Parameter]
+    [Alias("Head", "First")]
     [ValidateRange(0, long.MaxValue)]
     public long TotalCount { get; set; } = TotalCountUnlimited;
 

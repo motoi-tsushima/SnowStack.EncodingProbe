@@ -38,10 +38,10 @@
             <maml:para>行に分割せず、ファイル全体を 1 個の文字列として返します。行に分割すると、各行の行末が CR-LF か LF か、末尾に改行があったかが失われるため、無損失に読み取れる唯一の手段です。-TotalCount とは同時に指定できません。</maml:para>
           </maml:description>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
           <maml:name>TotalCount</maml:name>
           <maml:description>
-            <maml:para>各ファイルの先頭 N 行だけを読み込みます。-Raw とは同時に指定できません。</maml:para>
+            <maml:para>各ファイルの先頭 N 行だけを読み込みます。-Raw とは同時に指定できません。標準の Get-Content と同じく、別名 -Head・-First も使えます。省略すると、すべての行を読み込みます。-1 を含む負の値は受け付けません（PowerShell 7.x の Get-Content と同じ。Windows PowerShell 5.1 の Get-Content は -1 ですべての行を読みます）。すべての行を読むときは -TotalCount を省略してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -82,10 +82,10 @@
             <maml:para>行に分割せず、ファイル全体を 1 個の文字列として返します。行に分割すると、各行の行末が CR-LF か LF か、末尾に改行があったかが失われるため、無損失に読み取れる唯一の手段です。-TotalCount とは同時に指定できません。</maml:para>
           </maml:description>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
           <maml:name>TotalCount</maml:name>
           <maml:description>
-            <maml:para>各ファイルの先頭 N 行だけを読み込みます。-Raw とは同時に指定できません。</maml:para>
+            <maml:para>各ファイルの先頭 N 行だけを読み込みます。-Raw とは同時に指定できません。標準の Get-Content と同じく、別名 -Head・-First も使えます。省略すると、すべての行を読み込みます。-1 を含む負の値は受け付けません（PowerShell 7.x の Get-Content と同じ。Windows PowerShell 5.1 の Get-Content は -1 ですべての行を読みます）。すべての行を読むときは -TotalCount を省略してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -175,17 +175,17 @@
           <maml:uri />
         </dev:type>
         <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
         <maml:name>TotalCount</maml:name>
         <maml:description>
-          <maml:para>各ファイルの先頭 N 行だけを読み込みます。-Raw とは同時に指定できません。</maml:para>
+          <maml:para>各ファイルの先頭 N 行だけを読み込みます。-Raw とは同時に指定できません。標準の Get-Content と同じく、別名 -Head・-First も使えます。省略すると、すべての行を読み込みます。-1 を含む負の値は受け付けません（PowerShell 7.x の Get-Content と同じ。Windows PowerShell 5.1 の Get-Content は -1 ですべての行を読みます）。すべての行を読むときは -TotalCount を省略してください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         <dev:type>
           <maml:name>System.Int64</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>-1 (unlimited)</dev:defaultValue>
+        <dev:defaultValue>None (all lines)</dev:defaultValue>
       </command:parameter>
     </command:parameters>
     <command:inputTypes>

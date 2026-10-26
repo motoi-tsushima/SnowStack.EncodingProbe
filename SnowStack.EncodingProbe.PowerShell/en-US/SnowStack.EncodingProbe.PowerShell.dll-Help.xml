@@ -38,10 +38,10 @@
             <maml:para>Returns the entire file as a single string instead of splitting it into lines. This is the only lossless way to read a file: splitting into lines discards whether each line ended with CR-LF or LF, and whether the file ended with a line break at all. Cannot be combined with -TotalCount.</maml:para>
           </maml:description>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
           <maml:name>TotalCount</maml:name>
           <maml:description>
-            <maml:para>Reads only the first N lines of each file. Cannot be combined with -Raw.</maml:para>
+            <maml:para>Reads only the first N lines of each file. Cannot be combined with -Raw. The aliases -Head and -First can also be used, as with Get-Content. When omitted, all lines are read. Negative values, including -1, are not accepted (as with Get-Content in PowerShell 7.x; Get-Content in Windows PowerShell 5.1 reads all lines for -1); to read all lines, omit -TotalCount.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -82,10 +82,10 @@
             <maml:para>Returns the entire file as a single string instead of splitting it into lines. This is the only lossless way to read a file: splitting into lines discards whether each line ended with CR-LF or LF, and whether the file ended with a line break at all. Cannot be combined with -TotalCount.</maml:para>
           </maml:description>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
           <maml:name>TotalCount</maml:name>
           <maml:description>
-            <maml:para>Reads only the first N lines of each file. Cannot be combined with -Raw.</maml:para>
+            <maml:para>Reads only the first N lines of each file. Cannot be combined with -Raw. The aliases -Head and -First can also be used, as with Get-Content. When omitted, all lines are read. Negative values, including -1, are not accepted (as with Get-Content in PowerShell 7.x; Get-Content in Windows PowerShell 5.1 reads all lines for -1); to read all lines, omit -TotalCount.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -175,17 +175,17 @@
           <maml:uri />
         </dev:type>
         <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
         <maml:name>TotalCount</maml:name>
         <maml:description>
-          <maml:para>Reads only the first N lines of each file. Cannot be combined with -Raw.</maml:para>
+          <maml:para>Reads only the first N lines of each file. Cannot be combined with -Raw. The aliases -Head and -First can also be used, as with Get-Content. When omitted, all lines are read. Negative values, including -1, are not accepted (as with Get-Content in PowerShell 7.x; Get-Content in Windows PowerShell 5.1 reads all lines for -1); to read all lines, omit -TotalCount.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         <dev:type>
           <maml:name>System.Int64</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>-1 (unlimited)</dev:defaultValue>
+        <dev:defaultValue>None (all lines)</dev:defaultValue>
       </command:parameter>
     </command:parameters>
     <command:inputTypes>

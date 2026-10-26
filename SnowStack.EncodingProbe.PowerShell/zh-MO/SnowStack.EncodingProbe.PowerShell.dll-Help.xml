@@ -38,10 +38,10 @@
             <maml:para>不分行，將整個檔案以一個字串傳回。分行後會失去每一行的行尾是 CR-LF 還是 LF，以及檔案結尾是否有換行，因此這是唯一無損失的讀取方式。不能與 -TotalCount 同時指定。</maml:para>
           </maml:description>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
           <maml:name>TotalCount</maml:name>
           <maml:description>
-            <maml:para>只讀取每個檔案開頭的 N 行。不能與 -Raw 同時指定。</maml:para>
+            <maml:para>只讀取每個檔案開頭的 N 行。不能與 -Raw 同時指定。與標準的 Get-Content 相同，也可以使用別名 -Head、-First。省略時讀取所有行。不接受包括 -1 在內的負值（與 PowerShell 7.x 的 Get-Content 相同；Windows PowerShell 5.1 的 Get-Content 在 -1 時讀取所有行）。若要讀取所有行，請省略 -TotalCount。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -82,10 +82,10 @@
             <maml:para>不分行，將整個檔案以一個字串傳回。分行後會失去每一行的行尾是 CR-LF 還是 LF，以及檔案結尾是否有換行，因此這是唯一無損失的讀取方式。不能與 -TotalCount 同時指定。</maml:para>
           </maml:description>
         </command:parameter>
-        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+        <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
           <maml:name>TotalCount</maml:name>
           <maml:description>
-            <maml:para>只讀取每個檔案開頭的 N 行。不能與 -Raw 同時指定。</maml:para>
+            <maml:para>只讀取每個檔案開頭的 N 行。不能與 -Raw 同時指定。與標準的 Get-Content 相同，也可以使用別名 -Head、-First。省略時讀取所有行。不接受包括 -1 在內的負值（與 PowerShell 7.x 的 Get-Content 相同；Windows PowerShell 5.1 的 Get-Content 在 -1 時讀取所有行）。若要讀取所有行，請省略 -TotalCount。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         </command:parameter>
@@ -175,17 +175,17 @@
           <maml:uri />
         </dev:type>
         <dev:defaultValue>Combined</dev:defaultValue>      </command:parameter>
-      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
+      <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
         <maml:name>TotalCount</maml:name>
         <maml:description>
-          <maml:para>只讀取每個檔案開頭的 N 行。不能與 -Raw 同時指定。</maml:para>
+          <maml:para>只讀取每個檔案開頭的 N 行。不能與 -Raw 同時指定。與標準的 Get-Content 相同，也可以使用別名 -Head、-First。省略時讀取所有行。不接受包括 -1 在內的負值（與 PowerShell 7.x 的 Get-Content 相同；Windows PowerShell 5.1 的 Get-Content 在 -1 時讀取所有行）。若要讀取所有行，請省略 -TotalCount。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Int64</command:parameterValue>
         <dev:type>
           <maml:name>System.Int64</maml:name>
           <maml:uri />
         </dev:type>
-        <dev:defaultValue>-1 (unlimited)</dev:defaultValue>
+        <dev:defaultValue>None (all lines)</dev:defaultValue>
       </command:parameter>
     </command:parameters>
     <command:inputTypes>
