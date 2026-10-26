@@ -28,7 +28,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -72,7 +72,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -120,7 +120,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
+          <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -316,7 +316,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면(또는 Auto를 지정하면) 쓰기 대상의 기존 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면(또는 Auto를 지정하면) 쓰기 대상의 기존 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -392,7 +392,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면(또는 Auto를 지정하면) 쓰기 대상의 기존 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면(또는 Auto를 지정하면) 쓰기 대상의 기존 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -476,7 +476,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면(또는 Auto를 지정하면) 쓰기 대상의 기존 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면(또는 Auto를 지정하면) 쓰기 대상의 기존 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -748,7 +748,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>추가에 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 추가 대상 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. 지정한 값 가운데 BOM에 해당하는 부분은 항상 무시됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+            <maml:para>추가에 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 추가 대상 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. 지정한 값 가운데 BOM에 해당하는 부분은 항상 무시됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -830,7 +830,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>추가에 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 추가 대상 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. 지정한 값 가운데 BOM에 해당하는 부분은 항상 무시됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+            <maml:para>추가에 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 추가 대상 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. 지정한 값 가운데 BOM에 해당하는 부분은 항상 무시됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -931,7 +931,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>추가에 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 추가 대상 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. 지정한 값 가운데 BOM에 해당하는 부분은 항상 무시됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+          <maml:para>추가에 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 추가 대상 파일에서 상속합니다. 그 파일이 없으면 오류가 됩니다. 지정한 값 가운데 BOM에 해당하는 부분은 항상 무시됩니다. -EncodingFrom과 함께 지정할 수 없습니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -1194,7 +1194,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1295,7 +1295,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1434,7 +1434,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -1719,7 +1719,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>변환 대상의 문자 인코딩(과 BOM). 생략하면 원본 파일의 문자 인코딩을 유지합니다. 통합 어휘, WebName, 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. Auto는 지정할 수 없습니다. -Bom과 함께 쓰면 Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 계열 이름으로 다루고 BOM은 -Bom으로 정합니다. -Bom이 없으면 다른 쓰기 cmdlet과 같은 규칙이므로 단순 utf8은 거부합니다. -Bom과의 조합은 참고를 참조하십시오.</maml:para>
+            <maml:para>변환 대상의 문자 인코딩(과 BOM). 생략하면 원본 파일의 문자 인코딩을 유지합니다. 통합 어휘, WebName, 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. Auto는 지정할 수 없습니다. -Bom과 함께 쓰면 Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 계열 이름으로 다루고 BOM은 -Bom으로 정합니다. -Bom이 없으면 다른 쓰기 cmdlet과 같은 규칙이므로 단순 utf8은 거부합니다. -Bom과의 조합은 참고를 참조하십시오. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1809,7 +1809,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>변환 대상의 문자 인코딩(과 BOM). 생략하면 원본 파일의 문자 인코딩을 유지합니다. 통합 어휘, WebName, 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. Auto는 지정할 수 없습니다. -Bom과 함께 쓰면 Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 계열 이름으로 다루고 BOM은 -Bom으로 정합니다. -Bom이 없으면 다른 쓰기 cmdlet과 같은 규칙이므로 단순 utf8은 거부합니다. -Bom과의 조합은 참고를 참조하십시오.</maml:para>
+            <maml:para>변환 대상의 문자 인코딩(과 BOM). 생략하면 원본 파일의 문자 인코딩을 유지합니다. 통합 어휘, WebName, 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. Auto는 지정할 수 없습니다. -Bom과 함께 쓰면 Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 계열 이름으로 다루고 BOM은 -Bom으로 정합니다. -Bom이 없으면 다른 쓰기 cmdlet과 같은 규칙이므로 단순 utf8은 거부합니다. -Bom과의 조합은 참고를 참조하십시오. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1939,7 +1939,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>변환 대상의 문자 인코딩(과 BOM). 생략하면 원본 파일의 문자 인코딩을 유지합니다. 통합 어휘, WebName, 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. Auto는 지정할 수 없습니다. -Bom과 함께 쓰면 Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 계열 이름으로 다루고 BOM은 -Bom으로 정합니다. -Bom이 없으면 다른 쓰기 cmdlet과 같은 규칙이므로 단순 utf8은 거부합니다. -Bom과의 조합은 참고를 참조하십시오.</maml:para>
+          <maml:para>변환 대상의 문자 인코딩(과 BOM). 생략하면 원본 파일의 문자 인코딩을 유지합니다. 통합 어휘, WebName, 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. Auto는 지정할 수 없습니다. -Bom과 함께 쓰면 Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 계열 이름으로 다루고 BOM은 -Bom으로 정합니다. -Bom이 없으면 다른 쓰기 cmdlet과 같은 규칙이므로 단순 utf8은 거부합니다. -Bom과의 조합은 참고를 참조하십시오. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -2224,7 +2224,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2276,7 +2276,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2327,7 +2327,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2378,7 +2378,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2449,7 +2449,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
+          <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -2658,7 +2658,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2798,7 +2798,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2983,7 +2983,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다.</maml:para>
+          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -3320,7 +3320,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="0" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>변환할 값. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. Auto는 지정할 수 없습니다.</maml:para>
+            <maml:para>변환할 값. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. Auto는 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -3330,7 +3330,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="0" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>변환할 값. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. Auto는 지정할 수 없습니다.</maml:para>
+          <maml:para>변환할 값. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. Auto는 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>

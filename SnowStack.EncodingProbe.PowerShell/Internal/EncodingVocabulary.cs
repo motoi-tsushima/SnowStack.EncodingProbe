@@ -123,6 +123,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             CodePagesProviderRegistration.EnsureRegistered();
 
             object? value = UnwrapPSObject(input);
+
+            if (value is PSCustomObject)
+            {
+                // 逆シリアル化した判定結果（Deserialized.*.EncodingInformation）・Select-Object の結果などは今までどおり受け付けない。
+                // 文字列にすると空になり「'' を解決できない」としか言えなかったので、型が違うことと渡し方を示す（1.3.0 第六次 C。BUG-0039）
+                throw Error(ValidationMessages.EncodingObjectNotUsable(DescribeTypeName(input)));
+            }
+
             EncodingSpec spec = ResolveCore(value, allowAuto);
 
             if (usage == EncodingUsage.Write)
@@ -734,6 +742,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             return value.ToString() ?? value.GetType().Name;
         }
+
+        /// <summary>
+        /// PSCustomObject の型名（PowerShell の型名の先頭。Deserialized.SnowStack.EncodingProbe.EncodingInformation など）を返す
+        /// </summary>
+        private static string DescribeTypeName(object? input)
+            => input is PSObject psObject && psObject.TypeNames.Count > 0
+                ? psObject.TypeNames[0]
+                : typeof(PSCustomObject).FullName!;
 
         /// <summary>
         /// パラメータ束縛の段階で失敗させるための例外を生成する

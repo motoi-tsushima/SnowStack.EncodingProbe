@@ -3090,6 +3090,31 @@ foreach ($f8Culture in @('ko-KR', ' ko-KR', "ko-KR`t", ' ', ' ko KR ')) {
     }.GetNewClosure()
 }
 
+
+# BUG-0039: 逆シリアル化した判定結果などの PSCustomObject は今までどおり受け付けず、型が違うことと渡し方を示すメッセージにする
+$f8U16 = Join-Path $f8Dir 'u16.txt'
+[IO.File]::WriteAllBytes($f8U16, [byte[]](0xFF, 0xFE, 0x61, 0x00, 0x0A, 0x00))
+$f8Shapes = [ordered]@{
+    'Clixml'   = { param($src, $dir) $x = Join-Path $dir 'info.xml'; Resolve-Encoding -Path $src | Export-Clixml -LiteralPath $x; Import-Clixml -LiteralPath $x }
+    'Select'   = { param($src, $dir) Resolve-Encoding -Path $src | Select-Object * }
+    'Json'     = { param($src, $dir) Resolve-Encoding -Path $src | ConvertTo-Json | ConvertFrom-Json }
+    'Unrelated' = { param($src, $dir) [pscustomobject]@{ A = 1 } }
+}
+foreach ($f8Shape in $f8Shapes.Keys) {
+    $sb = $f8Shapes[$f8Shape]
+    foreach ($f8Command in @('ConvertTo', 'Set')) {
+        $cmd = $f8Command
+        Add-Scenario "SixthC/EncodingObject/$f8Shape/$cmd" {
+            $v = & $sb $f8U16 $f8Dir
+            $out = Join-Path $f8Dir 'obj_out.txt'
+            try {
+                if ($cmd -eq 'ConvertTo') { ConvertTo-DotNetEncoding -Encoding $v } else { Set-ProbedContent -LiteralPath $out -Value a -Encoding $v }
+                'NO-ERROR'
+            }
+            catch { '{0} // {1} // exists={2}' -f $_.FullyQualifiedErrorId.Split(',')[0], $_.Exception.InnerException.Message, (Test-Path -LiteralPath $out) }
+        }.GetNewClosure()
+    }
+}
 # （第六次 C のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

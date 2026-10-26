@@ -28,7 +28,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -72,7 +72,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -120,7 +120,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
+          <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -316,7 +316,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時（または Auto 指定時）は書き込み先の既存ファイルから継承します。そのファイルが存在しない場合はエラーになります。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時（または Auto 指定時）は書き込み先の既存ファイルから継承します。そのファイルが存在しない場合はエラーになります。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -392,7 +392,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時（または Auto 指定時）は書き込み先の既存ファイルから継承します。そのファイルが存在しない場合はエラーになります。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時（または Auto 指定時）は書き込み先の既存ファイルから継承します。そのファイルが存在しない場合はエラーになります。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -476,7 +476,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時（または Auto 指定時）は書き込み先の既存ファイルから継承します。そのファイルが存在しない場合はエラーになります。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時（または Auto 指定時）は書き込み先の既存ファイルから継承します。そのファイルが存在しない場合はエラーになります。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -748,7 +748,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>追記に使う文字エンコーディング。省略時（または Auto 指定時）は追記先のファイルから継承します。そのファイルが存在しない場合はエラーになります。指定値のうち BOM の部分は常に無視されます。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+            <maml:para>追記に使う文字エンコーディング。省略時（または Auto 指定時）は追記先のファイルから継承します。そのファイルが存在しない場合はエラーになります。指定値のうち BOM の部分は常に無視されます。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -830,7 +830,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>追記に使う文字エンコーディング。省略時（または Auto 指定時）は追記先のファイルから継承します。そのファイルが存在しない場合はエラーになります。指定値のうち BOM の部分は常に無視されます。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+            <maml:para>追記に使う文字エンコーディング。省略時（または Auto 指定時）は追記先のファイルから継承します。そのファイルが存在しない場合はエラーになります。指定値のうち BOM の部分は常に無視されます。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -931,7 +931,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>追記に使う文字エンコーディング。省略時（または Auto 指定時）は追記先のファイルから継承します。そのファイルが存在しない場合はエラーになります。指定値のうち BOM の部分は常に無視されます。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          <maml:para>追記に使う文字エンコーディング。省略時（または Auto 指定時）は追記先のファイルから継承します。そのファイルが存在しない場合はエラーになります。指定値のうち BOM の部分は常に無視されます。-EncodingFrom とは同時に指定できません。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -1194,7 +1194,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。</maml:para>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1295,7 +1295,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。</maml:para>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1434,7 +1434,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。</maml:para>
+          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -1719,7 +1719,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>変換先の文字エンコーディング（と BOM）。省略時は変換元の文字エンコーディングを保ちます。統一語彙、WebName、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。Auto は指定できません。-Bom と組み合わせた場合、Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は系統名として扱い、BOM は -Bom で決めます。-Bom が無い場合はほかの書き込み系コマンドと同じ規則で、裸の utf8 は拒否します。-Bom との組み合わせは注意事項を参照してください。</maml:para>
+            <maml:para>変換先の文字エンコーディング（と BOM）。省略時は変換元の文字エンコーディングを保ちます。統一語彙、WebName、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。Auto は指定できません。-Bom と組み合わせた場合、Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は系統名として扱い、BOM は -Bom で決めます。-Bom が無い場合はほかの書き込み系コマンドと同じ規則で、裸の utf8 は拒否します。-Bom との組み合わせは注意事項を参照してください。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1809,7 +1809,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>変換先の文字エンコーディング（と BOM）。省略時は変換元の文字エンコーディングを保ちます。統一語彙、WebName、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。Auto は指定できません。-Bom と組み合わせた場合、Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は系統名として扱い、BOM は -Bom で決めます。-Bom が無い場合はほかの書き込み系コマンドと同じ規則で、裸の utf8 は拒否します。-Bom との組み合わせは注意事項を参照してください。</maml:para>
+            <maml:para>変換先の文字エンコーディング（と BOM）。省略時は変換元の文字エンコーディングを保ちます。統一語彙、WebName、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。Auto は指定できません。-Bom と組み合わせた場合、Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は系統名として扱い、BOM は -Bom で決めます。-Bom が無い場合はほかの書き込み系コマンドと同じ規則で、裸の utf8 は拒否します。-Bom との組み合わせは注意事項を参照してください。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1939,7 +1939,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>変換先の文字エンコーディング（と BOM）。省略時は変換元の文字エンコーディングを保ちます。統一語彙、WebName、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。Auto は指定できません。-Bom と組み合わせた場合、Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は系統名として扱い、BOM は -Bom で決めます。-Bom が無い場合はほかの書き込み系コマンドと同じ規則で、裸の utf8 は拒否します。-Bom との組み合わせは注意事項を参照してください。</maml:para>
+          <maml:para>変換先の文字エンコーディング（と BOM）。省略時は変換元の文字エンコーディングを保ちます。統一語彙、WebName、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。Auto は指定できません。-Bom と組み合わせた場合、Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は系統名として扱い、BOM は -Bom で決めます。-Bom が無い場合はほかの書き込み系コマンドと同じ規則で、裸の utf8 は拒否します。-Bom との組み合わせは注意事項を参照してください。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -2224,7 +2224,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2276,7 +2276,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2327,7 +2327,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2378,7 +2378,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2449,7 +2449,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
+          <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -2658,7 +2658,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。</maml:para>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2798,7 +2798,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。</maml:para>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2983,7 +2983,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。</maml:para>
+          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -3320,7 +3320,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="0" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>変換する値。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。 Auto は指定できません。</maml:para>
+            <maml:para>変換する値。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。 Auto は指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -3330,7 +3330,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="0" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>変換する値。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。 Auto は指定できません。</maml:para>
+          <maml:para>変換する値。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。 Auto は指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>

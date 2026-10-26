@@ -411,5 +411,11 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string SamePathWriteCancelled(string path)
             => MessageCatalog.Format(MessageKey.SamePathWriteCancelled, path);
+
+        /// <summary>
+        /// 文字エンコーディングとして PSCustomObject（逆シリアル化した判定結果など）が渡された（1.3.0 第六次 C。BUG-0039）
+        /// </summary>
+        public static string EncodingObjectNotUsable(string typeName)
+            => MessageCatalog.Format(MessageKey.EncodingObjectNotUsable, typeName);
     }
 }

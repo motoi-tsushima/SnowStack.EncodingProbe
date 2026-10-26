@@ -217,5 +217,10 @@
 
         /// <summary>書き込み中のファイルを同じパイプラインで読み込もうとしたので、書き込みを取り消した（書き込み側）</summary>
         SamePathWriteCancelled,
+
+        // ---- 1.3.0 第六次 C ----
+
+        /// <summary>文字エンコーディングとして PSCustomObject（逆シリアル化した判定結果など）が渡された（1.3.0 第六次 C。BUG-0039）</summary>
+        EncodingObjectNotUsable,
     }
 }

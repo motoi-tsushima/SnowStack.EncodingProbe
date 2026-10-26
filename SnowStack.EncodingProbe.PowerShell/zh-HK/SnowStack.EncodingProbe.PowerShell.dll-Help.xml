@@ -28,7 +28,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。</maml:para>
+            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -72,7 +72,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。</maml:para>
+            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -120,7 +120,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。</maml:para>
+          <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -316,7 +316,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時（或指定 Auto 時）會從寫入目標的既有檔案繼承。該檔案不存在時會發生錯誤。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。</maml:para>
+            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時（或指定 Auto 時）會從寫入目標的既有檔案繼承。該檔案不存在時會發生錯誤。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -392,7 +392,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時（或指定 Auto 時）會從寫入目標的既有檔案繼承。該檔案不存在時會發生錯誤。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。</maml:para>
+            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時（或指定 Auto 時）會從寫入目標的既有檔案繼承。該檔案不存在時會發生錯誤。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -476,7 +476,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時（或指定 Auto 時）會從寫入目標的既有檔案繼承。該檔案不存在時會發生錯誤。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。</maml:para>
+          <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時（或指定 Auto 時）會從寫入目標的既有檔案繼承。該檔案不存在時會發生錯誤。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -748,7 +748,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>附加時使用的字元編碼。省略時（或指定 Auto 時）會從附加目標的檔案繼承。該檔案不存在時會發生錯誤。指定值當中屬於 BOM 的部分一律忽略。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。</maml:para>
+            <maml:para>附加時使用的字元編碼。省略時（或指定 Auto 時）會從附加目標的檔案繼承。該檔案不存在時會發生錯誤。指定值當中屬於 BOM 的部分一律忽略。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -830,7 +830,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>附加時使用的字元編碼。省略時（或指定 Auto 時）會從附加目標的檔案繼承。該檔案不存在時會發生錯誤。指定值當中屬於 BOM 的部分一律忽略。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。</maml:para>
+            <maml:para>附加時使用的字元編碼。省略時（或指定 Auto 時）會從附加目標的檔案繼承。該檔案不存在時會發生錯誤。指定值當中屬於 BOM 的部分一律忽略。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -931,7 +931,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>附加時使用的字元編碼。省略時（或指定 Auto 時）會從附加目標的檔案繼承。該檔案不存在時會發生錯誤。指定值當中屬於 BOM 的部分一律忽略。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。</maml:para>
+          <maml:para>附加時使用的字元編碼。省略時（或指定 Auto 時）會從附加目標的檔案繼承。該檔案不存在時會發生錯誤。指定值當中屬於 BOM 的部分一律忽略。不能與 -EncodingFrom 同時指定。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -1194,7 +1194,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。</maml:para>
+            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1295,7 +1295,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。</maml:para>
+            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1434,7 +1434,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。</maml:para>
+          <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -1719,7 +1719,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>轉換目標的字元編碼（與 BOM）。省略時保留來源檔案的字元編碼。可指定統一詞彙、WebName、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不可指定 Auto。與 -Bom 一起使用時，Unicode 系的裸名稱或 WebName（utf8、utf-8、unicode 等）會視為系列名稱，BOM 由 -Bom 決定。沒有 -Bom 時採用與其他寫入 Cmdlet 相同的規則，因此會拒絕裸 utf8。與 -Bom 的組合請參閱備註。</maml:para>
+            <maml:para>轉換目標的字元編碼（與 BOM）。省略時保留來源檔案的字元編碼。可指定統一詞彙、WebName、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不可指定 Auto。與 -Bom 一起使用時，Unicode 系的裸名稱或 WebName（utf8、utf-8、unicode 等）會視為系列名稱，BOM 由 -Bom 決定。沒有 -Bom 時採用與其他寫入 Cmdlet 相同的規則，因此會拒絕裸 utf8。與 -Bom 的組合請參閱備註。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1809,7 +1809,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>轉換目標的字元編碼（與 BOM）。省略時保留來源檔案的字元編碼。可指定統一詞彙、WebName、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不可指定 Auto。與 -Bom 一起使用時，Unicode 系的裸名稱或 WebName（utf8、utf-8、unicode 等）會視為系列名稱，BOM 由 -Bom 決定。沒有 -Bom 時採用與其他寫入 Cmdlet 相同的規則，因此會拒絕裸 utf8。與 -Bom 的組合請參閱備註。</maml:para>
+            <maml:para>轉換目標的字元編碼（與 BOM）。省略時保留來源檔案的字元編碼。可指定統一詞彙、WebName、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不可指定 Auto。與 -Bom 一起使用時，Unicode 系的裸名稱或 WebName（utf8、utf-8、unicode 等）會視為系列名稱，BOM 由 -Bom 決定。沒有 -Bom 時採用與其他寫入 Cmdlet 相同的規則，因此會拒絕裸 utf8。與 -Bom 的組合請參閱備註。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1939,7 +1939,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>轉換目標的字元編碼（與 BOM）。省略時保留來源檔案的字元編碼。可指定統一詞彙、WebName、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不可指定 Auto。與 -Bom 一起使用時，Unicode 系的裸名稱或 WebName（utf8、utf-8、unicode 等）會視為系列名稱，BOM 由 -Bom 決定。沒有 -Bom 時採用與其他寫入 Cmdlet 相同的規則，因此會拒絕裸 utf8。與 -Bom 的組合請參閱備註。</maml:para>
+          <maml:para>轉換目標的字元編碼（與 BOM）。省略時保留來源檔案的字元編碼。可指定統一詞彙、WebName、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不可指定 Auto。與 -Bom 一起使用時，Unicode 系的裸名稱或 WebName（utf8、utf-8、unicode 等）會視為系列名稱，BOM 由 -Bom 決定。沒有 -Bom 時採用與其他寫入 Cmdlet 相同的規則，因此會拒絕裸 utf8。與 -Bom 的組合請參閱備註。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -2224,7 +2224,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。</maml:para>
+            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2276,7 +2276,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。</maml:para>
+            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2327,7 +2327,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。</maml:para>
+            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2378,7 +2378,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。</maml:para>
+            <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2449,7 +2449,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。</maml:para>
+          <maml:para>解碼檔案時使用的字元編碼。省略時（或指定 Auto 時）會判斷目標檔案。明確指定時不進行判斷，可作為修正誤判的手段。無論在此指定什麼，檔案開頭的 BOM 一律略過。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。只移除開頭的 1 個 BOM，緊接在後的第 2 個 U+FEFF 會當作字元保留。如果檔案在字元中間結束（例如長度為奇數的 UTF-16），與 PowerShell 7.x 相同，會將剩餘的位元組讀作替代字元。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -2658,7 +2658,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。</maml:para>
+            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2798,7 +2798,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。</maml:para>
+            <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2983,7 +2983,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。</maml:para>
+          <maml:para>寫入時使用的字元編碼與 BOM 方針。省略時不查看既有檔案，以 utf8NoBOM 寫入。指定 -Append 時，會從附加目標檔案繼承字元編碼、BOM 方針與換行（附加目標不存在或為 0 位元組時為 utf8NoBOM）。明確指定 Auto 時，會從輸出目標的既有檔案繼承，檔案不存在則發生錯誤。這與省略 -Encoding 即代表 Auto 的 Set-ProbedContent 規則不同。可指定統一詞彙（utf8NoBOM、utf8BOM、unicodeBOM 等）、WebName（shift_jis、euc-jp 等）、數值字碼頁、System.Text.Encoding 執行個體與 EncodingInformation 物件。不能與 -EncodingFrom 同時指定。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -3320,7 +3320,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="0" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>要轉換的值。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。不接受 Auto。</maml:para>
+            <maml:para>要轉換的值。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。不接受 Auto。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -3330,7 +3330,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="0" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>要轉換的值。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。不接受 Auto。</maml:para>
+          <maml:para>要轉換的值。統一詞彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（僅供讀取）。此外也可以指定 .NET 已知的 WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 等）、數值字碼頁（932、65001 等）、System.Text.Encoding 執行個體，以及 Resolve-Encoding 傳回的 EncodingInformation 物件。不接受 Auto。經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件，因此不被接受；請改為傳入其 CodePage 的值，或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>

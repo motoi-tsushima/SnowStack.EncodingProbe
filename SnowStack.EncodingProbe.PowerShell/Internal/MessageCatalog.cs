@@ -284,6 +284,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SamePathWriteCancelled] =
                     "The write to '{0}' was cancelled because the file was opened for reading within the same pipeline while it was being written. The file is unchanged. Write to a different file, or receive the content into a variable before writing.",
+
+                [MessageKey.EncodingObjectNotUsable] =
+                    "The value passed as the character encoding is a '{0}' object, which cannot be used as a character encoding. An EncodingInformation object (the result of Resolve-Encoding) can be passed as it is, but a detection result that has gone through Export-Clixml and Import-Clixml, a job, remoting or Select-Object is no longer an EncodingInformation object. In that case, pass its CodePage (for example, -Encoding $info.CodePage), or a unified vocabulary name that states the BOM (such as unicodeBOM or utf8NoBOM).",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -510,6 +513,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SamePathWriteCancelled] =
                     "'{0}' に書き込んでいる間に、同じパイプラインでこのファイルを読み込もうとしたため、書き込みを取り消しました。ファイルは元のままです。書き込み先を別のファイルにするか、いったん変数に受けてから書いてください。",
+
+                [MessageKey.EncodingObjectNotUsable] =
+                    "文字エンコーディングとして渡された値は '{0}' のオブジェクトで、文字エンコーディングとして使えません。EncodingInformation オブジェクト（Resolve-Encoding の結果）はそのまま渡せますが、Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなります。その場合は、CodePage の値（-Encoding $info.CodePage など）か、BOM を明示した統一語彙名（unicodeBOM・utf8NoBOM など）を渡してください。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -738,6 +744,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SamePathWriteCancelled] =
                     "'{0}'에 쓰는 동안 같은 파이프라인에서 이 파일을 읽으려고 했기 때문에 쓰기를 취소했습니다. 파일은 원래 상태 그대로입니다. 쓰기 대상을 다른 파일로 하거나, 일단 변수에 받은 후 쓰십시오.",
+
+                [MessageKey.EncodingObjectNotUsable] =
+                    "문자 인코딩으로 전달된 값은 '{0}' 개체이므로 문자 인코딩으로 사용할 수 없습니다. EncodingInformation 개체(Resolve-Encoding의 결과)는 그대로 전달할 수 있지만, Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아닙니다. 이 경우에는 CodePage 값(-Encoding $info.CodePage 등) 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM, utf8NoBOM 등)을 전달하십시오.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -957,6 +966,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SamePathWriteCancelled] =
                     "寫入 '{0}' 期間，同一個管線嘗試讀取此檔案，因此已取消寫入。檔案維持原狀。請改為寫入其他檔案，或先將內容存入變數後再寫入。",
+
+                [MessageKey.EncodingObjectNotUsable] =
+                    "作為字元編碼傳入的值是 '{0}' 物件，無法作為字元編碼使用。EncodingInformation 物件（Resolve-Encoding 的結果）可以直接傳入，但經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件。在此情況下，請傳入其 CodePage 的值（例如 -Encoding $info.CodePage），或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM、utf8NoBOM）。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -1176,6 +1188,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SamePathWriteCancelled] =
                     "写入 '{0}' 期间，同一管道尝试读取此文件，因此已取消写入。文件保持原样。请改为写入其他文件，或先将内容存入变量后再写入。",
+
+                [MessageKey.EncodingObjectNotUsable] =
+                    "作为字符编码传入的值是 '{0}' 对象，无法作为字符编码使用。EncodingInformation 对象（Resolve-Encoding 的结果）可以直接传入，但经过 Export-Clixml 与 Import-Clixml、作业（job）、远程或 Select-Object 的判断结果已不再是 EncodingInformation 对象。在这种情况下，请传入其 CodePage 的值（例如 -Encoding $info.CodePage），或明确指定 BOM 的统一词汇名称（例如 unicodeBOM、utf8NoBOM）。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =
