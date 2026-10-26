@@ -20,6 +20,28 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// <summary>判定はできたが、実行環境がそのコードページを提供していない場合のエラーID</summary>
         public const string CodePageNotAvailableId = "CodePageNotAvailable";
 
+        /// <summary>ファイル全体を読んで判定するためのメモリが足りなかった場合のエラーID（1.3.0 第六次 B。BUG-0030）</summary>
+        public const string NotEnoughMemoryId = "NotEnoughMemoryToDetect";
+
+        /// <summary>
+        /// ファイル全体を読んで判定する処理を行い、メモリ不足（<see cref="OutOfMemoryException"/>）を ID の付いた判定の失敗にする（1.3.0 第六次 B。BUG-0030）。
+        /// </summary>
+        /// <remarks>
+        /// 全体の判定はファイルの大きさの数倍のメモリを使う（約 3.6 倍。1.4.0 で扱う）。Windows PowerShell 5.1 の 32 ビット版などで、
+        /// 上限（2 GB）より小さなファイルでも生の OutOfMemoryException になっていた。
+        /// </remarks>
+        public static T GuardMemory<T>(string path, Func<T> body)
+        {
+            try
+            {
+                return body();
+            }
+            catch (OutOfMemoryException)
+            {
+                throw new EncodingDetectionException(ValidationMessages.NotEnoughMemoryToDetect(path), path, NotEnoughMemoryId);
+            }
+        }
+
         public EncodingDetectionException(string message, string path)
             : this(message, path, DetectionFailedId)
         {

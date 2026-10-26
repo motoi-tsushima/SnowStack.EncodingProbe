@@ -23,7 +23,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// 上限は byte 配列の最大長に由来する。クラスライブラリの判定処理は
         /// バイト配列を前提としており、これを超えるファイルは判定できない。
         /// </remarks>
-        public const long MaxDetectableLength = 0x7FFFFFC7;
+        public const long DefaultMaxDetectableLength = 0x7FFFFFC7;
+
+        /// <summary>
+        /// 全体で判定できる大きさの上限。既定は <see cref="DefaultMaxDetectableLength"/>。
+        /// テストで大きなファイルを作らずに上限を超える場合を確かめるため、変えられるようにしてある（1.3.0 第六次 B。BUG-0030）。
+        /// </summary>
+        internal static long MaxDetectableLength { get; set; } = DefaultMaxDetectableLength;
 
         /// <summary>
         /// 判定材料が無いかどうか（存在しないか、0バイトか）を返す。
@@ -62,9 +68,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             }
 
             // Get-ProbedContent と同じ共有モードで読む（ほかのプログラムが書き込み用に開いていても読める。1.3.0 第六次 B。BUG-0026）
-            byte[] content = SharedFileReader.ReadAll(
-                path, MaxDetectableLength, () => new EncodingDetectionException(ValidationMessages.FileTooLargeToDetect(path), path));
-            EncodingInformation information = EncodingProbe.Detect(content, detectorOptions);
+            EncodingInformation information = EncodingDetectionException.GuardMemory(path, () =>
+            {
+                byte[] content = SharedFileReader.ReadAll(
+                    path, MaxDetectableLength, () => new EncodingDetectionException(ValidationMessages.FileTooLargeToDetect(path), path));
+                return EncodingProbe.Detect(content, detectorOptions);
+            });
 
             if (information.CodePage < 0)
             {

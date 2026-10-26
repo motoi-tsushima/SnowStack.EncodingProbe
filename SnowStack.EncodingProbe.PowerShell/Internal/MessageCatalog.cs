@@ -269,6 +269,15 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.FileInUseForWrite] =
                     "'{0}' was not written because another program has it open without allowing others to write to it. Close the program and try again.",
+
+                [MessageKey.NotEnoughMemoryToDetect] =
+                    "There is not enough memory to read the whole of '{0}' and detect its character encoding (detection uses several times the size of the file). Specify -DetectionLineCount to detect from the first lines only (Resolve-Encoding, Import-ProbedCsv, Export-ProbedCsv), or specify the character encoding with -Encoding.",
+
+                [MessageKey.NotEnoughMemoryToConvert] =
+                    "There is not enough memory to convert '{0}'. Convert-ProbedContent reads the whole file into memory to convert it. The file was not changed.",
+
+                [MessageKey.FileTooLargeToConvert] =
+                    "'{0}' is too large to convert (the file must be smaller than 2 GB). Convert-ProbedContent reads the whole file into memory to convert it. The file was not changed.",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -480,6 +489,15 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.FileInUseForWrite] =
                     "'{0}' はほかのプログラムが書き込みを許さずに開いているため、書き込みませんでした。そのプログラムを閉じてから、もう一度実行してください。",
+
+                [MessageKey.NotEnoughMemoryToDetect] =
+                    "'{0}' の全体を読んで文字エンコーディングを判定するためのメモリが足りません（判定ではファイルの大きさの数倍のメモリを使います）。-DetectionLineCount を指定して先頭の行だけで判定する（Resolve-Encoding・Import-ProbedCsv・Export-ProbedCsv）か、-Encoding で文字エンコーディングを指定してください。",
+
+                [MessageKey.NotEnoughMemoryToConvert] =
+                    "'{0}' を変換するためのメモリが足りません。Convert-ProbedContent はファイル全体をメモリに読んで変換します。ファイルは変更していません。",
+
+                [MessageKey.FileTooLargeToConvert] =
+                    "'{0}' は大きすぎるため変換できません（2 GB 未満のファイルだけを変換できます）。Convert-ProbedContent はファイル全体をメモリに読んで変換します。ファイルは変更していません。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -693,6 +711,15 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.FileInUseForWrite] =
                     "'{0}'은(는) 다른 프로그램이 쓰기를 허용하지 않고 열어 두었기 때문에 쓰지 않았습니다. 그 프로그램을 닫은 후 다시 실행하십시오.",
+
+                [MessageKey.NotEnoughMemoryToDetect] =
+                    "'{0}' 전체를 읽어 문자 인코딩을 판정하기 위한 메모리가 부족합니다(판정에는 파일 크기의 몇 배의 메모리를 사용합니다). -DetectionLineCount를 지정하여 앞부분의 줄만으로 판정하거나(Resolve-Encoding, Import-ProbedCsv, Export-ProbedCsv), -Encoding으로 문자 인코딩을 지정하십시오.",
+
+                [MessageKey.NotEnoughMemoryToConvert] =
+                    "'{0}'을(를) 변환하기 위한 메모리가 부족합니다. Convert-ProbedContent는 파일 전체를 메모리로 읽어 변환합니다. 파일은 변경하지 않았습니다.",
+
+                [MessageKey.FileTooLargeToConvert] =
+                    "'{0}'은(는) 너무 커서 변환할 수 없습니다(2GB 미만의 파일만 변환할 수 있습니다). Convert-ProbedContent는 파일 전체를 메모리로 읽어 변환합니다. 파일은 변경하지 않았습니다.",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -897,6 +924,15 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.FileInUseForWrite] =
                     "'{0}' 已由其他程式以不允許寫入的方式開啟，因此未寫入。請關閉該程式後再執行一次。",
+
+                [MessageKey.NotEnoughMemoryToDetect] =
+                    "記憶體不足，無法讀取 '{0}' 的全部內容來判斷字元編碼（判斷時會使用檔案大小數倍的記憶體）。請指定 -DetectionLineCount 只以開頭的幾行判斷（Resolve-Encoding、Import-ProbedCsv、Export-ProbedCsv），或以 -Encoding 指定字元編碼。",
+
+                [MessageKey.NotEnoughMemoryToConvert] =
+                    "記憶體不足，無法轉換 '{0}'。Convert-ProbedContent 會將整個檔案讀入記憶體後轉換。檔案未變更。",
+
+                [MessageKey.FileTooLargeToConvert] =
+                    "'{0}' 太大，無法轉換（只能轉換小於 2 GB 的檔案）。Convert-ProbedContent 會將整個檔案讀入記憶體後轉換。檔案未變更。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -1101,6 +1137,15 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.FileInUseForWrite] =
                     "'{0}' 已被其他程序以不允许写入的方式打开，因此未写入。请关闭该程序后再执行一次。",
+
+                [MessageKey.NotEnoughMemoryToDetect] =
+                    "内存不足，无法读取 '{0}' 的全部内容来判定字符编码（判定时会使用文件大小数倍的内存）。请指定 -DetectionLineCount 只用开头的几行判定（Resolve-Encoding、Import-ProbedCsv、Export-ProbedCsv），或用 -Encoding 指定字符编码。",
+
+                [MessageKey.NotEnoughMemoryToConvert] =
+                    "内存不足，无法转换 '{0}'。Convert-ProbedContent 会将整个文件读入内存后转换。文件未更改。",
+
+                [MessageKey.FileTooLargeToConvert] =
+                    "'{0}' 太大，无法转换（只能转换小于 2 GB 的文件）。Convert-ProbedContent 会将整个文件读入内存后转换。文件未更改。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

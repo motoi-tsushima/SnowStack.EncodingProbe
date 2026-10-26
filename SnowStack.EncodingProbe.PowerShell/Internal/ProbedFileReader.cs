@@ -82,9 +82,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     // 判定はファイル全体を対象とする。先頭の一定量だけで判定すると、
                     // 英数字が続いたあとにマルチバイト文字が現れるファイルを誤判定し、
                     // 後続の文字をすべて壊して復号してしまうため。
-                    byte[] content = ReadAll(stream, path);
-                    bomLength = GetBomLength(content);
-                    encoding = Detect(path, content, detectorOptions);
+                    // メモリ不足は ID の付いた判定の失敗にする（1.3.0 第六次 B。BUG-0030）
+                    (encoding, bomLength) = EncodingDetectionException.GuardMemory(path, () =>
+                    {
+                        byte[] content = ReadAll(stream, path);
+                        return (Detect(path, content, detectorOptions), GetBomLength(content));
+                    });
                 }
                 else
                 {
@@ -150,6 +153,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             {
                 throw new EncodingDetectionException(ValidationMessages.FileTooLargeToDetect(path), path);
             }
+
+            SharedFileReader.BeforeAllocateForTests?.Invoke(length);
 
             return ReadHead(stream, (int)length);
         }

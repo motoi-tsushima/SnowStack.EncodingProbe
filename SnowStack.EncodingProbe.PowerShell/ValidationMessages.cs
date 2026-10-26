@@ -381,5 +381,23 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string FileInUseForWrite(string path)
             => MessageCatalog.Format(MessageKey.FileInUseForWrite, path);
+
+        /// <summary>
+        /// ファイル全体を読んで判定するためのメモリが足りなかった
+        /// </summary>
+        public static string NotEnoughMemoryToDetect(string path)
+            => MessageCatalog.Format(MessageKey.NotEnoughMemoryToDetect, path);
+
+        /// <summary>
+        /// Convert-ProbedContent でファイル全体を読んで変換するためのメモリが足りなかった
+        /// </summary>
+        public static string NotEnoughMemoryToConvert(string path)
+            => MessageCatalog.Format(MessageKey.NotEnoughMemoryToConvert, path);
+
+        /// <summary>
+        /// Convert-ProbedContent で変換できる大きさを超えている
+        /// </summary>
+        public static string FileTooLargeToConvert(string path)
+            => MessageCatalog.Format(MessageKey.FileTooLargeToConvert, path);
     }
 }

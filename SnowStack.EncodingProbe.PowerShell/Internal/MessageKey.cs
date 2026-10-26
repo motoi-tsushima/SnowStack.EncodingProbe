@@ -198,5 +198,16 @@
 
         /// <summary>ほかのプログラムが共有を許さずに開いているため、書き込めなかった</summary>
         FileInUseForWrite,
+
+        // ---- 1.3.0 第六次 B（BUG-0030） ----
+
+        /// <summary>ファイル全体を読んで判定するためのメモリが足りなかった</summary>
+        NotEnoughMemoryToDetect,
+
+        /// <summary>Convert-ProbedContent でファイル全体を読んで変換するためのメモリが足りなかった</summary>
+        NotEnoughMemoryToConvert,
+
+        /// <summary>Convert-ProbedContent で変換できる大きさを超えている</summary>
+        FileTooLargeToConvert,
     }
 }

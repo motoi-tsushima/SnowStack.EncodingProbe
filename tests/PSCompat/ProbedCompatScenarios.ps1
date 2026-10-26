@@ -2997,6 +2997,26 @@ foreach ($f7Case in $f7LongCases.Keys) {
 }
 Add-Scenario 'SixthB/LongPath/Cleanup' { Remove-Item -LiteralPath $f7Short -Recurse -Force; Test-Path -LiteralPath $f7Short }.GetNewClosure()
 
+# BUG-0030: 全体の判定の上限を超えるファイル（上限を内部で 5 バイトにして確かめる）。Resolve-Encoding は読む前に止め、非終了エラーで次のファイルへ進む
+$f7LimitProperty = [SnowStack.EncodingProbe.PowerShell.Cmdlets.ImportProbedCsvCommand].Assembly.GetType('SnowStack.EncodingProbe.PowerShell.Internal.EncodingInheritance').GetProperty('MaxDetectableLength', [Reflection.BindingFlags]'Static,NonPublic')
+$f7Index++
+$d = Join-Path $f7Dir ("limit_{0}" -f $f7Index)
+Add-Scenario 'SixthB/TooLarge' {
+    [void](New-Item -ItemType Directory -Path $d)
+    [IO.File]::WriteAllBytes((Join-Path $d 'a.csv'), [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A))
+    [IO.File]::WriteAllBytes((Join-Path $d 'b.csv'), [byte[]](0x41, 0x0D, 0x0A))
+    $before = $f7LimitProperty.GetValue($null)
+    $f7LimitProperty.SetValue($null, [long]5)
+    try {
+        $resolve = Invoke-F2 { Get-ChildItem -LiteralPath $d -Filter *.csv | Resolve-Encoding | ForEach-Object { $_.CodePage } }
+        $get = Invoke-F2 { @(Get-ProbedContent -LiteralPath (Join-Path $d 'a.csv')).Count }
+        $convert = Invoke-F2 { Convert-ProbedContent -LiteralPath (Join-Path $d 'a.csv') -SourceEncoding utf8NoBOM -Encoding utf8BOM }
+        $head = Invoke-F2 { (Resolve-Encoding -Path (Join-Path $d 'a.csv') -DetectionLineCount 1).CodePage }
+    }
+    finally { $f7LimitProperty.SetValue($null, $before) }
+    'resolve={0} get={1} convert={2} head={3} // {4}' -f $resolve, $get, $convert, $head, (Format-FileBytes (Join-Path $d 'a.csv'))
+}.GetNewClosure()
+
 # （第六次 B のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------

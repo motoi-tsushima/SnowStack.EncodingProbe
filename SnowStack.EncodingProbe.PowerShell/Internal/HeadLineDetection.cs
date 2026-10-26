@@ -79,6 +79,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         public static HeadLineDetectionResult Detect(
             string path, long lineCount, EncodingDetectorOptions? detectorOptions)
         {
+            // 切り出した先頭の行も大きくなりうるので、メモリ不足は ID の付いた判定の失敗にする（1.3.0 第六次 B。BUG-0030）
+            return EncodingDetectionException.GuardMemory(path, () => DetectCore(path, lineCount, detectorOptions));
+        }
+
+        private static HeadLineDetectionResult DetectCore(string path, long lineCount, EncodingDetectorOptions? detectorOptions)
+        {
             HeadLineCut cut = HeadLineCutter.Cut(path, lineCount);
 
             // 0 バイトのファイルは、既存の規則（全体の判定）と同じに扱う（仕様書 2.6）

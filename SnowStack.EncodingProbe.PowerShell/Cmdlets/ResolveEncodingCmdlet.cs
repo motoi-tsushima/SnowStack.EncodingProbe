@@ -136,6 +136,12 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
             {
                 encodingInfomation = HeadLineDetection.Detect(resolvedPath, DetectionLineCount, detectorOptions).Information;
             }
+            catch (EncodingDetectionException exception) when (exception.ErrorId == EncodingDetectionException.NotEnoughMemoryId)
+            {
+                // メモリ不足は新しく足したエラーなので、非終了エラー（1.3.0 第六次 B。BUG-0030。利用者の決定）
+                WriteError(new ErrorRecord(exception, exception.ErrorId, ErrorCategory.InvalidData, resolvedPath));
+                return;
+            }
             catch (EncodingDetectionException exception)
             {
                 ThrowTerminatingError(new ErrorRecord(
@@ -164,11 +170,14 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
             // （既存の「ファイルが無い」と、-DetectionLineCount の上限を超える場合は、終了エラーのまま。利用者の決定）
             try
             {
-                byte[] content = SharedFileReader.ReadAll(
-                    resolvedPath,
-                    EncodingInheritance.MaxDetectableLength,
-                    () => new EncodingDetectionException(ValidationMessages.FileTooLargeToDetectUseLineCount(resolvedPath), resolvedPath));
-                encodingInfomation = EncodingProbe.Detect(content, detectorOptions);
+                encodingInfomation = EncodingDetectionException.GuardMemory(resolvedPath, () =>
+                {
+                    byte[] content = SharedFileReader.ReadAll(
+                        resolvedPath,
+                        EncodingInheritance.MaxDetectableLength,
+                        () => new EncodingDetectionException(ValidationMessages.FileTooLargeToDetectUseLineCount(resolvedPath), resolvedPath));
+                    return EncodingProbe.Detect(content, detectorOptions);
+                });
             }
             catch (EncodingDetectionException exception)
             {

@@ -390,6 +390,22 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     /// <summary>
     /// 1 ファイルを変換する。失敗はそのファイルだけの非終了エラーとし、元のファイルは無傷で残す。
     /// </summary>
+    /// <summary>
+    /// 変換に必要なメモリが足りなかったことを、ID の付いた非終了エラーとして報告する（1.3.0 第六次 B。BUG-0030）。ファイルは変わらない
+    /// </summary>
+    private void ReportNotEnoughMemory(string file)
+        => WriteError(CreateError(
+            new InsufficientMemoryException(ValidationMessages.NotEnoughMemoryToConvert(file)), "NotEnoughMemoryToConvert", ErrorCategory.LimitsExceeded, file));
+
+    /// <summary>変換できる大きさを超えたファイル（読む前に分かる）</summary>
+    private sealed class FileTooLargeToConvertException : Exception
+    {
+        public FileTooLargeToConvertException(string message)
+            : base(message)
+        {
+        }
+    }
+
     private void ConvertFile(string file)
     {
         if (ActiveReadRegistry.IsBeingRead(file))
@@ -407,8 +423,20 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
 
         try
         {
-            // Get-ProbedContent と同じ共有モードで読む（1.3.0 第六次 B。BUG-0026）
-            original = SharedFileReader.ReadAll(file, long.MaxValue, () => new InvalidOperationException());
+            // Get-ProbedContent と同じ共有モードで読む（1.3.0 第六次 B。BUG-0026）。
+            // 変換はファイル全体をメモリに読むので、上限を超えるファイルは読む前に止める（BUG-0030）
+            original = SharedFileReader.ReadAll(
+                file, EncodingInheritance.MaxDetectableLength, () => new FileTooLargeToConvertException(ValidationMessages.FileTooLargeToConvert(file)));
+        }
+        catch (FileTooLargeToConvertException exception)
+        {
+            WriteError(CreateError(exception, "FileTooLargeToConvert", ErrorCategory.LimitsExceeded, file));
+            return;
+        }
+        catch (OutOfMemoryException)
+        {
+            ReportNotEnoughMemory(file);
+            return;
         }
         catch (IOException exception)
         {
@@ -421,7 +449,19 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
             return;
         }
 
-        ConversionResult? result = Transcode(file, original);
+        ConversionResult? result;
+
+        try
+        {
+            result = Transcode(file, original);
+        }
+        catch (OutOfMemoryException)
+        {
+            // 復号・符号化した文字列もファイルの大きさの数倍になる。生の OutOfMemoryException にしない（1.3.0 第六次 B。BUG-0030）
+            original = Array.Empty<byte>();
+            ReportNotEnoughMemory(file);
+            return;
+        }
 
         if (result == null)
         {
