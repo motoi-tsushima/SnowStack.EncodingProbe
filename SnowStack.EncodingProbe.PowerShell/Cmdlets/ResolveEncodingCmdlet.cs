@@ -82,7 +82,8 @@ public sealed class ResolveEncodingCmdlet : PSCmdlet
             {
                 detectorOptions = new EncodingDetectorOptions();
             }
-            detectorOptions.Culture = Culture;
+            // 前後の空白を除いた名前を判定に渡す（1.3.0 第六次 C。BUG-0038）
+            detectorOptions.Culture = ResolveEncodingOptions.TrimCulture(Culture!);
         }
 
         //エンコーディング判定の戦略を設定

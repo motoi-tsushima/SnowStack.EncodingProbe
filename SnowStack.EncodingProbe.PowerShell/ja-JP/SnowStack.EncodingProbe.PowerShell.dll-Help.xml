@@ -48,7 +48,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -92,7 +92,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -109,7 +109,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -361,7 +361,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -437,7 +437,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -465,7 +465,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -799,7 +799,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -881,7 +881,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -920,7 +920,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1259,7 +1259,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1360,7 +1360,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1422,7 +1422,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+          <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1754,7 +1754,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1844,7 +1844,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1915,7 +1915,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+          <maml:para>変換元の文字エンコーディングの判定に使うカルチャー名（ko-KR など）。-SourceEncoding を指定した場合は使いません。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -2238,7 +2238,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2290,7 +2290,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2341,7 +2341,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2392,7 +2392,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2409,7 +2409,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+          <maml:para>文字エンコーディングの判定に用いるカルチャー名（ko-KR など）。EUC-KR と CP949、EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消するため、日本語環境で韓国語や中国語のファイルを読むときは対象言語のカルチャーを指定します。省略時は実行中のセッションのカルチャーを使います。名前と指定できる値は Resolve-Encoding の -Culture と同じです。文字エンコーディングを明示した場合は判定を行わないため、このパラメーターは影響しません。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           <maml:para>-Culture は -UseCulture とは別のものです。-Culture は文字エンコーディングの判定だけに使い、-UseCulture は区切り文字だけを決めます。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -2742,7 +2742,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2882,7 +2882,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2944,7 +2944,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+          <maml:para>ファイルの判定が必要なときに使うカルチャー名（ko-KR など）。判定するのは、-EncodingFrom の参照ファイル、-Encoding Auto を明示したときの出力先、-Append の追記先です。バイト列だけでは区別できない組み合わせはカルチャーで曖昧解消します。名前と指定できる値は Resolve-Encoding の -Culture と同じです。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           <maml:para>-Culture は -UseCulture とは別のものです。-Culture は文字エンコーディングの判定だけに使い、-UseCulture は区切り文字だけを決めます。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -3450,7 +3450,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせを解決するためのカルチャー名。省略時は実行中のセッションのカルチャーを使います。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+            <maml:para>EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせを解決するためのカルチャー名。省略時は実行中のセッションのカルチャーを使います。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -3492,7 +3492,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせを解決するためのカルチャー名。省略時は実行中のセッションのカルチャーを使います。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。</maml:para>
+          <maml:para>EUC-JP と Shift_JIS のように、バイト列だけでは区別できない組み合わせを解決するためのカルチャー名。省略時は実行中のセッションのカルチャーを使います。受け付けるかどうかは名前の形（BCP 47）で決め、Windows PowerShell 5.1 と PowerShell 7.x で同じです。C・root・POSIX のような名前は受け付けず、終了エラー InvalidCulture になります。形が正しければ実在しない名前（xx-YY など）も受け付けますが、どの東アジアの言語圏にも当たりません。言語の直後の拡張言語（zh-yue の yue など）は、RFC 5646 のとおりそれを言語として扱うので、zh-yue は広東語（繁体字・香港）として扱います。名前の前後の空白・タブは、-Encoding・-Strategy と同じく無視します（' ko-KR' は 'ko-KR' と同じ）。名前の途中の空白は受け付けません。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>

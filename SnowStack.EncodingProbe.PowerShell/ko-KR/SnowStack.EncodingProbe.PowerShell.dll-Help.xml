@@ -48,7 +48,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -92,7 +92,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -109,7 +109,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+          <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -361,7 +361,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -437,7 +437,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -465,7 +465,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+          <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -799,7 +799,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -881,7 +881,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -920,7 +920,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+          <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1259,7 +1259,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1360,7 +1360,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1422,7 +1422,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+          <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1754,7 +1754,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>원본 파일의 문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>원본 파일의 문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1844,7 +1844,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>원본 파일의 문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>원본 파일의 문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1915,7 +1915,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>원본 파일의 문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+          <maml:para>원본 파일의 문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). -SourceEncoding을 지정하면 사용하지 않습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -2238,7 +2238,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2290,7 +2290,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2341,7 +2341,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2392,7 +2392,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2409,7 +2409,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+          <maml:para>문자 인코딩 판정에 사용하는 문화권 이름(ko-KR 등). EUC-KR과 CP949, EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소하므로, 일본어 환경에서 한국어나 중국어 파일을 읽을 때는 대상 언어의 문화권을 지정하십시오. 생략하면 실행 중인 세션의 문화권을 사용합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 문자 인코딩을 명시한 경우에는 판정을 수행하지 않으므로 이 매개 변수는 영향을 주지 않습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           <maml:para>-Culture는 -UseCulture와 다릅니다. -Culture는 문자 인코딩 판정에만 사용하고, -UseCulture는 구분 기호만 결정합니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -2742,7 +2742,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2882,7 +2882,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2944,7 +2944,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+          <maml:para>파일 판정이 필요할 때 사용하는 문화권 이름(ko-KR 등). 판정하는 것은 -EncodingFrom의 참조 파일, -Encoding Auto를 명시했을 때의 출력 대상, -Append의 추가 대상입니다. 바이트열만으로는 구별할 수 없는 조합은 문화권으로 모호성을 해소합니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Culture와 같습니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           <maml:para>-Culture는 -UseCulture와 다릅니다. -Culture는 문자 인코딩 판정에만 사용하고, -UseCulture는 구분 기호만 결정합니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -3450,7 +3450,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합을 해결하기 위한 문화권 이름. 생략하면 실행 중인 세션의 문화권을 사용합니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+            <maml:para>EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합을 해결하기 위한 문화권 이름. 생략하면 실행 중인 세션의 문화권을 사용합니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -3492,7 +3492,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합을 해결하기 위한 문화권 이름. 생략하면 실행 중인 세션의 문화권을 사용합니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다.</maml:para>
+          <maml:para>EUC-JP와 Shift_JIS처럼 바이트열만으로는 구별할 수 없는 조합을 해결하기 위한 문화권 이름. 생략하면 실행 중인 세션의 문화권을 사용합니다. 받아들일지 여부는 이름의 형식(BCP 47)으로 결정하며, Windows PowerShell 5.1과 PowerShell 7.x에서 같습니다. C·root·POSIX 같은 이름은 받아들이지 않으며 종료 오류 InvalidCulture가 됩니다. 형식이 올바르면 존재하지 않는 이름(xx-YY 등)도 받아들이지만, 어느 동아시아 언어권에도 해당하지 않습니다. 언어 바로 뒤의 확장 언어(zh-yue의 yue 등)는 RFC 5646에 따라 그것을 언어로 다루므로, zh-yue는 광둥어(번체자·홍콩)로 다룹니다. 이름 앞뒤의 공백과 탭은 -Encoding, -Strategy와 마찬가지로 무시합니다(' ko-KR'은 'ko-KR'과 같습니다). 이름 중간의 공백은 허용하지 않습니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>

@@ -102,6 +102,49 @@ public class CultureValidationTests : IClassFixture<ProbedCommandRunspaceFixture
     }
 
     /// <summary>
+    /// 名前の前後の空白は除いて受け付け、除いた名前を判定に渡す（-Encoding・-Strategy と同じ。1.3.0 第六次 C。BUG-0038）
+    /// </summary>
+    [Theory]
+    [InlineData(" ko-KR")]
+    [InlineData("ko-KR ")]
+    [InlineData("\tko-KR\t")]
+    [InlineData("  ko-KR\r\n")]
+    public void SurroundingWhitespace_IsTrimmed(string culture)
+    {
+        string literal = "\"" + culture.Replace("\t", "`t").Replace("\r", "`r").Replace("\n", "`n") + "\"";
+        var info = (SnowStack.EncodingProbe.EncodingInformation)this._fixture.InvokeScript(
+            $"Resolve-Encoding -Path {Quote(this._file.Path)} -Culture {literal}")[0].BaseObject;
+
+        Assert.Equal("ko-KR", info.Culture);
+
+        foreach (string script in new[]
+        {
+            $"Get-ProbedContent -LiteralPath {Quote(this._file.Path)} -Culture {literal}",
+            $"Import-ProbedCsv -LiteralPath {Quote(this._file.Path)} -Culture {literal} | Out-Null",
+            $"Set-ProbedContent -LiteralPath {Quote(this._file.Path + ".copy")} -Value x -EncodingFrom {Quote(this._file.Path)} -Culture {literal}",
+            $"Convert-ProbedContent -LiteralPath {Quote(this._file.Path)} -Culture {literal} -Encoding utf8BOM -WhatIf",
+        })
+        {
+            Assert.Empty(this._fixture.InvokeScriptCapturingErrors(script).Errors);
+        }
+
+        File.Delete(this._file.Path + ".copy");
+    }
+
+    /// <summary>
+    /// 空白を除いても形の正しくない名前は、渡された元の値のまま InvalidCulture にする（BUG-0038）
+    /// </summary>
+    [Fact]
+    public void InnerWhitespace_IsStillRejected_WithOriginalValue()
+    {
+        ErrorRecord error = RunExpectingTerminatingError($"Get-ProbedContent -LiteralPath {Quote(this._file.Path)} -Culture ' ko KR '");
+
+        Assert.Equal("InvalidCulture", error.FullyQualifiedErrorId.Split(',')[0]);
+        Assert.Equal(ValidationMessages.InvalidCulture(" ko KR "), error.Exception.Message);
+        Assert.Equal(" ko KR ", error.TargetObject);
+    }
+
+    /// <summary>
     /// Resolve-Encoding も、解釈できない -Strategy をほかのコマンドと同じ ID・分類・メッセージの終了エラーにする（BUG-0006）
     /// </summary>
     [Fact]

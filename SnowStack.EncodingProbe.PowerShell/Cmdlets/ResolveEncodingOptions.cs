@@ -24,10 +24,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Cmdlets
         /// <br/>
         /// 例外には .NET の例外を内部例外として持たせない。.NET の文言は 5.1 と 7.x で違い、利用者に見せる文言は
         /// <see cref="ValidationMessages.InvalidCulture"/> だけに絞る（1.1.0 の方針）。
+        /// <br/>
+        /// 名前の前後の空白は除いてから調べる（-Encoding・-Strategy と同じ。1.3.0 第六次 C。BUG-0038）。
+        /// 判定に渡す名前も <see cref="TrimCulture"/> で除いたものにする。除くのはモジュールだけで、クラスライブラリの検証は変えない。
+        /// メッセージと対象には、渡された元の値を出す。
         /// </remarks>
         internal static ErrorRecord? ValidateCulture(string culture)
         {
-            if (CultureNameSubtags.IsWellFormed(culture))
+            if (CultureNameSubtags.IsWellFormed(TrimCulture(culture)))
             {
                 return null;
             }
@@ -38,6 +42,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Cmdlets
                 ErrorCategory.InvalidArgument,
                 culture);
         }
+
+        /// <summary>
+        /// カルチャー名の前後の空白を除く（1.3.0 第六次 C。BUG-0038）。
+        /// </summary>
+        internal static string TrimCulture(string culture) => culture.Trim();
 
         /// <summary>
         /// 判定方式を検証する。解釈できない場合は、終了エラーとして報告する ErrorRecord を返す（解釈できる場合は null）。

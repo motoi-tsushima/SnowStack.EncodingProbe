@@ -108,7 +108,8 @@ public abstract class ProbedContentCommandBase : PSCmdlet
             ThrowTerminatingError(error);
         }
 
-        return culture;
+        // 前後の空白を除いた名前を判定に渡す（BUG-0038）
+        return ResolveEncodingOptions.TrimCulture(culture);
     }
 
     /// <summary>

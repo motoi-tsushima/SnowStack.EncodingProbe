@@ -48,7 +48,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -92,7 +92,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -109,7 +109,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+          <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -361,7 +361,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -437,7 +437,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -465,7 +465,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+          <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -799,7 +799,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -881,7 +881,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -920,7 +920,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+          <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1259,7 +1259,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1360,7 +1360,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1422,7 +1422,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+          <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1754,7 +1754,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定源文件字符编码时使用的区域性名称（例如 ko-KR）。指定 -SourceEncoding 时不使用。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定源文件字符编码时使用的区域性名称（例如 ko-KR）。指定 -SourceEncoding 时不使用。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1844,7 +1844,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定源文件字符编码时使用的区域性名称（例如 ko-KR）。指定 -SourceEncoding 时不使用。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定源文件字符编码时使用的区域性名称（例如 ko-KR）。指定 -SourceEncoding 时不使用。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1915,7 +1915,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>判定源文件字符编码时使用的区域性名称（例如 ko-KR）。指定 -SourceEncoding 时不使用。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+          <maml:para>判定源文件字符编码时使用的区域性名称（例如 ko-KR）。指定 -SourceEncoding 时不使用。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -2238,7 +2238,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2290,7 +2290,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2341,7 +2341,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2392,7 +2392,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2409,7 +2409,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+          <maml:para>判定字符编码时使用的区域性名称（例如 ko-KR）。EUC-KR 与 CP949、EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分的组合，要用区域性来消除歧义，因此在日文环境读取韩文或中文文件时，请指定目标语言的区域性。省略时使用当前会话的区域性。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。显式指定字符编码时不进行判定，因此该参数不会产生影响。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           <maml:para>-Culture 与 -UseCulture 不同。-Culture 只用于判定字符编码，-UseCulture 只决定分隔符。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -2742,7 +2742,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2882,7 +2882,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2944,7 +2944,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+          <maml:para>需要判定文件时使用的区域性名称（例如 ko-KR）。判定的对象是 -EncodingFrom 的参考文件、显式指定 -Encoding Auto 时的输出目标，以及 -Append 的追加目标。仅凭字节序列无法区分的组合用区域性消除歧义。名称与可指定的值和 Resolve-Encoding 的 -Culture 相同。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           <maml:para>-Culture 与 -UseCulture 不同。-Culture 只用于判定字符编码，-UseCulture 只决定分隔符。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
@@ -3450,7 +3450,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Culture</maml:name>
           <maml:description>
-            <maml:para>用于解决 EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分之组合的区域性名称。省略时使用当前会话的区域性。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+            <maml:para>用于解决 EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分之组合的区域性名称。省略时使用当前会话的区域性。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -3492,7 +3492,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Culture</maml:name>
         <maml:description>
-          <maml:para>用于解决 EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分之组合的区域性名称。省略时使用当前会话的区域性。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。</maml:para>
+          <maml:para>用于解决 EUC-JP 与 Shift_JIS 这类仅凭字节序列无法区分之组合的区域性名称。省略时使用当前会话的区域性。是否接受由名称的格式（BCP 47）决定，在 Windows PowerShell 5.1 与 PowerShell 7.x 中相同。C、root、POSIX 之类的名称不会被接受，并产生终止错误 InvalidCulture。格式正确时，不存在的名称（如 xx-YY）也会被接受，但不属于任何东亚语言区。紧接在语言之后的扩展语言（如 zh-yue 的 yue）依 RFC 5646 视为语言，因此 zh-yue 会视为粤语（繁体中文、香港）。与 -Encoding、-Strategy 相同，名称前后的空格和制表符会被忽略（' ko-KR' 与 'ko-KR' 相同）。名称中间的空格不被接受。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>

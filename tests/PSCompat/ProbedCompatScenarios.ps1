@@ -3070,6 +3070,29 @@ foreach ($f7Name in $f7Pipelines.Keys) {
 # （第六次 B のシナリオはここより前に足す）
 
 # ---------------------------------------------------------------------------
+# 第六次 C（パラメーター・メッセージ）
+# ---------------------------------------------------------------------------
+$f8Dir = Join-Path $script:WorkRoot 'sixthC'
+[void](New-Item -ItemType Directory -Path $f8Dir)
+$f8Ko = Join-Path $f8Dir 'ko.txt'
+# EUC-KR と CP949 のどちらにも当たる韓国語（「한국어」の EUC-KR）。韓国語のカルチャーなら 949
+[IO.File]::WriteAllBytes($f8Ko, [byte[]](0xC7, 0xD1, 0xB1, 0xB9, 0xBE, 0xEE, 0x0D, 0x0A))
+
+# BUG-0038: -Culture の前後の空白を除く（-Encoding・-Strategy と同じ）。名前の中の空白は今までどおり InvalidCulture
+foreach ($f8Culture in @('ko-KR', ' ko-KR', "ko-KR`t", ' ', ' ko KR ')) {
+    $cu = $f8Culture
+    $label = $cu.Replace(' ', '_').Replace("`t", '\t')
+    Add-Scenario "SixthC/CultureTrim/Resolve/$label" {
+        Invoke-F2 { $i = Resolve-Encoding -Path $f8Ko -Culture $cu; '{0} culture=[{1}]' -f $i.CodePage, $i.Culture }
+    }.GetNewClosure()
+    Add-Scenario "SixthC/CultureTrim/Get/$label" {
+        Invoke-F2 { Get-ProbedContent -LiteralPath $f8Ko -Culture $cu -Strategy ' NativeOnly ' }
+    }.GetNewClosure()
+}
+
+# （第六次 C のシナリオはここより前に足す）
+
+# ---------------------------------------------------------------------------
 # 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
 #
 # UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。
