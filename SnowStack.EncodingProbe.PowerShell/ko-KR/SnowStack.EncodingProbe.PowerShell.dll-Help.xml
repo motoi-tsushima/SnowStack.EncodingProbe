@@ -12,7 +12,7 @@
     </command:details>
     <maml:description>
       <maml:para>텍스트 파일을 읽고, 한 줄을 하나의 개체로 하는 문자열로 파이프라인에 출력합니다.</maml:para>
-      <maml:para>-Encoding을 생략하면 파일의 문자 인코딩을 판정합니다. 파일 앞부분의 BOM은 항상 건너뛰므로 U+FEFF가 첫 줄에 섞여 들어가는 일은 없습니다.</maml:para>
+      <maml:para>-Encoding을 생략하면 파일의 문자 인코딩을 판정합니다. 파일 앞부분의 BOM은 항상 건너뛰므로 U+FEFF가 첫 줄에 섞여 들어가는 일은 없습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
       <maml:para>기본 제공 Get-Content와 달리, -Encoding에 같은 이름을 전달하면 Windows PowerShell 5.1과 PowerShell 7.x에서 같은 결과가 됩니다.</maml:para>
     </maml:description>
     <command:syntax>
@@ -28,7 +28,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -72,7 +72,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -120,7 +120,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+          <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -309,7 +309,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다).</maml:para>
+            <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -378,7 +378,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다).</maml:para>
+            <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -569,7 +569,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>
-          <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다).</maml:para>
+          <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -741,7 +741,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다).</maml:para>
+            <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -793,7 +793,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>기존 문자 인코딩과 다른 바이트열이 되는 추가도 허용하여, 파일의 문자 인코딩을 의도적으로 변경합니다. -Encoding을 지정한 경우에는 기존 파일의 판정 자체를 수행하지 않으므로, 판정할 수 없는 파일에도 추가할 수 있습니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로 문자 인코딩은 바뀌지 않습니다. 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. -Force에는 이 효과가 없습니다.</maml:para>
+            <maml:para>기존 문자 인코딩과 다른 바이트열이 되는 추가도 허용하여, 파일의 문자 인코딩을 의도적으로 변경합니다. -Encoding을 지정한 경우에는 기존 파일의 판정 자체를 수행하지 않으므로, 판정할 수 없는 파일에도 추가할 수 있습니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로 문자 인코딩은 바뀌지 않습니다. 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. -Force에는 이 효과가 없습니다. 추가할 대상이 ISO-2022(JIS)이고 ASCII가 아닌 상태로 끝나는 경우, 추가하기 전에 ASCII로 되돌리는 이스케이프 시퀀스를 쓰는 것은 그 ISO-2022 문자 인코딩으로 추가할 때뿐입니다. -AllowEncodingChange로 다른 문자 인코딩(UTF-8 등)을 추가하는 경우에는 추가할 대상의 끝을 변경하지 않습니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -816,7 +816,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다).</maml:para>
+            <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -875,7 +875,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>기존 문자 인코딩과 다른 바이트열이 되는 추가도 허용하여, 파일의 문자 인코딩을 의도적으로 변경합니다. -Encoding을 지정한 경우에는 기존 파일의 판정 자체를 수행하지 않으므로, 판정할 수 없는 파일에도 추가할 수 있습니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로 문자 인코딩은 바뀌지 않습니다. 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. -Force에는 이 효과가 없습니다.</maml:para>
+            <maml:para>기존 문자 인코딩과 다른 바이트열이 되는 추가도 허용하여, 파일의 문자 인코딩을 의도적으로 변경합니다. -Encoding을 지정한 경우에는 기존 파일의 판정 자체를 수행하지 않으므로, 판정할 수 없는 파일에도 추가할 수 있습니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로 문자 인코딩은 바뀌지 않습니다. 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. -Force에는 이 효과가 없습니다. 추가할 대상이 ISO-2022(JIS)이고 ASCII가 아닌 상태로 끝나는 경우, 추가하기 전에 ASCII로 되돌리는 이스케이프 시퀀스를 쓰는 것은 그 ISO-2022 문자 인코딩으로 추가할 때뿐입니다. -AllowEncodingChange로 다른 문자 인코딩(UTF-8 등)을 추가하는 경우에는 추가할 대상의 끝을 변경하지 않습니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -898,7 +898,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>기존 문자 인코딩과 다른 바이트열이 되는 추가도 허용하여, 파일의 문자 인코딩을 의도적으로 변경합니다. -Encoding을 지정한 경우에는 기존 파일의 판정 자체를 수행하지 않으므로, 판정할 수 없는 파일에도 추가할 수 있습니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로 문자 인코딩은 바뀌지 않습니다. 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. -Force에는 이 효과가 없습니다.</maml:para>
+          <maml:para>기존 문자 인코딩과 다른 바이트열이 되는 추가도 허용하여, 파일의 문자 인코딩을 의도적으로 변경합니다. -Encoding을 지정한 경우에는 기존 파일의 판정 자체를 수행하지 않으므로, 판정할 수 없는 파일에도 추가할 수 있습니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로 문자 인코딩은 바뀌지 않습니다. 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. -Force에는 이 효과가 없습니다. 추가할 대상이 ISO-2022(JIS)이고 ASCII가 아닌 상태로 끝나는 경우, 추가하기 전에 ASCII로 되돌리는 이스케이프 시퀀스를 쓰는 것은 그 ISO-2022 문자 인코딩으로 추가할 때뿐입니다. -AllowEncodingChange로 다른 문자 인코딩(UTF-8 등)을 추가하는 경우에는 추가할 대상의 끝을 변경하지 않습니다.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1024,7 +1024,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>
-          <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다).</maml:para>
+          <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -1228,7 +1228,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오.</maml:para>
+            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. 추가할 대상이 ISO-2022(JIS)이고 ASCII가 아닌 상태로 끝나는 경우, 추가하기 전에 ASCII로 되돌리는 이스케이프 시퀀스를 쓰는 것은 그 ISO-2022 문자 인코딩으로 추가할 때뿐입니다. -AllowEncodingChange로 다른 문자 인코딩(UTF-8 등)을 추가하는 경우에는 추가할 대상의 끝을 변경하지 않습니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1329,7 +1329,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오.</maml:para>
+            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. 추가할 대상이 ISO-2022(JIS)이고 ASCII가 아닌 상태로 끝나는 경우, 추가하기 전에 ASCII로 되돌리는 이스케이프 시퀀스를 쓰는 것은 그 ISO-2022 문자 인코딩으로 추가할 때뿐입니다. -AllowEncodingChange로 다른 문자 인코딩(UTF-8 등)을 추가하는 경우에는 추가할 대상의 끝을 변경하지 않습니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1389,7 +1389,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오.</maml:para>
+          <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. 추가할 대상이 ISO-2022(JIS)이고 ASCII가 아닌 상태로 끝나는 경우, 추가하기 전에 ASCII로 되돌리는 이스케이프 시퀀스를 쓰는 것은 그 ISO-2022 문자 인코딩으로 추가할 때뿐입니다. -AllowEncodingChange로 다른 문자 인코딩(UTF-8 등)을 추가하는 경우에는 추가할 대상의 끝을 변경하지 않습니다.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2194,7 +2194,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:details>
     <maml:description>
       <maml:para>CSV 파일을 읽어 레코드마다 개체 하나를 파이프라인에 출력합니다. 레코드를 하나씩 출력하므로 파일 전체를 메모리에 읽지 않습니다(파일 전체로 문자 인코딩을 판정하는 경우의 판정 처리 제외).</maml:para>
-      <maml:para>-Encoding을 생략하면 파일마다 문자 인코딩을 판정합니다. 파일 시작 부분의 BOM은 항상 건너뜁니다.</maml:para>
+      <maml:para>-Encoding을 생략하면 파일마다 문자 인코딩을 판정합니다. 파일 시작 부분의 BOM은 항상 건너뜁니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
       <maml:para>CSV 구문 분석에는 PowerShell 7.x의 Import-Csv에서 이식한 처리를 사용하므로, Windows PowerShell 5.1에서도 PowerShell 7.x와 같은 개체가 됩니다. CR만 있는 줄 바꿈도 읽고, W3C 확장 로그 형식(#Fields:)을 지원하며, #TYPE 줄의 형식 이름은 PowerShell 7.x의 순서가 됩니다.</maml:para>
     </maml:description>
     <command:syntax>
@@ -2224,7 +2224,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2276,7 +2276,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2327,7 +2327,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2378,7 +2378,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+            <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2449,7 +2449,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다.</maml:para>
+          <maml:para>파일을 디코딩할 때 사용하는 문자 인코딩. 생략하면(또는 Auto를 지정하면) 대상 파일을 판정합니다. 명시하면 판정을 수행하지 않으므로, 오판정을 바로잡는 수단이 됩니다. 여기에 무엇을 지정하든 파일 앞부분의 BOM은 항상 건너뜁니다. 통합 어휘: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7(읽기 전용). 그 밖에 .NET이 알고 있는 WebName(shift_jis, euc-jp, iso-2022-jp, big5, gb18030 등), 숫자 코드 페이지(932, 65001 등), System.Text.Encoding 인스턴스, Resolve-Encoding이 반환하는 EncodingInformation 개체도 지정할 수 있습니다. 제거하는 BOM은 맨 앞의 1개뿐이며, 이어지는 두 번째 U+FEFF는 문자로 남깁니다. 파일이 문자 도중에 끝나는 경우(길이가 홀수인 UTF-16 등)에는 PowerShell 7.x와 마찬가지로 남은 바이트를 대체 문자로 읽습니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -2685,7 +2685,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오.</maml:para>
+            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. 추가할 대상이 ISO-2022(JIS)이고 ASCII가 아닌 상태로 끝나는 경우, 추가하기 전에 ASCII로 되돌리는 이스케이프 시퀀스를 쓰는 것은 그 ISO-2022 문자 인코딩으로 추가할 때뿐입니다. -AllowEncodingChange로 다른 문자 인코딩(UTF-8 등)을 추가하는 경우에는 추가할 대상의 끝을 변경하지 않습니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2825,7 +2825,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오.</maml:para>
+            <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. 추가할 대상이 ISO-2022(JIS)이고 ASCII가 아닌 상태로 끝나는 경우, 추가하기 전에 ASCII로 되돌리는 이스케이프 시퀀스를 쓰는 것은 그 ISO-2022 문자 인코딩으로 추가할 때뿐입니다. -AllowEncodingChange로 다른 문자 인코딩(UTF-8 등)을 추가하는 경우에는 추가할 대상의 끝을 변경하지 않습니다.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2911,7 +2911,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오.</maml:para>
+          <maml:para>-Append의 정합성 검사를 하지 않고, 기존 파일의 문자 인코딩과 바이트열이 달라도 씁니다. -Append가 없으면 효과가 없으며 경고를 표시합니다. -Encoding을 생략한 경우에는 추가할 대상에서 문자 인코딩을 상속하기 위해 판정합니다(판정할 수 없는 파일에서는 EncodingDetectionFailed가 됩니다). 상속한 문자 인코딩으로 쓰므로, 문자 인코딩을 바꾸려면 -Encoding도 지정하십시오. 추가할 대상이 ISO-2022(JIS)이고 ASCII가 아닌 상태로 끝나는 경우, 추가하기 전에 ASCII로 되돌리는 이스케이프 시퀀스를 쓰는 것은 그 ISO-2022 문자 인코딩으로 추가할 때뿐입니다. -AllowEncodingChange로 다른 문자 인코딩(UTF-8 등)을 추가하는 경우에는 추가할 대상의 끝을 변경하지 않습니다.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -3661,7 +3661,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:details>
     <maml:description>
       <maml:para>이 모듈이 인식하고 있는 운영 체제, .NET 런타임, 로캘, PowerShell 호스트의 정보를 반환합니다.</maml:para>
-      <maml:para>컴퓨터에 따라 결과가 다른 경우의 원인 파악에 사용합니다. 여기에 표시되는 문화권과 ANSI / OEM 코드 페이지는, 판정 처리와 ansi / oem 어휘가 의존하고 있는 것입니다.</maml:para>
+      <maml:para>컴퓨터에 따라 결과가 다른 경우의 원인 파악에 사용합니다. 여기에 표시되는 문화권과 ANSI / OEM 코드 페이지는, 판정 처리와 ansi / oem 어휘가 의존하고 있는 것입니다. Windows에서 ANSI / OEM 코드 페이지는 현재 문화권이 아니라 시스템 로캘(유니코드를 지원하지 않는 프로그램용 언어)의 값입니다. Linux / macOS에서는 현재 문화권의 값입니다.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>

@@ -105,6 +105,8 @@ UTF-32LE → UTF-32BE → UTF-16LE → UTF-16BE の順に**すべての単位**�
 - EUC-JP と Shift-JIS の両方に該当 → 改行が CRLF なら Shift-JIS、LF なら EUC-JP、改行なしなら OS（Windows → Shift-JIS）
 - EUC-KR と CP949 の両方に該当 → CP949
 - EUC-TW と CP950 の両方に該当 → CP950(Big5)（香港カルチャーは EUC-TW を候補にしない）
+- **ただし、決めた候補で標本を厳密に（例外フォールバックで）復号できず、もう一方では復号できるなら、もう一方を選ぶ**（1.3.0 第六次。BUG-0031。`ExcludeUndecodableCandidate` / `CanDecodeStrictly`）。
+  その TFM で作れない候補（51950）は外さない。net10.0 は `CodePagesEncodingProvider.Instance` から直接取り出す（グローバルに登録しないこと）
 
 カルチャーはグローバル状態ではなくパラメータで渡す（`Detection(culture)` / `EncodingDetectorOptions.Culture`）。`CultureInfo.CurrentCulture` へのフォールバックは 1 か所だけ。
 
@@ -243,6 +245,14 @@ PowerShell 5.1 ホストで解決できないためで、意図した非対称�
   .NET Framework の `GetFullPath` はストリームの名前で `NotSupportedException` を投げる
 - **`-LiteralPath` の別名は `PSPath`・`LP`・`FullName`、`-Path` に `FullName` を付けないこと**（BUG-0003。FileInfo の `FullName` がワイルドカードとして展開される）。
   `Resolve-Encoding -Path` は展開しないので `FullName` のまま。`Set-` / `Add-ProbedContent -Path` のワイルドカードが 0 件なら `ItemNotFound`（読み込みはエラーにしない）
+- **読み込みは `Internal/ProbedFileReader` だけを通し、`StreamReader` には preamble を持たない `ReaderEncoding` を渡す（1.3.0 第六次。BUG-0021）。** BOM 付きの Encoding を渡すと、
+  BOM の後ろへシークした後で `StreamReader` が 2 個目の BOM も読み飛ばす。取り除く BOM は先頭の 1 個だけ。net48 では同じ部品の `EndOfStreamSignal` / `FlushAtEndDecoder` が
+  ストリームの終わりで Decoder を flush させる（BUG-0042。.NET Framework の `StreamReader` は flush せず、途中で切れた末尾を捨てていた）
+- **ISO-2022 で書く追記は、追記先が ASCII 以外の状態のまま終わっていれば、最初に書く内容の前に戻すシーケンスを書く**（`Internal/Iso2022TailState`、`ProbedFileWriter` の `_pendingPrefix`。BUG-0018）。
+  `-AllowEncodingChange` で別の文字エンコーディングを書くときは書かない（利用者の決定）
+- **CSV の列名どうしの比較は `Internal/CsvNameComparer.Instance` を使う**（net10.0 は `OrdinalIgnoreCase`、net48 は .NET 10 から作った表 `CsvNameCaseTable`。BUG-0020）。
+  列名でプロパティを引くときは `CsvPropertyViews.FindProperty`。表は `tools/New-CsvNameCaseTable.ps1` で生成する（手で直さない。.NET の版で結果が変わったら作り直し、`CsvNameComparerTests` を通す）
+- **`ansi` / `oem` と `Locale` のコードページは、コアの `Internal/SystemCodePages` だけから求める**（Windows は `GetACP` / `GetOEMCP`、それ以外はカルチャーの値。BUG-0032）。`CurrentCulture.TextInfo` を直接使わないこと
 - **継承した us-ascii は BOM 無しの UTF-8 とみなす（1.3.0 第五次）。** `EncodingVocabulary.TreatInheritedAsciiAsUtf8` を `EncodingInheritance.FromFile`（Auto・`-EncodingFrom`・追記の整合性検査の相手）と、
   書き込み用途で `EncodingInformation` を解決したときに通す。`-Encoding ascii` の明示と読み取り（`ConvertTo-DotNetEncoding` を含む）は置き換えない
 - 文字エンコーディングの判定は**ファイル全体**を対象とする。先頭の一定量に制限すると、
@@ -527,10 +537,13 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
 
 **PowerShell モジュールとクラスライブラリの両方を 1.3.0 としてリリースする**（当初はモジュールだけの予定だった。第四次で改めた）。作業ブランチは `feature/1.3.0-csv`。
 
-**現在の状態（2026-10-24 時点）: 第五次の仕上げ（性能の修正と著作権の表記。実装記録 10.16 節）と、報告の後の利用者の決定への対応（ACL に従う書き込みを大きさによらずそろえた）を実装してコミットし、2026-10-24 に開発用ブランチ（origin/feature/1.3.0-csv）へプッシュした。master へは未マージ・未リリース。次の依頼（手動確認の課題、またはリリースの指示）を待っている。**
+**現在の状態（2026-10-26 時点）: 第六次 A（テスト担当の BUG-0018・0020・0021・0031・0032・0033・0037・0042。実装記録 11 章）を実装して feature/1.3.0-csv にコミットした（プッシュしていない）。第六次は A・B・C の 3 回に分けて依頼される。次は B の依頼を待っている。master へは未マージ・未リリース。**
+第五次の仕上げ（実装記録 10.16 節）までは 2026-10-24 に開発用ブランチ（origin/feature/1.3.0-csv）へプッシュ済み。
 第五次の後半（テスト担当の BUG-0003〜0008・0011・0015〜0017、H-17、9.9 節の 1〜4、報告の後の修正 10.14 節）は 2026-10-23 に origin/feature/1.3.0-csv へプッシュ済み。
 
-- 両 TFM のテスト（コア net48 2117 / net10.0 2107 件、モジュール 1516 件）と PSCompat（1044 シナリオ）が通っている（第五次の仕上げと、報告の後の対応を含む）。
+- 両 TFM のテスト（コア net48 2139 / net10.0 2129 件、モジュール 1771 件）と PSCompat（1135 シナリオ）が通っている（第六次 A を含む）。
+  第六次 A では、テスト担当のスクリプト 8 本を作業フォルダーに作った配布の構成で両ホストで確かめた（実装記録 11.11 節）。
+  Linux の実測のため、WSL の Ubuntu-24.04 のホームに `~/.dotnet`（.NET 10.0.14）と `~/powershell-7.6.9` を入れてある（11.4 節）
   テスト担当のスクリプト 17 本も、作業フォルダーに作った配布の構成で両ホストで確かめた（実装記録 10.11 節・10.16 節）
   **性能:** 小さなファイルはメモリに写してから直接書くようにし、1000 個への `Set-ProbedContent` は修正の前の約 1/4〜1/5 になった。第四次よりまだ約 2 倍遅いのは、利用者が受け入れた（直さない）
   **著作権の表記:** すべて `Copyright (c) 2026 Motoi Tsushima` にそろえた（10.16 節の表。`Authors`・`Company` は `motoi.tsushima` のまま）
@@ -567,6 +580,8 @@ MIT License の条件（著作権表示と許諾表示）を満たすため、�
   コアの改行の判定を単位で数える、読み替えたときの `LineBreak` の数え直し、ISO-2022 の検査、空の列名の ID。実装記録 9 章
 - 第五次（後半）: パスの束縛（`FullName` を `-LiteralPath` に）、書き込みの 0 件のワイルドカード、同じファイルの判定を実体で、`EncodingChangeOnAppend` の取り消し、
 - 第五次（仕上げ）: 小さなファイル（1 MiB 以内）はメモリに写してから直接書く（性能の修正）、著作権の表記を `Copyright (c) 2026 Motoi Tsushima` にそろえた。実装記録 10.15 節・10.16 節
+- 第六次 A: ISO-2022 の追記先を ASCII に戻す、CSV の列名の比較を .NET 10 にそろえる、BOM は先頭の 1 個だけ取り除く、曖昧解消で厳密に復号できない候補を選ばない（コア）、
+  `ansi` / `oem` をシステムのロケールに（コアの `Locale` も）、`-Value` の `$null` を飛ばす、UTF-7 のインスタンスを拒否、5.1 でも途中で切れた末尾を置き換えの文字で読む。実装記録 11 章、仕様書 18.4・25 章
   上書きのリンク・ハードリンク・権限の扱い、`::$DATA`、`Resolve-Encoding` の検証の部品、カルチャー名を BCP 47 の形で検証（コアも）、`Os.Description` の Trim、文書（BUG-0005・0008・0011）。実装記録 10 章
 
 関連文書:

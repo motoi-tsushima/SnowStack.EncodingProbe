@@ -129,6 +129,39 @@ UTF-16 / UTF-32 と判定したファイルの改行コード（`LineBreak`）�
 言語の直後の拡張言語は、RFC 5646 のとおりそれを言語として扱います（`zh-yue` は広東語として、香港の扱い）。
 クラスライブラリでは、`ArgumentException` になる名前の集合が変わります（公開 API の型は変えていません）。
 
+### 読み書きの細部の修正（クラスライブラリ・PowerShell モジュール。挙動の変更）
+
+テスト担当のブラックボックステストで見つかった不具合を直しました（詳細は [CHANGELOG.md](CHANGELOG.md) と 1.3.0 仕様書 18.4・25 章）。
+
+- **`ansi` / `oem` は、Windows ではシステムのロケール（「Unicode 対応ではないプログラムの言語」）の ANSI / OEM コードページです**（標準の 7.x の `-Encoding ansi` / `oem`、5.1 の `Default` / `Oem` と同じ）。
+  これまでは「地域」の形式（スレッドのカルチャー）の値で、日本語の Windows で形式を「英語（米国）」にしていると `ansi` が 1252 になっていました。
+  `Get-EncodingProbePlatformInfo` の `Locale` も同じ値です。システムの ANSI が 65001（UTF-8 のベータ機能）の場合は、BOM 無しの UTF-8 として扱います。`-Encoding 0` はエラーにします
+- **BOM が 2 個続くファイルは、先頭の 1 個だけを取り除きます**（2 個目の U+FEFF は文字として残します。7.x の `Get-Content` / `Import-Csv` と同じ）。
+  `-Encoding utf8BOM` などを指定すると、2 個とも取り除いていました（1.1.0 から）
+- **Windows PowerShell 5.1 でも、途中で切れたファイルの末尾（長さが奇数の UTF-16 の最後の 1 バイトなど）を、7.x と同じく置き換えの文字（U+FFFD など）として読みます。** 5.1 では黙って捨てていました
+- **JIS（ISO-2022-JP）のまま終わっているファイルに追記するときは、先に ASCII に戻すエスケープシーケンス（`ESC ( B`）を書きます。** 追記した行が 2 バイト文字として読まれて消えていました
+- **CSV の列名の大文字小文字の比べ方を、5.1 でも 7.x と同じにしました**（`ǅ` / `ǆ`、語末のシグマ `ς` / `Σ` など）
+- 短い EUC-JP のファイルを、日本語の環境で Shift_JIS と判定しなくなりました（Shift_JIS として読めないバイト列は、Shift_JIS を選びません）
+- `Set-ProbedContent` / `Add-ProbedContent` の `-Value` の配列の `$null` は、標準と同じく飛ばします（空行を書いていました）
+- `Convert-ProbedContent` は、`UTF7Encoding` のインスタンスでも UTF-7 で書きません（`utf7` と同じエラー）
+
+#### Linux / macOS での `ansi` / `oem`
+
+Linux / macOS には ANSI / OEM コードページの考え方が無いため、**現在のカルチャー**（環境変数 `LC_ALL`・`LANG` などから決まる）について .NET が持つ値を使います（挙動は 1.2.0 までと同じです）。
+Linux（Ubuntu 24.04、.NET 10.0.14、PowerShell 7.6.9）で実測した値は次のとおりです。
+
+| `LANG`（`LC_ALL` なし） | `ansi` | `oem` |
+|---|---|---|
+| 未設定・`C`・`POSIX`・`C.UTF-8`（不変カルチャー） | 1252 | 437 |
+| `en_US.UTF-8` | 1252 | 437 |
+| `ja_JP.UTF-8` | 932 | 932 |
+| `de_DE.UTF-8` | 1252 | 850 |
+| `ko_KR.UTF-8` / `zh_CN.UTF-8` / `zh_TW.UTF-8` | 949 / 936 / 950 | 949 / 936 / 950 |
+
+`LC_ALL` を設定すると、`LANG` より優先されます（空の文字列を設定した `LC_ALL` も優先され、不変カルチャーになります）。
+標準の PowerShell 7.x の `-Encoding ansi` は同じ値ですが、**標準の `-Encoding oem` は UTF-8 で、本モジュールの `oem` とは違います。**
+macOS は実測していません（.NET のソースからの推定では、Linux と同じく現在のカルチャーの値になります）。
+
 ### CSV の読み書きコマンド（PowerShell モジュール）
 
 PowerShell モジュールに CSV の読み書きコマンドを追加しました。

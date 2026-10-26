@@ -12,7 +12,7 @@
     </command:details>
     <maml:description>
       <maml:para>Reads a text file and writes its content to the pipeline as strings, one object per line.</maml:para>
-      <maml:para>When -Encoding is omitted the character encoding of the file is detected. A byte order mark at the start of the file is always skipped, so U+FEFF never leaks into the first line.</maml:para>
+      <maml:para>When -Encoding is omitted the character encoding of the file is detected. A byte order mark at the start of the file is always skipped, so U+FEFF never leaks into the first line. Only that first byte order mark is removed; a second U+FEFF that follows it is kept as a character. If the file ends in the middle of a character (for example, a UTF-16 file of odd length), the incomplete bytes are read as a replacement character, as in PowerShell 7.x.</maml:para>
       <maml:para>Unlike the built-in Get-Content, the same name passed to -Encoding produces the same result on Windows PowerShell 5.1 and PowerShell 7.x.</maml:para>
     </maml:description>
     <command:syntax>
@@ -28,7 +28,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted. Only that first byte order mark is removed; a second U+FEFF that follows it is kept as a character. If the file ends in the middle of a character (for example, a UTF-16 file of odd length), the incomplete bytes are read as a replacement character, as in PowerShell 7.x.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -72,7 +72,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted. Only that first byte order mark is removed; a second U+FEFF that follows it is kept as a character. If the file ends in the middle of a character (for example, a UTF-16 file of odd length), the incomplete bytes are read as a replacement character, as in PowerShell 7.x.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -120,7 +120,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+          <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted. Only that first byte order mark is removed; a second U+FEFF that follows it is kept as a character. If the file ends in the middle of a character (for example, a UTF-16 file of odd length), the incomplete bytes are read as a replacement character, as in PowerShell 7.x.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -309,7 +309,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>Content to write. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture.</maml:para>
+            <maml:para>Content to write. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture. $null elements of an array are skipped (as with Set-Content and Add-Content).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -378,7 +378,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>Content to write. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture.</maml:para>
+            <maml:para>Content to write. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture. $null elements of an array are skipped (as with Set-Content and Add-Content).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -569,7 +569,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>
-          <maml:para>Content to write. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture.</maml:para>
+          <maml:para>Content to write. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture. $null elements of an array are skipped (as with Set-Content and Add-Content).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -741,7 +741,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>Content to append. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture.</maml:para>
+            <maml:para>Content to append. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture. $null elements of an array are skipped (as with Set-Content and Add-Content).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -793,7 +793,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. When -Encoding is specified, the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed); the inherited encoding is then used, so the character encoding of the file does not change. To change it, specify -Encoding as well. -Force does NOT have this effect.</maml:para>
+            <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. When -Encoding is specified, the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed); the inherited encoding is then used, so the character encoding of the file does not change. To change it, specify -Encoding as well. -Force does NOT have this effect. If the existing file is ISO-2022 (JIS) and ends in a state other than ASCII, the escape sequence that returns to ASCII is written before the appended content only when you append in that ISO-2022 encoding. When -AllowEncodingChange is used to append in a different encoding (UTF-8, for example), the end of the existing file is left as it is.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -816,7 +816,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>Content to append. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture.</maml:para>
+            <maml:para>Content to append. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture. $null elements of an array are skipped (as with Set-Content and Add-Content).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -875,7 +875,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. When -Encoding is specified, the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed); the inherited encoding is then used, so the character encoding of the file does not change. To change it, specify -Encoding as well. -Force does NOT have this effect.</maml:para>
+            <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. When -Encoding is specified, the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed); the inherited encoding is then used, so the character encoding of the file does not change. To change it, specify -Encoding as well. -Force does NOT have this effect. If the existing file is ISO-2022 (JIS) and ends in a state other than ASCII, the escape sequence that returns to ASCII is written before the appended content only when you append in that ISO-2022 encoding. When -AllowEncodingChange is used to append in a different encoding (UTF-8, for example), the end of the existing file is left as it is.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -898,7 +898,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. When -Encoding is specified, the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed); the inherited encoding is then used, so the character encoding of the file does not change. To change it, specify -Encoding as well. -Force does NOT have this effect.</maml:para>
+          <maml:para>Appends even when the bytes differ from those of the existing character encoding, deliberately changing the character encoding of the file. When -Encoding is specified, the existing file is not detected at all, so a file whose encoding cannot be detected can also be appended to. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed); the inherited encoding is then used, so the character encoding of the file does not change. To change it, specify -Encoding as well. -Force does NOT have this effect. If the existing file is ISO-2022 (JIS) and ends in a state other than ASCII, the escape sequence that returns to ASCII is written before the appended content only when you append in that ISO-2022 encoding. When -AllowEncodingChange is used to append in a different encoding (UTF-8, for example), the end of the existing file is left as it is.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1024,7 +1024,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>
-          <maml:para>Content to append. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture.</maml:para>
+          <maml:para>Content to append. Each element is written followed by a line break, including the last one, unless -NoNewline is specified. Values that are not strings are converted with the PowerShell type converter, which uses the invariant culture. $null elements of an array are skipped (as with Set-Content and Add-Content).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -1228,7 +1228,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well. If the existing file is ISO-2022 (JIS) and ends in a state other than ASCII, the escape sequence that returns to ASCII is written before the appended content only when you append in that ISO-2022 encoding. When -AllowEncodingChange is used to append in a different encoding (UTF-8, for example), the end of the existing file is left as it is.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1329,7 +1329,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well. If the existing file is ISO-2022 (JIS) and ends in a state other than ASCII, the escape sequence that returns to ASCII is written before the appended content only when you append in that ISO-2022 encoding. When -AllowEncodingChange is used to append in a different encoding (UTF-8, for example), the end of the existing file is left as it is.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1389,7 +1389,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
+          <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well. If the existing file is ISO-2022 (JIS) and ends in a state other than ASCII, the escape sequence that returns to ASCII is written before the appended content only when you append in that ISO-2022 encoding. When -AllowEncodingChange is used to append in a different encoding (UTF-8, for example), the end of the existing file is left as it is.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2194,7 +2194,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:details>
     <maml:description>
       <maml:para>Reads a CSV file and writes one object per record to the pipeline. Records are written one at a time, so the whole file is not loaded into memory (apart from detection when the whole file is used for it).</maml:para>
-      <maml:para>When -Encoding is omitted the character encoding of each file is detected. A byte order mark at the start of the file is always skipped.</maml:para>
+      <maml:para>When -Encoding is omitted the character encoding of each file is detected. A byte order mark at the start of the file is always skipped. Only that first byte order mark is removed; a second U+FEFF that follows it is kept as a character. If the file ends in the middle of a character (for example, a UTF-16 file of odd length), the incomplete bytes are read as a replacement character, as in PowerShell 7.x.</maml:para>
       <maml:para>The CSV is parsed by code ported from Import-Csv of PowerShell 7.x, so Windows PowerShell 5.1 produces the same objects as PowerShell 7.x: CR-only line breaks are read, the W3C extended log format (#Fields:) is supported, and the type names from a #TYPE line are in the PowerShell 7.x order.</maml:para>
     </maml:description>
     <command:syntax>
@@ -2224,7 +2224,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted. Only that first byte order mark is removed; a second U+FEFF that follows it is kept as a character. If the file ends in the middle of a character (for example, a UTF-16 file of odd length), the incomplete bytes are read as a replacement character, as in PowerShell 7.x.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2276,7 +2276,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted. Only that first byte order mark is removed; a second U+FEFF that follows it is kept as a character. If the file ends in the middle of a character (for example, a UTF-16 file of odd length), the incomplete bytes are read as a replacement character, as in PowerShell 7.x.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2327,7 +2327,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted. Only that first byte order mark is removed; a second U+FEFF that follows it is kept as a character. If the file ends in the middle of a character (for example, a UTF-16 file of odd length), the incomplete bytes are read as a replacement character, as in PowerShell 7.x.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2378,7 +2378,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+            <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted. Only that first byte order mark is removed; a second U+FEFF that follows it is kept as a character. If the file ends in the middle of a character (for example, a UTF-16 file of odd length), the incomplete bytes are read as a replacement character, as in PowerShell 7.x.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2449,7 +2449,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted.</maml:para>
+          <maml:para>Character encoding used to decode the file. When omitted (or set to Auto) the file is detected. When specified, no detection is performed, which is the way to override a misdetection. A byte order mark at the start of the file is always skipped, whatever is specified here. Unified vocabulary: Auto, utf8NoBOM, utf8BOM, unicodeNoBOM, unicodeBOM, bigendianunicodeNoBOM, bigendianunicodeBOM, utf32NoBOM, utf32BOM, bigendianutf32NoBOM, bigendianutf32BOM, ascii, ansi, oem, utf7 (reading only). Any WebName known to .NET (shift_jis, euc-jp, iso-2022-jp, big5, gb18030, ...), any numeric code page (932, 65001, ...), a System.Text.Encoding instance, and an EncodingInformation object returned by Resolve-Encoding are also accepted. Only that first byte order mark is removed; a second U+FEFF that follows it is kept as a character. If the file ends in the middle of a character (for example, a UTF-16 file of odd length), the incomplete bytes are read as a replacement character, as in PowerShell 7.x.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -2685,7 +2685,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well. If the existing file is ISO-2022 (JIS) and ends in a state other than ASCII, the escape sequence that returns to ASCII is written before the appended content only when you append in that ISO-2022 encoding. When -AllowEncodingChange is used to append in a different encoding (UTF-8, for example), the end of the existing file is left as it is.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2825,7 +2825,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
+            <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well. If the existing file is ISO-2022 (JIS) and ends in a state other than ASCII, the escape sequence that returns to ASCII is written before the appended content only when you append in that ISO-2022 encoding. When -AllowEncodingChange is used to append in a different encoding (UTF-8, for example), the end of the existing file is left as it is.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2911,7 +2911,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well.</maml:para>
+          <maml:para>Skips the -Append consistency check and writes even if the bytes differ from those of the character encoding of the existing file. Without -Append it has no effect, and a warning is issued. When -Encoding is omitted, the existing file is still detected so that its character encoding can be inherited (a file that cannot be detected causes EncodingDetectionFailed), and the inherited encoding is used; to change the character encoding, specify -Encoding as well. If the existing file is ISO-2022 (JIS) and ends in a state other than ASCII, the escape sequence that returns to ASCII is written before the appended content only when you append in that ISO-2022 encoding. When -AllowEncodingChange is used to append in a different encoding (UTF-8, for example), the end of the existing file is left as it is.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -3661,7 +3661,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:details>
     <maml:description>
       <maml:para>Returns the operating system, the .NET runtime, the locale and the PowerShell host information that the module sees.</maml:para>
-      <maml:para>Useful when a result differs between two machines: the culture and the ANSI/OEM code pages reported here are what the detector and the 'ansi' and 'oem' vocabulary names depend on.</maml:para>
+      <maml:para>Useful when a result differs between two machines: the culture and the ANSI/OEM code pages reported here are what the detector and the 'ansi' and 'oem' vocabulary names depend on. On Windows the ANSI/OEM code pages are those of the system locale (the language for non-Unicode programs), not those of the current culture. On Linux and macOS they are those of the current culture.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>

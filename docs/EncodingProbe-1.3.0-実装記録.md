@@ -1461,3 +1461,247 @@ ID・分類・例外（`Exception.Message`）は変えない。パイプライ�
 
 **対応の後の確認（2026-10-24）。** コアのテスト net48 **2117 件**・net10.0 **2107 件**、モジュールのテスト **1516 件**（10 件増）、すべて成功。PSCompat は **1044 シナリオ**で 5.1 と 7.x が完全に一致。
 テスト担当のスクリプト 17 本を、対応の後の Release ビルドで作り直した作業フォルダーで両ホストで流し、修正の前（`a980c3d`）の出力と一致した（作業フォルダーの名前とコンソールの折り返しを除く）
+
+## 11. 第六次 A — テスト担当の報告への対応（BUG-0018・0020・0021・0031・0032・0033・0037・0042。2026-10-26）
+
+第六次は 3 回（A・B・C）に分けて依頼される。本章は A。テスト担当の報告（`C:\_test\EncodingProbeBboxTest\reports\bugs\BUG-<番号>.md`）は第五次より前のモジュールで実行したもので、
+報告の「実際の結果」は古い挙動である。仕様は 1.3.0 仕様書 18.4・25 章、変えた挙動は CHANGELOG の「挙動の変更（PowerShell モジュール。第六次 A）」と「挙動の変更（クラスライブラリ）」にある。
+
+### 11.1 利用者の決定（計画の確認のとき）
+
+1. **Linux の `ansi` / `oem` は、WSL に .NET を入れて実測する**（Ubuntu-24.04 のホームフォルダーにだけ入れる。sudo・apt は使わない）。macOS は「.NET のソースからの推定で、実測していない」と書く
+2. **BUG-0042 は、すべての文字エンコーディングに当てはめる。** ただし系統ごとに途中で切れたファイルを両ホストで読み、一致しないものは直さずに一覧にする。`Convert-ProbedContent` が変わらないことを確かめる
+3. **BUG-0018 で、`-AllowEncodingChange` で別の文字エンコーディングを追記する場合は、戻すシーケンスを書かない。** 仕様書 18.3（18.4 に書いた）とヘルプの `-AllowEncodingChange`（5 言語）に書く
+4. 計画への指摘: 0037 は書き込みの全コマンドに単体テストを入れる。0033 は標準を両ホストで実測して合わせ、パイプラインも確かめる。
+   0031 は作れない候補を外さず、復号を確かめるのは判定の標本に限り、両 TFM で同じ結果になることをテストで確かめる（既存のテストで結果が変わったら止まる）。
+   0018 は末尾から探す方法を検討し、選んだ方法と理由を書く。0021 は 1.1.0 からの挙動であることを CHANGELOG に書く
+
+### 11.2 BUG-0037（UTF-7 の `Encoding` のインスタンス）
+
+`Convert-ProbedContent` の `ResolveTargetFromEncoding` は、`Encoding` のインスタンスの分岐（`GetPreamble()` に従う）を、UTF-7 の検査より先に通していた。
+65000 の検査を、インスタンスの分岐より前に移した（ID は名前と同じ `EncodingNotAllowedForWrite`）。
+ほかの 4 コマンドは、束縛の段階の `ValidateForWrite` がコードページで調べるので、もともとインスタンスも `ParameterArgumentTransformationError` で拒否していた。
+`Utf7InstanceWriteTests` が、5 コマンド（`Out-` と `Export-` は `-Append` の有無も）× 名前・インスタンス 2 種で、ID とファイルが変わらないことを固定する。
+
+### 11.3 BUG-0033（`-Value` の配列の `$null`）
+
+標準の `Set-Content` / `Add-Content` を両ホストで実測した（`-Value` の 5 通り × パイプラインの 4 通り × `-NoNewline` の有無 × 既存のファイルの有無。5.1 は `-Encoding Ascii`、7.x は `utf8NoBOM`）。
+**両ホストの標準は同じ結果**で、モジュールとの違いは `$null` の要素だけだった。
+
+| 入力 | 標準（両ホスト）| 第五次までのモジュール |
+|---|---|---|
+| `-Value @('a',$null,'b')` | `61 0D 0A 62 0D 0A` | `61 0D 0A 0D 0A 62 0D 0A` |
+| `-Value @($null,$null)`（Set、新規・既存） | 0 バイト | `0D 0A 0D 0A` |
+| `-Value @($null)`（Set） | 0 バイト | `0D 0A` |
+| `-Value @($null,$null)`（Add、既存 `OLD`） | `OLD` のまま | `OLD` + `0D 0A 0D 0A` |
+| `-Value $null`・`-Value @()`・パイプラインの `$null` | 標準と同じ（0 バイト。`P @()` だけは標準もモジュールもファイルを作らない） | 同じ |
+| `-NoNewline` | 標準と同じ | 同じ |
+
+`WriteValues` で `$null` の要素を飛ばした。すべて `$null` なら、`-Value $null` と同じく何も書かない（Set- は空のファイル）。
+以前の挙動を固定していた `SetProbedContentTests.Write_NullElement_WritesEmptyLine` を `Write_NullElement_IsSkipped` に改めた（依頼による挙動の変更）。
+
+### 11.4 BUG-0032（`ansi` / `oem`）
+
+**直し方。** クラスライブラリに `Internal/SystemCodePages`（internal）を置いた。Windows では `GetACP` / `GetOEMCP`（kernel32 の P/Invoke。net48・net10.0 とも）、それ以外は今までどおり `CultureInfo.CurrentCulture.TextInfo` の値。
+`PlatformInfoResolver.ResolveLocale`（`Get-EncodingProbePlatformInfo` の `Locale`）とモジュールの `EncodingVocabulary`（`ansi` / `oem`）の両方がこれを使う。
+`LocaleInformation` の型・プロパティは変えていない（XML ドキュメントは、もともと「システムの ANSI コードページ」と書いていた。Windows 以外の値の説明を直した）。
+
+- 65001 は `BuildEncoding(65001, emitBom: false)` で BOM 無しの UTF-8 にする（`Encoding.GetEncoding(65001)` は BOM 付き）
+- `-Encoding 0`（数値・文字列）は `FromCodePage` で `UnknownEncoding` にする（`1`・`2`・`3` と同じメッセージ・同じ ID）
+- 5.1 の 0 バイトのファイルの既定（`EncodingInheritance.ForEmptySource` の `Encoding.Default`）は、もともとシステムの ANSI なので変えていない
+
+**確かめた結果（Windows。システムのロケールは ja-JP で ANSI・OEM とも 932）。** スレッドのカルチャーを ja-JP・de-DE・en-US・ru-RU・ko-KR・ar-SA・不変にしても、
+`ansi` / `oem` と `Locale` は 932 / 932 で、標準の 7.x の `-Encoding ansi`・5.1 の `Default` と同じ（テスト担当の BUG-0032.ps1 も両ホストで 932）。
+
+**65001 の環境は作らなかった。** 「ベータ: ワールドワイド言語サポートで Unicode UTF-8 を使用」は OS の設定の変更と再起動が要り、利用者の PC の状態を変えるため。
+**標準のコマンドとは比べていない。** 実装は 65001 を BOM 無しの UTF-8 にする（単体テストは「`ansi` / `oem` は BOM を持たない」ことを固定する）。
+
+**Linux の実測。** WSL の Ubuntu-24.04 のホームフォルダーにだけ、次を入れた（sudo・apt は使っていない）。
+
+- `~/.dotnet`: .NET ランタイム **10.0.14**（`dotnet-install.sh --channel 10.0 --runtime dotnet`。結果的に測定には使わず、下の PowerShell に同梱のランタイムで動かした）
+- `~/powershell-7.6.9`: **PowerShell 7.6.9** の linux-x64 の tar.gz（.NET 10.0.14 を同梱。依頼では .NET だけを入れる話だったが、標準の `-Encoding ansi` / `oem` と比べるために足した。消すときはフォルダーを消す）
+
+作業フォルダーに作った配布の構成（net10.0 の Debug ビルド）を `/mnt/c/...` から読み込み、`env -u LC_ALL -u LC_CTYPE LANG=<値> pwsh` で測った。
+試した `LANG`: `C`・`POSIX`・`C.UTF-8`・`en_US.UTF-8`・`ja_JP.UTF-8`・`ja_JP.eucJP`・`de_DE.UTF-8`・`ru_RU.UTF-8`・`ko_KR.UTF-8`・`zh_CN.UTF-8`・`zh_TW.UTF-8`・`tr_TR.UTF-8`・`ar_SA.UTF-8`、
+と `LANG=ja_JP.UTF-8 LC_ALL=de_DE.UTF-8`。結果は仕様書 25.5 の表（モジュールの `ansi` / `oem` と `Locale` は現在のカルチャーの `TextInfo` の値で一致）。
+
+- 標準の 7.6.9 の `Set-Content -Encoding ansi` は、モジュールの `ansi` と同じコードページで書いた（ja_JP なら `é` → `65`、ru_RU なら `65`、zh_CN なら `A8 A6`）。**標準の `-Encoding oem` は、どの LANG でも UTF-8（`C3 A9`）** だった。モジュールの `oem` とは違う（今の挙動を変えない、という依頼のとおり直していない）
+- 最初は `LC_ALL=`（空の値）を付けて測り、すべてが不変カルチャーになった。.NET（ICU）は空の `LC_ALL` も「設定されている」とみなす。この結果も仕様書に書いた
+- システムの言語のパッケージ（`locale -a`）は `C`・`C.utf8`・`POSIX` だけだったが、.NET は環境変数の名前からカルチャーを作るので、測定には影響しない
+
+macOS は実測していない。.NET のソースからの推定（現在のカルチャーの `TextInfo` の値）を、仕様書と README に「推定」と書いた。
+
+### 11.5 BUG-0021（BOM が 2 個続くファイル）
+
+**原因。** `ProbedFileReader` は、ファイル先頭の BOM の後ろへシークしてから `StreamReader` を作る。`StreamReader` は `detectEncodingFromByteOrderMarks: false` でも、
+渡された Encoding の preamble と一致する先頭を読み飛ばす（.NET Framework・.NET とも）。BOM 付きの Encoding（`utf8BOM`・`unicodeBOM`・裸の `unicode`・`utf32` など、
+判定した「BOM あり」の結果から組み立てたもの）を渡すと、2 個目の BOM も消えた。**1.1.0 の最初の版（`c1fae6d`）から同じコード**で、1.1.0 からの挙動である。
+
+**直し方。** `StreamReader` には preamble を持たない包み（`Internal/ReaderEncoding`）を渡す。符号化・復号・フォールバックは包んだ Encoding にそのまま任せる。
+読み込みの経路（`Get-ProbedContent`・`-Raw`、`Import-ProbedCsv`、`Export-ProbedCsv -Append` のヘッダー、`-DetectionLineCount` の検証の後の読み込み）はすべて `ProbedFileReader` を通るので、1 か所で直る。
+`-DetectionLineCount` の全体の検証（`StrictDecodeVerifier`）は `StreamReader` を使わないので、もともと 2 個目を文字として扱っていた。
+
+`DoubleBomReadTests`（111 件）は、5 系統 × 語彙（`Auto`・BOM 付き・`NoBOM`・裸名・WebName・数値）× BOM 2 個・3 個で、`Get-ProbedContent`・`-Raw`・`Import-ProbedCsv`（`-DetectionLineCount` の有無）と、
+`Export-ProbedCsv -Append` の照合、`-Raw` → `-EncodingFrom -NoNewline` の往復を固定する。直す前のコードでは 42 件が落ちることを確かめた。
+
+### 11.6 BUG-0042（途中で切れたファイルの末尾）
+
+**原因。** .NET の `StreamReader` はストリームの終わりで Decoder を flush し、.NET Framework は flush しない。
+
+**直し方（net48 だけ）。** `StreamReader` の中は変えられないので、ストリームと Decoder の両方を包む（`EndOfStreamSignal`・`FlushAtEndDecoder`。`ReaderEncoding.cs`）。
+
+1. `EndOfStreamSignal` は、包んだ `FileStream` が要求より少なく返し、かつ位置が長さに達したとき（終わり）、読めたバイトの後ろに 1 バイトの目印を 1 回だけ足す
+2. `FlushAtEndDecoder` は、目印が足された回の `GetChars` で、目印を除いたバイトを `flush: true` で包んだ Decoder に渡す
+
+目印は最後のバイトと同じ回に足す。.NET Framework の `StreamReader.Peek` は、短い読み込みの後（`_isBlocked`）には読みに来ないので、別の回に足すと `Peek` を使う経路（CSV の解析）で flush した文字が届かない。
+.NET Framework 4.8 の `StreamReader` は `Decoder.GetChars(byte[], int, int, char[], int)` だけを呼ぶ（4.8 は更新されない）。net10.0 は何も挟まない。
+
+**系統ごとの確認（依頼 11.1 の 2）。** 次の入力を両ホストで `Get-ProbedContent`・`-Raw`・`Import-ProbedCsv -Header H`・`Convert-ProbedContent` で読んだ（各入力は `A` と改行の後ろに、途中で切れた文字を置いた）。
+表の値は `-Raw` の 2 行目以降の符号位置。`Get-ProbedContent`・`Import-ProbedCsv` も同じ文字を返した。
+
+| 入力 | 7.x | 5.1（修正の前） | 5.1（修正の後） | 一致 | `Convert-ProbedContent`（両ホスト・前後で同じ） |
+|---|---|---|---|---|---|
+| UTF-8 の 3 バイト文字の 2 バイト（`E6 97`） | FFFD | （なし） | FFFD | ○ | InvalidSourceBytes |
+| UTF-8 の 4 バイト文字の 1 バイト・3 バイト | FFFD | （なし） | FFFD | ○ | InvalidSourceBytes |
+| BOM 付き UTF-8 の `E6 97` | FFFD | （なし） | FFFD | ○ | InvalidSourceBytes |
+| UTF-16LE（BOM の有無）・BE の奇数の長さ（`31 00 32`） | 0031 FFFD | 0031 | 0031 FFFD | ○ | InvalidSourceBytes |
+| UTF-16LE の対になっていない上位サロゲート（`3D D8`） | FFFD | （なし） | FFFD | ○ | InvalidSourceBytes |
+| 同上 + 1 バイト | FFFD FFFD | （なし） | FFFD FFFD | ○ | InvalidSourceBytes |
+| UTF-32LE の 1・2・3 バイト、UTF-32BE の 3 バイト | FFFD | （なし） | FFFD | ○ | InvalidSourceBytes |
+| Shift_JIS の先行バイト（`93`）・「日」+ 先行バイト | 30FB / 65E5 30FB | （なし） / 65E5 | 30FB / 65E5 30FB | ○ | InvalidSourceBytes |
+| EUC-JP の先行バイト（`C6`）・SS3 の 2 バイト（`8F B0`） | 30FB / 30FB 30FB | （なし） / 30FB | 30FB / 30FB 30FB | ○ | InvalidSourceBytes |
+| CP949・GB2312（936）・Big5 の先行バイト | 003F | （なし） | 003F | ○ | InvalidSourceBytes |
+| **GB18030 の 4 バイトの 2 バイト（`81 30`）** | 003F 0030 | （なし） | 003F | **×** | InvalidSourceBytes |
+| **GB18030 の 4 バイトの 3 バイト（`81 30 81`）** | 003F 0030 003F | （なし） | 003F 003F | **×** | InvalidSourceBytes |
+| ISO-2022-JP の途中で切れた ESC（`1B 24`・`1B`） | 001B 0024 / 001B | （なし） | 001B 0024 / 001B | ○ | 変換する（`1B 24` / `1B` をそのまま UTF-8 に） |
+| ISO-2022-JP の 2 バイト文字の 1 バイト（`1B 24 42 46`） | 30FB | （なし） | 30FB | ○ | InvalidSourceBytes |
+| ISO-2022-JP の JIS のまま終わる（`… 46 7C`） | 65E5 | 65E5 | 65E5 | ○ | 変換する |
+| ISO-2022-KR の SO の後の 1 バイト | 003F | （なし） | 003F | ○ | InvalidSourceBytes |
+| HZ の `~{` の後の 1 バイト・末尾の `~` | 003F | （なし） | 003F | ○ | InvalidSourceBytes |
+
+- **一致しないのは GB18030 の途中で切れた 4 バイトの列の 2 件だけ**（依頼どおり直さない）。.NET は不正な先頭の 1 バイトだけを `?` にして、続く `30` を ASCII として読み直すが、
+  .NET Framework は 2 バイトをまとめて 1 つの `?` にする（復号器の実装の違い。flush の有無ではない）
+- `Convert-ProbedContent` の結果は、修正の前後・両ホストで同じ（変えていない）。途中で切れた ISO-2022 の ESC を `Convert-ProbedContent` が不正なバイト列としないのは、.NET の ISO-2022 の復号器が ESC を文字として返すためで、前からの挙動（本件の範囲外。報告だけ）
+- 性能: net48 で 1 回の読み込みごとに包みを 1 段通るだけで、`StreamReader` の速い経路は変わらない（測っていない）
+
+PSCompat（`Sixth/Truncated/*`、GB18030 の 2 件を除く 14 件）が両ホストの一致を、`TruncatedTailReadTests` が 7.x の挙動を固定する（単体テストは net10.0 だけで動く）。
+
+### 11.7 BUG-0018（ASCII 以外の状態のまま終わる ISO-2022 の追記先）
+
+**直し方。** 追記は 3 コマンドとも `ProbedFileWriter.Open(append: true)` を通るので、ここで行う。書くコードページが 50220・50221・50222・50225 で、追記先が 1 バイト以上なら、
+`Internal/Iso2022TailState` で末尾の状態から戻すシーケンスを求め、**最初に 1 バイト以上書くとき**（`WriteBytes`）に先に書く。
+補う改行（`Export-ProbedCsv` の 18.3）も追記する内容も `Write` で書くので、順序は「戻すシーケンス → 補う改行 → 内容」になる。取り消しは元の長さへの切り詰めなので、戻すシーケンスも一緒に消える。
+何も書かない呼び出し（入力が 0 件、`-WhatIf`、整合性検査で最初の行から止まる）では書かない。
+
+**末尾の状態の求め方（依頼 11.1 の指摘）。** 末尾から逆向きに 64 KiB ずつ読み、最後の G0 の指示と最後の SO / SI が**両方見つかった時点で止める**方法にした。理由:
+
+- ISO-2022 では `1B`・`0E`・`0F` は制御の意味でしか現れない（2 バイト文字は `21`〜`7E`）ので、逆向きに探しても誤らない。ブロックの境目にまたがるエスケープシーケンスは、後ろのブロックの先頭 3 バイトを持ち越して読む
+- 先頭から読む方法は、大きな追記先で毎回ファイル全体を読む。逆向きなら、日本語を含む ISO-2022-JP（`ESC ( B` で ASCII に戻る行が続く）は、ふつう末尾の 1 ブロックで G0 の指示が見つかる
+- ただし SO / SI は「無い」ことを確かめないと止まれないので、SO / SI を使わないファイル（.NET の 50220 で書いたものなど）は先頭まで読む。
+  ISO-2022-KR は G0 を見ないので、SO / SI が見つかれば止まる。継承する場合は、その前の判定でファイル全体を読んでいるので、費用は同じ程度である
+- 「SO の前の G0 の指示」は、SO / SI の状態に関係しない（G0 の指示は SO の状態を戻さない）ので、2 つを別々に探してよい
+
+`ESC $ ( B` は ASCII ではない（G0 に 2 バイトの文字集合）ので戻す。最初の実装はこれを ASCII と取り違えていたので、テストを書く前に直した。
+
+**`-AllowEncodingChange`（利用者の決定）。** 書くコードページが ISO-2022 でないときは調べない。`-AllowEncodingChange -Encoding utf8NoBOM` で JIS のまま終わるファイルに追記すると、今までどおり `ESC ( B` を書かない。
+
+**HZ の経路（依頼 1 章。報告だけ）。** 判定エンジンは HZ（52936）を返さない（`~{` `~}` は ASCII のバイトなので、ISO-2022 / ASCII の判定で `us-ascii` になり、UTF.Unknown には進まない）。
+`~{` のまま終わる HZ のファイルに `Add-ProbedContent -Value xy` すると、両ホストで次のとおり（`41 0D 0A 7E 7B 56 50` に追記）。
+
+| 指定 | 書いたバイト | HZ として読み戻すと |
+|---|---|---|
+| `-Encoding` 省略（継承） | `us-ascii` → BOM 無しの UTF-8 として、`78 79 0D 0A` を足す | `A`・CRLF・`中`・`?`・CRLF（`xy` が消える） |
+| `-Encoding hz-gb-2312` | `78 79 0D 0A` を足す（`~}` を書かない） | 同上 |
+| 対照（`~}` で閉じた追記先） | 同じ | `中xy` と読める |
+
+HZ も ISO-2022 と同じ問題を持つが、継承されないので明示した場合だけに起きる。依頼どおり直していない（仕様書 18.4 に既知の限界として書いた）。
+
+**テスト。** `Iso2022TailStateTests`（部品。G0 の指示の種類、SO / SI、G1 の指示、途中で切れた ESC、ISO-2022-KR、ブロックの境目にまたがる ESC、末尾から 64 KiB より前の指示、開いたときの長さより後ろを読まないこと）、
+`Iso2022AppendTests`（3 コマンド × 継承・明示、CRLF で終わる形、日本語を含む行、ASCII で終わる追記先は変えない、ISO-2022-KR、何も書かない呼び出し、取り消し、`-AllowEncodingChange`）、
+PSCompat（`Sixth/Iso2022Append/*`）。
+
+### 11.8 BUG-0020（CSV の列名の比較）
+
+**列名を比べている箇所（依頼 1 章の一覧）。**
+
+| 箇所 | ファイル | 比べ方 |
+|---|---|---|
+| 列名（`-Header` を含む）の重複の検査 | `Internal/Csv/ImportCsvHelper.ValidatePropertyNames` | **改めた**（`CsvNameComparer`） |
+| `Export-ProbedCsv -Append` の追記先の列とプロパティの照合 | `Internal/Csv/ImportExportCSVHelper.ReconcilePreexistingPropertyNames` | **改めた** |
+| 照合した列の値の取り出し（列名でプロパティを引く） | `Internal/Csv/ExportCsvHelper.ConvertPSObjectToCSV`（2 か所） | **改めた**（`CsvPropertyViews.FindProperty`） |
+| `-QuoteFields` の名前とプロパティ名の照合 | `Internal/Csv/ExportCsvHelper` のコンストラクター（`_quoteFields`） | **改めた** |
+| PSObject のメンバー名との突き合わせ（拡張・アダプテッドの見え方） | `Internal/CsvPropertyViews.GetAdaptedPropertyNames` | 変えない（ホストの PSObject の規則と同じでなければならない） |
+| 入力が `IDictionary` のときのキーの照合 | `ExportCsvHelper.ConvertPSObjectToCSV` の `dictionary.Contains` | 変えない（入力の辞書の比較器） |
+| `#Type` / `CSV:` の接頭辞 | `ImportCsvHelper`・`ExportCsvHelper` | 列名ではない（ASCII だけなので結果はホストで変わらない） |
+
+照合が通った列の値の取り出しは、テスト担当の報告に無かったが、直す途中で見つけた。照合を `CsvNameComparer` にすると、5.1 では追記先の `ǅ` とプロパティの `ǆ` が照合を通るのに、
+値は `mshObject.Properties["ǅ"]`（ホストの規則）で引くので見つからず、空で書いていた（7.x は `"x","y"`、5.1 は `,"y"`）。`FindProperty` は、まずホストの規則で引き、見つからなければ `CsvNameComparer` で一覧から探す。
+
+**比較器（`Internal/CsvNameComparer`）。** net10.0 は `StringComparer.OrdinalIgnoreCase`。net48 は、`tools/New-CsvNameCaseTable.ps1` が .NET 10.0.14 で生成した表（`Internal/CsvNameCaseTable.cs`。同値類 1445 個・組 1470 個）で比べる。
+表は、全符号位置（U+0000〜U+10FFFF。単独のサロゲートも 1 文字として含む）を 1 文字の文字列にして `OrdinalIgnoreCase` で並べ、隣り合って等しいものを同値類にし、代表を最小の符号位置にしたもの。
+同値類の中の UTF-16 の長さが同じであることを生成のときに確かめている（面をまたぐ大文字小文字は無い）。
+
+**確かめたこと。**
+
+- net10.0（`CsvNameComparerTests`）: 全符号位置を実行環境の `OrdinalIgnoreCase` で並べた同値類と、表の同値類が完全に一致する（同じ同値類は同じ代表、別の同値類は別の代表）。
+  複数文字の文字列 20 万組（同値類の符号位置・サロゲート・ASCII を混ぜる）で、表の比較器と実行環境が一致し、等しいものはハッシュも等しい
+- 両ホスト（PSCompat の `Sixth/CsvName/AllCodePoints`。`Add-Type` の補助で全符号位置を回す）: モジュールの比較器が表どおりに比べる（不一致 0）。
+  ホストの .NET の `ToUpperInvariant` / `ToLowerInvariant` の組でも比較器と表が一致する（不一致 0）
+- **5.1 のホストの `OrdinalIgnoreCase` で等しいのに、表では別になる組は無かった**（上の大文字・小文字の組で 0 件）。.NET Framework の同値類は .NET 10 の同値類に含まれる。
+  そのため、5.1 で PSObject がメンバー名の重複として拒否するのに、列名の検査は通す、という組は（調べた範囲では）無い
+- テスト担当の 20 組のうち、ソフトハイフン・ZWJ・合成文字・全角・かな・`ß`/`SS`・`İ`/`i`・`K`(U+212A)/`k` などは、もともと両ホストで「別の列」だった（変わらない）。
+  `CsvColumnNameComparisonTests`（同じ列 5 組・別の列 4 組）と PSCompat（9 組）が、報告の 4 組と対照の組を固定する
+
+`Internal/Csv/` の移植したコードは、比較器と `FindProperty` を呼ぶところだけを変え、移植元の表記をコメントに残した（規則は移植元と同じで、5.1 での結果を 7.x にそろえるための変更）。
+
+### 11.9 BUG-0031（短い EUC-JP を Shift_JIS と判定する）
+
+**直し方。** `EncodingDetector.Detection` の曖昧な 3 つの分岐（EUC-JP / Shift_JIS、EUC-KR / CP949、EUC-TW / CP950）で、カルチャーと改行で決めた候補を `ExcludeUndecodableCandidate(決めた候補, もう一方)` に通す。
+決めた候補で標本を厳密に復号できず（`false`）、もう一方が `false` でなければ、もう一方を返す。`CanDecodeStrictly` は例外フォールバックの Encoding の `GetCharCount` を標本（`_buffer` の先頭 `BufferSize` バイト）に対して呼ぶ。
+
+- net10.0 では `CodePagesEncodingProvider.Instance` から直接取り出す（クラスライブラリはグローバルに登録しない。CLAUDE.md の `IsSingleByteCodePage` と同じ理由）。net48 は `Encoding.GetEncoding`
+- 作れない候補は `null`（外さない）。EUC-TW の 51950 は両 TFM とも作れない（テストで固定）ので、台湾の分岐の結果は変わらない。EUC-KR は CP949 に含まれるので、韓国の分岐も実際には変わらない
+- `-DetectionLineCount` は切り出した先頭の行を同じ判定に渡すので、同じ規則になる（`ShortEucJpDetectionTests`）
+
+**既存の判定は変わらなかった（依頼 1 章の「止まる」条件には当たらない）。** コアの既存のテスト（net48 2123 件・net10.0 2113 件、本件のテストを足す前）はすべて通った。
+念のため、`tests/EncodingProbe.Tests/TestData` の全 50 ファイルを 6 カルチャー（ja-JP・ko-KR・zh-TW・zh-HK・zh-CN・en-US）× 2 方式（Combined・NativeOnly）で、修正の前後に両 TFM で判定し、600 件すべてが同じだった。
+
+**テスト担当の入力。** 「日本語の文書です。今日は…」の先頭 1〜30 文字（4〜92 バイト）× CRLF・LF・改行なしは、ja-JP で両方式・両 TFM とも 20932（修正の前は CRLF・改行なしの多くが 932）。
+逆向き（Shift_JIS の日本語 + LF）はすべて 932 のまま。両方の候補で厳密に復号できる `B0 A1` は、今までどおり改行で決まる（CRLF は 932、LF は 20932）。
+
+### 11.10 テスト
+
+| 件数 | コア net48 | コア net10.0 | モジュール | PSCompat |
+|---|---|---|---|---|
+| 第五次の仕上げの後 | 2117 | 2107 | 1516 | 1044 |
+| 第六次 A の後 | **2139** | **2129** | **1771** | **1135** |
+| 増えた数 | 22 | 22 | 255 | 91 |
+
+足したテスト: コアは `SystemCodePagesTests`（6）・`AmbiguityStrictDecodeTests`（16）。モジュールは `Utf7InstanceWriteTests`・`NullValueElementTests`・`SystemCodePageVocabularyTests`・
+`DoubleBomReadTests`・`TruncatedTailReadTests`・`Iso2022TailStateTests`・`Iso2022AppendTests`・`CsvNameComparerTests`・`CsvColumnNameComparisonTests`・`ShortEucJpDetectionTests`。
+PSCompat は `Sixth/*`（`ProbedCompatScenarios.ps1` の「1.3.0 第六次 A」の節）。改めたテストは `SetProbedContentTests` の 1 件（11.3）。
+
+### 11.11 テスト担当のスクリプトでの確認（2026-10-26）
+
+`scripts\BUG-0018・0020・0021・0031・0032・0033・0037・0042.ps1` と `Common.ps1`・`Invoke-BothHosts.ps1` を作業フォルダー（scratchpad）に写し、
+開発中の Debug ビルドで配布フォルダーと同じ構成（`.psd1`・`.psm1`・`core\`・`desktop\`）を作って、`Invoke-BothHosts.ps1` で 7.6.9 と 5.1 で実行した（テスト担当のフォルダーには何も置いていない）。
+8 本とも、期待する結果（報告の「期待する結果」）になった。両ホストの標準出力の違いは、ホストの .NET の参考の行（0020 の `String.Equals(…, 'OrdinalIgnoreCase')`）、
+7.x だけで試す標準のコマンドの行（0021 の `Export-Csv -Append`）、エラーの表示の形（0032）だけで、モジュールの結果は一致した。
+
+### 11.12 決めきれなかったこと・残したこと
+
+1. **65001 の環境は作っていない**（11.4）。標準のコマンドとの比較が残っている（OS の設定を変えて再起動すれば確かめられる）
+2. **Linux の `oem` は標準と違う**（モジュールはカルチャーの OEM コードページ、標準の 7.x は UTF-8）。依頼どおり変えていない
+3. **GB18030 の途中で切れた 4 バイトの列は両ホストで違う**（11.6）
+4. **HZ の追記先は ASCII に戻さない**（11.7。報告だけ）
+5. WSL の Ubuntu-24.04 に入れた `~/.dotnet` と `~/powershell-7.6.9`（と `~/dotnet-install.sh`）は残してある。要らなければ消す
+6. 判定の部品の中で、`CsvPropertyViews.GetAdaptedPropertyNames` はホストの規則のまま（11.8）。5.1 で `ǅ` と `ǆ` の両方のプロパティを持つオブジェクト（7.x では作れない）を `Export-ProbedCsv` に渡すと、ホストの規則で先に見つかったほうを使う
+
+### 11.13 直した文書
+
+- 1.3.0 仕様書: 11 章の表・18.1〜18.3 に注記、18.4（ISO-2022 の追記先）と 25 章（第六次で改めた挙動）を追加
+- 1.1.0 仕様書 3.3: `ansi` / `oem` の定義に注記
+- ヘルプ（5 言語と zh-HK / zh-MO の複製）: `-AllowEncodingChange`（Add・Out・Export）、`-Value`（Set・Add）、読み込みの `-Encoding`（Get・Import。BOM と途中で切れた末尾）、`Get-EncodingProbePlatformInfo` の説明
+- README: 「読み書きの細部の修正」と Linux / macOS の `ansi` / `oem` の表
+- CHANGELOG: 1.3.0 の「不具合の修正（クラスライブラリ）」「挙動の変更（クラスライブラリ）」「挙動の変更（PowerShell モジュール。第六次 A）」
+- CLAUDE.md: 1.3.0 の作業記録の現在の状態

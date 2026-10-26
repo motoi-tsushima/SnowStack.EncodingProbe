@@ -94,14 +94,18 @@ PS 7.x の裸名は「UTF-8 だけ BOM 無、他は BOM 有」という不規則
 | 語彙 | 意味 | BOM 接尾辞 |
 |---|---|---|
 | `ascii` | US-ASCII | 不可 |
-| `ansi` | 実行環境の ANSI コードページ | 不可 |
-| `oem` | 実行環境の OEM コードページ | 不可 |
+| `ansi` | 実行環境の ANSI コードページ（Windows ではシステムのロケールの値。1.3.0 仕様書 25.5） | 不可 |
+| `oem` | 実行環境の OEM コードページ（同上） | 不可 |
 | `utf7` | UTF-7（**読み取りのみ許容・書き込み不可**） | 不可 |
 | WebName（`shift_jis` `euc-jp` `iso-2022-jp` 等） | `Encoding.GetEncoding(string)` に委譲 | 不可 |
 | 数値コードページ（`932` `65001` 等） | `Encoding.GetEncoding(int)` に委譲 | 不可 |
 | `Auto` | 検出に委ねる（コマンドごとに意味が定まる） | 不可 |
 
 BOM 接尾辞を付けられない語彙に接尾辞を付けた指定（`ansiBOM` 等）はエラーとする。
+
+> **1.3.0 第六次で改めた（BUG-0032）。** `ansi` / `oem` は、1.2.0 までスレッドのカルチャー（`CurrentCulture.TextInfo`）の値だった。
+> Windows ではシステムのロケールの値（`GetACP` / `GetOEMCP`）、65001 なら BOM 無しの UTF-8 とし、Linux / macOS は変えていない。
+> 数値の `0` は語彙に無いので拒否する。`Convert-ProbedContent` も、UTF-7 の `Encoding` のインスタンスを書き込みに使わない（BUG-0037）。詳細は 1.3.0 仕様書 25.5・25.6。
 
 PS 5.1 の `Byte` / `String` / `Unknown` は `Get-Content` の特殊値であり、本モジュールの対象外とする。
 

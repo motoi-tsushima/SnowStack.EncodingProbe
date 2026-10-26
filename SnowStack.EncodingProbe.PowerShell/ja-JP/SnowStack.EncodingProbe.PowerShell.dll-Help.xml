@@ -12,7 +12,7 @@
     </command:details>
     <maml:description>
       <maml:para>テキストファイルを読み込み、1 行 1 オブジェクトの文字列としてパイプラインに出力します。</maml:para>
-      <maml:para>-Encoding を省略した場合は、ファイルの文字エンコーディングを判定します。ファイル先頭の BOM は常に読み飛ばすため、U+FEFF が 1 行目に混入することはありません。</maml:para>
+      <maml:para>-Encoding を省略した場合は、ファイルの文字エンコーディングを判定します。ファイル先頭の BOM は常に読み飛ばすため、U+FEFF が 1 行目に混入することはありません。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
       <maml:para>標準の Get-Content と異なり、-Encoding に同じ名前を渡せば Windows PowerShell 5.1 と PowerShell 7.x で同じ結果になります。</maml:para>
     </maml:description>
     <command:syntax>
@@ -28,7 +28,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -72,7 +72,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -120,7 +120,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -309,7 +309,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+            <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -378,7 +378,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+            <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -569,7 +569,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>
-          <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+          <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -741,7 +741,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+            <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -793,7 +793,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。-Encoding を指定した場合は、既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングは変わりません。文字エンコーディングを変えるには -Encoding も指定してください。-Force にこの効果はありません。</maml:para>
+            <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。-Encoding を指定した場合は、既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングは変わりません。文字エンコーディングを変えるには -Encoding も指定してください。-Force にこの効果はありません。追記先が ISO-2022（JIS）で ASCII 以外の状態のまま終わっている場合に、追記の前に ASCII に戻すエスケープシーケンスを書くのは、その ISO-2022 の文字エンコーディングで追記するときだけです。-AllowEncodingChange で別の文字エンコーディング（UTF-8 など）を追記する場合は、追記先の末尾に手を入れません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -816,7 +816,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+            <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -875,7 +875,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。-Encoding を指定した場合は、既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングは変わりません。文字エンコーディングを変えるには -Encoding も指定してください。-Force にこの効果はありません。</maml:para>
+            <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。-Encoding を指定した場合は、既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングは変わりません。文字エンコーディングを変えるには -Encoding も指定してください。-Force にこの効果はありません。追記先が ISO-2022（JIS）で ASCII 以外の状態のまま終わっている場合に、追記の前に ASCII に戻すエスケープシーケンスを書くのは、その ISO-2022 の文字エンコーディングで追記するときだけです。-AllowEncodingChange で別の文字エンコーディング（UTF-8 など）を追記する場合は、追記先の末尾に手を入れません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -898,7 +898,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。-Encoding を指定した場合は、既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングは変わりません。文字エンコーディングを変えるには -Encoding も指定してください。-Force にこの効果はありません。</maml:para>
+          <maml:para>既存の文字エンコーディングと異なるバイト列になる追記も許可し、ファイルの文字エンコーディングを意図的に変更します。-Encoding を指定した場合は、既存ファイルの判定自体を行わないため、判定できないファイルへも追記できます。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングは変わりません。文字エンコーディングを変えるには -Encoding も指定してください。-Force にこの効果はありません。追記先が ISO-2022（JIS）で ASCII 以外の状態のまま終わっている場合に、追記の前に ASCII に戻すエスケープシーケンスを書くのは、その ISO-2022 の文字エンコーディングで追記するときだけです。-AllowEncodingChange で別の文字エンコーディング（UTF-8 など）を追記する場合は、追記先の末尾に手を入れません。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -1024,7 +1024,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>
-          <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。</maml:para>
+          <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -1228,7 +1228,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
+            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。追記先が ISO-2022（JIS）で ASCII 以外の状態のまま終わっている場合に、追記の前に ASCII に戻すエスケープシーケンスを書くのは、その ISO-2022 の文字エンコーディングで追記するときだけです。-AllowEncodingChange で別の文字エンコーディング（UTF-8 など）を追記する場合は、追記先の末尾に手を入れません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1329,7 +1329,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
+            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。追記先が ISO-2022（JIS）で ASCII 以外の状態のまま終わっている場合に、追記の前に ASCII に戻すエスケープシーケンスを書くのは、その ISO-2022 の文字エンコーディングで追記するときだけです。-AllowEncodingChange で別の文字エンコーディング（UTF-8 など）を追記する場合は、追記先の末尾に手を入れません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="NoOverwrite">
@@ -1389,7 +1389,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
+          <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。追記先が ISO-2022（JIS）で ASCII 以外の状態のまま終わっている場合に、追記の前に ASCII に戻すエスケープシーケンスを書くのは、その ISO-2022 の文字エンコーディングで追記するときだけです。-AllowEncodingChange で別の文字エンコーディング（UTF-8 など）を追記する場合は、追記先の末尾に手を入れません。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2194,7 +2194,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:details>
     <maml:description>
       <maml:para>CSV ファイルを読み込み、レコードごとに 1 個のオブジェクトをパイプラインに出力します。レコードは 1 件ずつ出力するため、ファイル全体をメモリに読み込みません（ファイル全体で文字エンコーディングを判定する場合の判定処理を除く）。</maml:para>
-      <maml:para>-Encoding を省略すると、ファイルごとに文字エンコーディングを判定します。ファイル先頭の BOM は常に読み飛ばします。</maml:para>
+      <maml:para>-Encoding を省略すると、ファイルごとに文字エンコーディングを判定します。ファイル先頭の BOM は常に読み飛ばします。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
       <maml:para>CSV の解析には PowerShell 7.x の Import-Csv から移植した処理を使うため、Windows PowerShell 5.1 でも PowerShell 7.x と同じオブジェクトになります。CR だけの改行も読み、W3C 拡張ログ形式（#Fields:）に対応し、#TYPE 行の型名は PowerShell 7.x の順序になります。</maml:para>
     </maml:description>
     <command:syntax>
@@ -2224,7 +2224,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2276,7 +2276,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2327,7 +2327,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2378,7 +2378,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+            <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2449,7 +2449,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。</maml:para>
+          <maml:para>ファイルの復号に使う文字エンコーディング。省略時（または Auto 指定時）は対象ファイルを判定します。明示した場合は判定を行わないため、誤判定を避ける手段になります。ここに何を指定しても、ファイル先頭の BOM は常に読み飛ばされます。統一語彙: Auto、utf8NoBOM、utf8BOM、unicodeNoBOM、unicodeBOM、bigendianunicodeNoBOM、bigendianunicodeBOM、utf32NoBOM、utf32BOM、bigendianutf32NoBOM、bigendianutf32BOM、ascii、ansi、oem、utf7（読み取り専用）。このほか、.NET が知っている WebName（shift_jis、euc-jp、iso-2022-jp、big5、gb18030 など）、数値コードページ（932、65001 など）、System.Text.Encoding インスタンス、Resolve-Encoding が返す EncodingInformation オブジェクトも指定できます。取り除く BOM は先頭の 1 個だけで、続く 2 個目の U+FEFF は文字として残します。ファイルが文字の途中で終わっている場合（長さが奇数の UTF-16 など）は、PowerShell 7.x と同じく、余ったバイトを置き換えの文字として読みます。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -2685,7 +2685,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
+            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。追記先が ISO-2022（JIS）で ASCII 以外の状態のまま終わっている場合に、追記の前に ASCII に戻すエスケープシーケンスを書くのは、その ISO-2022 の文字エンコーディングで追記するときだけです。-AllowEncodingChange で別の文字エンコーディング（UTF-8 など）を追記する場合は、追記先の末尾に手を入れません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2825,7 +2825,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>AllowEncodingChange</maml:name>
           <maml:description>
-            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
+            <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。追記先が ISO-2022（JIS）で ASCII 以外の状態のまま終わっている場合に、追記の前に ASCII に戻すエスケープシーケンスを書くのは、その ISO-2022 の文字エンコーディングで追記するときだけです。-AllowEncodingChange で別の文字エンコーディング（UTF-8 など）を追記する場合は、追記先の末尾に手を入れません。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2911,7 +2911,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>AllowEncodingChange</maml:name>
         <maml:description>
-          <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。</maml:para>
+          <maml:para>-Append の整合性検査を行わず、既存ファイルの文字エンコーディングとバイト列が異なっても書き込みます。-Append が無い場合は効果が無く、警告を出します。-Encoding を省略した場合は、追記先から文字エンコーディングを継承するために追記先を判定します（判定できないファイルでは EncodingDetectionFailed になります）。継承した文字エンコーディングで書くので、文字エンコーディングを変えるには -Encoding も指定してください。追記先が ISO-2022（JIS）で ASCII 以外の状態のまま終わっている場合に、追記の前に ASCII に戻すエスケープシーケンスを書くのは、その ISO-2022 の文字エンコーディングで追記するときだけです。-AllowEncodingChange で別の文字エンコーディング（UTF-8 など）を追記する場合は、追記先の末尾に手を入れません。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -3661,7 +3661,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
     </command:details>
     <maml:description>
       <maml:para>本モジュールが認識している OS・.NET ランタイム・ロケール・PowerShell ホストの情報を返します。</maml:para>
-      <maml:para>環境によって結果が違う場合の切り分けに使えます。ここに表示されるカルチャーと ANSI / OEM のコードページは、判定処理と 'ansi' / 'oem' の語彙が依存している情報です。</maml:para>
+      <maml:para>環境によって結果が違う場合の切り分けに使えます。ここに表示されるカルチャーと ANSI / OEM のコードページは、判定処理と 'ansi' / 'oem' の語彙が依存している情報です。Windows では、ANSI / OEM のコードページは、現在のカルチャーではなくシステムのロケール（Unicode 対応ではないプログラムの言語）の値です。Linux / macOS では現在のカルチャーの値です。</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
