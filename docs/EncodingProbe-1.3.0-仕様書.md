@@ -55,7 +55,7 @@
 - `Resolve-Encoding` の**既存の**パラメータと戻り値。`Get-EncodingProbePlatformInfo`
 - 統一語彙（1.1.0 仕様書 3 章）、解決順序、BOM 方針の決定規則
 - `Get-` / `Set-` / `Add-ProbedContent`、`Out-ProbedFile`、`Convert-ProbedContent`、`ConvertTo-DotNetEncoding`
-  （第五次で、テスト担当のブラックボックステストの不具合を直すために、これらの挙動を変えた点がある。利用者が認めたもので、CHANGELOG の「挙動の変更」と実装記録 9・10 章に一覧がある）
+  （第五次・第六次で、テスト担当のブラックボックステストの不具合を直すために、これらの挙動を変えた点がある。利用者が認めたもので、CHANGELOG の「挙動の変更」と実装記録 9〜13 章に一覧がある）
 
 > **恒久的な制約との関係:** CLAUDE.md と 1.1.0 指示書 1 節は「`Resolve-Encoding` のパラメータと戻り値を変更しない」を今後も維持する制約としている。
 > 1.3.0 の `-DetectionLineCount` の追加は、**利用者が明示的に決定した例外**である。既存のパラメータと戻り値は変えない。
@@ -75,7 +75,8 @@
 ### 1.5 基本方針
 
 1. **CSV の読み書きの規則は、Windows PowerShell 5.1 でも PowerShell 7.x の動作に合わせる。** 両ホストで、同じ入力から同じ結果（読み込みは同じオブジェクト、書き出しは同じバイト列）を得る
-   （日付・数値の書式は現在のカルチャーとホストの .NET（5.1 は NLS、7.x は ICU）で決まるため、ko-KR・zh-TW・zh-HK・ar-SA などのカルチャーでは両ホストで違うことがある。17 章。BUG-0005）
+   （日付・数値の書式は現在のカルチャーとホストの .NET（5.1 は NLS、7.x は ICU）で決まるため、ko-KR・zh-TW・zh-HK・ar-SA などのカルチャーでは両ホストで違うことがある。17 章。BUG-0005。
+   `-UseCulture` の区切り文字も同じで、ms-ID・fa-AF・es-BZ など 36 のカルチャーでは両ホストで違う。17 章。BUG-0029）
 2. **標準コマンドの明らかな欠陥は直す。** 本モジュールは、標準コマンドの欠陥を補うためのものである。直した点は、標準との差異として一覧にする（13 章、21 章）
 3. **文字を黙って失わない。** 判定を誤った可能性がある場合は、処理する前に止める（4 章）
 4. RFC 4180 と PowerShell の標準の挙動が食い違う場合は、PowerShell の標準に合わせる（例: 改行は CR-LF 固定ではなく OS の既定）
@@ -489,7 +490,7 @@ MIT License の条件（著作権表示と許諾表示を、複製または重�
 | ワイルドカード 0 件 | エラーにしない（何も読まない。`Get-ProbedContent` と同じ。9.1） | — |
 | 判定の失敗・コードページが無い・全体の判定の上限超過 | 非終了エラー | 既存と同じ |
 | 検証の失敗 | 非終了エラー（そのファイルは 1 件も出力しない） | `DetectionVerificationFailed` |
-| 列名の重複 | 非終了エラー（そのファイルは 1 件も出力しない）（24 章 U3） | `AlreadyPresentPSMemberInfoInternalCollectionAdd`（標準と同じ ID） |
+| 列名の重複 | 非終了エラー（そのファイルは 1 件も出力しない）（24 章 U3）。メッセージにファイルのパスと列名を示し、`-Header` の値が重複している場合はそうと分かる文にする（第六次 C。BUG-0045。27.4） | `AlreadyPresentPSMemberInfoInternalCollectionAdd`（標準と同じ ID） |
 | 読み取りの失敗（権限など） | 非終了エラー | `Get-ProbedContent` と同じ（`ReadFailed` / `ReadAccessDenied`） |
 | 列名が空 | Warning（実行全体で 1 回） | — |
 
@@ -518,7 +519,8 @@ MIT License の条件（著作権表示と許諾表示を、複製または重�
 
 - **CSV の文字列化は、PowerShell 7.x の `Export-Csv` から移植した処理で行う**（5 章）。ホストの `Export-Csv` / `ConvertTo-Csv` は呼ばない。
   そのため、**両ホストでバイト単位まで同じ CSV になる**（1.2.0 の `Out-ProbedFile` は整形の層をホストに任せたが、`Export-ProbedCsv` は任せない）。
-  ただし、日付・数値の書式は現在のカルチャーとホストの .NET で決まり（17 章）、ko-KR・zh-TW・zh-HK・ar-SA などのカルチャーでは両ホストで違うことがある（BUG-0005。標準の `ConvertTo-Csv` も同じ）
+  ただし、日付・数値の書式は現在のカルチャーとホストの .NET で決まり（17 章）、ko-KR・zh-TW・zh-HK・ar-SA などのカルチャーでは両ホストで違うことがある（BUG-0005。標準の `ConvertTo-Csv` も同じ）。
+  `-UseCulture` の区切り文字も、ms-ID・fa-AF・es-BZ など 36 のカルチャーでは両ホストで違う（17 章。BUG-0029）
 - **符号化の層（文字エンコーディング・BOM・改行・追記・ファイルを開く時点・読み取り専用・`-WhatIf`）は `Out-ProbedFile` の規則に従う**（1.2.0 仕様書 2 章）。
   本書に書いていない点は、1.2.0 仕様書 2 章の該当節のとおりとする
 - 書き込み部品（`ProbedFileWriter`・`LineBreakResolver`・`EncodingInheritance`・`ActiveReadRegistry`・`AppendConsistency`・`ReadOnlyAttributeScope`）を共用する
@@ -695,6 +697,15 @@ ASCII の文字だけを書く場合のバイト列は変わらない。`-Encodi
 | `#TYPE` 行 | `-IncludeTypeInformation` を指定したときだけ、ヘッダーの前に書く。型名が `CSV:` で始まる場合は除く |
 | 区切り文字 | `-Delimiter`、`-UseCulture`（`CurrentCulture.TextInfo.ListSeparator` の 1 文字目）、既定は `,` |
 
+**`-UseCulture` の区切り文字は、ホストの .NET のカルチャーのデータに従う（第六次 C。BUG-0029。挙動は変えない）。** 標準の `Export-Csv` / `Import-Csv` と同じく、`ListSeparator` はホストの .NET（5.1 は NLS、7.x は ICU）から取るので、
+ms-ID・fa-AF・es-BZ・ga-GB・it-VA・ps-PK・ff-Latn-* など 36 のカルチャーでは、5.1 が `;`、7.x が `,` になる（ja-JP・en-US・de-DE・fr-FR・ko-KR・zh-* などの主なカルチャーは同じ）。
+一方のホストで `-UseCulture` で書いた CSV を、もう一方のホストの `-UseCulture` で読むと、列が分かれない。ホストをまたぐ場合は `-Delimiter` で区切り文字を明示する。
+日付・数値の書式がホストで違うこと（BUG-0005）と同じ扱いで、`Import-ProbedCsv -UseCulture`（11 章）も同じ。`Import-ProbedCsv` / `Export-ProbedCsv` のヘルプの `-UseCulture` に書いた
+
+**数値の既定の表記も、カルチャーによらずホストの .NET で違うことがある（第六次 C で明記。既知の限界）。** 値の `ToString()` で文字列にするため、
+`0.1 + 0.2` は 5.1 が `0.3`（.NET Framework は 15 桁で丸める）、7.x が `0.30000000000000004`（.NET Core 3.0 以降は往復できる最短の表記）、`-0.0` は 5.1 が `0`、7.x が `-0` になる。
+両ホストで同じにするには、書式を指定して文字列にしたプロパティを渡す（`$x.ToString('G15', [cultureinfo]::InvariantCulture)` など）。`Set-` / `Add-ProbedContent` の文字列化は 1.1.0 仕様書 5.8
+
 ## 18. `-Append`
 
 ### 18.1 共通の規則
@@ -735,6 +746,10 @@ ASCII の文字だけを書く場合のバイト列は変わらない。`-Encodi
 - 入力が 0 件の場合は、追記先に触れない（改行も書かない。1.2.0 仕様書 2.11）
 - 追記先が 0 バイトの場合は、新規作成と同じ扱いなので、改行を書かない
 - 追記先が ISO-2022 で ASCII 以外の状態のまま終わっている場合は、この改行の前に ASCII に戻すシーケンスを書く（18.4）
+- **既知の限界（第六次 C。BUG-0023。1.4.0 で検討する）:** 追記先の最後の値の引用符が閉じていない場合（`1,"2` で終わる、途中で切れたファイルや手で編集したファイル）は、
+  補った改行と追記したレコードが、その引用符の中に入る。読み戻すと、追記したレコードは前の値の続き（`2` CRLF `x"` など）になり、レコードの数が増えない。
+  警告もエラーも出さない（標準の `Export-Csv -Append` も同じ結果になる。標準は改行も補わない）。末尾が引用符の中かどうかを見て止める・警告するかは 1.4.0 で検討する。
+  `-Append` のヘルプに書いた
 
 ### 18.4 ASCII 以外の状態のまま終わる ISO-2022 の追記先（第六次。BUG-0018）
 
@@ -768,7 +783,7 @@ JIS X 0208 の状態（`ESC $ B` の後ろ）のまま終わることがある�
 
 | 項目 | 規則 | 1.2.0 仕様書 |
 |---|---|---|
-| ファイルを開く時点 | 最初の行を書く直前。`Import-ProbedCsv a.csv \| Export-ProbedCsv a.csv` は `SamePathRoundTrip` で止まり、元のファイルは壊れない | 2.10 |
+| ファイルを開く時点 | 最初の行を書く直前。`Import-ProbedCsv a.csv \| Export-ProbedCsv a.csv` は `SamePathRoundTrip` で止まり、元のファイルは壊れない。書き込み側が先に開いたファイルを読み込み側が後から開く逆向きの往復（`Import-ProbedCsv a.csv, z.csv \| Export-ProbedCsv z.csv`）も、書き込みを元に戻して `SamePathRoundTrip` にする（第六次 B。BUG-0028。26.4） | 2.10 |
 | `BeginProcessing` の検査の順序 | パラメータ → パス → `-NoClobber` → 読み取り専用 → `-EncodingFrom` の判定（と検証）→ 出力先・追記先の判定（と検証）・追記先のヘッダーの読み取り → `ShouldProcess` | 2.10 |
 | 空の入力 | `-Append` なし: 0 バイトで作成（既存は 0 バイトに切り詰める）。`-Append` あり: 既存に触れない、無ければ 0 バイトで作成（標準の `Export-Csv` と同じ。実測報告 M6） | 2.11 |
 | BOM | 1 行でも書いたときにだけ書く | 2.11 |
@@ -801,6 +816,7 @@ JIS X 0208 の状態（`ESC $ B` の後ろ）のまま終わることがある�
 | 検証の失敗（`-DetectionLineCount` 指定時） | `BeginProcessing` | `DetectionVerificationFailed` |
 | 追記先の列に当たるプロパティが無い（`-Force` なし） | 最初のオブジェクト | `CannotAppendCsvWithMismatchedPropertyNames` |
 | 追記先のヘッダーに空の列名がある（`-Force` あり。第五次） | 最初のオブジェクト | `CannotAppendCsvWithEmptyPropertyName`（標準は汎用の `Argument`） |
+| 追記先のヘッダーに同じ列名が複数ある（大文字小文字を区別しない。第六次 C で表に加えた。BUG-0022） | `BeginProcessing`（追記先のヘッダーを読む時点。ファイルは変えない） | `AlreadyPresentPSMemberInfoInternalCollectionAdd`（`Import-ProbedCsv` の列名の重複と同じ。標準 7.x は `RuntimeException`。21 章）。メッセージにファイルのパスと列名を示す（BUG-0045） |
 | 表現できない文字（16.4。第五次） | 書く直前 | `UnrepresentableCharacter` |
 | 同じファイルの読み書き（実体で比べる。16.5） | 最初の行を書く直前（追記は開いた直後） | `SamePathRoundTrip` |
 | 代替データストリームの指定（16.5） | `BeginProcessing` | `AlternateDataStreamNotSupported` |
@@ -828,6 +844,8 @@ JIS X 0208 の状態（`ESC $ B` の後ろ）のまま終わることがある�
 | `-Append -NoHeader` | （`-NoHeader` が無い） | 受け付ける（7.6.7） | 受け付ける | 7.x のリリース版に合わせる |
 | `-LineBreak` / `-EncodingFrom` / `-AllowEncodingChange` / `-DetectionLineCount` / `-Culture` / `-Strategy` | 無い | 無い | ある | 本モジュールの追加機能 |
 | `-InputObject` の `ByPropertyName` | ある | ある | 無い（`ByValue` だけ） | `Out-ProbedFile` と同じ。意図しない束縛を避ける |
+| 追記先のヘッダーに同じ列名が複数ある（`A,a`）（第六次 C。BUG-0022） | 終了エラー `RuntimeException`（「メンバー "a" は既に存在します。」） | 同左 | 終了エラー `AlreadyPresentPSMemberInfoInternalCollectionAdd`。メッセージにパスと列名を示す（ファイルは変えない） | `Import-ProbedCsv` の列名の重複と同じ ID・同じ規則にそろえる（20 章） |
+| `-UseCulture` の区切り文字（第六次 C。BUG-0029） | NLS のカルチャーのデータ | ICU のカルチャーのデータ | ホストの .NET に従う（ms-ID など 36 のカルチャーで両ホストで違う） | 標準と同じ。17 章 |
 
 ---
 
@@ -1026,7 +1044,8 @@ PowerShell 層のテストとして追加し、PSCompat で 5.1 と 7.x の結�
 - `Resolve-Encoding` は、読めないファイルを非終了エラーにして次のファイルへ進む（第五次までは生の `IOException` の終了エラーで、残りのファイルを処理しなかった）
 - 追記（`Add-ProbedContent`・`-Append`）は、ほかのプログラムが書き込み用に開いている間は今までどおり書けない（`WriteFailed`。5 言語のメッセージ）。
   追記の開き方が書き込みの共有を許さないためで、変えていない（交互に書いて壊さないため）。7.x の標準の `Add-Content` は書き、5.1 の標準は `GetContentWriterIOError`
-- 書き込みの `WriteFailed` のうち、共有違反・ロック違反だけを 5 言語のメッセージにする（ディスクの空き不足などは .NET の文面のまま）
+- 書き込みの `WriteFailed` のうち、共有違反・ロック違反だけを 5 言語のメッセージにする（ディスクの空き不足などは .NET の文面のまま）。
+  **第六次 C で、それ以外もエラー コード（HRESULT）を示す 5 言語のメッセージにした（27.5）**
 - クラスライブラリの `EncodingDetector(string path)` の共有モード（Read）は変えない（利用者の決定。モジュールは使わない）
 
 ### 26.3 一時ファイルの名前（BUG-0027）
@@ -1087,6 +1106,59 @@ PowerShell 層のテストとして追加し、PSCompat で 5.1 と 7.x の結�
 
 ファイルの ACL で書き込みが拒否されている場合の `WriteAccessDenied` は、**大きさによらず開く時点**で出す（第五次の仕上げでは、1 MiB 以内は完了の時点だった）。
 置き換える前と同じく、書き込み用に（切り詰めずに、すべての共有を許して）開けるかを確かめ、すぐに閉じる。共有違反は失敗としないので、ほかのハンドルが開いているときに失敗する条件（16.5）は変わらない。
+
+---
+
+## 27. 第六次 C で改めた挙動（BUG-0038・0039・0041・0045、WriteFailed のメッセージ）
+
+テスト担当のブラックボックステスト（第 2 段階）の不具合のうち、パラメーター・メッセージの 5 件を直した。挙動を変えないで文書に書いたもの（BUG-0022・0023・0029・0034・0036・0040・0043・0044・0008 の追記）は、
+各章・1.1.0 仕様書・1.2.0 仕様書・ヘルプ・README に書いた（実装記録 13 章に、BUG ごとの書いた場所の一覧がある）。
+
+### 27.1 `-Culture` の前後の空白（BUG-0038）
+
+`-Culture` も、`-Encoding`・`-Strategy` と同じく**名前の前後の空白（空白・タブ・改行）を除いてから**受け付ける（`' ko-KR'` は `'ko-KR'` と同じ）。
+除いた名前を判定に渡すので、`Resolve-Encoding` の `Culture` にも除いた名前が出る。名前の途中の空白（`'ko KR'`）は今までどおり `InvalidCulture` で、メッセージと対象には渡された元の値を出す。
+除くのはモジュールだけで、クラスライブラリの `EncodingDetectorOptions.Culture` の検証は変えない。空白だけの値は今までどおり省略と同じ。
+
+前後の空白を除くパラメーター（第六次 C の後）:
+
+| パラメーター | 除くところ |
+|---|---|
+| `-Encoding`（全コマンド）・`-SourceEncoding` | 統一語彙の解決（`EncodingVocabulary`。1.1.0 から） |
+| `-Strategy` | `ResolveEncodingOptions.TryParseStrategy`（1.1.0 から） |
+| `-Culture` | `ResolveEncodingOptions.TrimCulture`（第六次 C） |
+| `-Bom`・`-LineBreak`・`-UseQuotes`（列挙型） | PowerShell の型変換（両ホストで除く） |
+
+除かないもの: `-Path`・`-LiteralPath`・`-EncodingFrom`・`-Destination`（パス）、`-Header`・`-QuoteFields`（列名。標準と同じ）、`-Delimiter`（1 文字）。
+
+### 27.2 逆シリアル化した判定結果（BUG-0039）
+
+`Export-Clixml` と `Import-Clixml`・ジョブ（`Receive-Job`）・リモート・`Select-Object *`・`ConvertFrom-Json` を通した判定結果（`Deserialized.SnowStack.EncodingProbe.EncodingInformation` などの `PSCustomObject`）は、
+**今までどおり受け付けない**（型が違い、どの値をどう扱うかを決められないため）。メッセージを「文字エンコーディング '' を解決できませんでした」から、
+型名と、渡し方（`CodePage` の値、または BOM を明示した統一語彙名）を示すもの（`EncodingObjectNotUsable`。ID は今までどおり `ParameterArgumentTransformationError`）にした。
+判定結果と関係の無い `PSCustomObject`（`[pscustomobject]@{ A = 1 }`）にも同じ文を出す（どちらにも合う文にした）。ヘルプの `-Encoding` に書いた。
+
+### 27.3 `Get-ProbedContent -TotalCount` の別名（BUG-0041）
+
+別名 `-Head`・`-First` を付けた（標準の `Get-Content` と同じ）。`-1` を含む負の値は今までどおり受け付けない（7.x の標準と同じ。5.1 の標準は `-1` ですべての行を読む）。
+ヘルプの既定値「-1 (unlimited)」を「None (all lines)」に直した（1.1.0 仕様書 4.1・4.5）。
+
+### 27.4 メッセージの細部（BUG-0045）
+
+- **列名の重複:** `Import-ProbedCsv`（12 章）と `Export-ProbedCsv -Append` の追記先（20 章）のメッセージに、ファイルのパスを示す。
+  `Import-ProbedCsv -Header` の値が重複している場合は、ファイルのヘッダーではなく `-Header` の値が重複していると分かる文にする（ファイルごとに 1 件）。
+  移植したコードは変えず、コマンド側でメッセージだけを差し替える。ID・分類・対象（パス）は今までと同じ
+- **`EncodingChangeOnAppend`:** 文字エンコーディングを WebName（`utf-8`・`utf-16`）ではなく統一語彙名（`utf8NoBOM`・`unicodeBOM`・`shift_jis`）で示す。
+  追記先の名前は、追記先の BOM の有無を含める。BOM の方針が決まっていない名前（追記では BOM を使わないので指定できる裸の `unicode` など）は WebName で示す
+- **繁体字・簡体字中国語の `DetectionVerificationFailed`:** 「以前 N 行判斷」が「以前は」と読めたので、語順を直した（「根據前 N 行判斷 '…' 的字元編碼為 '…'，但檔案含有…」）。
+  「以…而言」は、ほかの文（`InvalidSourceBytes` など）と同じまま残した（「對…而言」にそろえるかは今後の課題）
+- **英語の行数:** `DetectionLinesTooLarge`・`DetectionVerificationFailed`・`DetectionVerificationIso2022Escape` の「first N lines」は N = 1 で単数・複数が崩れたので、
+  3 つとも「the beginning of the file (with -DetectionLineCount N)」に言い換えた（行数による出し分けはしない）
+
+### 27.5 書き込みの失敗のメッセージ
+
+`WriteFailed` のうち、共有違反・ロック違反以外（ディスクの空き不足など）も、読み込みの `FileReadFailed` と同じく、エラー コード（HRESULT）を示す 5 言語のメッセージ（`FileWriteFailed`）にした。
+第六次 B までは .NET の例外のまま（7.x では英語、5.1 では OS の言語）だった（26.2）。内部例外は持たせず、HRESULT は引き継ぐ。
 
 ---
 

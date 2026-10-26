@@ -148,6 +148,14 @@ PS 5.1 標準では `UTF8` が BOM 付きを意味し、PS 7.x では `utf8` が
 
 WebName 経路で解決された Unicode 系（`"utf-8"` など）も同じ扱いとする。
 
+> **`$PSDefaultParameterValues` で裸の `utf8` を渡した場合（1.3.0 第六次 C で明記。BUG-0034。挙動は変えない）。**
+> `$PSDefaultParameterValues['*:Encoding'] = 'utf8'`（5.1 で UTF-8 を既定にするためによく使われる設定）は、
+> `Set-ProbedContent`・`Add-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv` では、パラメータ束縛の段階で拒否される。
+> PowerShell は、既定のパラメータ値が束縛で失敗すると、警告（「既定値 'utf8' をパラメーター 'Encoding' にバインドできませんでした」）を出してその値を使わずに続ける（PowerShell の規則）。
+> そのため、**`-Encoding` を省略したものとして書く**（`Set-` / `Add-ProbedContent` は書き込み先から継承、`Out-ProbedFile` / `Export-ProbedCsv` は `utf8NoBOM`）。
+> `Convert-ProbedContent` は実行時に拒否するので、明示と同じエラーになる。既定値には `utf8NoBOM` か `utf8BOM` を使う（ヘルプの `-Encoding`・README に書いた）。
+> 読み込みのコマンド（`Get-ProbedContent`・`Import-ProbedCsv`）には `utf8` がそのまま効き、判定せずに UTF-8 で読む（標準の `Get-Content` と同じ）
+
 ### 3.7 BOM 無し UTF-16 / UTF-32 について
 
 原則 B により語彙として定義するが、BOM 無し UTF-16 は他ツールから確実に判別できないため相互運用性が低い。**ドキュメントで非推奨と明記**する。ただし警告は出さない（`-EncodingFrom` によるラウンドトリップのたびに鳴るため）。
@@ -364,6 +372,19 @@ GB18030（54936）のまま残る。UTF.Unknown は HKSCS 固有字が入ると�
 `ConvertTo-DotNetEncoding` には追加しない。ファイルを引数に取らず、
 判定処理そのものを呼び出さないためである。
 
+#### 7 ビットの文字エンコーディング（HZ-GB-2312・UTF-7。1.3.0 第六次 C で明記。BUG-0044）
+
+既定の `-Strategy Combined` と `NativeOnly` は、**HZ-GB-2312（52936）と UTF-7（65000）を判定しない。** どちらもすべてのバイトが `0x80` 未満なので、独自判定は us-ascii（20127）とし、
+`Combined` は独自判定が答えを出したので UTF.Unknown に問い合わせない（UTF.Unknown を使うのは、独自判定が判定不能か、旧マルチバイトを返したときだけ。4.4）。
+読み込むと、HZ の `~{…~}`・UTF-7 の `+…-` のエスケープの文字列のまま返す（元のファイルは壊れない）。
+
+- HZ は `-Strategy UtfUnknownOnly` で判定できる（52936）。UTF-7 は UTF.Unknown も判定しない（`ascii`）
+- 確実に読むには `-Encoding 52936`（HZ）・`-Encoding utf7` を明示する
+- 既定で HZ を採らないのは、`~{` を含むだけの英数字のテキスト（プログラムのソースなど）を HZ と誤判定するため。条件を付けて採るかは 1.4.0 で検討する
+- 同じ 20127 の結果でも、`EncodingWebName` は `Combined` / `NativeOnly` では `us-ascii`（.NET の WebName）、`UtfUnknownOnly` では `ascii`（UTF.Unknown の名前）になる。
+  どちらも `-Encoding` に渡せば同じ文字エンコーディングになる（`ascii` は語彙、`us-ascii` は WebName）。名前の不統一は直していない
+- 同じ 7 ビットの ISO-2022 系（50220 など）は判定する
+
 ### 4.5 採用しないパラメータと理由
 
 | パラメータ | 理由 |
@@ -377,6 +398,18 @@ GB18030（54936）のまま残る。UTF.Unknown は HKSCS 固有字が入ると�
 `-TotalCount` の別名 `-Head`・`-First` は採用した（1.3.0 第六次 C。BUG-0041。`Get-Content -Head 10` をそのまま置き換えられるようにするため）。
 
 `-Raw` は利便性ではなく**情報保全**のために必須とする。行分割すると、行末が CRLF か LF か、末尾に改行があったかが失われ、後から復元できない。読み込んだ内容を加工して書き戻す用途では、`-Raw` が唯一の無損失な読み取り手段となる。
+
+### 4.6 標準の `Get-Content` との差異（1.3.0 第六次 C で一覧にした）
+
+| 項目 | 標準の `Get-Content` | `Get-ProbedContent` | 理由 |
+|---|---|---|---|
+| `-Encoding` の省略 | 5.1 は ANSI、7.x は UTF-8（どちらも BOM があれば BOM に従う） | ファイルごとに判定する | 本モジュールの目的 |
+| 0 バイト・BOM だけのファイルの `-Raw`（BUG-0040） | 何も返さない（`$null`） | **空の文字列（長さ 0 の `string`）を 1 個返す** | 4.2 の出力の型（`-Raw` は `string` 1 個）のとおり。`Set-ProbedContent -NoNewline` への受け渡しで扱いやすい。挙動は変えない |
+| `-TotalCount -1` | 5.1 はすべての行、7.x は検証エラー | 検証エラー（7.x と同じ。1.3.0 第六次 C。BUG-0041） | 省略すればすべての行 |
+| `-Delimiter`・`-Tail`・`-Wait`・`-Stream`・`-ReadCount` | ある | 無い | 4.5 |
+
+`-Raw` を付けない読み込みは、0 バイト・BOM だけのファイルで何も返さない（標準と同じ）。`if ($null -eq (Get-Content x -Raw))` で空のファイルを見分けるスクリプトは、
+`Get-ProbedContent` では `if ((Get-ProbedContent x -Raw).Length -eq 0)` などと書く。
 
 ---
 
@@ -497,6 +530,28 @@ $raw -replace 'foo','bar' | Set-ProbedContent b.txt -NoNewline
 
 `-EncodingFrom` の判定は `BeginProcessing` で行うため、`-Culture` / `-Strategy` の
 検証はその前に済ませる。
+
+### 5.8 標準の `Set-Content` / `Add-Content` との差異（1.3.0 第六次 C で一覧にした）
+
+| 項目 | 標準 | `Set-` / `Add-ProbedContent` | 理由 |
+|---|---|---|---|
+| `-Encoding` の省略 | 5.1 は ANSI、7.x は BOM 無しの UTF-8 | 書き込み先から継承する（無ければエラー。5.3） | 文字エンコーディングを混ぜない |
+| 裸の `utf8` | 5.1 は BOM 付き、7.x は BOM 無し | 拒否する（3.6） | ホストで意味が違う |
+| 文字列以外の値の文字列化（BUG-0036） | 現在のカルチャーの書式（ja-JP の日付は `2026/10/15 14:30:00`、de-DE の `1.5` は `1,5`） | **不変カルチャーの書式**（日付は `10/15/2026 14:30:00`、`1.5` は `1.5`。カルチャーによらない） | PowerShell の型変換（`LanguagePrimitives`）で文字列にするため。ヘルプの `-Value` に書いてある。挙動は変えない |
+| 表現できない文字 | `?` などに置き換えて書く | `UnrepresentableCharacter` で止め、書いた分を元に戻す（1.3.0 仕様書 16.4） | 文字を黙って失わない |
+| `-Value` の配列の `$null` の要素 | 空行として書く | 空行として書く（1.3.0 第六次 A で標準にそろえた。BUG-0033） | — |
+
+**同じモジュールの中でも、文字列化の規則は 2 通りある。** `Set-` / `Add-ProbedContent` は不変カルチャー、`Out-ProbedFile`（`Out-String` の整形）と
+`Export-ProbedCsv`（1.3.0 仕様書 17 章）は現在のカルチャー。同じ日付を `Set-ProbedContent` と `Export-ProbedCsv` で書くと書式が違う。
+現在のカルチャーの書式で書くには、`-Value` に渡す前に文字列にする（`$d.ToString()`、`"$d"` は不変カルチャーなので使わない）。
+
+**既知の限界（数値の書式のホストの差）:** 不変カルチャーでも、数値の文字列化はホストの .NET で違うことがある（標準の `Set-Content` も同じく違う）。
+
+- `-0.0` は、7.x では `-0`、5.1 では `0` になる
+- `0.1 + 0.2` は、`Set-` / `Add-ProbedContent` では両ホストで `0.3` になる（PowerShell の型変換は 15 桁で丸める）。
+  一方、`Export-ProbedCsv`（値の `ToString()`。1.3.0 仕様書 17 章）では、5.1 が `0.3`（.NET Framework は 15 桁で丸める）、7.x が `0.30000000000000004`（.NET Core 3.0 以降は往復できる最短の表記）になる
+
+両ホストで同じ文字列にするには、渡す前に書式を指定して文字列にする（`$x.ToString('G15', [cultureinfo]::InvariantCulture)` など）。
 
 ---
 

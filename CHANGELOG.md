@@ -196,6 +196,32 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
 - **`Out-ProbedFile` の結果が、利用者の `$PSDefaultParameterValues['Out-String:Width']` などの影響を受けないようにしました**（BUG-0035。標準の `Out-File` と同じ）。`Out-ProbedFile -Width` への既定値（`'Out-ProbedFile:Width'`・`'*:Width'`）は、今までどおり効きます
 - **ACL で書き込みを拒否したファイルの `WriteAccessDenied` を、大きさによらず開く時点で出します**（第五次の仕上げでは、1 MiB 以内は完了の時点でした）。ほかのハンドルが開いているときに失敗する条件は変わりません
 
+### 挙動の変更（PowerShell モジュール。第六次 C）
+
+テスト担当のブラックボックステスト（BUG-0038・0039・0041・0045）への対応と、文書の追記（BUG-0022・0023・0029・0034・0036・0040・0043・0044・0008 の追記）です。実装記録 13 章、1.3.0 仕様書 27 章に、決定の根拠と、BUG ごとに書いた場所の一覧があります。
+
+- **`-Culture` も、`-Encoding`・`-Strategy` と同じく名前の前後の空白を除いてから受け付けます**（BUG-0038）。`-Culture ' ko-KR'` は `InvalidCulture` でした。
+  除いた名前を判定に渡します（`Resolve-Encoding` の `Culture` にも除いた名前が出ます）。名前の途中の空白は今までどおり `InvalidCulture` です。クラスライブラリの検証は変えていません
+- **逆シリアル化した判定結果などを `-Encoding` に渡したときのメッセージを、型が違うことと渡し方を示すものにしました**（BUG-0039）。
+  `Import-Clixml`・ジョブ・リモート・`Select-Object *`・`ConvertFrom-Json` を通した判定結果（`Deserialized.…EncodingInformation` などの `PSCustomObject`）は、今までどおり受け付けません。
+  メッセージは「文字エンコーディング '' を解決できませんでした」から、型名と、`CodePage` の値または BOM を明示した統一語彙名を渡すよう案内するもの（`EncodingObjectNotUsable`）になりました。ID は `ParameterArgumentTransformationError` のままです
+- **`Get-ProbedContent -TotalCount` に、標準と同じ別名 `-Head`・`-First` を付けました**（BUG-0041）。`-1` は今までどおり受け付けません（7.x の標準と同じ）。ヘルプの既定値を「-1 (unlimited)」から「None (all lines)」に直しました
+- **メッセージの細部を直しました**（BUG-0045）
+  - 列名の重複のエラー（`Import-ProbedCsv`、`Export-ProbedCsv -Append` の追記先）に、ファイルのパスを示します。`Import-ProbedCsv -Header` の値が重複している場合は、`-Header` の値が重複していると分かる文です。ID・分類・対象は変えていません
+  - `EncodingChangeOnAppend` は、文字エンコーディングを WebName（`utf-8`・`utf-16`）ではなく統一語彙名（`utf8NoBOM`・`unicodeBOM` など）で示します
+  - 繁体字・簡体字中国語の `DetectionVerificationFailed` の語順を直しました。英語の `-DetectionLineCount` の 3 つのメッセージは、行数が 1 のときに「first 1 lines」となっていたので、「the beginning of the file (with -DetectionLineCount N)」に言い換えました
+- **ディスクの空き不足などの書き込みの失敗（`WriteFailed`）も、エラー コードを示す 5 言語のメッセージにしました。** 第六次 B では共有違反・ロック違反だけで、ほかは .NET の例外の文面（7.x では英語）でした
+- 文書だけの追記（挙動は変えていません）
+  - 列名が重複した追記先への `Export-ProbedCsv -Append` の ID（`AlreadyPresentPSMemberInfoInternalCollectionAdd`）は、標準（両ホストとも `RuntimeException`）と違います。`Import-ProbedCsv` と同じ ID にそろえたもので、1.3.0 仕様書 20 章・21 章に書きました（BUG-0022）
+  - 追記先の最後の値の引用符が閉じていない（`1,"2` で終わる）と、追記したレコードがその値の中に入って読み戻せなくなります。既知の限界として 1.3.0 仕様書 18.3 と `Export-ProbedCsv -Append` のヘルプに書きました。1.4.0 で検討します（BUG-0023）
+  - `-UseCulture` の区切り文字はホストの .NET のカルチャーのデータに従うので、ms-ID・fa-AF・es-BZ など 36 のカルチャーで両ホストで違います（5.1 は `;`、7.x は `,`）。日付・数値の書式（BUG-0005）と同じ扱いです（BUG-0029）
+  - `$PSDefaultParameterValues['*:Encoding'] = 'utf8'` は、書き込みの 4 コマンドでは PowerShell の規則で無視され（警告だけ）、`-Encoding` を省略したものとして書きます。既定値には `utf8NoBOM` か `utf8BOM` を使ってください（BUG-0034。ヘルプと README）
+  - `Set-` / `Add-ProbedContent` は文字列以外の値を不変カルチャーで文字列にします（標準は現在のカルチャー）。1.1.0 仕様書 5.8 に標準との差異として書き、数値の書式のホストの差（`-0.0` は 7.x で `-0`、5.1 で `0`。`Export-ProbedCsv` の `0.1 + 0.2` は 5.1 で `0.3`、7.x で `0.30000000000000004`）を既知の限界にしました（BUG-0036）
+  - 0 バイト・BOM だけのファイルの `Get-ProbedContent -Raw` は空の文字列を返します（標準は `$null`）。1.1.0 仕様書 4.6 とヘルプに書きました（BUG-0040）
+  - `Convert-ProbedContent` は、BOM だけのファイルを指定によらず 0 バイトにします（`-Bom Add` でも）。1.2.0 仕様書 13.1 とヘルプに書きました。見直しは 1.4.0 で検討します（BUG-0043）
+  - 既定の判定方式（`Combined`）と `NativeOnly` は、HZ-GB-2312 と UTF-7 を判定しません（us-ascii になります）。HZ は `-Strategy UtfUnknownOnly` で判定でき、確実に読むには `-Encoding` で明示します。既定で HZ を採ると `~{` を含む英数字のテキストを誤判定するためで、条件を付けて採るかは 1.4.0 で検討します（BUG-0044。1.1.0 仕様書 4.4 とヘルプ）
+  - README の 1.2.0 の節の「5.1 でも同じバイト列になる」に、表などの整形結果はホストで違うことがある旨を書きました（BUG-0008 の追記。1.2.0 仕様書 2.3）
+
 ### 追加したコマンド
 
 - **`Import-ProbedCsv`** … 文字エンコーディングを判定して CSV ファイルを読み込み、レコードごとにオブジェクトを出力します（標準の `Import-Csv` に対応）

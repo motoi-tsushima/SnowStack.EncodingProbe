@@ -149,6 +149,10 @@ UTF-16 / UTF-32 と判定したファイルの改行コード（`LineBreak`）�
 - 書き込んだファイルには Archive 属性が付きます。隠し・システム属性のファイルにも `-Force` なしで書け、代替データストリームを保ちます（標準の `Out-File` / `Export-Csv` は書けず、ストリームを消します）
 - 置き換えに使う一時ファイルの名前は `.~probed<8 桁>.probedtmp` です（名前の長いファイルにも書けます。残った一時ファイルの名前からは、どのファイルのものかは分かりません）
 - `Out-ProbedFile` は、`$PSDefaultParameterValues['Out-String:Width']` などの影響を受けません（標準の `Out-File` と同じ）
+- `-Culture` も、`-Encoding`・`-Strategy` と同じく名前の前後の空白を無視します（`' ko-KR'` は `'ko-KR'` と同じ）
+- `Get-ProbedContent -TotalCount` に、標準と同じ別名 `-Head`・`-First` を付けました（`-1` は今までどおり受け付けません。省略するとすべての行です）
+- `Import-Clixml`・ジョブ・`Select-Object` を通した判定結果を `-Encoding` に渡すと、型が違うことと渡し方（`CodePage` の値など）を示すエラーになります（今までどおり使えません）
+- 列名の重複のエラーにファイルのパスを示し、追記の整合性検査（`EncodingChangeOnAppend`）は文字エンコーディングを統一語彙名（`utf8NoBOM` など）で示します。ディスクの空き不足などの書き込みの失敗も、エラー コードを示す 5 言語のメッセージにしました
 
 #### Linux / macOS での `ansi` / `oem`
 
@@ -179,6 +183,7 @@ PowerShell モジュールに CSV の読み書きコマンドを追加しまし�
 CSV の解析と文字列化は PowerShell 7.x の `Import-Csv` / `Export-Csv` から移植した処理で行うため、
 **Windows PowerShell 5.1 でも PowerShell 7.x と同じ結果（書き出しはバイト単位まで同じファイル）になります。**
 ただし、日付・数値の書式は現在のカルチャーとホストの .NET（5.1 は NLS、7.x は ICU）で決まるため、ko-KR・zh-TW・zh-HK・ar-SA などのカルチャーでは両ホストで違うことがあります（標準の `Export-Csv` / `ConvertTo-Csv` も同じです）。
+`-UseCulture` の区切り文字も同じく、ms-ID・fa-AF・es-BZ など一部のカルチャーでは両ホストで違います（ホストをまたぐ CSV は `-Delimiter` で区切り文字を明示してください）。
 5.1 の標準の `Import-Csv` は CR だけの改行の CSV を黙って 0 件で返し、`Export-Csv` は既定で日本語を `???` にしてしまいますが、
 これらのコマンドではそうなりません。
 
@@ -232,7 +237,8 @@ CSV の読み書き処理には、PowerShell（Copyright (c) Microsoft Corporati
 | `Convert-ProbedContent` | 既存のテキストファイルの文字エンコーディング・BOM・改行を変換する |
 
 ```powershell
-# BOM 無しの UTF-8 で書き出す（Out-File と同じ使い方。PowerShell 5.1 でも同じバイト列になる）
+# BOM 無しの UTF-8 で書き出す（Out-File と同じ使い方。PowerShell 5.1 でも BOM 無しの UTF-8。
+# 表などの整形結果（行末の空白・空行の数など）はホストで違うことがある。文字列の入力なら同じバイト列になる）
 Get-Process | Out-ProbedFile .\processes.txt
 
 # 追記先の文字エンコーディングを保ったまま追記する
@@ -291,7 +297,8 @@ Get-ProbedContent .\german.txt -Strategy UtfUnknownOnly
 
 使ううえで知っておく必要のある点がいくつかあります。
 
-- 書き込みでは、BOM 方針の定まらない裸の `utf8` を受け付けません。`utf8NoBOM` または `utf8BOM` を指定してください
+- 書き込みでは、BOM 方針の定まらない裸の `utf8` を受け付けません。`utf8NoBOM` または `utf8BOM` を指定してください。
+  `$PSDefaultParameterValues['*:Encoding'] = 'utf8'` で既定にした場合は、PowerShell の規則で既定値が無視され（警告だけが出ます）、`-Encoding` を省略したものとして書きます。既定値には `utf8NoBOM` か `utf8BOM` を使ってください
 - `Add-ProbedContent` では BOM の指定が常に無視されます。また、追記できるかどうかは実際に書き出されるバイト列で判定します
 - `-Encoding` の入力形式によって改行コードの決まり方が変わります
 

@@ -35,7 +35,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Raw</maml:name>
           <maml:description>
-            <maml:para>줄로 나누지 않고 파일 전체를 하나의 문자열로 반환합니다. 줄로 나누면 각 줄의 끝이 CR-LF인지 LF인지, 그리고 파일 끝에 줄 바꿈이 있었는지가 사라지므로, 이것이 무손실로 읽는 유일한 수단입니다. -TotalCount와 함께 지정할 수 없습니다.</maml:para>
+            <maml:para>줄로 나누지 않고 파일 전체를 하나의 문자열로 반환합니다. 줄로 나누면 각 줄의 끝이 CR-LF인지 LF인지, 그리고 파일 끝에 줄 바꿈이 있었는지가 사라지므로, 이것이 무손실로 읽는 유일한 수단입니다. -TotalCount와 함께 지정할 수 없습니다. 빈 파일(0바이트 또는 BOM만 있는 파일)에서는 -Raw가 빈 문자열을 반환합니다(표준 Get-Content -Raw는 아무것도 반환하지 않습니다($null)).</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
@@ -55,7 +55,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -79,7 +79,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Raw</maml:name>
           <maml:description>
-            <maml:para>줄로 나누지 않고 파일 전체를 하나의 문자열로 반환합니다. 줄로 나누면 각 줄의 끝이 CR-LF인지 LF인지, 그리고 파일 끝에 줄 바꿈이 있었는지가 사라지므로, 이것이 무손실로 읽는 유일한 수단입니다. -TotalCount와 함께 지정할 수 없습니다.</maml:para>
+            <maml:para>줄로 나누지 않고 파일 전체를 하나의 문자열로 반환합니다. 줄로 나누면 각 줄의 끝이 CR-LF인지 LF인지, 그리고 파일 끝에 줄 바꿈이 있었는지가 사라지므로, 이것이 무손실로 읽는 유일한 수단입니다. -TotalCount와 함께 지정할 수 없습니다. 빈 파일(0바이트 또는 BOM만 있는 파일)에서는 -Raw가 빈 문자열을 반환합니다(표준 Get-Content -Raw는 아무것도 반환하지 않습니다($null)).</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
@@ -99,7 +99,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -156,7 +156,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Raw</maml:name>
         <maml:description>
-          <maml:para>줄로 나누지 않고 파일 전체를 하나의 문자열로 반환합니다. 줄로 나누면 각 줄의 끝이 CR-LF인지 LF인지, 그리고 파일 끝에 줄 바꿈이 있었는지가 사라지므로, 이것이 무손실로 읽는 유일한 수단입니다. -TotalCount와 함께 지정할 수 없습니다.</maml:para>
+          <maml:para>줄로 나누지 않고 파일 전체를 하나의 문자열로 반환합니다. 줄로 나누면 각 줄의 끝이 CR-LF인지 LF인지, 그리고 파일 끝에 줄 바꿈이 있었는지가 사라지므로, 이것이 무손실로 읽는 유일한 수단입니다. -TotalCount와 함께 지정할 수 없습니다. 빈 파일(0바이트 또는 BOM만 있는 파일)에서는 -Raw가 빈 문자열을 반환합니다(표준 Get-Content -Raw는 아무것도 반환하지 않습니다($null)).</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -167,7 +167,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+          <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -309,7 +309,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
+            <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다). 따라서 표준 Set-Content, Add-Content와 달리 날짜와 숫자는 현재 문화권의 서식을 따르지 않습니다(어떤 문화권에서도 날짜는 10/15/2026 14:30:00, 1.5는 1.5로 씁니다). 그래도 일부 숫자는 호스트의 .NET에 따라 서식이 달라, -0.0은 PowerShell 7.x에서는 -0, Windows PowerShell 5.1에서는 0으로 씁니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -368,7 +368,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -378,7 +378,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
+            <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다). 따라서 표준 Set-Content, Add-Content와 달리 날짜와 숫자는 현재 문화권의 서식을 따르지 않습니다(어떤 문화권에서도 날짜는 10/15/2026 14:30:00, 1.5는 1.5로 씁니다). 그래도 일부 숫자는 호스트의 .NET에 따라 서식이 달라, -0.0은 PowerShell 7.x에서는 -0, Windows PowerShell 5.1에서는 0으로 씁니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -444,7 +444,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -558,7 +558,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+          <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -569,7 +569,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>
-          <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
+          <maml:para>쓸 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다). 따라서 표준 Set-Content, Add-Content와 달리 날짜와 숫자는 현재 문화권의 서식을 따르지 않습니다(어떤 문화권에서도 날짜는 10/15/2026 14:30:00, 1.5는 1.5로 씁니다). 그래도 일부 숫자는 호스트의 .NET에 따라 서식이 달라, -0.0은 PowerShell 7.x에서는 -0, Windows PowerShell 5.1에서는 0으로 씁니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -618,7 +618,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <maml:para>이 모듈이 받아들이는 문자 인코딩 이름(통합 어휘)은 Windows PowerShell 5.1과 PowerShell 7.x에서 동일합니다. PowerShell 5.1의 기본 제공 cmdlet이 -Encoding에 받아들이는 이름과는 다르며, Resolve-Encoding이 반환하는 PSEncodingName과 일치하지 않는 경우도 있습니다. 한쪽의 이름을 다른 쪽에 그대로 전달하고 같은 결과를 기대하지 마십시오.</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>쓰기 계열 명령은 맨 이름 utf8(및 utf-8, 숫자 코드 페이지 65001)을 받아들이지 않습니다. PowerShell 5.1과 7.x가 BOM 유무의 해석에서 다르기 때문입니다. utf8NoBOM 또는 utf8BOM을 지정하십시오. 다른 유니코드 계열도 마찬가지로 unicodeNoBOM / unicodeBOM처럼 지정합니다. 이 실패는 매개 변수 바인딩 단계에서 일어나므로, 파일은 전혀 변경되지 않습니다.</maml:para>
+        <maml:para>쓰기 계열 명령은 맨 이름 utf8(및 utf-8, 숫자 코드 페이지 65001)을 받아들이지 않습니다. PowerShell 5.1과 7.x가 BOM 유무의 해석에서 다르기 때문입니다. utf8NoBOM 또는 utf8BOM을 지정하십시오. 다른 유니코드 계열도 마찬가지로 unicodeNoBOM / unicodeBOM처럼 지정합니다. 이 실패는 매개 변수 바인딩 단계에서 일어나므로, 파일은 전혀 변경되지 않습니다. $PSDefaultParameterValues로 맨 'utf8'을 전달한 경우($PSDefaultParameterValues['*:Encoding'] = 'utf8' 등)에는 매개 변수 바인딩에서 실패하므로, PowerShell이 경고를 표시하고 기본값을 무시하며 -Encoding을 생략한 것으로 간주하여 씁니다. 기본값에는 'utf8NoBOM' 또는 'utf8BOM'을 사용하십시오.</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>줄 바꿈 코드가 정해지는 방식은 -Encoding에 전달한 값의 형태에 따라 달라집니다. EncodingInformation 개체(Resolve-Encoding의 출력)는 판정 원본 파일의 줄 바꿈 코드를 지니고 있으므로 줄 바꿈도 상속됩니다. utf8NoBOM 같은 어휘 이름은 줄 바꿈 정보를 지니지 않으므로, -LineBreak를 지정하지 않으면 운영 체제 기본 줄 바꿈이 됩니다. -EncodingFrom과 기본값인 -Encoding Auto는 읽은 파일의 줄 바꿈 코드를 항상 상속합니다.</maml:para>
@@ -741,7 +741,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
+            <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다). 따라서 표준 Set-Content, Add-Content와 달리 날짜와 숫자는 현재 문화권의 서식을 따르지 않습니다(어떤 문화권에서도 날짜는 10/15/2026 14:30:00, 1.5는 1.5로 씁니다). 그래도 일부 숫자는 호스트의 .NET에 따라 서식이 달라, -0.0은 PowerShell 7.x에서는 -0, Windows PowerShell 5.1에서는 0으로 씁니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -806,7 +806,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -816,7 +816,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
+            <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다). 따라서 표준 Set-Content, Add-Content와 달리 날짜와 숫자는 현재 문화권의 서식을 따르지 않습니다(어떤 문화권에서도 날짜는 10/15/2026 14:30:00, 1.5는 1.5로 씁니다). 그래도 일부 숫자는 호스트의 .NET에 따라 서식이 달라, -0.0은 PowerShell 7.x에서는 -0, Windows PowerShell 5.1에서는 0으로 씁니다.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -888,7 +888,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1013,7 +1013,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+          <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1024,7 +1024,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>
-          <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다).</maml:para>
+          <maml:para>추가할 내용. -NoNewline을 지정하지 않는 한, 마지막 요소를 포함하여 각 요소 뒤에 줄 바꿈을 출력합니다. 문자열이 아닌 값은 PowerShell의 형식 변환으로 문자열이 됩니다(고정 문화권을 사용합니다). 배열의 $null 요소는 건너뜁니다(표준 Set-Content / Add-Content와 같습니다). 따라서 표준 Set-Content, Add-Content와 달리 날짜와 숫자는 현재 문화권의 서식을 따르지 않습니다(어떤 문화권에서도 날짜는 10/15/2026 14:30:00, 1.5는 1.5로 씁니다). 그래도 일부 숫자는 호스트의 .NET에 따라 서식이 달라, -0.0은 PowerShell 7.x에서는 -0, Windows PowerShell 5.1에서는 0으로 씁니다.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -1076,7 +1076,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>Add-ProbedContent에서는 -Encoding의 BOM 부분을 항상 무시합니다. 파일 중간에 BOM을 쓰는 것은 어떤 경우에도 옳지 않으므로, utf8BOM과 utf8NoBOM은 같은 결과가 됩니다. 추가 대상이 아직 없어서 이 명령이 새로 만드는 경우에도 마찬가지입니다. 경고는 내지 않습니다. BOM이 있는 파일에서 -EncodingFrom으로 상속하는 사용법은 정당하기 때문입니다.</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>쓰기 계열 명령은 맨 이름 utf8(및 utf-8, 숫자 코드 페이지 65001)을 받아들이지 않습니다. PowerShell 5.1과 7.x가 BOM 유무의 해석에서 다르기 때문입니다. utf8NoBOM 또는 utf8BOM을 지정하십시오. 다른 유니코드 계열도 마찬가지로 unicodeNoBOM / unicodeBOM처럼 지정합니다. 이 실패는 매개 변수 바인딩 단계에서 일어나므로, 파일은 전혀 변경되지 않습니다.</maml:para>
+        <maml:para>쓰기 계열 명령은 맨 이름 utf8(및 utf-8, 숫자 코드 페이지 65001)을 받아들이지 않습니다. PowerShell 5.1과 7.x가 BOM 유무의 해석에서 다르기 때문입니다. utf8NoBOM 또는 utf8BOM을 지정하십시오. 다른 유니코드 계열도 마찬가지로 unicodeNoBOM / unicodeBOM처럼 지정합니다. 이 실패는 매개 변수 바인딩 단계에서 일어나므로, 파일은 전혀 변경되지 않습니다. $PSDefaultParameterValues로 맨 'utf8'을 전달한 경우($PSDefaultParameterValues['*:Encoding'] = 'utf8' 등)에는 매개 변수 바인딩에서 실패하므로, PowerShell이 경고를 표시하고 기본값을 무시하며 -Encoding을 생략한 것으로 간주하여 씁니다. 기본값에는 'utf8NoBOM' 또는 'utf8BOM'을 사용하십시오.</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>줄 바꿈 코드가 정해지는 방식은 -Encoding에 전달한 값의 형태에 따라 달라집니다. EncodingInformation 개체(Resolve-Encoding의 출력)는 판정 원본 파일의 줄 바꿈 코드를 지니고 있으므로 줄 바꿈도 상속됩니다. utf8NoBOM 같은 어휘 이름은 줄 바꿈 정보를 지니지 않으므로, -LineBreak를 지정하지 않으면 운영 체제 기본 줄 바꿈이 됩니다. -EncodingFrom과 기본값인 -Encoding Auto는 읽은 파일의 줄 바꿈 코드를 항상 상속합니다.</maml:para>
@@ -1194,7 +1194,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오. $PSDefaultParameterValues로 맨 'utf8'을 전달한 경우($PSDefaultParameterValues['*:Encoding'] = 'utf8' 등)에는 매개 변수 바인딩에서 실패하므로, PowerShell이 경고를 표시하고 기본값을 무시하며 -Encoding을 생략한 것으로 간주하여 씁니다. 기본값에는 'utf8NoBOM' 또는 'utf8BOM'을 사용하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1295,7 +1295,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오. $PSDefaultParameterValues로 맨 'utf8'을 전달한 경우($PSDefaultParameterValues['*:Encoding'] = 'utf8' 등)에는 매개 변수 바인딩에서 실패하므로, PowerShell이 경고를 표시하고 기본값을 무시하며 -Encoding을 생략한 것으로 간주하여 씁니다. 기본값에는 'utf8NoBOM' 또는 'utf8BOM'을 사용하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1434,7 +1434,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
+          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오. $PSDefaultParameterValues로 맨 'utf8'을 전달한 경우($PSDefaultParameterValues['*:Encoding'] = 'utf8' 등)에는 매개 변수 바인딩에서 실패하므로, PowerShell이 경고를 표시하고 기본값을 무시하며 -Encoding을 생략한 것으로 간주하여 씁니다. 기본값에는 'utf8NoBOM' 또는 'utf8BOM'을 사용하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -2085,7 +2085,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>이 cmdlet의 -LineBreak는 파일 안의 모든 줄 바꿈을 바꿉니다. Set-ProbedContent / Add-ProbedContent / Out-ProbedFile의 -LineBreak는 요소 뒤에 붙이는 줄 바꿈만 정하며 문자열 안의 줄 바꿈은 그대로 둡니다.</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>-Encoding과 -Bom의 관계: BOM 접미사가 붙은 이름(utf8BOM, unicodeNoBOM 등)은 -Bom과 일치해야 합니다. Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 BOM을 -Bom으로 정합니다. 그 밖의 문자 인코딩(shift_jis, 932 등)에 대한 -Bom Add는 오류, -Bom Remove는 허용합니다. EncodingInformation이나 -EncodingFrom의 BOM은 -Bom으로 덮어쓸 수 있습니다. System.Text.Encoding 인스턴스는 -Bom과 일치해야 합니다. -Encoding을 생략하면 원본 문자 인코딩을 유지하며, BOM을 가질 수 없는 원본에 대한 -Bom Add는 그 파일의 오류로 보고합니다.</maml:para>
+        <maml:para>-Encoding과 -Bom의 관계: BOM 접미사가 붙은 이름(utf8BOM, unicodeNoBOM 등)은 -Bom과 일치해야 합니다. Unicode 계열의 단순 이름이나 WebName(utf8, utf-8, unicode 등)은 BOM을 -Bom으로 정합니다. 그 밖의 문자 인코딩(shift_jis, 932 등)에 대한 -Bom Add는 오류, -Bom Remove는 허용합니다. EncodingInformation이나 -EncodingFrom의 BOM은 -Bom으로 덮어쓸 수 있습니다. System.Text.Encoding 인스턴스는 -Bom과 일치해야 합니다. -Encoding을 생략하면 원본 문자 인코딩을 유지하며, BOM을 가질 수 없는 원본에 대한 -Bom Add는 그 파일의 오류로 보고합니다. BOM만 있는 파일은 문자가 0개이므로, -Bom Add나 원래와 같은 문자 인코딩을 지정해도 항상 0바이트로 다시 씁니다(Changed는 True). BOM은 문자를 하나라도 쓸 때만 씁니다.</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>원본은 파일 전체를 메모리에 읽어 들이므로 매우 큰 파일에는 그만큼의 메모리가 필요합니다.</maml:para>
@@ -2097,7 +2097,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>사용자 정의 영역의 문자(홍콩 Big5의 HKSCS 고유 문자 등)는 경고 없이 코드 포인트 그대로 변환합니다. 그런 Big5 파일을 UTF-8로 변환했다가 Big5로 되돌리면 원래 바이트열로 돌아갑니다.</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>매개 변수의 오류(변환 지정 없음, -Encoding Auto, BOM 지정의 불일치, -Destination 폴더 없음 등)는 종료 오류입니다. 한 파일에 관한 실패는 종료되지 않는 오류이며, 그 파일은 변경하지 않고 남기고 다른 파일의 처리는 계속합니다.</maml:para>
+        <maml:para>매개 변수의 오류(변환 지정 없음, -Encoding Auto, BOM 지정의 불일치, -Destination 폴더 없음 등)는 종료 오류입니다. 한 파일에 관한 실패는 종료되지 않는 오류이며, 그 파일은 변경하지 않고 남기고 다른 파일의 처리는 계속합니다. 각 파일은 전체를 메모리에 읽은 후 변환합니다(2GB 미만이어야 하며, 넘으면 FileTooLargeToConvert). 32비트 Windows PowerShell 5.1에서는 수백 MB의 파일에서 NotEnoughMemoryToConvert가 될 수 있습니다. 어느 경우에도 파일은 변경하지 않습니다.</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>싱글바이트 문자 인코딩(windows-1252, ISO-8859 등)은 바이트열의 구조로는 구별할 수 없어 문장의 통계로 추정합니다. 따라서 판정의 성패는 길이보다 내용에 좌우됩니다. 문자 목록, 기호·숫자가 많은 줄, 그 언어에서 보통 쓰지 않는 문자를 포함한 텍스트는 수백 바이트가 있어도 판정하지 못할(CodePage가 -1) 수 있습니다. 이 경우 -SourceEncoding으로 코드 페이지를 명시하십시오.</maml:para>
@@ -2245,7 +2245,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2297,7 +2297,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2314,7 +2314,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>UseCulture</maml:name>
           <maml:description>
-            <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다.</maml:para>
+            <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다. 구분 기호는 표준 명령과 마찬가지로 호스트의 .NET 문화권 데이터에서 가져오므로, 일부 문화권(ms-ID, fa-AF, es-BZ 등)에서는 Windows PowerShell 5.1(;)과 PowerShell 7.x(,)에서 다릅니다. 두 호스트에서 사용하는 CSV에서는 -Delimiter로 구분 기호를 명시하십시오.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2348,7 +2348,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2365,7 +2365,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>UseCulture</maml:name>
           <maml:description>
-            <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다.</maml:para>
+            <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다. 구분 기호는 표준 명령과 마찬가지로 호스트의 .NET 문화권 데이터에서 가져오므로, 일부 문화권(ms-ID, fa-AF, es-BZ 등)에서는 Windows PowerShell 5.1(;)과 PowerShell 7.x(,)에서 다릅니다. 두 호스트에서 사용하는 CSV에서는 -Delimiter로 구분 기호를 명시하십시오.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2399,7 +2399,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2497,7 +2497,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다.</maml:para>
+          <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 자체 판정은 동아시아의 멀티바이트를, UTF.Unknown은 서구의 싱글바이트를 담당하므로, 자체 판정이 잘못 읽는 서구 텍스트는 UtfUnknownOnly로 읽습니다. 이름과 지정할 수 있는 값은 Resolve-Encoding의 -Strategy와 같습니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -2509,7 +2509,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>UseCulture</maml:name>
         <maml:description>
-          <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다.</maml:para>
+          <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다. 구분 기호는 표준 명령과 마찬가지로 호스트의 .NET 문화권 데이터에서 가져오므로, 일부 문화권(ms-ID, fa-AF, es-BZ 등)에서는 Windows PowerShell 5.1(;)과 PowerShell 7.x(,)에서 다릅니다. 두 호스트에서 사용하는 CSV에서는 -Delimiter로 구분 기호를 명시하십시오.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2658,7 +2658,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오. $PSDefaultParameterValues로 맨 'utf8'을 전달한 경우($PSDefaultParameterValues['*:Encoding'] = 'utf8' 등)에는 매개 변수 바인딩에서 실패하므로, PowerShell이 경고를 표시하고 기본값을 무시하며 -Encoding을 생략한 것으로 간주하여 씁니다. 기본값에는 'utf8NoBOM' 또는 'utf8BOM'을 사용하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2679,7 +2679,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈추며, 그때까지 쓴 줄도 취소하여 추가하기 전의 내용으로 되돌립니다(추가할 대상이 없었던 경우에는 만든 파일을 지웁니다).</maml:para>
+            <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈추며, 그때까지 쓴 줄도 취소하여 추가하기 전의 내용으로 되돌립니다(추가할 대상이 없었던 경우에는 만든 파일을 지웁니다). 알려진 제한: 추가 대상의 마지막 값의 따옴표가 닫혀 있지 않은 경우(도중에 잘린 파일이나 손으로 편집한 파일로, 1,"2로 끝나는 것 등)에는, 첫 레코드 앞에 보충하는 줄 바꿈과 추가한 레코드가 그 따옴표 안에 들어가, 다시 읽으면 그 값의 일부가 됩니다. 경고도 오류도 표시되지 않습니다(표준 Export-Csv -Append도 같은 결과가 됩니다).</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2778,7 +2778,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>UseCulture</maml:name>
           <maml:description>
-            <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 기존 파일의 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다.</maml:para>
+            <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 기존 파일의 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다. 구분 기호는 표준 명령과 마찬가지로 호스트의 .NET 문화권 데이터에서 가져오므로, 일부 문화권(ms-ID, fa-AF, es-BZ 등)에서는 Windows PowerShell 5.1(;)과 PowerShell 7.x(,)에서 다릅니다. 두 호스트에서 사용하는 CSV에서는 -Delimiter로 구분 기호를 명시하십시오.</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
@@ -2798,7 +2798,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
+            <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오. $PSDefaultParameterValues로 맨 'utf8'을 전달한 경우($PSDefaultParameterValues['*:Encoding'] = 'utf8' 등)에는 매개 변수 바인딩에서 실패하므로, PowerShell이 경고를 표시하고 기본값을 무시하며 -Encoding을 생략한 것으로 간주하여 씁니다. 기본값에는 'utf8NoBOM' 또는 'utf8BOM'을 사용하십시오.</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2819,7 +2819,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈추며, 그때까지 쓴 줄도 취소하여 추가하기 전의 내용으로 되돌립니다(추가할 대상이 없었던 경우에는 만든 파일을 지웁니다).</maml:para>
+            <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈추며, 그때까지 쓴 줄도 취소하여 추가하기 전의 내용으로 되돌립니다(추가할 대상이 없었던 경우에는 만든 파일을 지웁니다). 알려진 제한: 추가 대상의 마지막 값의 따옴표가 닫혀 있지 않은 경우(도중에 잘린 파일이나 손으로 편집한 파일로, 1,"2로 끝나는 것 등)에는, 첫 레코드 앞에 보충하는 줄 바꿈과 추가한 레코드가 그 따옴표 안에 들어가, 다시 읽으면 그 값의 일부가 됩니다. 경고도 오류도 표시되지 않습니다(표준 Export-Csv -Append도 같은 결과가 됩니다).</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2922,7 +2922,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Append</maml:name>
         <maml:description>
-          <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈추며, 그때까지 쓴 줄도 취소하여 추가하기 전의 내용으로 되돌립니다(추가할 대상이 없었던 경우에는 만든 파일을 지웁니다).</maml:para>
+          <maml:para>기존 파일 끝에 추가합니다. 1바이트 이상인 기존 파일에는 BOM을 쓰지 않습니다. 없거나 0바이트인 파일은 새로 만드는 것과 같이 다룹니다. 각 줄을 쓰기 전에 그 줄이 기존 파일의 문자 인코딩으로 쓴 경우와 같은 바이트열이 되는지 검사합니다(Add-ProbedContent와 같은 검사). 일치하지 않으면 종료 오류로 멈추며, 그때까지 쓴 줄도 취소하여 추가하기 전의 내용으로 되돌립니다(추가할 대상이 없었던 경우에는 만든 파일을 지웁니다). 알려진 제한: 추가 대상의 마지막 값의 따옴표가 닫혀 있지 않은 경우(도중에 잘린 파일이나 손으로 편집한 파일로, 1,"2로 끝나는 것 등)에는, 첫 레코드 앞에 보충하는 줄 바꿈과 추가한 레코드가 그 따옴표 안에 들어가, 다시 읽으면 그 값의 일부가 됩니다. 경고도 오류도 표시되지 않습니다(표준 Export-Csv -Append도 같은 결과가 됩니다).</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2983,7 +2983,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오.</maml:para>
+          <maml:para>쓰기에 사용하는 문자 인코딩과 BOM 방침. 생략하면 기존 파일을 보지 않고 utf8NoBOM으로 씁니다. -Append일 때는 추가 대상 파일에서 문자 인코딩, BOM 방침, 줄 바꿈을 상속합니다(추가 대상이 없거나 0바이트이면 utf8NoBOM). Auto를 명시하면 출력 대상의 기존 파일에서 상속하며, 파일이 없으면 오류가 됩니다. -Encoding 생략이 Auto를 뜻하는 Set-ProbedContent와는 규칙이 다릅니다. 통합 어휘(utf8NoBOM, utf8BOM, unicodeBOM 등), WebName(shift_jis, euc-jp 등), 숫자 코드 페이지, System.Text.Encoding 인스턴스, EncodingInformation 개체를 지정할 수 있습니다. -EncodingFrom과 함께 지정할 수 없습니다. Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아니므로 허용하지 않습니다. 대신 CodePage 값 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM 등)을 전달하십시오. $PSDefaultParameterValues로 맨 'utf8'을 전달한 경우($PSDefaultParameterValues['*:Encoding'] = 'utf8' 등)에는 매개 변수 바인딩에서 실패하므로, PowerShell이 경고를 표시하고 기본값을 무시하며 -Encoding을 생략한 것으로 간주하여 씁니다. 기본값에는 'utf8NoBOM' 또는 'utf8BOM'을 사용하십시오.</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -3134,7 +3134,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>UseCulture</maml:name>
         <maml:description>
-          <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 기존 파일의 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다.</maml:para>
+          <maml:para>구분 기호로 현재 문화권(CurrentCulture)의 목록 구분 기호를 사용합니다. 기존 파일의 문자 인코딩 판정에 사용하는 -Culture와는 다릅니다. 두 가지를 동시에 지정할 수 있습니다. 구분 기호는 표준 명령과 마찬가지로 호스트의 .NET 문화권 데이터에서 가져오므로, 일부 문화권(ms-ID, fa-AF, es-BZ 등)에서는 Windows PowerShell 5.1(;)과 PowerShell 7.x(,)에서 다릅니다. 두 호스트에서 사용하는 CSV에서는 -Delimiter로 구분 기호를 명시하십시오.</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -3457,7 +3457,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 해석할 수 없는 값은 다른 명령과 마찬가지로 종료 오류 InvalidStrategy가 됩니다.</maml:para>
+            <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 해석할 수 없는 값은 다른 명령과 마찬가지로 종료 오류 InvalidStrategy가 됩니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -3542,7 +3542,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 해석할 수 없는 값은 다른 명령과 마찬가지로 종료 오류 InvalidStrategy가 됩니다.</maml:para>
+          <maml:para>판정 방식: Combined(기본값), NativeOnly, UtfUnknownOnly. Combined는 자체 판정을 먼저 수행하고, 판정하지 못한 경우에만 UTF.Unknown에 맡깁니다. 해석할 수 없는 값은 다른 명령과 마찬가지로 종료 오류 InvalidStrategy가 됩니다. 모든 바이트가 0x80 미만인 HZ-GB-2312와 UTF-7은 Combined와 NativeOnly에서는 판정하지 않습니다(us-ascii로 하고, 이스케이프 문자열을 그대로 읽습니다). HZ-GB-2312는 UtfUnknownOnly로 판정할 수 있습니다. 이러한 파일을 확실히 읽으려면 문자 인코딩을 명시하십시오(-Encoding이 있는 명령에서는 -Encoding 52936, -Encoding utf7 등).</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -3600,7 +3600,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:para>모든 바이트가 0x80 미만인 BOM이 없는 UTF-16 / UTF-32는 모든 단위가 영숫자의 형태(UTF-16LE라면 00이 아닌 바이트 뒤에 00)인 경우에만 UTF-16 / UTF-32로 판정하고, 그 밖에는 us-ascii로 보고합니다. 알려진 제한: (1) 2바이트가 모두 0x80 미만이 되는 문자(U+4E0A = UTF-16LE에서 0A 4E, U+5B57, U+3042, U+3001 등)를 포함한 파일은 us-ascii로 보고합니다. Import-ProbedCsv / Export-ProbedCsv에서는 -DetectionLineCount를 지정하면 올바르게 읽을 수 있습니다. (2) 41 00 같은 몇 바이트의 파일은 ASCII 뒤에 00이 붙은 것과 구별할 수 없습니다. 영숫자의 형태라면 UTF-16 / UTF-32로 보고합니다. (3) U+0000 문자를 포함한 파일은 us-ascii로 보고합니다.</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>a.txt::$DATA 같은 기본 스트림의 이름은 a.txt와 같은 파일로 다룹니다. 대체 데이터 스트림(a.txt:alt 등)은 읽고 쓰지 않으며 오류 AlternateDataStreamNotSupported가 됩니다(Windows PowerShell 5.1과 PowerShell 7.x에서 같음). 오류의 종류: 파일이 없는 경우와 -DetectionLineCount로 잘라내는 범위가 상한을 넘는 경우는 지금까지와 같이 종료 오류입니다. 읽을 수 없는 파일(다른 프로그램이 읽기를 허용하지 않고 열어 두었거나 액세스가 거부된 경우), 전체 판정의 상한(2GB)을 넘는 파일, 메모리 부족은 종료되지 않는 오류(ReadFailed, ReadAccessDenied, EncodingDetectionFailed, NotEnoughMemoryToDetect)이며, 다음 파일로 진행합니다. 다른 프로그램이 쓰기용으로 열어 둔 파일도 읽을 수 있습니다.</maml:para>
+        <maml:para>a.txt::$DATA 같은 기본 스트림의 이름은 a.txt와 같은 파일로 다룹니다. 대체 데이터 스트림(a.txt:alt 등)은 읽고 쓰지 않으며 오류 AlternateDataStreamNotSupported가 됩니다(Windows PowerShell 5.1과 PowerShell 7.x에서 같음). 오류의 종류: 파일이 없는 경우와 -DetectionLineCount로 잘라내는 범위가 상한을 넘는 경우는 지금까지와 같이 종료 오류입니다. 읽을 수 없는 파일(다른 프로그램이 읽기를 허용하지 않고 열어 두었거나 액세스가 거부된 경우), 전체 판정의 상한(2GB)을 넘는 파일, 메모리 부족은 종료되지 않는 오류(ReadFailed, ReadAccessDenied, EncodingDetectionFailed, NotEnoughMemoryToDetect)이며, 다음 파일로 진행합니다. 다른 프로그램이 쓰기용으로 열어 둔 파일도 읽을 수 있습니다. 전체 판정은 파일을 메모리에 읽으며, 파일 크기의 몇 배(약 3.6배)의 메모리를 사용합니다. 32비트 Windows PowerShell 5.1에서는 수백 MB의 파일에서 NotEnoughMemoryToDetect가 될 수 있습니다. 큰 파일에는 -DetectionLineCount를 사용하십시오.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>

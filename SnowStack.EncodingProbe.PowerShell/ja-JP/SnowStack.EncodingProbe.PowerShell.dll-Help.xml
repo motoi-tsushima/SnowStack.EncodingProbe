@@ -35,7 +35,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Raw</maml:name>
           <maml:description>
-            <maml:para>行に分割せず、ファイル全体を 1 個の文字列として返します。行に分割すると、各行の行末が CR-LF か LF か、末尾に改行があったかが失われるため、無損失に読み取れる唯一の手段です。-TotalCount とは同時に指定できません。</maml:para>
+            <maml:para>行に分割せず、ファイル全体を 1 個の文字列として返します。行に分割すると、各行の行末が CR-LF か LF か、末尾に改行があったかが失われるため、無損失に読み取れる唯一の手段です。-TotalCount とは同時に指定できません。空のファイル（0 バイト、または BOM だけ）では、-Raw は空の文字列を返します（標準の Get-Content -Raw は何も返しません（$null））。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
@@ -55,7 +55,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -79,7 +79,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Raw</maml:name>
           <maml:description>
-            <maml:para>行に分割せず、ファイル全体を 1 個の文字列として返します。行に分割すると、各行の行末が CR-LF か LF か、末尾に改行があったかが失われるため、無損失に読み取れる唯一の手段です。-TotalCount とは同時に指定できません。</maml:para>
+            <maml:para>行に分割せず、ファイル全体を 1 個の文字列として返します。行に分割すると、各行の行末が CR-LF か LF か、末尾に改行があったかが失われるため、無損失に読み取れる唯一の手段です。-TotalCount とは同時に指定できません。空のファイル（0 バイト、または BOM だけ）では、-Raw は空の文字列を返します（標準の Get-Content -Raw は何も返しません（$null））。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="Head, First">
@@ -99,7 +99,7 @@
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -156,7 +156,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Raw</maml:name>
         <maml:description>
-          <maml:para>行に分割せず、ファイル全体を 1 個の文字列として返します。行に分割すると、各行の行末が CR-LF か LF か、末尾に改行があったかが失われるため、無損失に読み取れる唯一の手段です。-TotalCount とは同時に指定できません。</maml:para>
+          <maml:para>行に分割せず、ファイル全体を 1 個の文字列として返します。行に分割すると、各行の行末が CR-LF か LF か、末尾に改行があったかが失われるため、無損失に読み取れる唯一の手段です。-TotalCount とは同時に指定できません。空のファイル（0 バイト、または BOM だけ）では、-Raw は空の文字列を返します（標準の Get-Content -Raw は何も返しません（$null））。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -167,7 +167,7 @@
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -309,7 +309,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
+            <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。そのため、標準の Set-Content・Add-Content と違い、日付・数値は現在のカルチャーの書式になりません（どのカルチャーでも、日付は 10/15/2026 14:30:00、1.5 は 1.5 と書きます）。それでも一部の数値はホストの .NET で書式が違い、-0.0 は PowerShell 7.x では -0、Windows PowerShell 5.1 では 0 と書きます。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -368,7 +368,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -378,7 +378,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
+            <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。そのため、標準の Set-Content・Add-Content と違い、日付・数値は現在のカルチャーの書式になりません（どのカルチャーでも、日付は 10/15/2026 14:30:00、1.5 は 1.5 と書きます）。それでも一部の数値はホストの .NET で書式が違い、-0.0 は PowerShell 7.x では -0、Windows PowerShell 5.1 では 0 と書きます。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -444,7 +444,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -558,7 +558,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -569,7 +569,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>
-          <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
+          <maml:para>書き込む内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。そのため、標準の Set-Content・Add-Content と違い、日付・数値は現在のカルチャーの書式になりません（どのカルチャーでも、日付は 10/15/2026 14:30:00、1.5 は 1.5 と書きます）。それでも一部の数値はホストの .NET で書式が違い、-0.0 は PowerShell 7.x では -0、Windows PowerShell 5.1 では 0 と書きます。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -618,7 +618,7 @@ $text -replace 'foo', 'bar' | Set-ProbedContent .\a.txt -EncodingFrom .\a.txt -N
         <maml:para>本モジュールが受け付ける文字エンコーディング名（統一語彙）は、Windows PowerShell 5.1 と PowerShell 7.x で同じです。PowerShell 5.1 の標準コマンドの -Encoding が受け付ける名前とは 異なり、また Resolve-Encoding が返す PSEncodingName とも一致しない場合があります。一方の名前をもう一方にそのまま渡しても同じ結果になるとは限りません。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>書き込み系のコマンドは、裸の 'utf8'（および 'utf-8'、数値コードページ 65001）を受け付けません。PowerShell 5.1 と 7.x で BOM の有無の解釈が異なるためです。'utf8NoBOM' または 'utf8BOM' を 指定してください。他の Unicode 系も同様で、'unicodeNoBOM' / 'unicodeBOM' のように指定します。この失敗はパラメータ束縛の段階で起きるため、ファイルは一切変更されません。</maml:para>
+        <maml:para>書き込み系のコマンドは、裸の 'utf8'（および 'utf-8'、数値コードページ 65001）を受け付けません。PowerShell 5.1 と 7.x で BOM の有無の解釈が異なるためです。'utf8NoBOM' または 'utf8BOM' を 指定してください。他の Unicode 系も同様で、'unicodeNoBOM' / 'unicodeBOM' のように指定します。この失敗はパラメータ束縛の段階で起きるため、ファイルは一切変更されません。$PSDefaultParameterValues で裸の 'utf8' を渡した場合（$PSDefaultParameterValues['*:Encoding'] = 'utf8' など）は、パラメーターの束縛で失敗するため、PowerShell が警告を出して既定値を無視し、-Encoding を省略したものとして書きます。既定値には 'utf8NoBOM' か 'utf8BOM' を使ってください。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>改行コードの決まり方は、-Encoding に渡した値の形式によって変わります。EncodingInformation オブジェクト（Resolve-Encoding の出力）は判定元ファイルの改行コードを保持しているため、改行コードも継承されます。'utf8NoBOM' のような語彙名は改行の情報を持たないため、-LineBreak を指定しない限り OS 既定の改行になります。-EncodingFrom と既定の -Encoding Auto は、読み取ったファイルの改行コードを必ず継承します。</maml:para>
@@ -741,7 +741,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
+            <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。そのため、標準の Set-Content・Add-Content と違い、日付・数値は現在のカルチャーの書式になりません（どのカルチャーでも、日付は 10/15/2026 14:30:00、1.5 は 1.5 と書きます）。それでも一部の数値はホストの .NET で書式が違い、-0.0 は PowerShell 7.x では -0、Windows PowerShell 5.1 では 0 と書きます。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -806,7 +806,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -816,7 +816,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
           <maml:name>Value</maml:name>
           <maml:description>
-            <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
+            <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。そのため、標準の Set-Content・Add-Content と違い、日付・数値は現在のカルチャーの書式になりません（どのカルチャーでも、日付は 10/15/2026 14:30:00、1.5 は 1.5 と書きます）。それでも一部の数値はホストの .NET で書式が違い、-0.0 は PowerShell 7.x では -0、Windows PowerShell 5.1 では 0 と書きます。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         </command:parameter>
@@ -888,7 +888,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -1013,7 +1013,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -1024,7 +1024,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="1" aliases="none">
         <maml:name>Value</maml:name>
         <maml:description>
-          <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。</maml:para>
+          <maml:para>追記する内容。-NoNewline を指定しない限り、最後の要素も含めて各要素の後ろに改行を出力します。文字列以外の値は PowerShell の型変換で文字列化されます（不変カルチャーが使われます）。配列の $null の要素は飛ばします（標準の Set-Content / Add-Content と同じ）。そのため、標準の Set-Content・Add-Content と違い、日付・数値は現在のカルチャーの書式になりません（どのカルチャーでも、日付は 10/15/2026 14:30:00、1.5 は 1.5 と書きます）。それでも一部の数値はホストの .NET で書式が違い、-0.0 は PowerShell 7.x では -0、Windows PowerShell 5.1 では 0 と書きます。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object[]</command:parameterValue>
         <dev:type>
@@ -1076,7 +1076,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>Add-ProbedContent では -Encoding の BOM の部分を常に無視します。ファイルの途中に BOM を書き込むことは正しくないため、'utf8BOM' と 'utf8NoBOM' は同じ結果になります。追記先が存在せず、このコマンドが新規作成する場合も同じです。警告は出しません。BOM 付きのファイルから -EncodingFrom で継承する使い方は正当だからです。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>書き込み系のコマンドは、裸の 'utf8'（および 'utf-8'、数値コードページ 65001）を受け付けません。PowerShell 5.1 と 7.x で BOM の有無の解釈が異なるためです。'utf8NoBOM' または 'utf8BOM' を 指定してください。他の Unicode 系も同様で、'unicodeNoBOM' / 'unicodeBOM' のように指定します。この失敗はパラメータ束縛の段階で起きるため、ファイルは一切変更されません。</maml:para>
+        <maml:para>書き込み系のコマンドは、裸の 'utf8'（および 'utf-8'、数値コードページ 65001）を受け付けません。PowerShell 5.1 と 7.x で BOM の有無の解釈が異なるためです。'utf8NoBOM' または 'utf8BOM' を 指定してください。他の Unicode 系も同様で、'unicodeNoBOM' / 'unicodeBOM' のように指定します。この失敗はパラメータ束縛の段階で起きるため、ファイルは一切変更されません。$PSDefaultParameterValues で裸の 'utf8' を渡した場合（$PSDefaultParameterValues['*:Encoding'] = 'utf8' など）は、パラメーターの束縛で失敗するため、PowerShell が警告を出して既定値を無視し、-Encoding を省略したものとして書きます。既定値には 'utf8NoBOM' か 'utf8BOM' を使ってください。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>改行コードの決まり方は、-Encoding に渡した値の形式によって変わります。EncodingInformation オブジェクト（Resolve-Encoding の出力）は判定元ファイルの改行コードを保持しているため、改行コードも継承されます。'utf8NoBOM' のような語彙名は改行の情報を持たないため、-LineBreak を指定しない限り OS 既定の改行になります。-EncodingFrom と既定の -Encoding Auto は、読み取ったファイルの改行コードを必ず継承します。</maml:para>
@@ -1194,7 +1194,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。$PSDefaultParameterValues で裸の 'utf8' を渡した場合（$PSDefaultParameterValues['*:Encoding'] = 'utf8' など）は、パラメーターの束縛で失敗するため、PowerShell が警告を出して既定値を無視し、-Encoding を省略したものとして書きます。既定値には 'utf8NoBOM' か 'utf8BOM' を使ってください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1295,7 +1295,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。$PSDefaultParameterValues で裸の 'utf8' を渡した場合（$PSDefaultParameterValues['*:Encoding'] = 'utf8' など）は、パラメーターの束縛で失敗するため、PowerShell が警告を出して既定値を無視し、-Encoding を省略したものとして書きます。既定値には 'utf8NoBOM' か 'utf8BOM' を使ってください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -1434,7 +1434,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="1" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
+          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。$PSDefaultParameterValues で裸の 'utf8' を渡した場合（$PSDefaultParameterValues['*:Encoding'] = 'utf8' など）は、パラメーターの束縛で失敗するため、PowerShell が警告を出して既定値を無視し、-Encoding を省略したものとして書きます。既定値には 'utf8NoBOM' か 'utf8BOM' を使ってください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -2085,7 +2085,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>このコマンドレットの -LineBreak は、ファイル内のすべての改行を置き換えます。Set-ProbedContent / Add-ProbedContent / Out-ProbedFile の -LineBreak は、要素の後ろに付ける改行だけを決め、文字列の中の改行はそのままにします。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>-Encoding と -Bom の関係: BOM 接尾辞付きの名前（utf8BOM、unicodeNoBOM など）は -Bom と一致する必要があります。Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は BOM を -Bom で決めます。それ以外の文字エンコーディング（shift_jis、932 など）への -Bom Add はエラー、-Bom Remove は許可します。EncodingInformation や -EncodingFrom の BOM は -Bom で上書きできます。System.Text.Encoding インスタンスは -Bom と一致する必要があります。-Encoding を省略した場合は変換元の文字エンコーディングを保ち、BOM を持てない変換元への -Bom Add はそのファイルのエラーとして報告します。</maml:para>
+        <maml:para>-Encoding と -Bom の関係: BOM 接尾辞付きの名前（utf8BOM、unicodeNoBOM など）は -Bom と一致する必要があります。Unicode 系の裸名や WebName（utf8、utf-8、unicode など）は BOM を -Bom で決めます。それ以外の文字エンコーディング（shift_jis、932 など）への -Bom Add はエラー、-Bom Remove は許可します。EncodingInformation や -EncodingFrom の BOM は -Bom で上書きできます。System.Text.Encoding インスタンスは -Bom と一致する必要があります。-Encoding を省略した場合は変換元の文字エンコーディングを保ち、BOM を持てない変換元への -Bom Add はそのファイルのエラーとして報告します。BOM だけのファイルは文字が 0 個なので、-Bom Add や元と同じ文字エンコーディングを指定しても、常に 0 バイトに書き直します（Changed は True）。BOM は 1 文字でも書くときにだけ書きます。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>変換元はファイル全体をメモリに読み込むため、非常に大きなファイルにはそれに見合うメモリが必要です。</maml:para>
@@ -2097,7 +2097,7 @@ Get-ProbedContent .\a.txt -Encoding $enc | Set-ProbedContent .\b.txt -Encoding $
         <maml:para>私用領域の文字（香港 Big5 の HKSCS 固有字など）は、警告を出さずに符号位置のまま変換します。そのような Big5 のファイルを UTF-8 に変換して Big5 に戻すと、元のバイト列に戻ります。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>パラメーターの誤り（変換の指定が無い、-Encoding Auto、BOM の指定の食い違い、-Destination のフォルダーが無い など）は終了エラーです。1 つのファイルに関する失敗は非終了エラーで、そのファイルは変更せずに残し、ほかのファイルの処理は続けます。</maml:para>
+        <maml:para>パラメーターの誤り（変換の指定が無い、-Encoding Auto、BOM の指定の食い違い、-Destination のフォルダーが無い など）は終了エラーです。1 つのファイルに関する失敗は非終了エラーで、そのファイルは変更せずに残し、ほかのファイルの処理は続けます。各ファイルは全体をメモリに読んでから変換します（2 GB 未満であること。超えると FileTooLargeToConvert）。32 ビット版の Windows PowerShell 5.1 では、数百 MB のファイルで NotEnoughMemoryToConvert になることがあります。どちらの場合もファイルは変更しません。</maml:para>
       </maml:alert>
       <maml:alert>
         <maml:para>シングルバイト系の文字エンコーディング（windows-1252、ISO-8859 など）はバイト列の構造からは判別できず、文章の統計で推定しています。そのため判定の成否は長さよりも内容に左右されます。文字の一覧、記号・数字の多い行、その言語で通常使わない文字を含むテキストでは、数百バイトあっても判定できない（CodePage が -1）ことがあります。その場合は -SourceEncoding でコードページを明示してください。</maml:para>
@@ -2245,7 +2245,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2297,7 +2297,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2314,7 +2314,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>UseCulture</maml:name>
           <maml:description>
-            <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。</maml:para>
+            <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。区切り文字は、標準のコマンドと同じくホストの .NET のカルチャーのデータから取るため、一部のカルチャー（ms-ID・fa-AF・es-BZ など）では Windows PowerShell 5.1（;）と PowerShell 7.x（,）で違います。両ホストで使う CSV では、-Delimiter で区切り文字を明示してください。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2348,7 +2348,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2365,7 +2365,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>UseCulture</maml:name>
           <maml:description>
-            <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。</maml:para>
+            <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。区切り文字は、標準のコマンドと同じくホストの .NET のカルチャーのデータから取るため、一部のカルチャー（ms-ID・fa-AF・es-BZ など）では Windows PowerShell 5.1（;）と PowerShell 7.x（,）で違います。両ホストで使う CSV では、-Delimiter で区切り文字を明示してください。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2399,7 +2399,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -2497,7 +2497,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。</maml:para>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。独自の判定は東アジアのマルチバイトを、UTF.Unknown は欧米のシングルバイトを担当するため、独自の判定が誤る欧米のテキストは UtfUnknownOnly で読みます。名前と指定できる値は Resolve-Encoding の -Strategy と同じです。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -2509,7 +2509,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>UseCulture</maml:name>
         <maml:description>
-          <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。</maml:para>
+          <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。区切り文字は、標準のコマンドと同じくホストの .NET のカルチャーのデータから取るため、一部のカルチャー（ms-ID・fa-AF・es-BZ など）では Windows PowerShell 5.1（;）と PowerShell 7.x（,）で違います。両ホストで使う CSV では、-Delimiter で区切り文字を明示してください。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2658,7 +2658,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。$PSDefaultParameterValues で裸の 'utf8' を渡した場合（$PSDefaultParameterValues['*:Encoding'] = 'utf8' など）は、パラメーターの束縛で失敗するため、PowerShell が警告を出して既定値を無視し、-Encoding を省略したものとして書きます。既定値には 'utf8NoBOM' か 'utf8BOM' を使ってください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2679,7 +2679,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
+            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。既知の限界: 追記先の最後の値の引用符が閉じていない場合（途中で切れたファイルや手で編集したファイルで、1,"2 で終わるものなど）は、最初のレコードの前に補う改行と追記したレコードがその引用符の中に入り、読み戻すとその値の一部になります。警告もエラーも出ません（標準の Export-Csv -Append も同じ結果になります）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2778,7 +2778,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>UseCulture</maml:name>
           <maml:description>
-            <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。既存ファイルの文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。</maml:para>
+            <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。既存ファイルの文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。区切り文字は、標準のコマンドと同じくホストの .NET のカルチャーのデータから取るため、一部のカルチャー（ms-ID・fa-AF・es-BZ など）では Windows PowerShell 5.1（;）と PowerShell 7.x（,）で違います。両ホストで使う CSV では、-Delimiter で区切り文字を明示してください。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="true" variableLength="false" globbing="false" pipelineInput="true (ByValue)" position="named" aliases="none">
@@ -2798,7 +2798,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Encoding</maml:name>
           <maml:description>
-            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
+            <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。$PSDefaultParameterValues で裸の 'utf8' を渡した場合（$PSDefaultParameterValues['*:Encoding'] = 'utf8' など）は、パラメーターの束縛で失敗するため、PowerShell が警告を出して既定値を無視し、-Encoding を省略したものとして書きます。既定値には 'utf8NoBOM' か 'utf8BOM' を使ってください。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         </command:parameter>
@@ -2819,7 +2819,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Append</maml:name>
           <maml:description>
-            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
+            <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。既知の限界: 追記先の最後の値の引用符が閉じていない場合（途中で切れたファイルや手で編集したファイルで、1,"2 で終わるものなど）は、最初のレコードの前に補う改行と追記したレコードがその引用符の中に入り、読み戻すとその値の一部になります。警告もエラーも出ません（標準の Export-Csv -Append も同じ結果になります）。</maml:para>
           </maml:description>
         </command:parameter>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
@@ -2922,7 +2922,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Append</maml:name>
         <maml:description>
-          <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。</maml:para>
+          <maml:para>既存ファイルの末尾に追記します。1 バイト以上ある既存ファイルには BOM を書きません。存在しない・0 バイトのファイルは新規作成と同じに扱います。各行を書く前に、その行が既存ファイルの文字エンコーディングで書いた場合と同じバイト列になるかを検査します（Add-ProbedContent と同じ検査）。一致しなければ終了エラーで止まり、それまでに書いた行も取り消して、追記の前の内容に戻します（追記先が無かった場合は、作ったファイルを消します）。既知の限界: 追記先の最後の値の引用符が閉じていない場合（途中で切れたファイルや手で編集したファイルで、1,"2 で終わるものなど）は、最初のレコードの前に補う改行と追記したレコードがその引用符の中に入り、読み戻すとその値の一部になります。警告もエラーも出ません（標準の Export-Csv -Append も同じ結果になります）。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -2983,7 +2983,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Encoding</maml:name>
         <maml:description>
-          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。</maml:para>
+          <maml:para>書き込みに使う文字エンコーディングと BOM 方針。省略時は既存のファイルを見ずに utf8NoBOM で書きます。-Append のときは追記先のファイルから文字エンコーディング・BOM 方針・改行を継承します（追記先が無い・0 バイトなら utf8NoBOM）。Auto を明示すると出力先の既存ファイルから継承し、ファイルが無ければエラーになります。-Encoding の省略が Auto を意味する Set-ProbedContent とは規則が違います。統一語彙（utf8NoBOM、utf8BOM、unicodeBOM など）、WebName（shift_jis、euc-jp など）、数値コードページ、System.Text.Encoding インスタンス、EncodingInformation オブジェクトを指定できます。-EncodingFrom とは同時に指定できません。Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなるため受け付けません。代わりに CodePage の値か、BOM を明示した統一語彙名（unicodeBOM など）を渡してください。$PSDefaultParameterValues で裸の 'utf8' を渡した場合（$PSDefaultParameterValues['*:Encoding'] = 'utf8' など）は、パラメーターの束縛で失敗するため、PowerShell が警告を出して既定値を無視し、-Encoding を省略したものとして書きます。既定値には 'utf8NoBOM' か 'utf8BOM' を使ってください。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">Object</command:parameterValue>
         <dev:type>
@@ -3134,7 +3134,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>UseCulture</maml:name>
         <maml:description>
-          <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。既存ファイルの文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。</maml:para>
+          <maml:para>区切り文字に、現在のカルチャー（CurrentCulture）のリスト区切り文字を使います。既存ファイルの文字エンコーディングの判定に使う -Culture とは別のものです。両方を同時に指定できます。区切り文字は、標準のコマンドと同じくホストの .NET のカルチャーのデータから取るため、一部のカルチャー（ms-ID・fa-AF・es-BZ など）では Windows PowerShell 5.1（;）と PowerShell 7.x（,）で違います。両ホストで使う CSV では、-Delimiter で区切り文字を明示してください。</maml:para>
         </maml:description>
         <dev:type>
           <maml:name>System.Management.Automation.SwitchParameter</maml:name>
@@ -3457,7 +3457,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
           <maml:name>Strategy</maml:name>
           <maml:description>
-            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。解釈できない値は、ほかのコマンドと同じく終了エラー InvalidStrategy になります。</maml:para>
+            <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。解釈できない値は、ほかのコマンドと同じく終了エラー InvalidStrategy になります。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
           </maml:description>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
@@ -3542,7 +3542,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
       <command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named" aliases="none">
         <maml:name>Strategy</maml:name>
         <maml:description>
-          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。解釈できない値は、ほかのコマンドと同じく終了エラー InvalidStrategy になります。</maml:para>
+          <maml:para>判定の方式: Combined（既定）、NativeOnly、UtfUnknownOnly。Combined は独自の判定を先に行い、判定できなかった場合にだけ UTF.Unknown に委ねます。解釈できない値は、ほかのコマンドと同じく終了エラー InvalidStrategy になります。すべてのバイトが 0x80 未満の HZ-GB-2312 と UTF-7 は、Combined と NativeOnly では判定しません（us-ascii とし、エスケープの文字列をそのまま読みます）。HZ-GB-2312 は UtfUnknownOnly で判定できます。これらのファイルを確実に読むには、文字エンコーディングを明示してください（-Encoding を持つコマンドでは -Encoding 52936・-Encoding utf7 など）。</maml:para>
         </maml:description>
         <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         <dev:type>
@@ -3600,7 +3600,7 @@ PS C:\&gt; Convert-ProbedContent .\a.txt -Encoding $r.SourceCodePage</dev:code>
         <maml:para>すべてのバイトが 0x80 未満の BOM 無し UTF-16 / UTF-32 は、すべての単位が英数字の形（UTF-16LE なら 00 以外のバイトの後に 00）になっている場合だけ UTF-16 / UTF-32 と判定し、それ以外は us-ascii と報告します。既知の限界: (1) 2 バイトとも 0x80 未満になる文字（「上」U+4E0A = UTF-16LE で 0A 4E、「字」U+5B57、「あ」U+3042、「、」U+3001 など）を含むファイルは us-ascii と報告します。Import-ProbedCsv / Export-ProbedCsv では、-DetectionLineCount を指定すると正しく読めます。(2) 41 00 のような数バイトのファイルは、ASCII の後に 00 が付いたものと区別できません。英数字の形であれば UTF-16 / UTF-32 と報告します。(3) U+0000 の文字を含むファイルは us-ascii と報告します。</maml:para>
       </maml:alert>
       <maml:alert>
-        <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。エラーの種類: ファイルが無い場合と、-DetectionLineCount で切り出す範囲が上限を超える場合は、今までどおり終了エラーです。読めないファイル（ほかのプログラムが読み込みを許さずに開いている・アクセスが拒否された）、全体の判定の上限（2 GB）を超えるファイル、メモリ不足は非終了エラー（ReadFailed・ReadAccessDenied・EncodingDetectionFailed・NotEnoughMemoryToDetect）で、次のファイルに進みます。ほかのプログラムが書き込み用に開いているファイルも読めます。</maml:para>
+        <maml:para>a.txt::$DATA のような主ストリームの名前は、a.txt と同じファイルとして扱います。代替データストリーム（a.txt:alt など）は読み書きせず、エラー AlternateDataStreamNotSupported になります（Windows PowerShell 5.1 と PowerShell 7.x で同じ）。エラーの種類: ファイルが無い場合と、-DetectionLineCount で切り出す範囲が上限を超える場合は、今までどおり終了エラーです。読めないファイル（ほかのプログラムが読み込みを許さずに開いている・アクセスが拒否された）、全体の判定の上限（2 GB）を超えるファイル、メモリ不足は非終了エラー（ReadFailed・ReadAccessDenied・EncodingDetectionFailed・NotEnoughMemoryToDetect）で、次のファイルに進みます。ほかのプログラムが書き込み用に開いているファイルも読めます。全体の判定はファイルをメモリに読み、ファイルの大きさの数倍（約 3.6 倍）のメモリを使います。32 ビット版の Windows PowerShell 5.1 では、数百 MB のファイルで NotEnoughMemoryToDetect になることがあります。大きなファイルには -DetectionLineCount を使ってください。</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>

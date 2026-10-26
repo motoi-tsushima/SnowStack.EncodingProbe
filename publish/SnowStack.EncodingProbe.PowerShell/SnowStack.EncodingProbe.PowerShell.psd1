@@ -90,6 +90,12 @@ CSV の読み書きコマンドを 2 つ追加し、Resolve-Encoding で先頭�
 - 挙動の変更: 書き込んだファイルには Archive 属性が付きます。WriteAccessDenied のメッセージを 5 言語にしました。
   一時ファイルの名前は元の名前によらない .~probed<8 桁>.probedtmp です（名前の長いファイルにも書けます）。
   Out-ProbedFile は $PSDefaultParameterValues['Out-String:Width'] などの影響を受けません。
+- 挙動の変更: -Culture も前後の空白を無視します。Get-ProbedContent -TotalCount に別名 -Head・-First を付けました。
+  逆シリアル化した判定結果を -Encoding に渡すと、型が違うことと渡し方を示すエラーになります（今までどおり使えません）。
+  列名の重複のエラーにファイルのパスを示し、EncodingChangeOnAppend は統一語彙名（utf8NoBOM など）で示します。
+  ディスクの空き不足などの書き込みの失敗も、エラー コードを示す 5 言語のメッセージです。
+- 注意: $PSDefaultParameterValues['*:Encoding'] = 'utf8' は書き込みのコマンドでは無視されます（警告だけ）。
+  既定値には utf8NoBOM か utf8BOM を使ってください。-UseCulture の区切り文字は、一部のカルチャーで 5.1 と 7.x で違います。
 
 CSV の読み書き処理には、PowerShell（Copyright (c) Microsoft Corporation、MIT License）のコードの
 一部を改変して含めています。詳細は THIRD-PARTY-NOTICES.txt を参照してください。
