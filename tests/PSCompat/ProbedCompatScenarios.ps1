@@ -2649,6 +2649,37 @@ Add-Scenario 'Finish/DirectWrite/MultipleFiles' {
 }.GetNewClosure()
 
 # ---------------------------------------------------------------------------
+# 1.3.0 第六次 A（実装記録 11 章）
+# ---------------------------------------------------------------------------
+$f6Dir = Join-Path $script:WorkRoot 'sixth'
+[void](New-Item -ItemType Directory -Path $f6Dir)
+$f6Index = 0
+
+# BUG-0037: UTF-7 の Encoding のインスタンスを、書き込みのすべてのコマンドが名前の utf7 と同じ ID で拒否する。ファイルは変わらない
+$f6Utf7Writers = [ordered]@{
+    'Set'     = { param($p, $e) Set-ProbedContent -LiteralPath $p -Value x -Encoding $e }
+    'Add'     = { param($p, $e) Add-ProbedContent -LiteralPath $p -Value x -Encoding $e }
+    'Out'     = { param($p, $e) 'x' | Out-ProbedFile -LiteralPath $p -Encoding $e }
+    'Export'  = { param($p, $e) [pscustomobject]@{ A = 'x' } | Export-ProbedCsv -LiteralPath $p -Encoding $e }
+    'Convert' = { param($p, $e) Convert-ProbedContent -LiteralPath $p -SourceEncoding utf8NoBOM -Encoding $e }
+}
+foreach ($f6Name in $f6Utf7Writers.Keys) {
+    foreach ($f6Kind in @('name', 'instance')) {
+        $f6Index++
+        $wb = $f6Utf7Writers[$f6Name]
+        $kind = $f6Kind
+        $p = Join-Path $f6Dir ("utf7_{0}.txt" -f $f6Index)
+        Add-Scenario "Sixth/Utf7/$f6Name/$kind" {
+            [IO.File]::WriteAllBytes($p, [byte[]](0x41, 0x0D, 0x0A))
+            $e = if ($kind -eq 'name') { 'utf7' } else { New-Object System.Text.UTF7Encoding }
+            '{0} // {1}' -f (Invoke-F2 { & $wb $p $e }), (Format-FileBytes $p)
+        }.GetNewClosure()
+    }
+}
+
+# （第六次 A のシナリオはここより前に足す）
+
+# ---------------------------------------------------------------------------
 # 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
 #
 # UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。

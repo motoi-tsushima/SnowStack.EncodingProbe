@@ -261,6 +261,13 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
         bool unicode = EncodingVocabulary.IsUnicodeCodePage(codePage);
         string display = DescribeEncoding(argument.Original, spec);
 
+        if (codePage == 65000)
+        {
+            // E5: utf7 は、名前でも Encoding のインスタンス（UTF7Encoding など）でも拒否する（1.3.0 第六次。BUG-0037）。
+            // インスタンスの分岐より先に調べる（以前はインスタンスを GetPreamble() の分岐で受け付けていた）
+            EnsureWritable(spec, argument.Original);
+        }
+
         if (argument.Original is System.Text.Encoding)
         {
             // GetPreamble() に従う。-Bom と食い違えば E8
@@ -275,9 +282,9 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
             return;
         }
 
-        if (codePage == 65000 || (!bomBound && unicode && argument.Original is not EncodingInformation))
+        if (!bomBound && unicode && argument.Original is not EncodingInformation)
         {
-            // E4 / E5: -Bom が無ければ 1.1.0 の書き込みの規則（裸の utf8・WebName・数値は拒否、utf7 は常に拒否）
+            // E4: -Bom が無ければ 1.1.0 の書き込みの規則（裸の utf8・WebName・数値は拒否）
             EnsureWritable(spec, argument.Original);
         }
 
