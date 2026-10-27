@@ -186,6 +186,12 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
 - **大きなファイルとメモリ不足を、ID の付いたエラーにしました**（BUG-0030）。`Resolve-Encoding` は読む前に大きさを調べ、上限（2 GB）を超えれば `-DetectionLineCount` を案内する非終了エラーにします。
   全体を読む判定のメモリ不足は `NotEnoughMemoryToDetect`、`Convert-ProbedContent` は `FileTooLargeToConvert` / `NotEnoughMemoryToConvert` です（Windows PowerShell 5.1 では生の `OutOfMemoryException` / `IOException` でした）
   - **`Resolve-Encoding` のエラーの種類が混ざります。** ファイルが無い場合と、`-DetectionLineCount` で切り出す範囲が上限を超える場合は、今までどおり終了エラーです
+  - **既知の制限: `Get-ProbedContent -Raw` で文字列を作る段階のメモリ不足は、生の `OutOfMemoryException` の終了エラーのままです**（BUG-0030 の残り。1.4.0 で扱います。実装記録 14 章、1.3.0 仕様書 26.5）。
+    `NotEnoughMemoryToDetect` の対象は全体を読む判定だけで、判定の後にファイル全体を 1 つの文字列にする段階は対象外です。終了エラーなので、`-Path` に複数のファイルを渡した場合、残りのファイルは処理されません。
+    `-Encoding` を明示しても避けられません（判定を飛ばしても、文字列を作る段階のメモリの量は変わりません）
+    - **Windows PowerShell 5.1 の 32 ビット版で、数百 MB のファイルの場合**（600 MB で確かめました）: 64 ビット版を使うか、`-Raw` を使わずに行で読んでください
+    - **復号した後の文字数が約 10.7 億を超える場合**（.NET の文字列の長さの上限。文字数は UTF-16 の単位で、補助面の文字は 2 と数えます。英数字だけのファイルでは約 1 GiB）: 64 ビット版でも、メモリが十分あっても避けられません。`-Raw` を使わずに行で読むか、ファイルを分けてください。標準の `Get-Content -Raw` も 1 つの文字列を作るため、同じ上限があります
+    - 改行の無い巨大な 1 行を行で読む場合、`Import-ProbedCsv` の巨大なフィールド・ヘッダー、`Export-ProbedCsv -Append` の改行の無い巨大な追記先も、同じく生の `OutOfMemoryException` になります（1.3.0 仕様書 26.5）
 - **書き込みに成功したファイルに、Archive 属性を付けます**（BUG-0025）。1 MiB を超える上書き（置き換え）で、元のファイルに無かった Archive 属性が付いていませんでした（標準の `Set-Content` は付けます）。元に戻した場合は、書き込みの前の属性のままです
 - **`WriteAccessDenied` のメッセージを、本モジュールの 5 言語のメッセージにしました**（BUG-0025）。.NET の例外の文面（PowerShell 7.x では英語）でした
 - **隠し・システム属性のファイルへの書き込みと代替データストリーム**（BUG-0025。第五次で直っていたことを確かめました）: 書き込みの 4 コマンドと `Convert-ProbedContent` は、`-Force` なしで書け、代替データストリーム（`Zone.Identifier` など）を保ちます。

@@ -2045,3 +2045,73 @@ BUG-0029 は 2 回流した（2 回目で他方のホストのファイルを読
 - 1.2.0 仕様書: 2.2、2.3、13.1
 - ヘルプ（5 言語と zh-HK / zh-MO の複製）: `-Culture`・`-Encoding`・`-TotalCount`・`-UseCulture`・`-Append`（Export）・`-Raw`・`-Strategy`・`-Value`・書き込みの注意事項（裸の utf8 と既定値、逆向きの往復）・`Resolve-Encoding` と `Convert-ProbedContent` のメモリ
 - README、CHANGELOG（挙動の変更。第六次 C）、`.psd1` の `ReleaseNotes`、動作確認手順書、CLAUDE.md
+
+## 14. リリース前の補足 — BUG-0030 の残り（文書だけ。2026-10-27）
+
+テスト担当の第 2 段階（回帰テスト）が終わり、BUG-0001〜0045 に「直っていない」ものと新しい不具合は無かった。**1.3.0 は 993a341 のモジュールでリリースする**（利用者の決定）。
+補足の確認で BUG-0030 の残りが 1 つ見つかり、利用者が 1.4.0 に送ると決めた。**ソース・テスト・`publish\`（`.psd1` の ReleaseNotes を含む）・ヘルプ（MAML）は変えていない。** 既知の制限として文書（CHANGELOG・README・1.3.0 仕様書 26.5）に書いた。
+実測は行っていない（利用者の指示）。以下はソースからの判断である。
+
+### 14.1 報告の内容
+
+- 32 ビット版の Windows PowerShell 5.1 で、600 MB のファイル（ASCII の行が続き、末尾に Shift_JIS の行）に `Get-ProbedContent -Raw` を実行すると、生の `System.OutOfMemoryException` になる（113 秒、ピーク 1,276 MB）
+- 同じファイルで、`-Encoding` 省略と `-TotalCount 1` は成功する（ピーク 693 MB）
+- 仕様書 26.5 の `NotEnoughMemoryToDetect` は全体を読む判定が対象で、`-Raw` で文字列を作る段階は対象になっていない
+
+### 14.2 生の例外が出る箇所と理由
+
+- 箇所は `GetProbedContentCommand.WriteRawContent` の `reader.ReadToEnd()`（`ProbedFileReader.ReadToEnd` → `StreamReader.ReadToEnd`）
+- `EncodingDetectionException.GuardMemory` が包むのは `ProbedFileReader.Open` の中の判定（`ReadAll` と `Detect`）だけで、`ReadToEnd` は包んでいない。`ReadFile` の catch は `EncodingDetectionException`・`IOException`・`UnauthorizedAccessException` だけなので、
+  `OutOfMemoryException` は `ProcessRecord` の外へ出て**終了エラー**になる。`-Path` に複数のファイルを渡した場合、残りのファイルは処理されない
+- `StreamReader.ReadToEnd` は `StringBuilder`（8000 文字ずつのチャンクの連結リスト）にためてから `ToString()` で 1 つの文字列を作る。文字数を n とすると、ためる途中で約 2n バイト、最後に連続した約 2n バイトで、終盤のピークは約 4n バイト。
+  判定に使ったバイト配列は `Open` を抜けた時点で参照が切れているので、同時には残らない
+- 600 MB の ASCII では n は約 6 億で、ためるのに約 1.2 GB、最後の文字列にさらに連続した約 1.2 GB が要る。32 ビットのプロセスのアドレス空間ではまず確保できない（報告のピーク 1,276 MB と合う）
+- **`-Encoding` を明示しても避けられない。** 判定を飛ばしても、文字列を作る段階の量は変わらない
+- 行で読む場合と `-TotalCount 1` は 1 行ずつ文字列を作るので、ピークは判定の分（693 MB）だけになる
+
+### 14.3 64 ビット版（pwsh 7・5.1）でも起きるか
+
+起きる（メモリが十分あっても）。
+
+- .NET の文字列の長さの上限は約 2^30 文字（.NET 10 は `0x3FFFFFDF` = 1,073,741,791 文字、.NET Framework もほぼ同じ）。`gcAllowVeryLargeObjects` は文字列に効かない
+- `StringBuilder` の `MaxCapacity` は既定で `int.MaxValue` なのでためる段階は通り、最後の `ToString()` で文字列を確保するときに `OutOfMemoryException` になる。pwsh 7 と 5.1 の 64 ビット版で同じ
+- 条件はバイト数ではなく、**復号した後の文字数**（UTF-16 の単位。補助面の文字は 2）が約 10.7 億を超えること
+
+  | ファイルの中身 | 失敗するおおよその大きさ |
+  |---|---|
+  | 英数字だけ（1 バイト = 1 文字。UTF-8・Shift_JIS など） | 約 1 GiB を超える |
+  | 日本語が主の Shift_JIS / EUC（約 2 バイト = 1 文字） | 判定の上限（2 GB）の手前まで届かないことが多い |
+  | UTF-16 | 2 GB の上限ぎりぎりが境目 |
+  | `-Encoding` を明示（判定の上限が掛からない） | 文字数が上限を超えれば、2 GB を超えるファイルでも同じ |
+
+- 上限の手前で成功させるのに要るメモリは、判定の約 3.6 倍と、その後の `ReadToEnd` の約 4n バイト（1 GB に近い英数字のファイルでは合わせて数 GB）
+- 避け方は条件で分かれる。32 ビット版の 5.1 で数百 MB の場合は、64 ビット版を使うか、`-Raw` を使わずに行で読む。文字数が上限を超える場合は、64 ビット版でも避けられないので、`-Raw` を使わずに行で読むか、ファイルを分ける
+
+### 14.4 標準の `Get-Content -Raw`
+
+標準も 1 つの文字列を作るため、同じ上限がある。32 ビット版の 5.1 でも、同じ量の連続した領域が要る（判定をしないので、ピークは判定の分だけ小さい）。
+エラーの出方（生の終了エラーか、プロバイダーのエラーに包まれた非終了エラーか）は確かめていないので、文書に書いていない。
+
+### 14.5 1 つの巨大な文字列を作るほかの経路（1.4.0 の検討の材料。直していない）
+
+| コマンド・経路 | 巨大な文字列 | メモリ不足の扱い |
+|---|---|---|
+| `Get-ProbedContent`（行で読む）で、改行の無い巨大な 1 行 | `ReadLine` が 1 行を 1 つの文字列にする | 生の OOM（終了エラー） |
+| `Import-ProbedCsv` で、巨大なフィールド（改行の無いファイル、引用符で囲んだ複数行の値など）・巨大なヘッダー行 | `ImportCsvHelper.ParseNextRecord` / `ReadTillNextDelimiter` の `StringBuilder.ToString()` | 生の OOM |
+| `Export-ProbedCsv -Append` で、改行の無い巨大な追記先 | 追記先のヘッダーを読む `ReadHeader`（`ExportProbedCsvCommand`） | 生の OOM |
+| `Convert-ProbedContent` | `GetString` でファイル全体を 1 つの文字列にし、改行をそろえる `LineBreakResolver.Normalize` でもう 1 つ作る（LF → CRLF では長くなる） | `NotEnoughMemoryToConvert`（扱い済み。文字列の上限の超過も OOM なので同じく捕まる） |
+| `Export-ProbedCsv`（1 行の文字列化）、`Out-ProbedFile`（要素の `ToString()`）、`Set-` / `Add-ProbedContent` | 入力の値の大きさ程度 | 入力がすでにメモリにあるので対象外とみなした |
+| `Resolve-Encoding`、`-DetectionLineCount` の切り出し、全体の厳密な検証 | 文字列を作らない（バイト列とバッファだけ） | 該当しない |
+
+### 14.6 1.4.0 の候補
+
+1. **`Get-ProbedContent -Raw` のメモリ不足を ID の付いたエラーにする（BUG-0030 の残り）。** 14.5 の生の OOM の経路（巨大な 1 行、CSV の巨大なフィールド・ヘッダー、`Export-ProbedCsv -Append` のヘッダー）も合わせて検討する。
+   ID（`NotEnoughMemoryToDetect` を広げるか、新しい ID にするか）と、非終了エラーにするかは未決
+2. **`$PSDefaultParameterValues['*:Encoding'] = 'utf8'` のとき、`Convert-ProbedContent` だけがエラーになり、書き込みの 4 コマンドは警告して省略扱いになる。この違いをヘルプに書く（BUG-0034 の残り）。** 第六次 C では書き込みの 4 コマンドの側だけを書いた
+
+### 14.7 直した文書
+
+- CHANGELOG（1.3.0 の「挙動の変更（PowerShell モジュール。第六次 B）」の BUG-0030 の項の下。既知の制限をまとめた節は 1.3.0 に無い）
+- README（1.3.0 の「読み書きの細部の修正」）
+- 1.3.0 仕様書 26.5（対象外であることと条件・避け方）
+- 本章、CLAUDE.md
