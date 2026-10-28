@@ -665,9 +665,10 @@ ASCII の文字だけを書く場合のバイト列は変わらない。`-Encodi
   権限が無いと分かる時点は、大きさによらず開く時点（第六次 B で T 以内もそろえた。26.7。それまでは T 以内は完了の時点だった）
 
 - リンク切れのシンボリックリンク: `Set-ProbedContent` は書かずに非終了エラー `LinkTargetNotFound`（標準の `Set-Content` も書かない。両ホストで実測）。
-  `Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent -Destination`・追記は、リンクの先にファイルを作る（標準の `Out-File`・`Export-Csv`・`Add-Content` と同じ）
+  `Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent -Destination`・追記は、リンクの先にファイルを作る（標準の `Out-File`・`Export-Csv`・`Add-Content` と同じ）。
+  **Linux では、追記（`Add-ProbedContent`・`-Append`）はエラーになる**（既知の制限 D3。28 章）
 - 読み取り専用の検査と `-Force` は、リンクの先の実体に対して行う
-- Linux / macOS: 置き換える前に、元のファイルのアクセス権（UnixFileMode）を一時ファイルに写す。所有者は写せない。ハードリンクは切れる（既知の限界）
+- Linux / macOS: 置き換える前に、元のファイルのアクセス権（UnixFileMode）を一時ファイルに写す。所有者は写せない。ハードリンクは切れる（既知の限界。T を超える場合。T 以内はメモリに写してから直接書くので切れない。28 章の D1）
 - 属性（読み取り専用・隠し）・作成日時・代替データストリーム・ACL は、4 つの書き方のどれでも、ハードリンク・シンボリックリンク経由でも、書き戻した場合も保たれる（Windows で両ホストを実測。実装記録 10.6 節・10.16 節）
 - ほかのプロセスが書き込み先を開いていると、置き換えとメモリに写してから直接書く方法が失敗するのは、開く時点ではなく完了の時点になる（受け入れた限界。ヘルプに書いた）
 - 写してから直接書く方法は、大きなファイルでは写す時間がかかる（ヘルプに書いた）
@@ -676,7 +677,7 @@ ASCII の文字だけを書く場合のバイト列は変わらない。`-Encodi
 
 - Windows: ファイルを開いて `GetFileInformationByHandle` で、ボリュームのシリアル番号とファイル ID を比べる（ReFS の 128 ビットのファイル ID は扱わない。既知の限界）。
   `\\?\`・UNC の管理共有・`\\.\`・subst・シンボリックリンク・ジャンクション・ハードリンクを同じ実体と判定する。まだ無いファイルは、親フォルダーの実体と名前で比べる
-- Linux / macOS: リンクを解決したフルパスで比べる。ハードリンクは別のファイルとみなす（既知の限界）
+- Linux / macOS: リンクを解決したフルパスで比べる。ハードリンクは別のファイルとみなす（既知の限界。追記では終わらずに増え続ける。28 章の D2）
 - 比べる時点: 上書きは書き始める前（一時ファイル・新しいファイルを作る前。メモリに写してから直接書く方法でも同じ時点）、追記は「切り詰めずに開く → 開いたハンドルで比べる → 書く」
 - `a.txt::$DATA` は `a.txt` として扱う。代替データストリーム（`a.txt:alt`）は両ホストで `AlternateDataStreamNotSupported`
 
@@ -846,6 +847,7 @@ JIS X 0208 の状態（`ESC $ B` の後ろ）のまま終わることがある�
 | `-InputObject` の `ByPropertyName` | ある | ある | 無い（`ByValue` だけ） | `Out-ProbedFile` と同じ。意図しない束縛を避ける |
 | 追記先のヘッダーに同じ列名が複数ある（`A,a`）（第六次 C。BUG-0022） | 終了エラー `RuntimeException`（「メンバー "a" は既に存在します。」） | 同左 | 終了エラー `AlreadyPresentPSMemberInfoInternalCollectionAdd`。メッセージにパスと列名を示す（ファイルは変えない） | `Import-ProbedCsv` の列名の重複と同じ ID・同じ規則にそろえる（20 章） |
 | `-UseCulture` の区切り文字（第六次 C。BUG-0029） | NLS のカルチャーのデータ | ICU のカルチャーのデータ | ホストの .NET に従う（ms-ID など 36 のカルチャーで両ホストで違う） | 標準と同じ。17 章 |
+| Linux で、CRLF のファイルへの `-Append`（リリース前の補足） | （Linux に無い） | LF を書く（`Environment.NewLine`） | 追記先の CRLF を引き継ぐ（16.3） | 混在を防ぐ。上の「改行の違うファイルへの `-Append`」の Linux の場合。Windows では両方が CRLF なので一致する。28 章 |
 
 ---
 
@@ -972,8 +974,11 @@ PowerShell 層のテストとして追加し、PSCompat で 5.1 と 7.x の結�
 `ansi` / `oem` の語彙（すべての `-Encoding` と `ConvertTo-DotNetEncoding`）と、`Get-EncodingProbePlatformInfo` の `Locale` の `AnsiCodePage` / `OemCodePage` は、次の値にする（1.1.0 仕様書 3.3 の「実行環境の ANSI コードページ」をこう定める）。
 
 - **Windows: システムのロケール（「Unicode 対応ではないプログラムの言語」）の ANSI / OEM コードページ**（`GetACP` / `GetOEMCP`。net48 と net10.0 の両方）。
-  スレッドのカルチャー（`CurrentCulture`。「地域」の形式）には従わない。標準の 7.x の `-Encoding ansi` / `oem`、5.1 の `Default` / `Oem`、
-  5.1 の 0 バイトのファイルの既定（ANSI）と同じ値になる。第五次までは `CurrentCulture.TextInfo` の値だった
+  スレッドのカルチャー（`CurrentCulture`。「地域」の形式）には従わない。5.1 の `Default` / `Oem`、7.x の `oem`、
+  5.1 の 0 バイトのファイルの既定（ANSI）と同じ値になる。第五次までは `CurrentCulture.TextInfo` の値だった。
+  **標準の 7.x の `-Encoding ansi` は、プロセスの開始時の現在のカルチャー（「形式」）の ANSI コードページなので、「形式」をシステムのロケールと違う値にしている環境では本モジュールと違う**
+  （例: 日本語の Windows で形式を英語（米国）にすると、標準は 1252、本モジュールは 932）。
+  第六次 A ではここに「標準の 7.x の `-Encoding ansi` と同じ」と書いていた。測り方の誤りで、リリース前の補足で訂正した（実装記録 15.6 節）
 - **システムの ANSI / OEM が 65001**（「ベータ: ワールドワイド言語サポートで Unicode UTF-8 を使用」）**の場合は、BOM 無しの UTF-8 として扱う**（`Encoding.GetEncoding(65001)` は BOM 付きのインスタンスを返すため、組み立て直す）。
   この設定の環境は手元で作れなかった（OS の設定の変更と再起動が要る）ので、標準のコマンドとは比べていない（実装記録 11 章）
 - **Linux / macOS: 今の挙動を変えない。** 現在のカルチャーの `TextInfo.ANSICodePage` / `OEMCodePage`（.NET が持つカルチャーの表の値）。
@@ -1172,6 +1177,29 @@ PowerShell 層のテストとして追加し、PSCompat で 5.1 と 7.x の結�
 
 `WriteFailed` のうち、共有違反・ロック違反以外（ディスクの空き不足など）も、読み込みの `FileReadFailed` と同じく、エラー コード（HRESULT）を示す 5 言語のメッセージ（`FileWriteFailed`）にした。
 第六次 B までは .NET の例外のまま（7.x では英語、5.1 では OS の言語）だった（26.2）。内部例外は持たせず、HRESULT は引き継ぐ。
+
+---
+
+## 28. Linux / macOS の既知の制限（リリース前の補足。2026-10-28）
+
+リリースの準備で、WSL の Ubuntu 24.04（.NET 10.0.13、PowerShell 7.6.9）で単体テスト（net10.0）を流し、失敗を仕分けた（実装記録 15 章）。
+製品の問題は D1〜D4 の 4 件で、**1.3.0 は 993a341 のモジュールのままリリースし、D1〜D4 は既知の制限として文書に書いて 1.4.0 で直す**（利用者の決定）。どれも元のファイルの内容は失わない。
+Windows には当てはまらない。
+
+| # | 内容 | 該当するコマンド | 標準のコマンド（Linux） |
+|---|---|---|---|
+| D1 | T（1 MiB）を超えるハードリンクに上書きすると、リンクが切れる。書いた名前だけが新しい内容になり、ほかの名前は古い内容のまま。書く内容と元のファイルがどちらも T 以内なら保たれる | `Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent` | `Set-Content` はリンクを保つ（同じファイルの往復では 4097 バイトに切り詰める） |
+| D2 | 読み込みと追記を別のハードリンク名で行うと、終わらずにファイルが増え続ける（順方向・逆向きとも） | `Add-ProbedContent`（`Get-ProbedContent t.txt \| Add-ProbedContent hard.txt` など） | `Add-Content` も増え続ける（同じ名前でも） |
+| D3 | リンク切れのシンボリックリンクへの追記がエラーになる。Windows ではリンクの先に作る（16.5） | `Add-ProbedContent`（`AutoEncodingRequiresExistingFile`）、`Out-ProbedFile -Append`・`Export-ProbedCsv -Append`（`ReadFailed`） | `Add-Content`・`Out-File -Append` は作る。`Export-Csv -Append` はエラー |
+| D4 | 共有を許さずに開かれたファイル（.NET の `FileShare.None`。Linux の .NET は `flock` の勧告ロックで表す）のメッセージが「error code 0x0000000B」になる。ID（`ReadFailed`・`WriteFailed`）は正しい（26.2） | 読み書きのすべて | 「being used by another process」 |
+
+- **macOS は、ハードリンクの扱い（D1・D2）を確かめていない。** 同じファイルの判定は Linux と同じくリンクを解決したパスで比べる（16.5）ので、D2 は同じく起きると考えられる
+- **`LANG` が未設定（不変カルチャー）の Linux では、カルチャーによる絞り込みが効かない。** 不変カルチャーは東アジアのカルチャーではないので、1.2.0 のカルチャーゲートで旧マルチバイトの独自判定を打ち切る。
+  日本語のファイルは、クラスライブラリの独自判定では `-1`、`Resolve-Encoding`（`Combined`）では UTF.Unknown の結果（Shift_JIS は `932 / shift-jis`、EUC-JP は `51932 / euc-jp`）になる。
+  Windows で形式を英語（米国）や不変カルチャーにした場合と同じ結果で、設計どおり。`-Culture ja-JP` を指定するか、`LANG=ja_JP.UTF-8` などを設定するよう案内する（README）
+- **Linux では、`Export-ProbedCsv -Append` が追記先の CRLF を引き継ぐ**（16.3）ため、LF を書く標準の `Export-Csv -Append` と違う（21 章の表）。
+  Windows では両方が CRLF なので一致する。仕様どおりで、直さない
+- 原因・直し方の案・規模は実装記録 15 章。テストを Linux・macOS でも動くようにすることも 1.4.0 の候補にした
 
 ---
 

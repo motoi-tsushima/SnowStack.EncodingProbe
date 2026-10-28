@@ -247,6 +247,26 @@ ConvertTo-DotNetEncoding 0                      # エラー
 期待: 日本語の Windows では `ansi` が 932、`oem` が 932（`Locale` の `AnsiCodePage` / `OemCodePage` も同じ。5.1 の `Default` も 932）。`0` はエラー。
 可能なら、設定 → 時刻と言語 → 言語と地域 の「地域設定」の「形式」を「英語（米国）」にして新しいウィンドウで同じことを行い、`ansi` / `oem` が 932 のままであることを確かめる（以前は 1252 / 437 になっていた）。確かめたら「形式」を元に戻す。
 
+標準の `Set-Content -Encoding ansi` と比べる（リリース前の補足で足した。実装記録 15.6 節）。**新しいウィンドウで、最初に**行う。
+7.x の標準の `ansi` は、プロセスの中で最初に使った時点の現在のカルチャーのコードページを使い、その後は変わらないため、同じウィンドウでカルチャーを変えて比べても正しく測れない。
+
+```powershell
+Set-Content -LiteralPath std-ansi.txt -Value '日' -Encoding ansi -NoNewline          # 7.x。5.1 では -Encoding Default
+Set-ProbedContent -LiteralPath ours-ansi.txt -Value '日' -Encoding ansi -NoNewline
+Show-Bytes std-ansi.txt
+Show-Bytes ours-ansi.txt
+```
+
+期待（日本語の Windows）:
+
+| 「形式」 | ホスト | 標準 | 本モジュール |
+|---|---|---|---|
+| 日本語（日本） | 7.x・5.1 | `93 FA` | `93 FA` |
+| 英語（米国） | 7.x | `3F`（1252 で表せないので `?`） | `93 FA`（932） |
+| 英語（米国） | 5.1（`-Encoding Default`） | `93 FA` | `93 FA` |
+
+「形式」が英語（米国）の 7.x で標準と本モジュールが違うのは仕様（仕様書 25.5）。`-Encoding oem` は、どの「形式」でも両方が `93 FA`。確かめたら「形式」を元に戻す。
+
 ### 4.2 BOM が 2 個続くファイル・途中で切れたファイル（第六次 A。BUG-0021・0042）
 
 ```powershell

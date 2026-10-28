@@ -77,8 +77,10 @@ CSV の読み書きコマンドを 2 つ追加し、Resolve-Encoding で先頭�
   -Culture に受け付ける名前は、名前の形（BCP 47）で決めます（C・root は両ホストで InvalidCulture）。
 - 不具合の修正（クラスライブラリ）: 短い EUC-JP の日本語を、日本語のカルチャーで Shift_JIS と判定していた
   問題を直しました（Shift_JIS として読めないバイト列は、Shift_JIS を選びません）。
-- 挙動の変更: ansi / oem は、Windows ではシステムのロケールの ANSI / OEM コードページです（標準の 7.x の
-  -Encoding ansi・5.1 の Default と同じ）。Get-EncodingProbePlatformInfo の Locale も同じ値です。-Encoding 0 はエラーです。
+- 挙動の変更: ansi / oem は、Windows ではシステムのロケールの ANSI / OEM コードページです（5.1 の Default /
+  Oem、7.x の oem と同じ）。標準の 7.x の -Encoding ansi はプロセスの開始時の「形式」のコードページなので、
+  「形式」をシステムのロケールと違う値にしている環境では違います（日本語の Windows で形式が英語（米国）なら、
+  標準は 1252、本モジュールは 932）。Get-EncodingProbePlatformInfo の Locale も同じ値です。-Encoding 0 はエラーです。
 - 挙動の変更: BOM が 2 個続くファイルは、先頭の 1 個だけを取り除きます。5.1 でも、途中で切れたファイルの末尾を
   7.x と同じく置き換えの文字（U+FFFD など）として読みます。CSV の列名の大文字小文字の比べ方を 5.1 でも 7.x と同じに
   しました。JIS のまま終わっているファイルに追記するときは、先に ASCII に戻すエスケープシーケンスを書きます。

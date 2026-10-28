@@ -1513,6 +1513,11 @@ ID・分類・例外（`Exception.Message`）は変えない。パイプライ�
 **確かめた結果（Windows。システムのロケールは ja-JP で ANSI・OEM とも 932）。** スレッドのカルチャーを ja-JP・de-DE・en-US・ru-RU・ko-KR・ar-SA・不変にしても、
 `ansi` / `oem` と `Locale` は 932 / 932 で、標準の 7.x の `-Encoding ansi`・5.1 の `Default` と同じ（テスト担当の BUG-0032.ps1 も両ホストで 932）。
 
+> **訂正（リリース前の補足。15.6 節）:** 「標準の 7.x の `-Encoding ansi` と同じ」は誤りだった。標準の 7.x の `ansi` は、プロセスの中で最初に使った時点の現在のカルチャーの ANSI コードページで、その後は変わらない。
+> 上の確認は、1 つのセッションの途中でスレッドのカルチャーを変えて測ったため、標準の側が最初の ja-JP（932）のままになり、一致して見えた。
+> 「形式」をシステムのロケールと違う値にしている環境（日本語の Windows で形式を英語（米国））では、標準は 1252、本モジュールは 932 で違う。
+> 本モジュールの値（システムのロケール）は正しく、5.1 の `Default` / `Oem`、7.x の `oem` とは同じ。ソース（`SystemCodePages.cs` のコメント）は今回は直していない
+
 **65001 の環境は作らなかった。** 「ベータ: ワールドワイド言語サポートで Unicode UTF-8 を使用」は OS の設定の変更と再起動が要り、利用者の PC の状態を変えるため。
 **標準のコマンドとは比べていない。** 実装は 65001 を BOM 無しの UTF-8 にする（単体テストは「`ansi` / `oem` は BOM を持たない」ことを固定する）。
 
@@ -2115,3 +2120,201 @@ BUG-0029 は 2 回流した（2 回目で他方のホストのファイルを読
 - README（1.3.0 の「読み書きの細部の修正」）
 - 1.3.0 仕様書 26.5（対象外であることと条件・避け方）
 - 本章、CLAUDE.md
+
+---
+
+## 15. リリース前の補足 — Linux（WSL）での単体テストの仕分けと既知の制限 D1〜D4（文書だけ。2026-10-28）
+
+リリースの準備で、利用者が WSL の Ubuntu 24.04 で単体テスト（net10.0）を流し、多くの失敗が出た。仕分けと調査を行い、利用者が次のとおり決めた。
+
+- **1.3.0 は今のモジュール（993a341）でリリースする。** 製品の問題 D1〜D4 は既知の制限として文書に書き、1.4.0 で直す
+- **ソース・テスト・MAML ヘルプは変えていない。** `publish\` で変えたのは `.psd1` の ReleaseNotes の文面（`ansi` の書き方の訂正）だけ
+- 文書: CHANGELOG（1.3.0 の「Linux / macOS の既知の制限」、BUG-0004・0017 の項と H-17 のリンク切れの項に Linux の例外、`ansi`）、README（同じく）、1.3.0 仕様書（16.5・21 章・25.5・28 章）、動作確認手順書 4.1、本章
+
+### 15.1 実行した環境
+
+- WSL の Ubuntu-24.04。リポジトリを ext4 のホーム（`~/ep`）に clone し、`feature/1.3.0-csv` の f2ed172（ソースは 993a341 と同じ）で実行
+- dotnet は `/usr/lib/dotnet`（SDK 10.0.113、ランタイム 10.0.13）。製品の挙動の実測には `~/powershell-7.6.9`（11.4 節で入れたもの）を使い、ビルドした net10.0 の DLL を直接読み込んだ
+- 利用者の実行では `LANG` が未設定で、現在のカルチャーは不変カルチャー（`Get-EncodingProbePlatformInfo` の `Locale.CurrentCulture` が空）
+- 利用者の結果: コア（EncodingProbe.Tests）2129 件中 7 件、モジュール（EncodingProbe.PowerShell.Tests）2038 件中 210 件が失敗
+
+### 15.2 仕分けの結果
+
+不変カルチャー（`LANG` を外したもの）と `LANG=ja_JP.UTF-8` で流し直した。
+
+| カルチャー | コアの失敗 | モジュールの失敗 |
+|---|---|---|
+| 不変カルチャー | 7 | 210（利用者のログと同じ件数） |
+| ja-JP（`LANG=ja_JP.UTF-8`） | 1 | 201 |
+
+ja-JP でだけ失敗するテストは無かった。不変カルチャーの 217 件の分類:
+
+| 分類 | コア | モジュール | 内訳 |
+|---|---|---|---|
+| (a) Windows が前提 | 1 | 155 | 下の表 |
+| (b) CRLF が前提 | 0 | 35 | CsvColumnNameComparison 5、ExportProbedCsv 15、Iso2022Append 4、InheritedAscii 3、DoubleBomRead 2、UnrepresentableCharacter 2、各テストの Export の行 4 |
+| (c) カルチャー（ja-JP で消える） | 6 | 9 | JapaneseEncodingTests 6、Add 3、Set 2、Resolve-Encoding 3、Get 1 |
+| (d) 製品の問題 | 0 | 11 | D3 の 1 件（`DanglingLink_FollowsStandard` の Add）、D4 の 10 件（`OpenedByAnotherProgramTests.ShareNone_IsIdentifiedError` など） |
+
+(a) の内訳:
+
+| 原因 | 件数 |
+|---|---|
+| ハードリンクを作るテストの部品 `FileLinks.TryCreateHardLink` が Windows だけ（Assert で落ちる） | 約 50 件。ReverseRoundTrip の 32 件はすべて target=hardlink |
+| `\\?\`・`\\.\`・大文字にした書き方・管理共有・ジャンクション・`C:\`・`::$DATA` | FileIdentity 14、SameFile の大半 |
+| パスに `\` を含む（`sub\t.txt`・`dest\a.txt`）。Linux ではファイル名の一部になる | SameFile の symlink の書き方、ConvertDestination |
+| `WindowsPrincipal` を使う ACL の検査 | Metadata・WriteDataDenied・FolderWithoutCreatePermission |
+| `FileStream.Lock` と共有のロック（Linux では強制されない） | 約 15 件 |
+| CIM、`SparseFile` の kernel32 | 6 件 |
+| 実体の比較 `FileIdentity.EntityKey`（Linux ではパスの文字列） | 1 MiB の境目の 2 件（15.5 節） |
+
+コアの (a) の 1 件は `FilePathConstructorTests.Constructor_WithNonExistentPath_ThrowsIOException`（`C:\nonexistent\…` が Linux では相対のファイル名になり、`DirectoryNotFoundException` ではなく `FileNotFoundException`）。
+
+**(b) の注意。** `Append_HeaderNotReadable_SameAsHostExportCsv` だけは逆向きに落ちる。モジュールは仕様書 16.3 のとおり追記先の CRLF を引き継ぎ、標準の `Export-Csv` は Linux では LF を書く。
+Windows では両方が CRLF なので一致していただけで、Linux では仕様の上で標準と違う（仕様書 21 章の表に足した）。テスト名の「標準と同じ」は Windows でしか成り立たない。
+
+### 15.3 製品の問題 D1〜D4
+
+| # | 内容 | データを失うか | 標準のコマンド（Linux） | 直し方の案と規模 |
+|---|---|---|---|---|
+| D1 | 1 MiB を超えるハードリンクを上書きすると、リンクが切れる（ほかの名前は古い内容のまま） | 失わない（名前ごとに内容が分かれる） | `Set-Content` はリンクを保つが、同じファイルの往復では 4097 バイトに切り詰める | statx（下）。中 |
+| D2 | 読み込みと追記を別のハードリンク名で行うと、終わらずに増え続ける | 元の内容は失わない。ディスクを使い切りうる | `Add-Content` は同じ名前でも増え続ける | statx（下）。中 |
+| D3 | リンク切れのシンボリックリンクへの追記がエラーになる。Windows ではリンクの先に作る | 失わない | `Add-Content`・`Out-File -Append` は作る。`Export-Csv -Append` もエラー | 小（2〜3 か所、数十行とテスト） |
+| D4 | 共有を許さずに開かれたファイルのメッセージが「error code 0x0000000B」。ID は正しい | 失わない | 「being used by another process」 | 小（1 行とテスト）。直すとテストの 10 件が Linux でも通るはず |
+
+**D1 の原因。** 上書きの書き方（仕様書 16.5）は、T（1 MiB）以内ならメモリに写してから直接書くのでリンクを保つ。T を超えると、Windows ではリンク数が 2 以上なら「写してから直接書く」方法を選ぶ。
+Linux では `FileIdentity`（`OfUnix`）がリンク数を取れず常に 1 なので、一時ファイルで置き換え、書いた名前だけが新しい inode になる。`Set`・`Out`・`Export`・`Convert` が該当する（`Add` は追記なので保つ）。
+
+**D2 の原因。** Linux / macOS の同じファイルの判定（`FileIdentity.EntityKey`）はリンクを解決したフルパスの文字列で、ハードリンクを別のファイルとみなす（仕様書 16.5 の既知の限界）。
+上書きでは名前が違っても内容は失わない（T 以内は読み終えてから書くので結果は正しい。T を超えると D1 のとおりリンクが切れるだけ）が、追記では読み込み中のファイルの末尾に書き続けるので終わらない。
+
+**D1・D2 の直し方の案。** Linux で `statx` を P/Invoke し、デバイス番号・inode・リンク数を取る。それを `FileIdentity` の実体の鍵とリンク数に使えば、Windows と同じく写してから直接書く方法と、名前が違う場合の検出が効き、D1 と D2 が両方直る。
+`FileIdentity.OfUnix` と `FromHandle` に、テストを足して 100〜150 行ほど（中）。macOS は `stat` の構造体が違うので別に扱う（15.7 節）。
+
+**D3 の原因。** Linux の .NET では、リンク切れのリンクについて `FileInfo.Exists` / `File.Exists` が true、`Length` がリンク自身の長さ（実測で 15）を返す。そのため、追記先を「中身のある既存のファイル」と扱い、
+文字エンコーディングを継承しようとして読みに行き、失敗する。`Add-ProbedContent` は `AutoEncodingRequiresExistingFile`（.NET の生のメッセージ「Could not find file」）、
+`Out-ProbedFile -Append`・`Export-ProbedCsv -Append` は `ReadFailed`（error code 0x80070002。終了エラー）。`Add-ProbedContent -Encoding utf8NoBOM -AllowEncodingChange` は継承しないので、リンクの先に作った。
+該当箇所: `EncodingInheritance.IsEmpty`、`OutProbedFileCommand.cs` の `File.Exists` と `hasContent`（191・259 行）、`ExportProbedCsvCommand.cs` の同じ箇所（269・359 行）。
+直し方: これらで「リンクの先が無ければ、ファイルは無い」と扱う（`FileIdentity.IsDanglingLink` を使える）。
+
+**D4 の原因。** Linux の .NET は、`FileShare.None` を `flock` の勧告ロックで表し、ロックの失敗の `IOException.HResult` に errno（EAGAIN = 11 = `0x0000000B`）を入れる。
+`FileErrors.IsInUse` は Windows の `0x80070020` / `0x80070021` しか見ていないので、使用中のメッセージ（`FileInUseForRead` / `FileInUseForWrite`）ではなく、エラー コードのメッセージ（`FileReadFailed` / `FileWriteFailed`）になる。
+.NET 自身のメッセージは「The process cannot access the file … because it is being used by another process.」で、標準の `Get-Content` もこれを出す。直し方: Windows 以外では 11 も「使用中」とみなす。
+
+### 15.4 不変カルチャー（`LANG` が未設定）
+
+製品の問題ではなく、カルチャーゲート（1.2.0）の設計どおり。不変カルチャーは東アジアのカルチャーではないので、旧マルチバイトの独自判定を打ち切る。
+Windows の pwsh 7.6.9 で、スレッドのカルチャーを `''`（不変）と `en-US` にして確かめた（WSL から Windows 側を実行。ビルドした DLL を一時フォルダーに写して読み込み、終わったら消した）。
+
+| カルチャー | `sample_shiftjis.txt`（`Resolve-Encoding` / コアの `Detection()`） | `sample_eucjp.txt` |
+|---|---|---|
+| ja-JP | 932 `shift_jis` / 932 | 20932 `euc-jp` / 20932 |
+| 不変 | 932 `shift-jis`（UTF.Unknown） / -1 | 51932 `euc-jp`（UTF.Unknown） / -1 |
+| en-US | 932 `shift-jis`（UTF.Unknown） / -1 | 51932 `euc-jp`（UTF.Unknown） / -1 |
+
+Linux と同じ結果だった。5.1（net48）では確かめていない。文書（README・CHANGELOG・仕様書 28 章）で、`-Culture ja-JP` を指定するか `LANG` を設定するよう案内した。
+
+空のファイルで `Culture` が食い違うテスト（`DetectionLineCount_EmptyFile_SameAsWholeFile`）は、先頭 N 行で判定する側にだけ `-Culture ja-JP` を渡しているテストの側の問題。
+Windows でも、不変カルチャーでは全体の判定が `''`、`-DetectionLineCount 1 -Culture ja-JP` が `'ja-JP'` になった。
+
+### 15.5 1 MiB の境目のテスト
+
+LF による大きさの違いでは説明できない（テストは `-NoNewline` と `-LineBreak CrLf` を使う）。テストは「実体（`EntityKey`）が変わったか」で書き方を判定しているが、Linux では `EntityKey` がパスの文字列なので、置き換えても変わらない。
+inode で確かめると、製品は正しく動いていた。書く内容がちょうど 1,048,576 バイトなら同じ inode のまま書き、1 バイト超えると inode が変わった。元のファイルの大きさの境目でも同じ。
+
+### 15.6 `ansi` の書き方の訂正（11.4 節の測り方の誤り）
+
+利用者の実機の結果（「形式」を英語（米国）にした日本語の Windows で、標準の 7.x の `-Encoding ansi` が `日` を `3F` に書いた）を、Windows で再現した。
+
+| 測り方（Windows の pwsh 7.6.9。システムのロケールは ja-JP、ACP 932） | 標準の `-Encoding ansi` | 本モジュールの `ansi` |
+|---|---|---|
+| 1 つのプロセスで ja-JP → en-US → ko-KR の順にスレッドのカルチャーを変える（11.4 節と同じ測り方） | すべて `93 FA` | すべて `93 FA`（932） |
+| 新しいプロセスで、最初にカルチャーを en-US にしてから使う | `3F` | `93 FA` |
+| 新しいプロセスで、最初に en-US で使い、次に ja-JP に変えて使う | `3F`・`3F`（変わらない） | — |
+| 新しいプロセスで ja-JP | `93 FA` | `93 FA` |
+| 新しいプロセスで en-US の `-Encoding oem` | `93 FA` | — |
+| 5.1 の `-Encoding Default`（en-US） | `93 FA` | — |
+
+- 標準の 7.x の `ansi` は、プロセスの中で最初に使った時点の `CurrentCulture.TextInfo.ANSICodePage` を使い、その後は変わらない。`oem` と 5.1 の `Default` はシステムのロケールの値
+- 11.4 節では 1 つのセッションの途中でカルチャーを変えて測ったので、標準の側が最初の ja-JP（932）のまま固定され、一致して見えた。**本モジュールの実装（システムのロケール）は正しく、変えていない。** 標準と同じとした書き方だけを直した
+- 直した箇所: CHANGELOG（第六次 A の BUG-0032 の項）、README（読み書きの細部の修正）、1.3.0 仕様書 25.5、`.psd1` の ReleaseNotes、本書 11.4 節（訂正の注記）。動作確認手順書 4.1 に、新しいウィンドウで標準の `Set-Content -Encoding ansi` と比べる手順を足した
+- 直していない箇所: `SnowStack.EncodingProbe/Internal/SystemCodePages.cs` の XML コメント（「標準の 7.x の `-Encoding ansi` / `oem` … と同じ値」）。ソースなので今回は変えない（利用者の指示）。1.4.0 で直す
+- MAML ヘルプ（5 言語）には標準と同じとする記述は無かった（`Get-EncodingProbePlatformInfo` の説明はシステムのロケールとだけ書いてあり、正しい）
+- Linux では、標準の `ansi` とモジュールの `ansi` は同じコードページだった（`LANG=en_US.UTF-8` で `日` は標準が `3F`、モジュールは 1252 で表せないので `UnrepresentableCharacter`。`LANG=ko_KR.UTF-8` では両方 `EC ED`）。README の Linux の表は正しい
+
+### 15.7 根拠として残す測定の結果（WSL の pwsh 7.6.9）
+
+測定のスクリプトと生の結果は、前のセッションの scratchpad（一時フォルダー。消える）にあった。根拠として要るものを要約する。
+
+**ハードリンク、1 MiB 以内（`ln t.txt hard.txt` を作り、`hard.txt` に書く）。** `Set`・`Out`・`Export`・`Convert`・`Add`、標準の `Set-Content`・`Add-Content`・`Export-Csv` のすべてで、2 つの名前が同じ inode のまま（リンク数 2）で、同じ内容になった。
+
+**ハードリンク、1 MiB を超える（D1）。**
+
+| 書き方 | t.txt の大きさ | hard.txt の大きさ | リンク数 | 同じ内容 |
+|---|---|---|---|---|
+| `Set-ProbedContent hard.txt`（4 バイト） | 1,100,001（元のまま） | 4 | 1 | いいえ |
+| `Set-ProbedContent hard.txt`（書く内容が 1,100,001 バイト、元は小さい） | 4 | 1,100,001 | 1 | いいえ |
+| `Out-ProbedFile` | 1,100,001 | 4 | 1 | いいえ |
+| `Export-ProbedCsv` | 1,100,001 | 10 | 1 | いいえ |
+| `Convert-ProbedContent` | 1,100,001 | 1,100,004 | 1 | いいえ |
+| `Add-ProbedContent` | 1,100,005 | 1,100,005 | 2 | はい |
+| 標準の `Set-Content`（小さい内容・大きい内容） | 書いた内容 | 書いた内容 | 2 | はい |
+
+**往復（`t.txt` と、そのハードリンク `hard.txt`）。** 32 バイトと 1,200,002 バイトで測った。
+
+- 読む名前と書く名前が同じ（`t.txt`）なら、順方向（`Get | Set`・`Get | Out`・`Get | Add`・`Import | Export`）と逆向き（`Get a.txt, t.txt | …`）のすべてで `SamePathRoundTrip` になり、内容は変わらなかった
+- 名前が違う（`hard.txt` に書く）と検出しない。32 バイトでは、上書きは正しい結果（読み終えてから書く）、`Add` は 1 回分の追記（32 → 64 バイト）で止まった。1,200,002 バイトでは、上書き（`Set`・`Out`・`Export`）はリンクを切った（リンク数 1。t.txt は元のまま）
+- **D2:** 1,200,002 バイトの `Get-ProbedContent t.txt | Add-ProbedContent hard.txt` は終わらず、約 60 秒で 32,702,338 バイトになったところで止めた（2 つの名前は同じ inode のまま）。逆向き（`Get-ProbedContent a.txt, t.txt | Add-ProbedContent hard.txt`）も同じく 32,345,986 バイト
+- 標準（1,200,002 バイト）: `Get-Content t.txt | Set-Content hard.txt` は 4,097 バイトに切り詰めた（内容を失う。同じ名前でも同じ）。`Import-Csv | Export-Csv` は 0 バイト、`Get-Content | Out-File` も 0 バイト。`Get-Content | Add-Content` は増え続けた（53,399,426 バイトで止めた）
+
+**1 MiB の境目（15.5 節）。** 書く内容が 1,048,576 バイトなら同じ inode、1,048,577 バイトなら inode が変わった。
+
+**リンク切れのシンボリックリンク（D3）。** `ln -s sub/missing.txt dangling.txt` に書いた。
+
+| コマンド | 結果 |
+|---|---|
+| `Set-ProbedContent` | `LinkTargetNotFound`（仕様どおり。リンクの先を作らない） |
+| `Out-ProbedFile`・`Export-ProbedCsv`（`-Append` なし） | リンクの先に作った（仕様どおり） |
+| `Add-ProbedContent` | `AutoEncodingRequiresExistingFile`（「Could not find file …」）。作らない |
+| `Add-ProbedContent -Encoding utf8NoBOM -AllowEncodingChange` | 作った |
+| `Out-ProbedFile -Append`（`-Encoding` の有無によらず）・`Export-ProbedCsv -Append` | 終了エラー `ReadFailed`（error code 0x80070002）。作らない |
+| 標準の `Add-Content`・`Out-File`・`Out-File -Append` | 作った |
+| 標準の `Set-Content` | 終了エラー（`FileNotFoundException`）。作らない |
+| 標準の `Export-Csv -Append` | 終了エラー `FileOpenFailure`。作らない |
+| `[IO.FileInfo]` | `Exists = True`、`Length = 15`、`File.Exists = True` |
+
+**共有を許さずに開いたファイル（D4）。** 同じプロセスで `[IO.FileStream]::new($p, 'Open', 'ReadWrite', 'None')` で開いたまま読み書きした。
+.NET の `ReadAllBytes` は HResult `0x0000000B`、メッセージ「… being used by another process.」。`Get-ProbedContent` は `ReadFailed` で「could not be read (error code 0x0000000B).」、
+`Add-ProbedContent` は `WriteFailed` で「could not be written (error code 0x0000000B).」。標準の `Get-Content` は「being used by another process」。
+
+**フォルダーにファイルを作る権限が無い場合（`chmod 555`）。** 10 バイトと 1,100,000 バイトのどちらでも、`Set`・`Out`・`Export`・`Convert` は書けて、一時ファイルを残さなかった（直接書く方法に切り替わる。Linux でも仕様どおり）。
+
+**シンボリックリンク・フォルダーへのリンク・`..`・`//`。** Linux でも同じファイルと検出した（テストの失敗は、パスに `\` を使った書き方のため）。
+
+### 15.8 1.4.0 の候補
+
+1. **D1・D2: Linux の実体の鍵とリンク数を statx で取る。** `FileIdentity.OfUnix` / `FromHandle` で、デバイス番号と inode を実体の鍵に、リンク数を `LinkCount` に使う。中（100〜150 行とテスト）。
+   直したら、Linux のハードリンクを `KnownLimit_` ではなく Windows と同じ期待値でテストする
+2. **D3: リンク切れのシンボリックリンクへの追記で、リンクの先にファイルを作る。** `EncodingInheritance.IsEmpty`・`OutProbedFileCommand`・`ExportProbedCsvCommand` で、リンクの先が無ければファイルは無いと扱う。小
+3. **D4: Windows 以外では errno 11（EAGAIN）も「使用中」とみなす**（`FileErrors.IsInUse`）。小
+4. **テストを Linux・macOS でも動くようにする**
+   - xUnit 2.9 には実行時にテストを飛ばす機能が無いので、`[WindowsFact]` / `[WindowsTheory]`（Windows 以外ならコンストラクターで `Skip` を設定する属性）を作り、
+     `\\?\`・`\\.\`・大文字の書き方・管理共有・ジャンクション・`::$DATA` と代替データストリーム・ACL・`FileStream.Lock`・共有のロック・CIM のテストを Windows 専用にする。
+     代わりに Linux 用のテスト（シンボリックリンク・フォルダーへのリンク・`..`・`//` の検出、`chmod 555` のフォルダー）を足す
+   - パスの区切り: `TemporaryDirectory.Write` / `Combine` で `\` を区切り文字に置き換える（一度に多くのテストが直る）。`C:\nonexistent` は一時フォルダーの下の存在しないパスにする
+   - ハードリンクの作り方: Linux では libc の `link()` で作る（`FileLinks.TryCreateHardLink`）。`SparseFile` は Linux では `SetLength` だけにする（ext4 では疎なファイルになる）
+   - 1 MiB の境目のテストは、実体の比較の代わりに `SafeFileOverwrite.Method` などで書き方を確かめる（statx を入れれば実体の比較のままでもよい）
+   - 改行: 改行を確かめること自体が目的でないテストは、コマンドに `-LineBreak CrLf` を足すか、期待値を `Environment.NewLine` で組み立てる。`Export_M4_*` は期待値の改行を `Environment.NewLine` にする。
+     `Append_HeaderNotReadable_SameAsHostExportCsv` は Windows 専用にするか、Linux では仕様（追記先の改行を引き継ぐ）の期待値にする
+   - カルチャーの明示: コアは `Detection(ja-JP)`、モジュールは `-Culture ja-JP`（空のファイルのテストは両方の呼び出しに渡す）。今のテストは日本語の Windows で動かすことを暗に前提にしている
+5. **macOS の実体の鍵。** macOS は `stat` の構造体と関数が Linux と違う（`statx` が無い）ので、別に P/Invoke する。手元に macOS が無いので、実測の手段から決める
+6. `SystemCodePages.cs` の XML コメントの `ansi` の書き方を直す（15.6 節）
+
+### 15.9 直した文書
+
+- CHANGELOG（1.3.0 に「Linux / macOS の既知の制限（PowerShell モジュール）」の節を足した。BUG-0004・0017 の項に「Linux のハードリンクは除く」、H-17 のリンク切れの項に Linux の例外、第六次 A の BUG-0032 の項の `ansi`）
+- README（1.3.0 の「パスの束縛・同じファイルの判定・リンクの扱い」に Linux の例外、「読み書きの細部の修正」の `ansi`、「Linux / macOS の既知の制限」の小見出し、1.1.0 の `-Culture` の説明に Linux の例）
+- 1.3.0 仕様書（16.5 に Linux の例外と 28 章への参照、21 章の表に Linux の `-Append` の改行、25.5 の `ansi`、28 章を新設）
+- `publish/SnowStack.EncodingProbe.PowerShell/SnowStack.EncodingProbe.PowerShell.psd1` の ReleaseNotes（`ansi` の書き方だけ）
+- 動作確認手順書 4.1（標準の `Set-Content -Encoding ansi` と比べる手順）
+- 本書 11.4 節（訂正の注記）と本章

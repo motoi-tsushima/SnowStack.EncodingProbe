@@ -105,7 +105,7 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
   ID と分類は、両ホストの標準の `Set-Content` / `Add-Content` の実測と同じです。読み込み（`Get-ProbedContent`・`Import-ProbedCsv`）は、これまでどおりエラーにしません
 - **同じファイルかどうかを、パスの文字列ではなくファイルの実体で比べます**（BUG-0004・0017）。Windows ではボリュームのシリアル番号とファイル ID、Linux / macOS ではリンクを解決したパスで比べます。
   - `\\?\`・`\\?\UNC\`・UNC の管理共有・`\\.\`・subst・シンボリックリンク・ジャンクション・ハードリンク・`::$DATA` の書き方でも `SamePathRoundTrip` で止まり、読み込み中のファイルを切り詰めません。
-    `Get-ProbedContent | Add-ProbedContent` が終わらずにファイルが増え続けることもなくなりました
+    `Get-ProbedContent | Add-ProbedContent` が終わらずにファイルが増え続けることもなくなりました（**Linux のハードリンクは除く**。下の「Linux / macOS の既知の制限」の D2）
   - `Convert-ProbedContent -Destination` に変換元のフォルダーを別の書き方で渡しても、`DestinationIsSource`（N9）にします。`-Force` でも変換元を書き換えません（これまでは `DestinationExists` か、`-Force` で書き換えていました）。N8 も実体で比べます
 - **1 回の呼び出しで同じ実体を 2 回指定したときの扱いを改めました**（BUG-0016）。`Set-ProbedContent` は 1 回書いたのと同じ結果にします（2 回目が追記になっていました。パスをパイプラインから受け取る場合も同じ）。
   `Add-ProbedContent` は、1 回の指定の中の重複は 1 回だけ追記し（7.x の標準の `Add-Content` と同じ）、パイプラインのレコードをまたぐ場合はレコードごとに追記します（両ホストの標準と同じ）
@@ -117,6 +117,7 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
   - ハードリンク（リンク数が 2 以上）と、フォルダーにファイルを作る権限が無い場合は、元のファイルを一時フォルダーに写してから元のファイルに直接書き、失敗したら写しから書き戻します（ハードリンクが切れていました・書けませんでした）
   - 書き込み先がリンク切れのシンボリックリンクの場合、`Set-ProbedContent` は書かずに非終了エラー `LinkTargetNotFound`（新しい ID）を報告します（標準の `Set-Content` も書きません）。
     `Out-ProbedFile`・`Export-ProbedCsv`・追記は、標準の `Out-File`・`Export-Csv`・`Add-Content` と同じく、リンクの先にファイルを作ります
+    （**Linux では、追記（`Add-ProbedContent`・`-Append`）はエラーになり、リンクの先に作りません**。下の「Linux / macOS の既知の制限」の D3）
   - 読み取り専用の検査と `-Force` は、リンクではなくリンクの先の実体に対して行います
   - Linux / macOS では、置き換える前に元のファイルのアクセス権（UnixFileMode）を一時ファイルに写します（所有者は写せません。ハードリンクは切れます。既知の限界）
   - `Convert-ProbedContent` の一時ファイルの名前は、ほかのコマンドと同じ `.<名前>.<8 桁の 16 進>.probedtmp` になりました（第六次 B で `.~probed<8 桁>.probedtmp` に改めました）（これまでは `.<名前>.<GUID>.tmp`）
@@ -143,7 +144,9 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
 テスト担当のブラックボックステスト（BUG-0018・0020・0021・0031・0032・0033・0037・0042）への対応です。実装記録 11 章に、実測と決定の根拠があります。
 
 - **`ansi` / `oem` を、スレッドのカルチャーではなく、システムのロケールの ANSI / OEM コードページにしました**（BUG-0032。1.1.0 から）。
-  Windows では `GetACP` / `GetOEMCP` で、標準の 7.x の `-Encoding ansi` / `oem`、5.1 の `Default` / `Oem` と同じです。対象はすべての `-Encoding` と `ConvertTo-DotNetEncoding`、`Get-EncodingProbePlatformInfo` の `Locale`
+  Windows では `GetACP` / `GetOEMCP` で、5.1 の `Default` / `Oem`、7.x の `oem` と同じです。対象はすべての `-Encoding` と `ConvertTo-DotNetEncoding`、`Get-EncodingProbePlatformInfo` の `Locale`
+  - **標準の 7.x の `-Encoding ansi` は、プロセスの開始時の現在のカルチャー（「形式」）の ANSI コードページなので、「形式」をシステムのロケールと違う値にしている環境では本モジュールと違います**
+    （例: 日本語の Windows で形式を英語（米国）にすると、標準は 1252、本モジュールは 932）。リリース前の補足で訂正しました（第六次 A の時点では「標準の 7.x の `ansi` と同じ」と書いていました。実装記録 15 章）
   - システムの ANSI / OEM が 65001（「ベータ: ワールドワイド言語サポートで Unicode UTF-8 を使用」）の場合は、BOM 無しの UTF-8 として扱います
   - Linux / macOS では今までどおり、現在のカルチャー（環境変数 `LC_ALL` / `LANG` などから決まる）の値です（README と 1.3.0 仕様書 25.5 に、実測した値を書きました）
   - **`-Encoding 0` は拒否します**（使えないコードページの `1`・`2`・`3` などと同じエラー）。これまでは `Encoding.GetEncoding(0)`（実行環境の既定）になっていました
@@ -227,6 +230,27 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
   - `Convert-ProbedContent` は、BOM だけのファイルを指定によらず 0 バイトにします（`-Bom Add` でも）。1.2.0 仕様書 13.1 とヘルプに書きました。見直しは 1.4.0 で検討します（BUG-0043）
   - 既定の判定方式（`Combined`）と `NativeOnly` は、HZ-GB-2312 と UTF-7 を判定しません（us-ascii になります）。HZ は `-Strategy UtfUnknownOnly` で判定でき、確実に読むには `-Encoding` で明示します。既定で HZ を採ると `~{` を含む英数字のテキストを誤判定するためで、条件を付けて採るかは 1.4.0 で検討します（BUG-0044。1.1.0 仕様書 4.4 とヘルプ）
   - README の 1.2.0 の節の「5.1 でも同じバイト列になる」に、表などの整形結果はホストで違うことがある旨を書きました（BUG-0008 の追記。1.2.0 仕様書 2.3）
+
+### Linux / macOS の既知の制限（PowerShell モジュール）
+
+リリース前に WSL の Ubuntu 24.04（PowerShell 7.6.9）で確かめて見つかったものです。1.3.0 では直さず、1.4.0 で直します（D1〜D4）。どれも元のファイルの内容は失いません。
+実測と原因は実装記録 15 章、仕様の上の位置付けは 1.3.0 仕様書 28 章にあります。Windows には当てはまりません。
+
+- **D1: 1 MiB を超えるハードリンクに上書きすると、リンクが切れます**（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent`）。
+  書いた名前だけが新しい内容になり、ほかの名前は古い内容のままです。書く内容と元のファイルがどちらも 1 MiB 以内なら、リンクは保たれます。
+  Linux では .NET からリンク数を取れないため、写してから直接書く方法が選ばれず、一時ファイルで置き換えるためです
+- **D2: 読み込みと追記を別のハードリンク名で行うと、終わらずにファイルが増え続けます**（`Get-ProbedContent t.txt | Add-ProbedContent hard.txt` など。`Get-ProbedContent a.txt, t.txt | Add-ProbedContent hard.txt` の逆向きも同じ）。
+  Linux / macOS の同じファイルの判定はリンクを解決したパスで比べるので、ハードリンクを別のファイルとみなすためです。標準の `Add-Content` も同じく増え続けます（同じ名前でも）。
+  上書き（`Set-`・`Out-`・`Export-`）は名前が違っても内容を失いません（1 MiB 以内は読み終えてから書き、1 MiB を超えると D1 のとおりリンクが切れます）
+- **D3: リンク切れのシンボリックリンクへの追記は、エラーになります**（`Add-ProbedContent` は `AutoEncodingRequiresExistingFile`、`Out-ProbedFile -Append`・`Export-ProbedCsv -Append` は `ReadFailed`）。
+  Windows では、標準の `Add-Content`・`Out-File -Append` と同じくリンクの先にファイルを作ります。Linux の .NET が、リンク切れのリンクをリンク自身の長さを持つ既存のファイルとして報告するためです
+  （`Add-ProbedContent -Encoding <名前> -AllowEncodingChange` は作ります。標準の `Export-Csv -Append` もエラーになります）
+- **D4: 共有を許さずに開かれたファイル（.NET の `FileShare.None`。Linux の .NET は `flock` の勧告ロックで表します）を読み書きしたときのエラーのメッセージが「error code 0x0000000B」になります。** ID（`ReadFailed`・`WriteFailed`）は正しく、ファイルは変わりません。
+  Windows の「別のプロセスが使用中」のメッセージになりません（標準の `Get-Content` は「being used by another process」です）
+- **macOS では、ハードリンクの扱い（D1・D2）を確かめていません。** 同じファイルの判定は Linux と同じくリンクを解決したパスで比べるので、D2 は同じく起きると考えられます
+- **`LANG` が未設定の Linux（不変カルチャー）では、カルチャーによる絞り込みが効かず、日本語のファイルの判定が `-1` や UTF.Unknown の結果（`51932` など）になります。**
+  東アジア以外のカルチャーと同じ扱い（1.2.0 のカルチャーゲート）で、Windows で形式を英語にした場合と同じ結果です。`-Culture ja-JP` を指定するか、`LANG=ja_JP.UTF-8` などを設定してください
+- **Linux では、`Export-ProbedCsv -Append` が追記先の CRLF を引き継ぐ**（1.3.0 仕様書 16.3）ため、LF を書く標準の `Export-Csv -Append` と違います（1.3.0 仕様書 21 章の表）
 
 ### 追加したコマンド
 

@@ -112,12 +112,14 @@ UTF-16 / UTF-32 と判定したファイルの改行コード（`LineBreak`）�
   これまでは何も書かずにエラーも出しませんでした
 - **読み取り中のファイルへの書き込み（`SamePathRoundTrip`）を、パスの文字列ではなくファイルの実体で検出します。**
   `\\?\`・UNC の管理共有・`\\.\`・subst・シンボリックリンク・ジャンクション・ハードリンクで書き方を変えると検出をすり抜け、読み込み中のファイルが黙って切り詰められていました
-  （`Add-ProbedContent` は終わらずにファイルが増え続けていました）。`Convert-ProbedContent -Destination` が変換元のフォルダーかどうかも、同じく実体で比べます
+  （`Add-ProbedContent` は終わらずにファイルが増え続けていました）。`Convert-ProbedContent -Destination` が変換元のフォルダーかどうかも、同じく実体で比べます。
+  **Linux のハードリンクは除きます**（Linux / macOS ではリンクを解決したパスで比べるため、名前の違うハードリンクは別のファイルとみなします。下の「Linux / macOS の既知の制限」の D2）
 - **1 回の `Set-ProbedContent` で同じファイルを 2 回指定しても、1 回書いたのと同じ結果になります**（2 回目が追記になっていました）
 - **追記の整合性検査（`EncodingChangeOnAppend`）で止まった場合も、その呼び出しで書いた分を取り消して、ファイルを追記の前に戻します**
 - **シンボリックリンクに上書きすると、リンクの先の実体を書き換え、リンクはそのまま残します。ハードリンクは切りません**（`Convert-ProbedContent` を含む）。
   これまでは一時ファイルで置き換えていたため、リンクがただのファイルに置き換わり、ハードリンクが切れていました。
-  ハードリンクと、フォルダーにファイルを作る権限が無い場合は、元のファイルを一時フォルダーに写してから直接書きます（大きなファイルでは写す時間がかかります）
+  ハードリンクと、フォルダーにファイルを作る権限が無い場合は、元のファイルを一時フォルダーに写してから直接書きます（大きなファイルでは写す時間がかかります）。
+  Linux では、1 MiB を超えるハードリンクは切れます（下の「Linux / macOS の既知の制限」の D1）
 - `a.txt::$DATA`（主ストリームの名前）は `a.txt` として扱います。Windows PowerShell 5.1 では生の例外で止まっていました。代替データストリーム（`a.txt:alt`）は、両ホストでエラー `AlternateDataStreamNotSupported` です
 - `Resolve-Encoding` も、解釈できない `-Strategy` / `-Culture` を、ほかのコマンドと同じ ID（`InvalidStrategy` / `InvalidCulture`）の終了エラーにします
 
@@ -133,8 +135,10 @@ UTF-16 / UTF-32 と判定したファイルの改行コード（`LineBreak`）�
 
 テスト担当のブラックボックステストで見つかった不具合を直しました（詳細は [CHANGELOG.md](CHANGELOG.md) と 1.3.0 仕様書 18.4・25 章）。
 
-- **`ansi` / `oem` は、Windows ではシステムのロケール（「Unicode 対応ではないプログラムの言語」）の ANSI / OEM コードページです**（標準の 7.x の `-Encoding ansi` / `oem`、5.1 の `Default` / `Oem` と同じ）。
+- **`ansi` / `oem` は、Windows ではシステムのロケール（「Unicode 対応ではないプログラムの言語」）の ANSI / OEM コードページです**（5.1 の `Default` / `Oem`、7.x の `oem` と同じ）。
   これまでは「地域」の形式（スレッドのカルチャー）の値で、日本語の Windows で形式を「英語（米国）」にしていると `ansi` が 1252 になっていました。
+  **標準の 7.x の `-Encoding ansi` は、プロセスの開始時の現在のカルチャー（「形式」）の ANSI コードページなので、「形式」をシステムのロケールと違う値にしている環境では本モジュールと違います**
+  （例: 日本語の Windows で形式を英語（米国）にすると、標準は 1252、本モジュールは 932）。
   `Get-EncodingProbePlatformInfo` の `Locale` も同じ値です。システムの ANSI が 65001（UTF-8 のベータ機能）の場合は、BOM 無しの UTF-8 として扱います。`-Encoding 0` はエラーにします
 - **BOM が 2 個続くファイルは、先頭の 1 個だけを取り除きます**（2 個目の U+FEFF は文字として残します。7.x の `Get-Content` / `Import-Csv` と同じ）。
   `-Encoding utf8BOM` などを指定すると、2 個とも取り除いていました（1.1.0 から）
@@ -175,6 +179,23 @@ Linux（Ubuntu 24.04、.NET 10.0.14、PowerShell 7.6.9）で実測した値は�
 `LC_ALL` を設定すると、`LANG` より優先されます（空の文字列を設定した `LC_ALL` も優先され、不変カルチャーになります）。
 標準の PowerShell 7.x の `-Encoding ansi` は同じ値ですが、**標準の `-Encoding oem` は UTF-8 で、本モジュールの `oem` とは違います。**
 macOS は実測していません（.NET のソースからの推定では、Linux と同じく現在のカルチャーの値になります）。
+
+#### Linux / macOS の既知の制限
+
+WSL の Ubuntu 24.04（PowerShell 7.6.9）で確かめて見つかったものです。1.4.0 で直します（D1〜D4）。どれも元のファイルの内容は失いません。Windows には当てはまりません。
+
+- **D1: 1 MiB を超えるハードリンクに上書きすると、リンクが切れます**（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent`）。
+  書いた名前だけが新しい内容になり、ほかの名前は古い内容のままです。書く内容と元のファイルがどちらも 1 MiB 以内なら、リンクは保たれます
+- **D2: 読み込みと追記を別のハードリンク名で行うと、終わらずにファイルが増え続けます**（`Get-ProbedContent t.txt | Add-ProbedContent hard.txt` など）。
+  標準の `Add-Content` も同じく増え続けます。読み込むファイルと同じ実体に追記しないでください
+- **D3: リンク切れのシンボリックリンクへの追記（`Add-ProbedContent`・`Out-ProbedFile -Append`・`Export-ProbedCsv -Append`）は、エラーになります。**
+  Windows では、標準の `Add-Content` と同じくリンクの先にファイルを作ります
+- **D4: 共有を許さずに開かれたファイルを読み書きしたときのエラーのメッセージが「error code 0x0000000B」になります**（エラーの ID は正しく、ファイルは変わりません）
+- **macOS では、ハードリンクの扱い（D1・D2）を確かめていません**
+- **`LANG` が未設定の Linux（不変カルチャー）では、日本語のファイルの判定が `-1` や UTF.Unknown の結果（`51932` など）になります。**
+  東アジア以外のカルチャーとして扱い、カルチャーによる絞り込み（Shift_JIS と EUC-JP の判定など）が効かないためです。
+  `-Culture ja-JP` を指定するか、`LANG=ja_JP.UTF-8` などを設定してください（`-Culture` については下の「1.1.0 で追加したコマンド」の説明も参照）
+- **Linux では、`Export-ProbedCsv -Append` は追記先の改行（CRLF なら CRLF）を引き継ぎます。** 標準の `Export-Csv -Append` は、Linux では LF を書きます
 
 ### CSV の読み書きコマンド（PowerShell モジュール）
 
@@ -308,6 +329,7 @@ Get-ProbedContent .\german.txt -Strategy UtfUnknownOnly
 - `-Encoding` の入力形式によって改行コードの決まり方が変わります
 
 `Get-ProbedContent` / `Set-ProbedContent` / `Add-ProbedContent` は、`Resolve-Encoding` と同じ `-Culture` と `-Strategy` を受け取ります。バイト列だけでは区別できない組み合わせ（EUC-KR と CP949、EUC-JP と Shift-JIS など）はカルチャーで曖昧解消するため、**日本語環境で韓国語や中国語のファイルを扱うときは `-Culture` に対象言語のカルチャーを指定してください**。`-EncodingFrom` の参照ファイルや、`-Encoding` を省略したときの継承にも効きます。
+`LANG` が未設定の Linux（不変カルチャー）のように、カルチャーが東アジアのものでない環境で日本語のファイルを扱うときも、`-Culture ja-JP` を指定するか、`LANG=ja_JP.UTF-8` などを設定してください（指定しないと Shift_JIS / EUC-JP の判定が効かず、判定不能や UTF.Unknown の結果になります）。
 
 いずれも各コマンドの `Get-Help <コマンド名> -Full` に記載しています。ヘルプは英語・日本語・韓国語・繁体字中国語・簡体字中国語の 5 言語を同梱しています。詳細は [CHANGELOG.md](CHANGELOG.md) を参照してください。
 
