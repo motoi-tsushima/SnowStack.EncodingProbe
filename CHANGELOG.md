@@ -105,8 +105,9 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
   ID と分類は、両ホストの標準の `Set-Content` / `Add-Content` の実測と同じです。読み込み（`Get-ProbedContent`・`Import-ProbedCsv`）は、これまでどおりエラーにしません
 - **同じファイルかどうかを、パスの文字列ではなくファイルの実体で比べます**（BUG-0004・0017）。Windows ではボリュームのシリアル番号とファイル ID、Linux / macOS ではリンクを解決したパスで比べます。
   - `\\?\`・`\\?\UNC\`・UNC の管理共有・`\\.\`・subst・シンボリックリンク・ジャンクション・ハードリンク・`::$DATA` の書き方でも `SamePathRoundTrip` で止まり、読み込み中のファイルを切り詰めません。
-    `Get-ProbedContent | Add-ProbedContent` が終わらずにファイルが増え続けることもなくなりました（**Linux のハードリンクは除く**。下の「Linux / macOS の既知の制限」の D2）
+    `Get-ProbedContent | Add-ProbedContent` が終わらずにファイルが増え続けることもなくなりました（**Linux / macOS のハードリンクと、macOS などで大文字・小文字だけが違う名前は除く**。下の「Linux / macOS の既知の制限」の D2・D5）
   - `Convert-ProbedContent -Destination` に変換元のフォルダーを別の書き方で渡しても、`DestinationIsSource`（N9）にします。`-Force` でも変換元を書き換えません（これまでは `DestinationExists` か、`-Force` で書き換えていました）。N8 も実体で比べます
+    （macOS などで大文字・小文字だけが違う書き方は除く。下の D6）
 - **1 回の呼び出しで同じ実体を 2 回指定したときの扱いを改めました**（BUG-0016）。`Set-ProbedContent` は 1 回書いたのと同じ結果にします（2 回目が追記になっていました。パスをパイプラインから受け取る場合も同じ）。
   `Add-ProbedContent` は、1 回の指定の中の重複は 1 回だけ追記し（7.x の標準の `Add-Content` と同じ）、パイプラインのレコードをまたぐ場合はレコードごとに追記します（両ホストの標準と同じ）
 - **追記の整合性検査（`EncodingChangeOnAppend`）で止まった場合も、ファイルを元に戻します。** `Add-ProbedContent`・`Out-ProbedFile -Append`・`Export-ProbedCsv -Append` で、
@@ -117,9 +118,16 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
   - ハードリンク（リンク数が 2 以上）と、フォルダーにファイルを作る権限が無い場合は、元のファイルを一時フォルダーに写してから元のファイルに直接書き、失敗したら写しから書き戻します（ハードリンクが切れていました・書けませんでした）
   - 書き込み先がリンク切れのシンボリックリンクの場合、`Set-ProbedContent` は書かずに非終了エラー `LinkTargetNotFound`（新しい ID）を報告します（標準の `Set-Content` も書きません）。
     `Out-ProbedFile`・`Export-ProbedCsv`・追記は、標準の `Out-File`・`Export-Csv`・`Add-Content` と同じく、リンクの先にファイルを作ります
-    （**Linux では、追記（`Add-ProbedContent`・`-Append`）はエラーになり、リンクの先に作りません**。下の「Linux / macOS の既知の制限」の D3）
+    （**Linux / macOS では、追記（`Add-ProbedContent`・`-Append`）はエラーになり、リンクの先に作りません**。下の「Linux / macOS の既知の制限」の D3）
   - 読み取り専用の検査と `-Force` は、リンクではなくリンクの先の実体に対して行います
-  - Linux / macOS では、置き換える前に元のファイルのアクセス権（UnixFileMode）を一時ファイルに写します（所有者は写せません。ハードリンクは切れます。既知の限界）
+  - Linux / macOS では、置き換える前に元のファイルのアクセス権（UnixFileMode）を一時ファイルに写します（所有者・ACL・拡張属性は写せません。ハードリンクは切れます。既知の限界。下の D1・D7）
+  - **1.2.0 からの変更（Linux / macOS）: 1 MiB を超える上書きは、ファイルを置き換えるようになりました。** 1.2.0 の `Set-ProbedContent`・`Out-ProbedFile` は、大きさによらず元のファイルに直接書いていました。
+    1.3.0 では、1 MiB を超える上書き（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`。`Export-ProbedCsv` は 1.3.0 で追加したコマンド）は一時ファイルで置き換えるので、
+    **ハードリンクが切れ（D1）、ACL と拡張属性が消えます（D7）。** モードと macOS の隠しファイルのフラグ（hidden）は保ちます。1 MiB 以内の上書きと追記は、元のファイルに直接書くので、どれも保ちます。
+    その代わり、ハードリンクの別名や大文字・小文字だけが違う名前で、読み込み中のファイルに上書きしても、中身を失わなくなりました
+    （1.2.0 は読み込み中のファイルを切り詰めていました。macOS で 1.2 MB のファイルが 4,098 バイトになりました。実装記録 16 章）
+  - `Convert-ProbedContent` は 1.2.0 より良くなりました。1.2.0 は大きさによらずファイルを置き換えていたので、Linux / macOS では小さなファイルでもハードリンクが切れ、
+    ACL・拡張属性・モード・hidden フラグを失っていました（macOS で確かめました）。1.3.0 は、1 MiB 以内ならすべて保ち、1 MiB を超えてもモードと hidden フラグは保ちます
   - `Convert-ProbedContent` の一時ファイルの名前は、ほかのコマンドと同じ `.<名前>.<8 桁の 16 進>.probedtmp` になりました（第六次 B で `.~probed<8 桁>.probedtmp` に改めました）（これまでは `.<名前>.<GUID>.tmp`）
 - **書く内容と元のファイルがどちらも 1 MiB 以内なら、一時ファイルを使わず、元のファイルの中身をメモリに写してから直接書きます**（第五次の仕上げ。`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`（`-Append` なし）・`Convert-ProbedContent`）。
   上の一時ファイルによる置き換え（`File.Replace`）で、小さなファイルへの書き込みが第四次の約 10 倍遅くなっていたためです。失敗したらメモリの写しから書き戻します（まだ無いファイルは直接作り、失敗したら消します）。
@@ -233,24 +241,39 @@ PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv`
 
 ### Linux / macOS の既知の制限（PowerShell モジュール）
 
-リリース前に WSL の Ubuntu 24.04（PowerShell 7.6.9）で確かめて見つかったものです。1.3.0 では直さず、1.4.0 で直します（D1〜D4）。どれも元のファイルの内容は失いません。
-実測と原因は実装記録 15 章、仕様の上の位置付けは 1.3.0 仕様書 28 章にあります。Windows には当てはまりません。
+リリース前に WSL の Ubuntu 24.04（ext4）と macOS 15.8（APFS）で、PowerShell 7.6.9 を使って確かめて見つかったものです。1.3.0 では直さず、1.4.0 で直します（D1〜D7）。
+どれも元のファイルの中身は失いません（D6 は `-Force` を付けたときに 1 件目の変換結果を、D7 は ACL と拡張属性を失います）。
+実測と原因は実装記録 15 章（Linux）と 16 章（macOS）、仕様の上の位置付けは 1.3.0 仕様書 28 章にあります。Windows には当てはまりません。
 
 - **D1: 1 MiB を超えるハードリンクに上書きすると、リンクが切れます**（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent`）。
   書いた名前だけが新しい内容になり、ほかの名前は古い内容のままです。書く内容と元のファイルがどちらも 1 MiB 以内なら、リンクは保たれます。
-  Linux では .NET からリンク数を取れないため、写してから直接書く方法が選ばれず、一時ファイルで置き換えるためです
+  Linux / macOS では .NET からリンク数を取れないため、写してから直接書く方法が選ばれず、一時ファイルで置き換えるためです（macOS でも同じく起きます）。
+  1.2.0 の `Set-ProbedContent`・`Out-ProbedFile` では起きませんでした（上の「挙動の変更」）
 - **D2: 読み込みと追記を別のハードリンク名で行うと、終わらずにファイルが増え続けます**（`Get-ProbedContent t.txt | Add-ProbedContent hard.txt` など。`Get-ProbedContent a.txt, t.txt | Add-ProbedContent hard.txt` の逆向きも同じ）。
-  Linux / macOS の同じファイルの判定はリンクを解決したパスで比べるので、ハードリンクを別のファイルとみなすためです。標準の `Add-Content` も同じく増え続けます（同じ名前でも）。
+  Linux / macOS の同じファイルの判定はリンクを解決したパスで比べるので、ハードリンクを別のファイルとみなすためです（macOS でも同じく起き、1.2.0 にもありました）。標準の `Add-Content` も同じく増え続けます（同じ名前でも）。
   上書き（`Set-`・`Out-`・`Export-`）は名前が違っても内容を失いません（1 MiB 以内は読み終えてから書き、1 MiB を超えると D1 のとおりリンクが切れます）
 - **D3: リンク切れのシンボリックリンクへの追記は、エラーになります**（`Add-ProbedContent` は `AutoEncodingRequiresExistingFile`、`Out-ProbedFile -Append`・`Export-ProbedCsv -Append` は `ReadFailed`）。
-  Windows では、標準の `Add-Content`・`Out-File -Append` と同じくリンクの先にファイルを作ります。Linux の .NET が、リンク切れのリンクをリンク自身の長さを持つ既存のファイルとして報告するためです
-  （`Add-ProbedContent -Encoding <名前> -AllowEncodingChange` は作ります。標準の `Export-Csv -Append` もエラーになります）
-- **D4: 共有を許さずに開かれたファイル（.NET の `FileShare.None`。Linux の .NET は `flock` の勧告ロックで表します）を読み書きしたときのエラーのメッセージが「error code 0x0000000B」になります。** ID（`ReadFailed`・`WriteFailed`）は正しく、ファイルは変わりません。
-  Windows の「別のプロセスが使用中」のメッセージになりません（標準の `Get-Content` は「being used by another process」です）
-- **macOS では、ハードリンクの扱い（D1・D2）を確かめていません。** 同じファイルの判定は Linux と同じくリンクを解決したパスで比べるので、D2 は同じく起きると考えられます
+  Windows では、標準の `Add-Content`・`Out-File -Append` と同じくリンクの先にファイルを作ります。Linux / macOS の .NET が、リンク切れのリンクをリンク自身の長さを持つ既存のファイルとして報告するためです
+  （`Add-ProbedContent -Encoding <名前> -AllowEncodingChange` は作ります。標準の `Export-Csv -Append` もエラーになります）。
+  同じ原因で、リンク切れのリンクを「無いファイル」と扱わないため、`-Encoding` を付けない `Set-ProbedContent` は .NET の英語の文言（「Could not find file」）の `AutoEncodingRequiresExistingFile` に、
+  `Get-ProbedContent`・`Convert-ProbedContent`・`Resolve-Encoding` は `FileNotFound` ではなく `ReadFailed`（error code 0x80070002）になります
+  （macOS で確かめました。`-Encoding` を付けた `Set-ProbedContent` は、仕様どおり `LinkTargetNotFound` です）
+- **D4: 共有を許さずに開かれたファイル（.NET の `FileShare.None`。Linux / macOS の .NET は `flock` の勧告ロックで表します）を読み書きしたときのエラーのメッセージが「error code 0x0000000B」（macOS では「error code 0x00000023」）になります。** ID（`ReadFailed`・`WriteFailed`）は正しく、ファイルは変わりません。
+  Windows の「別のプロセスが使用中」のメッセージになりません（標準の `Get-Content` は「being used by another process」です）。数値は errno の EAGAIN で、Linux は 11、macOS は 35 です
+- **D5: 大文字・小文字を区別しないファイルシステム（macOS の標準の APFS など）で、大文字・小文字だけが違う名前（`t.txt` と `T.TXT`、`sub` と `SUB`）を同じファイルと判定しません。**
+  読み込みと追記をそういう名前で行うと、終わらずにファイルが増え続けることがあります（D2 と同じ形。`Add-ProbedContent`・`Out-ProbedFile -Append`・`Export-ProbedCsv -Append`。逆向きも同じ）。
+  中身は失いませんが、ディスクを使い切ることがあります。上書きは正しい結果になります。Linux / macOS の同じファイルの判定は、パスの文字列を大文字・小文字を区別して比べるためです（1.2.0 にもありました）。
+  標準のコマンドは、同じ条件で、上書きなら中身を失い、追記なら増え続けます（同じ名前でも同じです）
+- **D6: `Convert-ProbedContent -Destination` の、名前の衝突（N8）と変換元との一致（N9）の検査が、大文字・小文字の違いですり抜けます**（D5 と同じ原因。1.2.0 にもありました）。
+  `-Force` が無ければ `DestinationExists` で止まります（ID が違うだけです）。`-Force` を付けたときだけ、1 件目の変換結果を上書きするか（`one/a.txt` と `two/A.TXT` を同じ出力先へ）、
+  変換元をその場で変換します（変換元が `sub/a.txt` で `-Destination SUB`）
+- **D7: 1 MiB を超える上書き（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent`）で、ACL と拡張属性が消えます。**
+  上の「挙動の変更」のとおり、一時ファイルで置き換えるためです。モードと macOS の hidden フラグは保ちます。1 MiB 以内の上書きと追記、標準の `Set-Content` は保ちます。
+  macOS では ACL と拡張属性で、Linux（ext4）では拡張属性（`user.`）で確かめました。Linux の POSIX ACL は、仕組みから同じく消えると考えられますが、確かめていません
 - **`LANG` が未設定の Linux（不変カルチャー）では、カルチャーによる絞り込みが効かず、日本語のファイルの判定が `-1` や UTF.Unknown の結果（`51932` など）になります。**
-  東アジア以外のカルチャーと同じ扱い（1.2.0 のカルチャーゲート）で、Windows で形式を英語にした場合と同じ結果です。`-Culture ja-JP` を指定するか、`LANG=ja_JP.UTF-8` などを設定してください
-- **Linux では、`Export-ProbedCsv -Append` が追記先の CRLF を引き継ぐ**（1.3.0 仕様書 16.3）ため、LF を書く標準の `Export-Csv -Append` と違います（1.3.0 仕様書 21 章の表）
+  東アジア以外のカルチャーと同じ扱い（1.2.0 のカルチャーゲート）で、Windows で形式を英語にした場合と同じ結果です。`-Culture ja-JP` を指定するか、`LANG=ja_JP.UTF-8` などを設定してください。
+  macOS では、`LANG` が未設定のとき（`C`・`C.UTF-8`・`POSIX`、`LC_ALL=''` も）不変カルチャーにならず、システムの地域設定のカルチャーになります（地域が日本なら ja-JP）
+- **Linux / macOS では、`Export-ProbedCsv -Append` が追記先の CRLF を引き継ぐ**（1.3.0 仕様書 16.3）ため、LF を書く標準の `Export-Csv -Append` と違います（1.3.0 仕様書 21 章の表）
 
 ### 追加したコマンド
 

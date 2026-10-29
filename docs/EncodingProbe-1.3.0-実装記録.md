@@ -2294,9 +2294,11 @@ inode で確かめると、製品は正しく動いていた。書く内容が�
 ### 15.8 1.4.0 の候補
 
 1. **D1・D2: Linux の実体の鍵とリンク数を statx で取る。** `FileIdentity.OfUnix` / `FromHandle` で、デバイス番号と inode を実体の鍵に、リンク数を `LinkCount` に使う。中（100〜150 行とテスト）。
-   直したら、Linux のハードリンクを `KnownLimit_` ではなく Windows と同じ期待値でテストする
+   直したら、Linux のハードリンクを `KnownLimit_` ではなく Windows と同じ期待値でテストする。
+   **macOS には statx が無いので、`stat`（`st_dev`・`st_ino`・`st_nlink`）を使う（16.6 節で直した）**
 2. **D3: リンク切れのシンボリックリンクへの追記で、リンクの先にファイルを作る。** `EncodingInheritance.IsEmpty`・`OutProbedFileCommand`・`ExportProbedCsvCommand` で、リンクの先が無ければファイルは無いと扱う。小
-3. **D4: Windows 以外では errno 11（EAGAIN）も「使用中」とみなす**（`FileErrors.IsInUse`）。小
+3. **D4: Windows 以外では errno 11（EAGAIN）も「使用中」とみなす**（`FileErrors.IsInUse`）。小。
+   **macOS の EAGAIN は 35 なので、Linux の 11 と macOS の 35 の両方を「使用中」とみなす（16.6 節で直した）**
 4. **テストを Linux・macOS でも動くようにする**
    - xUnit 2.9 には実行時にテストを飛ばす機能が無いので、`[WindowsFact]` / `[WindowsTheory]`（Windows 以外ならコンストラクターで `Skip` を設定する属性）を作り、
      `\\?\`・`\\.\`・大文字の書き方・管理共有・ジャンクション・`::$DATA` と代替データストリーム・ACL・`FileStream.Lock`・共有のロック・CIM のテストを Windows 専用にする。
@@ -2308,6 +2310,7 @@ inode で確かめると、製品は正しく動いていた。書く内容が�
      `Append_HeaderNotReadable_SameAsHostExportCsv` は Windows 専用にするか、Linux では仕様（追記先の改行を引き継ぐ）の期待値にする
    - カルチャーの明示: コアは `Detection(ja-JP)`、モジュールは `-Culture ja-JP`（空のファイルのテストは両方の呼び出しに渡す）。今のテストは日本語の Windows で動かすことを暗に前提にしている
 5. **macOS の実体の鍵。** macOS は `stat` の構造体と関数が Linux と違う（`statx` が無い）ので、別に P/Invoke する。手元に macOS が無いので、実測の手段から決める
+   （macOS で確かめた。16 章。D1・D2 は macOS でも起き、ほかに D5〜D7 が見つかった）
 6. `SystemCodePages.cs` の XML コメントの `ansi` の書き方を直す（15.6 節）
 
 ### 15.9 直した文書
@@ -2318,3 +2321,162 @@ inode で確かめると、製品は正しく動いていた。書く内容が�
 - `publish/SnowStack.EncodingProbe.PowerShell/SnowStack.EncodingProbe.PowerShell.psd1` の ReleaseNotes（`ansi` の書き方だけ）
 - 動作確認手順書 4.1（標準の `Set-Content -Encoding ansi` と比べる手順）
 - 本書 11.4 節（訂正の注記）と本章
+
+## 16. リリース前の補足 — macOS での単体テストの仕分けと既知の制限 D5〜D7（文書だけ。2026-10-29）
+
+リリースの準備で、macOS で単体テスト（net10.0）を流して失敗を仕分け、製品の挙動を手で確かめた。あわせて、1.2.0（438886d）と標準のコマンドと比べた。利用者が次のとおり決めた。
+
+- **1.3.0 は今のモジュール（993a341）でリリースする。** macOS で見つかった製品の問題は既知の制限として文書に書き、1.4.0 で直す
+- **D1〜D4 は macOS でも起きた。新しく 3 件見つかったので、D5〜D7 とする。** 確かめたときの報告では M1〜M3 と呼んでいた（M1 = D5、M2 = D6、M3 = D7）。
+  1.3.0 仕様書と本書の「実測報告 M1・M2・M4」（CSV の挙動の実測）と紛らわしいので、D の続きの番号にした
+- **D1 と D7 の `Set-`・`Out-`・`Export-ProbedCsv` は 1.2.0 では起きなかった。** T（1 MiB）を超える上書きを置き換えにした（第五次。9.2 節）ことの副作用で、その代わりに往復の上書きで中身を失わなくなった。
+  1.2.0 からの挙動の変更なので、CHANGELOG の「挙動の変更」にも書いた
+- **ソース・テスト・MAML ヘルプは変えていない。** `publish/` で変えたのは `.psd1` の ReleaseNotes の文面だけ
+
+測定のスクリプトと生の結果は、リポジトリの外（利用者の手元）にある。根拠として要るものを本章に要約する。
+
+### 16.1 実行した環境
+
+| 項目 | 値 |
+|---|---|
+| macOS | 15.8.1（24H32）、Darwin 24.6.0 |
+| CPU | Intel Core i5-1030NG7（x86_64。Apple シリコンではない）、メモリ 8 GB |
+| dotnet | SDK 10.0.403、ランタイム 10.0.14（osx-x64） |
+| pwsh | 7.6.9 |
+| ファイルシステム | APFS。**大文字・小文字を区別しない**（macOS の標準） |
+| `LANG` / `LC_ALL` | `ja_JP.UTF-8` / 未設定。システムの地域設定は日本（AppleLocale `ja_JP`） |
+
+- 単体テストは、`feature/1.3.0-csv` の d977797（ソースは 993a341 と同じ）をビルドして流した。製品の挙動は、リリースするモジュール（993a341 の DLL）を `Import-Module` して確かめた
+- **macOS の .NET は、`LANG` が無いときにシステムの地域設定からカルチャーを決める。** `LANG` が未設定・`C`・`C.UTF-8`・`POSIX`、`LC_ALL=''` のどれでも ja-JP になり、Linux のような不変カルチャーにならない。
+  そのため「`LANG` を外す」条件は ja-JP と同じ結果になった。東アジア以外のカルチャーとして、`LANG=en_US.UTF-8` の条件を足した
+- D7 の Linux の分は、利用者が WSL の Ubuntu 24.04.5（ext4、カーネル 6.18、pwsh 7.6.9、.NET 10.0.14）で、同じモジュール（製品バージョン `1.3.0+993a341d…`）を使って確かめた
+
+### 16.2 件数と仕分け
+
+| 条件 | コア（2129 件） | モジュール（2038 件） |
+|---|---|---|
+| `LANG`・`LC_ALL` を外す（実際は ja-JP） | 失敗 1 | 失敗 202 |
+| `LANG=ja_JP.UTF-8` | 失敗 1 | 失敗 202 |
+| `LANG=en_US.UTF-8` | 失敗 7 | 失敗 211 |
+
+スキップはどの条件も 0。`LANG` を外した条件と ja の条件は、失敗したテストの一覧まで一致した。en で増えるのは、Linux の (c)（カルチャー）と同じテスト（コア 6、モジュール 9）。
+
+ja-JP のモジュールの 202 件の分類（Linux の ja-JP は 201 件）:
+
+| 分類 | 件数 | 内訳 |
+|---|---|---|
+| (a) Windows が前提 | 153 | Linux と同じ（SameFile 37、LinkAndPermission 32、ReverseRoundTrip 32、SmallFileDirectWrite 26、FileIdentity 13、共有のロック 3、SafeFileOverwrite 4、CIM 4、kernel32 の疎なファイル 2） |
+| (b) CRLF が前提 | 35 | Linux と同じ（内訳も同じ） |
+| D3 | 1 | Linux と同じ（`DanglingLink_FollowsStandard` の Add） |
+| D4 | 10 | Linux と同じ。ただしエラー コードは `0x00000023` |
+| 大文字・小文字を区別しないファイルシステムのため | 1 | `FileIdentityTests.SamePath_DifferentCase_IsSameFile`。Linux では大文字のパスが無いので落ちるのが正しいが、macOS では同じファイルを別と判定している（D5） |
+| macOS だけ（テストの前提） | 2 | 下の 2 件 |
+
+- **`CsvNameComparerTests.AllCodePoints_TableClassesEqualRuntimeOrdinalIgnoreCase`:** macOS の ICU は、Unicode 16.0 で増えた大文字・小文字の 5 組
+  （U+1C89/U+1C8A、U+A7CB/U+0264、U+A7CC/U+A7CD、U+A7DA/U+A7DB、U+A7DC/U+019B）を `OrdinalIgnoreCase` で同じとみなす。表（`CsvNameCaseTable`）は Windows の .NET 10.0.14 で生成したもので、Linux とも一致する。
+  net10.0 は実行環境の `OrdinalIgnoreCase` をそのまま使う（表は net48 だけ）ので、同じ Mac の標準のコマンドとは一致する。製品の問題ではない
+- **`FileIdentityTests.SymbolicLink_RelativeAndChained_IsSameFileAndResolvesToTarget`:** macOS の一時フォルダー `/var` は `/private/var` へのリンクで、製品はこれを解決した正しい値を返す。テストの期待値が解決前のパスだった
+- **Linux で落ちて macOS で通るもの:** `SameFileTests.Add_SameFileTwice_FollowsStandard`。大文字のパスが存在するので通るが、重複を見分けたからではない。
+  2 つの書き込みが同じ位置に同じ内容を書くので、結果として 1 回分になる（標準の `Add-Content` も同じ動き）
+- コアの 1 件は (a)（`FilePathConstructorTests` の `C:\` のパス）
+- `SparseFile.cs` が作る空の `EncodingProbeTests_*.bin` が、1 回の実行で 2 個、一時フォルダーに残る（kernel32 が無くて、後始末の前に落ちるため。Linux も同じはず）
+
+### 16.3 製品の問題と 1.2.0 との比較
+
+1.2.0 は、438886d を clone して net10.0 の Release でビルドし、DLL を直接読み込んだ（`Import-ProbedCsv` / `Export-ProbedCsv` は 1.2.0 に無いので対象外）。上限は 180 秒・64 MB。
+
+| # | macOS の 1.3.0 | 1.2.0（macOS） | データを失うか |
+|---|---|---|---|
+| D1 | Linux と同じ。T を超える上書きでハードリンクが切れる（Set・Out・Export・Convert） | **Set・Out は起きなかった**（大きさによらず直接書いていた）。Convert は 32 バイトでも切れていた（大きさによらず置き換えていた） | 失わない |
+| D2 | Linux と同じ。別のハードリンク名への追記が終わらない（Add・`Out -Append`・`Export -Append`、逆向きも） | あった。さらに、別のハードリンク名への上書き（`Get \| Set`・`Get \| Out`）で 1.2 MB の元のファイルを 4,098 / 3,278 バイトに切り詰めた | 追記は失わない（ディスクを使い切りうる）。1.2.0 の上書きは失う |
+| D3 | Linux と同じ。加えて、`-Encoding` なしの `Set-ProbedContent` が「Could not find file 'link.txt'.」（英語の生の文言）の `AutoEncodingRequiresExistingFile`、`Get-ProbedContent`・`Convert-ProbedContent`・`Resolve-Encoding` が `ReadFailed`（0x80070002）になる。macOS でも `FileInfo.Exists` が true、`Length` が 15 | 確かめていない | 失わない |
+| D4 | エラー コードが `0x00000023`（errno 35 = EAGAIN）。別のプロセスの `flock` でも同じ | 確かめていない | 失わない |
+| D5 | 大文字・小文字だけが違う名前（`t.txt` と `T.TXT`、`sub` と `SUB`）を同じファイルと判定しない。追記（Add・`Out -Append`・`Export -Append`、逆向きも）は終わらない。上書きは結果が正しい | あった。さらに上書きが 1.2 MB を 4,098 / 3,278 バイトに切り詰め、逆向きの Set は同じ名前でも 10 バイトになった（BUG-0028 で直したもの） | 1.3.0 は失わない（ディスクを使い切りうる）。1.2.0 の上書きは失う |
+| D6 | `Convert-ProbedContent -Destination` の N8（`one/a.txt` と `two/A.TXT`）と N9（変換元が `sub`、`-Destination SUB`）がすり抜ける。`-Force` なしは `DestinationExists`、`-Force` では 1 件目の結果を上書きするか変換元をその場で変換する | 同じ | `-Force` のとき、1 件目の変換結果を失う |
+| D7 | T を超える上書き（Set・Out・Export・Convert）で ACL と拡張属性が消える。モード（640・444）と hidden フラグは保つ。T 以内・Add・`chmod 555` のフォルダー（直接書く）は保つ | **Set・Out は起きなかった。** Convert は 10 バイトでも、ACL・拡張属性に加えてモード（640 → 644）と hidden フラグも失っていた | ACL と拡張属性を失う |
+
+**D7 の Linux（WSL の ext4）。** 拡張属性 `user.test` を python3 の `os.setxattr` で付け、モード 640 にして書いた。
+
+| 大きさ | Set・Out・Export・Convert | Add | 標準の `Set-Content` |
+|---|---|---|---|
+| 10 バイト | inode は変わらない。拡張属性・モードとも残る | 同左 | 同左 |
+| 1,100,000 バイト | **inode が変わり、拡張属性が消える**（「No data available」）。モード 640 は残る | inode は変わらない。拡張属性・モードとも残る | 同左 |
+
+POSIX ACL は、WSL に `setfacl` が無かったので確かめていない（sudo で入れていない）。置き換えでは新しい inode を作るので、仕組みから同じく消えると考えられる。
+
+**往復の上書きで中身を失わなくなった点（1.3.0 で良くなった点）。** 1.2 MB の `t.txt` を読み、ハードリンクの別名（`hard.txt`）か大文字の名前（`T.TXT`）に上書きした。
+
+| 操作 | 1.2.0 | 1.3.0 |
+|---|---|---|
+| `Get \| Set`・`Get \| Out` | 4,098 / 3,278 バイトに切り詰め（中身を失う） | 結果は正しい（ハードリンクは D1 のとおり切れる） |
+| 逆向き `Get a.txt, t.txt \| Set` | 10 バイトになる（中身を失う） | 結果は正しい |
+| `Get \| Add`・`Get \| Out -Append` | 終わらない | 終わらない（D2・D5） |
+
+1.2.0 は、上書きでもファイルを開いた時点で切り詰めて直接書いていたので、読み込みの途中のファイルを壊していた。1.3.0 は T 以内なら読み終えてから書き、T を超えれば一時ファイルに書いてから置き換えるので、どの名前でも中身を失わない。
+
+**止めたときの違い（1.4.0 で調べる）。** 終わらない追記をスレッドジョブの `Stop-Job` で止めると、1.3.0 の `Add-ProbedContent` は途中で 12〜17 MB まで増えた後、止めた時点で元の大きさに戻っていた（追記を元に戻した）。
+`Out-ProbedFile -Append`・`Export-ProbedCsv -Append` は、増えたまま残った（64 MB で止めた）。仕様（16.5）の「パイプラインの停止（Ctrl+C）では、それまでに書いた内容を残す」と食い違う。
+確かめたのは `Stop-Job` だけで、Ctrl+C では試していない。
+
+### 16.4 標準のコマンドとの比較
+
+macOS の pwsh 7.6.9 で、読み込みと書き込みを、大文字・小文字だけが違う名前・同じ名前・ハードリンクの別名にして、標準のコマンドで確かめた。上限は 60 秒・64 MB。
+
+| 操作 | 32 バイト | 100 KB |
+|---|---|---|
+| `Get-Content \| Add-Content` | 終わる（30 → 54） | **終わらない**（10.5〜12.0 MB で止めた） |
+| `Get-Content \| Out-File -Append` | **終わらない**（3.5〜4.7 MB で止めた） | **終わらない**（3.2〜3.6 MB で止めた） |
+| `Import-Csv \| Export-Csv -Append` | 終わる（30 → 70） | **終わらない**（38〜44 MB で止めた） |
+| `Get-Content \| Set-Content` | 終わる（改行が LF になっただけ） | **3,278 バイトに切り詰め**（中身を失う） |
+| `Get-Content \| Out-File` | **0 バイト**（中身を失う） | **0 バイト**（中身を失う） |
+| `Import-Csv \| Export-Csv` | **0 バイト**（中身を失う） | **0 バイト**（中身を失う） |
+
+- 3 つの名前の書き方のどれでも、結果は同じだった。標準のコマンドは、同じ名前でも検出しない
+- 本モジュールは同じ名前なら `SamePathRoundTrip` で止める。D5 は、大文字・小文字だけが違う名前とハードリンクの別名ではその保護が効かない、という問題になる。
+  上書きは、検出しない場合でも中身を失わない（標準と 1.2.0 は失う）
+
+### 16.5 `ansi` / `oem` とカルチャー（macOS）
+
+新しいプロセスで 1 回だけ使って比べた（標準の `ansi` は、プロセスで最初に使った時点の値に固定されるため。15.6 節）。
+
+| `LANG`（`LC_ALL` なし） | 現在のカルチャー | `Locale` とモジュールの `ansi` / `oem` |
+|---|---|---|
+| 未設定・`C`・`C.UTF-8`・`POSIX`（`LC_ALL=''` も） | ja-JP（システムの地域設定） | 932 / 932 |
+| `ja_JP.UTF-8` | ja-JP | 932 / 932 |
+| `en_US.UTF-8` | en-US | 1252 / 437 |
+| `ko_KR.UTF-8` | ko-KR | 949 / 949 |
+| `de_DE.UTF-8` | de-DE | 1252 / 850 |
+| `ru_RU.UTF-8` | ru-RU | 1251 / 866 |
+| `zh_CN.UTF-8` / `zh_TW.UTF-8` | zh-CN / zh-TW | 936 / 936、950 / 950 |
+| `LC_ALL=ko_KR.UTF-8`（`LANG` なし） | ko-KR | 949 / 949 |
+
+- 標準の `-Encoding ansi` は、すべての条件でモジュールの `ansi` と同じコードページだった。違うのは表現できない文字の扱い（標準は `?` や近い文字に置き換え、本モジュールは `UnrepresentableCharacter`）だけ
+- 標準の `-Encoding oem` は、どの条件でも UTF-8 だった（Linux と同じ。25.5）
+
+### 16.6 1.4.0 の候補（15.8 節に足す・直す）
+
+1. **D1・D2・D5・D6: 実体の鍵とリンク数を OS から取る。** Linux は statx（15.8 節の 1）。**macOS には statx が無いので、`stat`（`st_dev`・`st_ino`・`st_nlink`）を P/Invoke する**（構造体が Linux と違う）。
+   デバイス番号と inode で比べれば、ハードリンクの別名（D2）と大文字・小文字だけが違う名前（D5・D6）の両方が直る。リンク数が取れれば、T を超えるハードリンクを「写してから直接書く」（D1）。中
+2. **D3: リンク切れのシンボリックリンクを「無いファイル」と扱う。** 15.8 節の 2 の箇所に加えて、`Set-ProbedContent`（`-Encoding` なし）・`Get-ProbedContent`・`Convert-ProbedContent`・`Resolve-Encoding` で、
+   `FileIdentity.IsDanglingLink` を先に見て `LinkTargetNotFound` / `FileNotFound` にする。小
+3. **D4: Linux の 11 と macOS の 35 の両方を「使用中」とみなす**（`FileErrors.IsInUse`。15.8 節の 3 を直した）。小
+4. **D7: ACL と拡張属性を保つ。** 次のどちらか。小〜中
+   - Windows 以外では、T を超えても「写してから直接書く」方法にする（D1 も直る。大きなファイルでは写す時間がかかる）
+   - 置き換える前に、macOS は `copyfile(3)`（`COPYFILE_ACL` と `COPYFILE_XATTR`）、Linux は `listxattr` / `getxattr` / `setxattr`（POSIX ACL は `system.posix_acl_access` の拡張属性）で写す
+5. **止めたときの違いを調べる。** `Stop-Job` で止めると、`Add-ProbedContent` は追記を戻し、`Out-ProbedFile -Append`・`Export-ProbedCsv -Append` は戻さない（16.3 節）。仕様（Ctrl+C では書いた内容を残す）と合わせる。Ctrl+C で同じかも確かめる
+6. **テストの側の問題（15.8 節の 4 に足す）**
+   - `CsvNameComparerTests.AllCodePoints_…`: 実行環境の ICU の版で、`OrdinalIgnoreCase` の同値類が変わる（macOS は Unicode 16.0 の 5 組を足す）。表と比べるのは Windows だけにするか、ICU の版に合わせた期待値にする
+   - `SymbolicLink_RelativeAndChained_…`: 期待値の一時フォルダーも、リンクを解決したパス（macOS の `/private/var`）で比べる
+   - `SparseFile.cs`: 後始末の前に落ちても、作ったファイルを消す（`try` / `finally`。または Windows 以外では作らない）
+   - `Add_SameFileTwice_FollowsStandard`: macOS では、重複を見分けなくても偶然通る。D5 を直したら、2 回目が書かれないこと（重複を見分けたこと）を直接確かめる
+   - 大文字・小文字を区別しないファイルシステムのテスト（`SamePath_DifferentCase_IsSameFile` など）は、ファイルシステムが区別するかを調べて期待値を変える
+
+### 16.7 直した文書
+
+- CHANGELOG（1.3.0 の「挙動の変更（パス・同じファイル・リンク）」の H-17 の項に、1.2.0 からの変更（Linux / macOS で T を超える上書きが置き換えになり、ハードリンク・ACL・拡張属性を失う。その代わり往復の上書きで中身を失わない。Convert は良くなった）、
+  「Linux / macOS の既知の制限」に D5〜D7・D3 の範囲・D4 の macOS・macOS の `LANG`、「Linux のハードリンクは除く」などを「Linux / macOS」に）
+- README（1.3.0 の同じファイルの判定とハードリンクの項、「Linux / macOS での `ansi` / `oem`」に macOS の実測と `LANG` が未設定の場合、「Linux / macOS の既知の制限」）
+- 1.3.0 仕様書（16.5 に置き換えで失うもの・1.2.0 からの変更・大文字・小文字、21 章の表の Linux / macOS、25.5 に macOS、28 章に D5〜D7 と macOS の結果）
+- `publish/SnowStack.EncodingProbe.PowerShell/SnowStack.EncodingProbe.PowerShell.psd1` の ReleaseNotes（Linux / macOS で T を超える上書きのこと、既知の制限の場所。2 行）
+- 作業状況（現在の状態と、1.4.0 の候補）
+- 本書 15.8 節（statx・errno 11・macOS の注記）と本章

@@ -113,13 +113,15 @@ UTF-16 / UTF-32 と判定したファイルの改行コード（`LineBreak`）�
 - **読み取り中のファイルへの書き込み（`SamePathRoundTrip`）を、パスの文字列ではなくファイルの実体で検出します。**
   `\\?\`・UNC の管理共有・`\\.\`・subst・シンボリックリンク・ジャンクション・ハードリンクで書き方を変えると検出をすり抜け、読み込み中のファイルが黙って切り詰められていました
   （`Add-ProbedContent` は終わらずにファイルが増え続けていました）。`Convert-ProbedContent -Destination` が変換元のフォルダーかどうかも、同じく実体で比べます。
-  **Linux のハードリンクは除きます**（Linux / macOS ではリンクを解決したパスで比べるため、名前の違うハードリンクは別のファイルとみなします。下の「Linux / macOS の既知の制限」の D2）
+  **Linux / macOS のハードリンクと、macOS などで大文字・小文字だけが違う名前は除きます**（Linux / macOS ではリンクを解決したパスの文字列で比べるため、名前の違うハードリンクや、`t.txt` と `T.TXT` は別のファイルとみなします。下の「Linux / macOS の既知の制限」の D2・D5・D6）
 - **1 回の `Set-ProbedContent` で同じファイルを 2 回指定しても、1 回書いたのと同じ結果になります**（2 回目が追記になっていました）
 - **追記の整合性検査（`EncodingChangeOnAppend`）で止まった場合も、その呼び出しで書いた分を取り消して、ファイルを追記の前に戻します**
 - **シンボリックリンクに上書きすると、リンクの先の実体を書き換え、リンクはそのまま残します。ハードリンクは切りません**（`Convert-ProbedContent` を含む）。
   これまでは一時ファイルで置き換えていたため、リンクがただのファイルに置き換わり、ハードリンクが切れていました。
   ハードリンクと、フォルダーにファイルを作る権限が無い場合は、元のファイルを一時フォルダーに写してから直接書きます（大きなファイルでは写す時間がかかります）。
-  Linux では、1 MiB を超えるハードリンクは切れます（下の「Linux / macOS の既知の制限」の D1）
+  Linux / macOS では、1 MiB を超えるハードリンクは切れ、ACL と拡張属性も消えます（下の「Linux / macOS の既知の制限」の D1・D7）。
+  1.2.0 の `Set-ProbedContent`・`Out-ProbedFile` は、Linux / macOS でも大きさによらず元のファイルに直接書いていたので、これは 1.2.0 からの挙動の変更です。
+  その代わり、ハードリンクの別名や大文字・小文字だけが違う名前で、読み込み中のファイルに上書きしても、中身を失わなくなりました（1.2.0 は読み込み中のファイルを切り詰めていました）
 - `a.txt::$DATA`（主ストリームの名前）は `a.txt` として扱います。Windows PowerShell 5.1 では生の例外で止まっていました。代替データストリーム（`a.txt:alt`）は、両ホストでエラー `AlternateDataStreamNotSupported` です
 - `Resolve-Encoding` も、解釈できない `-Strategy` / `-Culture` を、ほかのコマンドと同じ ID（`InvalidStrategy` / `InvalidCulture`）の終了エラーにします
 
@@ -176,26 +178,39 @@ Linux（Ubuntu 24.04、.NET 10.0.14、PowerShell 7.6.9）で実測した値は�
 | `de_DE.UTF-8` | 1252 | 850 |
 | `ko_KR.UTF-8` / `zh_CN.UTF-8` / `zh_TW.UTF-8` | 949 / 936 / 950 | 949 / 936 / 950 |
 
-`LC_ALL` を設定すると、`LANG` より優先されます（空の文字列を設定した `LC_ALL` も優先され、不変カルチャーになります）。
+`LC_ALL` を設定すると、`LANG` より優先されます（Linux では、空の文字列を設定した `LC_ALL` も優先され、不変カルチャーになります）。
 標準の PowerShell 7.x の `-Encoding ansi` は同じ値ですが、**標準の `-Encoding oem` は UTF-8 で、本モジュールの `oem` とは違います。**
-macOS は実測していません（.NET のソースからの推定では、Linux と同じく現在のカルチャーの値になります）。
+
+macOS（15.8、.NET 10.0.14、PowerShell 7.6.9）でも、現在のカルチャーの値になります。値は Linux と同じです（`ja_JP.UTF-8` は 932 / 932、`en_US.UTF-8` は 1252 / 437、`ko_KR.UTF-8` は 949 / 949、`de_DE.UTF-8` は 1252 / 850、`ru_RU.UTF-8` は 1251 / 866、`zh_CN.UTF-8` は 936 / 936、`zh_TW.UTF-8` は 950 / 950）。
+ただし、**`LANG` が未設定のとき（`C`・`C.UTF-8`・`POSIX`、`LC_ALL=''` も）不変カルチャーになるのは Linux だけです。macOS では、システムの地域設定のカルチャーになります**（地域が日本なら ja-JP で、932 / 932）。
+標準の `-Encoding ansi` と `oem` との関係は、Linux と同じです。
 
 #### Linux / macOS の既知の制限
 
-WSL の Ubuntu 24.04（PowerShell 7.6.9）で確かめて見つかったものです。1.4.0 で直します（D1〜D4）。どれも元のファイルの内容は失いません。Windows には当てはまりません。
+WSL の Ubuntu 24.04（ext4）と macOS 15.8（APFS）で、PowerShell 7.6.9 を使って確かめて見つかったものです。1.4.0 で直します（D1〜D7）。
+どれも元のファイルの中身は失いません（D6 は `-Force` を付けたときに 1 件目の変換結果を、D7 は ACL と拡張属性を失います）。Windows には当てはまりません。
 
 - **D1: 1 MiB を超えるハードリンクに上書きすると、リンクが切れます**（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent`）。
-  書いた名前だけが新しい内容になり、ほかの名前は古い内容のままです。書く内容と元のファイルがどちらも 1 MiB 以内なら、リンクは保たれます
+  書いた名前だけが新しい内容になり、ほかの名前は古い内容のままです。書く内容と元のファイルがどちらも 1 MiB 以内なら、リンクは保たれます（1.2.0 の `Set-ProbedContent`・`Out-ProbedFile` では起きませんでした）
 - **D2: 読み込みと追記を別のハードリンク名で行うと、終わらずにファイルが増え続けます**（`Get-ProbedContent t.txt | Add-ProbedContent hard.txt` など）。
   標準の `Add-Content` も同じく増え続けます。読み込むファイルと同じ実体に追記しないでください
 - **D3: リンク切れのシンボリックリンクへの追記（`Add-ProbedContent`・`Out-ProbedFile -Append`・`Export-ProbedCsv -Append`）は、エラーになります。**
-  Windows では、標準の `Add-Content` と同じくリンクの先にファイルを作ります
-- **D4: 共有を許さずに開かれたファイルを読み書きしたときのエラーのメッセージが「error code 0x0000000B」になります**（エラーの ID は正しく、ファイルは変わりません）
-- **macOS では、ハードリンクの扱い（D1・D2）を確かめていません**
+  Windows では、標準の `Add-Content` と同じくリンクの先にファイルを作ります。
+  また、`-Encoding` を付けない `Set-ProbedContent`・`Get-ProbedContent`・`Convert-ProbedContent`・`Resolve-Encoding` も、リンク切れのリンクを「無いファイル」と扱わず、`FileNotFound` ではなく .NET の文言や `ReadFailed`（error code 0x80070002）のエラーになります
+- **D4: 共有を許さずに開かれたファイルを読み書きしたときのエラーのメッセージが「error code 0x0000000B」（macOS では「error code 0x00000023」）になります**（エラーの ID は正しく、ファイルは変わりません）
+- **D5: 大文字・小文字を区別しないファイルシステム（macOS の標準の APFS など）で、大文字・小文字だけが違う名前を同じファイルと判定しません。**
+  `Get-ProbedContent t.txt | Add-ProbedContent T.TXT` のように読み込みと追記を行うと、終わらずにファイルが増え続けることがあります（D2 と同じ形。中身は失いませんが、ディスクを使い切ることがあります）。
+  上書きは正しい結果になります。標準のコマンドは、同じ条件で、上書きなら中身を失い、追記なら増え続けます。読み込むファイルと同じファイルに、名前の書き方を変えて書かないでください
+- **D6: `Convert-ProbedContent -Destination` の、名前の衝突と変換元との一致の検査が、大文字・小文字の違いですり抜けます。**
+  `-Force` を付けたときだけ、1 件目の変換結果を上書きするか（`one/a.txt` と `two/A.TXT`）、変換元をその場で変換します（変換元が `sub` で `-Destination SUB`）
+- **D7: 1 MiB を超える上書き（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent`）で、ACL と拡張属性が消えます**（一時ファイルで置き換えるため）。
+  モードと macOS の hidden フラグは保ちます。1 MiB 以内の上書きと追記、標準の `Set-Content` は保ちます。
+  macOS では ACL と拡張属性で、Linux（ext4）では拡張属性で確かめました。Linux の POSIX ACL は、仕組みから同じく消えると考えられますが、確かめていません
 - **`LANG` が未設定の Linux（不変カルチャー）では、日本語のファイルの判定が `-1` や UTF.Unknown の結果（`51932` など）になります。**
   東アジア以外のカルチャーとして扱い、カルチャーによる絞り込み（Shift_JIS と EUC-JP の判定など）が効かないためです。
   `-Culture ja-JP` を指定するか、`LANG=ja_JP.UTF-8` などを設定してください（`-Culture` については下の「1.1.0 で追加したコマンド」の説明も参照）
-- **Linux では、`Export-ProbedCsv -Append` は追記先の改行（CRLF なら CRLF）を引き継ぎます。** 標準の `Export-Csv -Append` は、Linux では LF を書きます
+  macOS では、`LANG` が未設定でもシステムの地域設定のカルチャーになるので、地域が東アジア以外の場合に同じことが起きます
+- **Linux / macOS では、`Export-ProbedCsv -Append` は追記先の改行（CRLF なら CRLF）を引き継ぎます。** 標準の `Export-Csv -Append` は、Linux / macOS では LF を書きます
 
 ### CSV の読み書きコマンド（PowerShell モジュール）
 
