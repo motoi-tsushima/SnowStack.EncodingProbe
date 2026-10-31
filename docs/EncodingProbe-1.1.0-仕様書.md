@@ -42,6 +42,8 @@ PowerShell 5.1 の標準コマンドは、`-Encoding` パラメータが `FileSy
 ### 2.2 変更しないもの
 
 - `Resolve-Encoding` — パラメータ・戻り値ともに変更しない
+  > **1.3.0 での注記:** 1.3.0 で `-DetectionLineCount`（先頭 N 行で判定する）を追加した。利用者が明示的に決定した例外で、
+  > 既存のパラメータと戻り値は変えていない（`docs/EncodingProbe-1.3.0-仕様書.md` 1.3・第 2 部）。
 - `Get-EncodingProbePlatformInfo` — 変更しない
 - `EncodingInformation` 型 — プロパティを追加しない（`DotNetEncoding` は追加しない）
 
@@ -92,14 +94,18 @@ PS 7.x の裸名は「UTF-8 だけ BOM 無、他は BOM 有」という不規則
 | 語彙 | 意味 | BOM 接尾辞 |
 |---|---|---|
 | `ascii` | US-ASCII | 不可 |
-| `ansi` | 実行環境の ANSI コードページ | 不可 |
-| `oem` | 実行環境の OEM コードページ | 不可 |
+| `ansi` | 実行環境の ANSI コードページ（Windows ではシステムのロケールの値。1.3.0 仕様書 25.5） | 不可 |
+| `oem` | 実行環境の OEM コードページ（同上） | 不可 |
 | `utf7` | UTF-7（**読み取りのみ許容・書き込み不可**） | 不可 |
 | WebName（`shift_jis` `euc-jp` `iso-2022-jp` 等） | `Encoding.GetEncoding(string)` に委譲 | 不可 |
 | 数値コードページ（`932` `65001` 等） | `Encoding.GetEncoding(int)` に委譲 | 不可 |
 | `Auto` | 検出に委ねる（コマンドごとに意味が定まる） | 不可 |
 
 BOM 接尾辞を付けられない語彙に接尾辞を付けた指定（`ansiBOM` 等）はエラーとする。
+
+> **1.3.0 第六次で改めた（BUG-0032）。** `ansi` / `oem` は、1.2.0 までスレッドのカルチャー（`CurrentCulture.TextInfo`）の値だった。
+> Windows ではシステムのロケールの値（`GetACP` / `GetOEMCP`）、65001 なら BOM 無しの UTF-8 とし、Linux / macOS は変えていない。
+> 数値の `0` は語彙に無いので拒否する。`Convert-ProbedContent` も、UTF-7 の `Encoding` のインスタンスを書き込みに使わない（BUG-0037）。詳細は 1.3.0 仕様書 25.5・25.6。
 
 PS 5.1 の `Byte` / `String` / `Unknown` は `Get-Content` の特殊値であり、本モジュールの対象外とする。
 
@@ -142,6 +148,14 @@ PS 5.1 標準では `UTF8` が BOM 付きを意味し、PS 7.x では `utf8` が
 
 WebName 経路で解決された Unicode 系（`"utf-8"` など）も同じ扱いとする。
 
+> **`$PSDefaultParameterValues` で裸の `utf8` を渡した場合（1.3.0 第六次 C で明記。BUG-0034。挙動は変えない）。**
+> `$PSDefaultParameterValues['*:Encoding'] = 'utf8'`（5.1 で UTF-8 を既定にするためによく使われる設定）は、
+> `Set-ProbedContent`・`Add-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv` では、パラメータ束縛の段階で拒否される。
+> PowerShell は、既定のパラメータ値が束縛で失敗すると、警告（「既定値 'utf8' をパラメーター 'Encoding' にバインドできませんでした」）を出してその値を使わずに続ける（PowerShell の規則）。
+> そのため、**`-Encoding` を省略したものとして書く**（`Set-` / `Add-ProbedContent` は書き込み先から継承、`Out-ProbedFile` / `Export-ProbedCsv` は `utf8NoBOM`）。
+> `Convert-ProbedContent` は実行時に拒否するので、明示と同じエラーになる。既定値には `utf8NoBOM` か `utf8BOM` を使う（ヘルプの `-Encoding`・README に書いた）。
+> 読み込みのコマンド（`Get-ProbedContent`・`Import-ProbedCsv`）には `utf8` がそのまま効き、判定せずに UTF-8 で読む（標準の `Get-Content` と同じ）
+
 ### 3.7 BOM 無し UTF-16 / UTF-32 について
 
 原則 B により語彙として定義するが、BOM 無し UTF-16 は他ツールから確実に判別できないため相互運用性が低い。**ドキュメントで非推奨と明記**する。ただし警告は出さない（`-EncodingFrom` によるラウンドトリップのたびに鳴るため）。
@@ -158,7 +172,7 @@ WebName 経路で解決された Unicode 系（`"utf-8"` など）も同じ扱�
 | `-LiteralPath` | `string[]` | ワイルドカード非対応 |
 | `-Encoding` | 多形 | 省略時は `Auto`（対象ファイルを検出） |
 | `-Raw` | switch | 行分割せず、ファイル全体を 1 個の文字列として返す |
-| `-TotalCount` | `long` | 先頭 N 行のみ読み込む |
+| `-TotalCount` | `long` | 先頭 N 行のみ読み込む。別名 `-Head`・`-First`（標準と同じ。1.3.0 第六次 C で追加。BUG-0041）。省略するとすべての行。`-1` を含む負の値は受け付けない（7.x の標準と同じ。5.1 の標準は `-1` ですべての行を読む） |
 | `-Culture` | `string` | 判定に用いるカルチャー名。省略時は実行環境のカルチャー |
 | `-Strategy` | `string` | 判定方式。`Combined`（既定）/ `NativeOnly` / `UtfUnknownOnly` |
 
@@ -358,6 +372,19 @@ GB18030（54936）のまま残る。UTF.Unknown は HKSCS 固有字が入ると�
 `ConvertTo-DotNetEncoding` には追加しない。ファイルを引数に取らず、
 判定処理そのものを呼び出さないためである。
 
+#### 7 ビットの文字エンコーディング（HZ-GB-2312・UTF-7。1.3.0 第六次 C で明記。BUG-0044）
+
+既定の `-Strategy Combined` と `NativeOnly` は、**HZ-GB-2312（52936）と UTF-7（65000）を判定しない。** どちらもすべてのバイトが `0x80` 未満なので、独自判定は us-ascii（20127）とし、
+`Combined` は独自判定が答えを出したので UTF.Unknown に問い合わせない（UTF.Unknown を使うのは、独自判定が判定不能か、旧マルチバイトを返したときだけ。4.4）。
+読み込むと、HZ の `~{…~}`・UTF-7 の `+…-` のエスケープの文字列のまま返す（元のファイルは壊れない）。
+
+- HZ は `-Strategy UtfUnknownOnly` で判定できる（52936）。UTF-7 は UTF.Unknown も判定しない（`ascii`）
+- 確実に読むには `-Encoding 52936`（HZ）・`-Encoding utf7` を明示する
+- 既定で HZ を採らないのは、`~{` を含むだけの英数字のテキスト（プログラムのソースなど）を HZ と誤判定するため。条件を付けて採るかは 1.4.0 で検討する
+- 同じ 20127 の結果でも、`EncodingWebName` は `Combined` / `NativeOnly` では `us-ascii`（.NET の WebName）、`UtfUnknownOnly` では `ascii`（UTF.Unknown の名前）になる。
+  どちらも `-Encoding` に渡せば同じ文字エンコーディングになる（`ascii` は語彙、`us-ascii` は WebName）。名前の不統一は直していない
+- 同じ 7 ビットの ISO-2022 系（50220 など）は判定する
+
 ### 4.5 採用しないパラメータと理由
 
 | パラメータ | 理由 |
@@ -368,7 +395,21 @@ GB18030（54936）のまま残る。UTF.Unknown は HKSCS 固有字が入ると�
 | FileSystem 以外のプロバイダー対応 | 同上 |
 | `-NoNewline` | `Get-Content` には存在せず、読み取り側で意味を持たない |
 
+`-TotalCount` の別名 `-Head`・`-First` は採用した（1.3.0 第六次 C。BUG-0041。`Get-Content -Head 10` をそのまま置き換えられるようにするため）。
+
 `-Raw` は利便性ではなく**情報保全**のために必須とする。行分割すると、行末が CRLF か LF か、末尾に改行があったかが失われ、後から復元できない。読み込んだ内容を加工して書き戻す用途では、`-Raw` が唯一の無損失な読み取り手段となる。
+
+### 4.6 標準の `Get-Content` との差異（1.3.0 第六次 C で一覧にした）
+
+| 項目 | 標準の `Get-Content` | `Get-ProbedContent` | 理由 |
+|---|---|---|---|
+| `-Encoding` の省略 | 5.1 は ANSI、7.x は UTF-8（どちらも BOM があれば BOM に従う） | ファイルごとに判定する | 本モジュールの目的 |
+| 0 バイト・BOM だけのファイルの `-Raw`（BUG-0040） | 何も返さない（`$null`） | **空の文字列（長さ 0 の `string`）を 1 個返す** | 4.2 の出力の型（`-Raw` は `string` 1 個）のとおり。`Set-ProbedContent -NoNewline` への受け渡しで扱いやすい。挙動は変えない |
+| `-TotalCount -1` | 5.1 はすべての行、7.x は検証エラー | 検証エラー（7.x と同じ。1.3.0 第六次 C。BUG-0041） | 省略すればすべての行 |
+| `-Delimiter`・`-Tail`・`-Wait`・`-Stream`・`-ReadCount` | ある | 無い | 4.5 |
+
+`-Raw` を付けない読み込みは、0 バイト・BOM だけのファイルで何も返さない（標準と同じ）。`if ($null -eq (Get-Content x -Raw))` で空のファイルを見分けるスクリプトは、
+`Get-ProbedContent` では `if ((Get-ProbedContent x -Raw).Length -eq 0)` などと書く。
 
 ---
 
@@ -490,6 +531,28 @@ $raw -replace 'foo','bar' | Set-ProbedContent b.txt -NoNewline
 `-EncodingFrom` の判定は `BeginProcessing` で行うため、`-Culture` / `-Strategy` の
 検証はその前に済ませる。
 
+### 5.8 標準の `Set-Content` / `Add-Content` との差異（1.3.0 第六次 C で一覧にした）
+
+| 項目 | 標準 | `Set-` / `Add-ProbedContent` | 理由 |
+|---|---|---|---|
+| `-Encoding` の省略 | 5.1 は ANSI、7.x は BOM 無しの UTF-8 | 書き込み先から継承する（無ければエラー。5.3） | 文字エンコーディングを混ぜない |
+| 裸の `utf8` | 5.1 は BOM 付き、7.x は BOM 無し | 拒否する（3.6） | ホストで意味が違う |
+| 文字列以外の値の文字列化（BUG-0036） | 現在のカルチャーの書式（ja-JP の日付は `2026/10/15 14:30:00`、de-DE の `1.5` は `1,5`） | **不変カルチャーの書式**（日付は `10/15/2026 14:30:00`、`1.5` は `1.5`。カルチャーによらない） | PowerShell の型変換（`LanguagePrimitives`）で文字列にするため。ヘルプの `-Value` に書いてある。挙動は変えない |
+| 表現できない文字 | `?` などに置き換えて書く | `UnrepresentableCharacter` で止め、書いた分を元に戻す（1.3.0 仕様書 16.4） | 文字を黙って失わない |
+| `-Value` の配列の `$null` の要素 | 飛ばす（書かない） | 飛ばす（1.3.0 第六次 A で標準にそろえた。BUG-0033。それまでは空行を書いていた） | — |
+
+**同じモジュールの中でも、文字列化の規則は 2 通りある。** `Set-` / `Add-ProbedContent` は不変カルチャー、`Out-ProbedFile`（`Out-String` の整形）と
+`Export-ProbedCsv`（1.3.0 仕様書 17 章）は現在のカルチャー。同じ日付を `Set-ProbedContent` と `Export-ProbedCsv` で書くと書式が違う。
+現在のカルチャーの書式で書くには、`-Value` に渡す前に文字列にする（`$d.ToString()`、`"$d"` は不変カルチャーなので使わない）。
+
+**既知の限界（数値の書式のホストの差）:** 不変カルチャーでも、数値の文字列化はホストの .NET で違うことがある（標準の `Set-Content` も同じく違う）。
+
+- `-0.0` は、7.x では `-0`、5.1 では `0` になる
+- `0.1 + 0.2` は、`Set-` / `Add-ProbedContent` では両ホストで `0.3` になる（PowerShell の型変換は 15 桁で丸める）。
+  一方、`Export-ProbedCsv`（値の `ToString()`。1.3.0 仕様書 17 章）では、5.1 が `0.3`（.NET Framework は 15 桁で丸める）、7.x が `0.30000000000000004`（.NET Core 3.0 以降は往復できる最短の表記）になる
+
+両ホストで同じ文字列にするには、渡す前に書式を指定して文字列にする（`$x.ToString('G15', [cultureinfo]::InvariantCulture)` など）。
+
 ---
 
 ## 6. `Add-ProbedContent` の整合性検査
@@ -519,14 +582,28 @@ $raw -replace 'foo','bar' | Set-ProbedContent b.txt -NoNewline
 
 | 既存 | 追記指定 | 内容 | 判定 |
 |---|---|---|---|
-| US-ASCII | UTF-8 | 日本語含む | Error（※） |
+| US-ASCII | UTF-8 | 日本語含む | 許可（※1。1.3.0 第五次で改めた） |
+| US-ASCII | Shift_JIS | 日本語含む | Error |
 | UTF-8 | US-ASCII | ASCII のみ | 許可 |
+| UTF-8 | US-ASCII | 日本語含む | Error（`UnrepresentableCharacter`。※2） |
 | UTF-8 | Shift_JIS | 日本語含む | Error |
 | UTF-8 | Shift_JIS | ASCII のみ | 許可 |
 | Shift_JIS | UTF-8 | 日本語含む | Error |
 | UTF-8 | UTF-16LE | 何でも | Error |
 
-※ 日本語を含む文字列は US-ASCII で符号化できず `?` に置換されるため、バイト列は一致せず Error となる。これは正しい挙動である。既存ファイルが ASCII だからといって UTF-8 の日本語を追記すれば、**ファイル全体のエンコーディングが UTF-8 に変わる**。それを黙って行うのは `Add-` の役割を超えている。
+※1 既存の US-ASCII は、BOM 無しの UTF-8 とみなして比べる（1.3.0 第五次。1.3.0 仕様書 16.1）。US-ASCII と判定されるのはすべてのバイトが `0x80` 未満のファイルで、
+それは BOM 無しの UTF-8 としても正しい。`-Encoding` を省略して追記先から継承した場合も、同じく BOM 無しの UTF-8 で書く。
+
+※2 指定された文字エンコーディング X で表現できない文字は、整合性検査の前に `UnrepresentableCharacter` で止め、ファイルを変えない（1.3.0 仕様書 16.4）。
+既存のエンコーディング Y で表現できない文字は、バイト列が一致しないものとして Error（`EncodingChangeOnAppend`）とする。
+どちらも、例外フォールバックで符号化して比べる。
+
+> **経緯（1.3.0 第五次）:** 1.1.0 から第四次までは、符号化に .NET の既定の置換フォールバックを使っていた。
+> そのため ※1 の行の注は「日本語は US-ASCII で `?` に置換されるので、バイト列は一致せず Error」としていたが、
+> X と Y が同じ（継承した場合など）と `?` 同士が一致して検査を通り、日本語を黙って `?` で書いていた（BUG-0001）。
+> また X で表現できない文字は、X と Y が同じなら検査を通り `?` やベストフィット（`é` → `e`）で書いていた（BUG-0010）。
+> 当初の注の「既存ファイルが ASCII だからといって UTF-8 の日本語を追記すれば、ファイル全体のエンコーディングが UTF-8 に変わる。
+> それを黙って行うのは `Add-` の役割を超えている」は、ASCII のファイルは UTF-8 としても正しいので変わらない、と改めた（利用者の決定）。
 
 ### 6.2 `-AllowEncodingChange`
 
@@ -538,6 +615,10 @@ Add-ProbedContent log.txt -Value $line -Encoding utf8NoBOM -AllowEncodingChange
 
 **`-Force` に相乗りさせない**。`-Force` は「読み取り専用ファイルへ書き込む」という別の意味を既に持っており、両者を分けないと「読み取り専用属性を外したいだけなのにエンコーディング検査まで無効化された」という事故が起きる。
 
+> **1.3.0 第五次の後半で明記した点（BUG-0011）:** `-AllowEncodingChange` が省くのは整合性検査だけである。`-Encoding` を指定した場合は既存ファイルを判定しないので、判定できないファイルへも追記できる。
+> `-Encoding` を省略した場合は、追記先から文字エンコーディングを継承するために判定する（判定できなければ `EncodingDetectionFailed`）。継承した文字エンコーディングで書くので、
+> 「ASCII を UTF-8 に格上げする」ためには `-Encoding` も指定する。挙動は変えず、ヘルプの「判定自体を行わない」という記述を、`-Encoding` を指定した場合に限って改めた。
+
 ### 6.3 補足
 
 - `-Encoding` を明示指定した場合でも、この判定に既存側のエンコーディングが必要なため、**既存ファイルの検出は必ず走る**。検出失敗は既定どおり Error
@@ -545,6 +626,18 @@ Add-ProbedContent log.txt -Value $line -Encoding utf8NoBOM -AllowEncodingChange
 - 改行: CRLF のファイルに LF を追記しても混在改行になるだけで、読めなくなることはない。`-LineBreak Lf` の明示指定は「今後は LF に統一したい」という正当な意図であり得るため、Error にしない
 - 既存ファイルの末尾に改行が無い場合、追記内容は最終行に連結される。標準の `Add-Content` と同じ挙動とする（1.1.0 では警告もスイッチも設けない）
 - ISO-2022-JP のような状態を持つエンコーディングも、.NET のエンコーダは `GetBytes` 呼び出しごとに状態をリセットしてエスケープシーケンスを先頭に出力するため、追記しても壊れない。バイト列比較の判定もそのまま機能する
+
+### 6.4 拒否されたときのファイル（1.3.0 第五次の後半）
+
+整合性検査で拒否された場合（`EncodingChangeOnAppend`）は、**そのファイルには、その呼び出しで書いた分を残さない。** 前のレコードで書いた分も取り消し、追記を始める前の長さに戻す
+（追記先が無かった場合は、作ったファイルを消す）。ほかのファイルへの追記は続ける（非終了エラー）。
+
+- 1.3.0 第五次の前半までは、それまでに書いた行（検査を通った行）を残していた。表現できない文字（`UnrepresentableCharacter`）は元に戻していたので、
+  失敗の種類によってファイルが元に戻るかどうかが違っていた。規則を「エラーで止まったら、そのファイルには、その呼び出しで書いた分を残さない」にそろえた（利用者の決定）
+- `-ErrorAction Stop` では `WriteError` が戻らないので、**元に戻してから**エラーを報告する
+- パイプラインの停止（Ctrl+C）では、これまでどおり、それまでに書いた内容を残す（利用者の決定）
+- 1 回の指定（`-LiteralPath a.txt, A.TXT` など）の中で同じファイル（実体）が重なった場合は 1 回だけ追記する（7.x の標準の `Add-Content` と同じ。5.1 の標準は 1 回追記した後に 2 件目で `GetContentWriterIOError`）。
+  パイプラインのレコードごとに同じファイルを渡した場合は、レコードごとに追記する（両ホストの標準と同じ）
 
 ---
 
@@ -628,8 +721,12 @@ $encobj = Resolve-Encoding file.txt | ConvertTo-DotNetEncoding
 | 判定できても実行環境がそのコードページを提供していない | 非終了エラー（`CodePageNotAvailable`） |
 | `Set-ProbedContent -Encoding Auto` で書き込み先が存在しない | 非終了エラー |
 | `Add-ProbedContent -Encoding Auto` で追記先が存在しない | 非終了エラー |
-| `Add-ProbedContent` でのバイト列不一致 | 非終了エラー（`-AllowEncodingChange` で回避可） |
-| 同一パスの読み書きを 1 つのパイプラインで行った | 非終了エラー |
+| `Add-ProbedContent` でのバイト列不一致 | 非終了エラー（`-AllowEncodingChange` で回避可）。1.3.0 第五次の後半から、その呼び出しで書いた分を取り消してファイルを元に戻す（6.4） |
+| 書き込む文字列に、書き込み先の文字エンコーディングで表現できない文字がある（1.3.0 第五次） | 非終了エラー `UnrepresentableCharacter`。ファイルは書き込みの前の状態に戻す（`-AllowEncodingChange` でも回避できない） |
+| 同じファイルの読み書きを 1 つのパイプラインで行った（1.3.0 第五次の後半から、パスの文字列ではなくファイルの実体で比べる） | 非終了エラー（`SamePathRoundTrip`） |
+| `Set-` / `Add-ProbedContent -Path` のワイルドカードがどのファイルにも一致しない（1.3.0 第五次の後半） | 非終了エラー `ItemNotFound`（標準の `Set-Content` / `Add-Content` と同じ）。読み込み側はエラーにしない |
+| 代替データストリーム（`a.txt:alt`）を指定した（1.3.0 第五次の後半。`a.txt::$DATA` は `a.txt` として扱う） | `AlternateDataStreamNotSupported`（ファイルごとの指定は非終了、出力先が 1 件のコマンドは終了エラー） |
+| `Set-ProbedContent` の書き込み先がリンク切れのシンボリックリンク（1.3.0 第五次の後半） | 非終了エラー `LinkTargetNotFound`（標準の `Set-Content` と同じく書かない） |
 | 書き込み先が読み取り専用・書き込み権限なし | 非終了エラー |
 | `-LineBreak` と `-NoNewline` の同時指定 | Warning |
 
@@ -678,7 +775,15 @@ $encobj = Resolve-Encoding file.txt | ConvertTo-DotNetEncoding
 - **CodePagesEncodingProvider**: PS 7.x / .NET で CP932 等を扱うには登録が必要。ホスト側の登録に依存せず、モジュール内で登録する
 - **大容量ファイル**: 標準の `Get-Content` と同様のメモリ挙動を保つため、行単位でストリーミング出力する（`-Raw` を除く）
 - **`-TotalCount` と検出**: 先頭 N 行のみ読む場合でも、検出のためにファイル先頭の一定量を読む必要がある
+  > **1.3.0 での注記:** 実装では、判定は**ファイル全体**を対象としている（先頭の一定量に制限すると、英数字が続いたあとに
+  > マルチバイト文字が現れるファイルを誤判定するため）。`-TotalCount` を指定しても判定は全体で行う。
+  > 先頭 N 行で判定する手段は、1.3.0 で `Resolve-Encoding` / `Import-ProbedCsv` / `Export-ProbedCsv` の `-DetectionLineCount` として追加した
+  > （`Import-` / `Export-ProbedCsv` は使う前に全体を厳密に検証する）。`Get-ProbedContent` などへの追加は 1.4.0 で検討する
+  > （`docs/EncodingProbe-1.3.0-仕様書.md` 1.4・6.1）。
 - **同一ファイルの往復**: `Get-ProbedContent a.txt | Set-ProbedContent a.txt` は、遅延読み込みの場合に書き込み側が先にファイルを切り詰めて破壊する。標準の `Get-Content` も同様だが、本コマンド群は「エンコーディングを保って書き戻す」用途でこの罠を踏みやすい。**同一パスを検出して非終了エラーとした**（`Internal/ActiveReadRegistry`）。ただし `-Raw` は出力前にファイルを閉じるため対象外で、読んで加工して書き戻せる
+  > **1.3.0 第五次の後半:** パスの文字列で比べていたため、`\\?\`・UNC の管理共有・`\\.\`・subst・リンクで書き方を変えるとすり抜けた（BUG-0004）。
+  > ファイルの実体（Windows はボリュームのシリアル番号とファイル ID、Linux / macOS はリンクを解決したパス）で比べるように改めた（`Internal/FileIdentity`）。
+  > 上書きは一時ファイルに書き始める前に、追記は「切り詰めずに開く → 開いたハンドルで比べる → 書く」の順に比べる（実装記録 10 章）
 - **`EncodingSpec`（内部型）**: 入力を `{ Encoding, EmitBom, LineBreak }` の 3 項に正規化する内部表現。`ArgumentTransformationAttribute` で全コマンド共通に解決する。**公開型としない**
 
 ---

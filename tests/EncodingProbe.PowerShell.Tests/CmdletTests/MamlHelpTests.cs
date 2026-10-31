@@ -55,6 +55,8 @@ public class MamlHelpTests
         typeof(AddProbedContentCommand),
         typeof(OutProbedFileCommand),
         typeof(ConvertProbedContentCommand),
+        typeof(ImportProbedCsvCommand),
+        typeof(ExportProbedCsvCommand),
         typeof(ConvertToDotNetEncodingCommand),
         typeof(ResolveEncodingCmdlet),
         typeof(GetEncodingProbePlatformInfoCommand),

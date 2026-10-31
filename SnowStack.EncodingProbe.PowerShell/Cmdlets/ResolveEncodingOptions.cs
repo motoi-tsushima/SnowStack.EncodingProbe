@@ -1,27 +1,68 @@
 ﻿using System;
+using System.Management.Automation;
 using SnowStack.EncodingProbe;  // クラスライブラリのnamespace
+using SnowStack.EncodingProbe.PowerShell.Internal;
 
 namespace SnowStack.EncodingProbe.PowerShell.Cmdlets
 {
     /// <summary>
     /// エンコーディング判定のオプションを表すクラス
     /// </summary>
+    /// <remarks>
+    /// -Culture / -Strategy の検証は、Resolve-Encoding と Probed 系コマンドでここを共用する（1.3.0 第五次の後半。BUG-0006）。
+    /// 1.2.0 までの Resolve-Encoding は、解釈できない値をクラスライブラリの生の ArgumentException（英語の文言・分類 NotSpecified）で止めていた。
+    /// </remarks>
     internal class ResolveEncodingOptions
     {
         /// <summary>
-        /// エンコーディング判定の戦略
+        /// カルチャー名を検証する。受け付けない場合は、終了エラーとして報告する ErrorRecord を返す（受け付ける場合は null）。
         /// </summary>
-        /// <param name="strategy">判定戦略を表す文字列</param>
-        /// <returns>対応するDetectionStrategy列挙値</returns>
-        /// <exception cref="ArgumentException">無効な戦略が指定された場合にスローされる</exception>
-        internal static DetectionStrategy ParseStrategy(string strategy)
+        /// <remarks>
+        /// 受け付けるかどうかは、名前の形だけで決める（<see cref="CultureNameSubtags.IsWellFormed(string)"/>。1.3.0 第五次の後半。BUG-0007）。
+        /// <see cref="System.Globalization.CultureInfo"/> で作れるかどうかで決めると、.NET Framework（NLS）と .NET Core（ICU）で受け付ける名前が違い、
+        /// <c>-Culture C</c> が PowerShell 5.1 では InvalidCulture、7.x では判定に進んでいた。
+        /// <br/>
+        /// 例外には .NET の例外を内部例外として持たせない。.NET の文言は 5.1 と 7.x で違い、利用者に見せる文言は
+        /// <see cref="ValidationMessages.InvalidCulture"/> だけに絞る（1.1.0 の方針）。
+        /// <br/>
+        /// 名前の前後の空白は除いてから調べる（-Encoding・-Strategy と同じ。1.3.0 第六次 C。BUG-0038）。
+        /// 判定に渡す名前も <see cref="TrimCulture"/> で除いたものにする。除くのはモジュールだけで、クラスライブラリの検証は変えない。
+        /// メッセージと対象には、渡された元の値を出す。
+        /// </remarks>
+        internal static ErrorRecord? ValidateCulture(string culture)
         {
-            if (!TryParseStrategy(strategy, out DetectionStrategy parsed))
+            if (CultureNameSubtags.IsWellFormed(TrimCulture(culture)))
             {
-                throw new ArgumentException($"Invalid strategy: {strategy}");
+                return null;
             }
 
-            return parsed;
+            return new ErrorRecord(
+                new PSArgumentException(ValidationMessages.InvalidCulture(culture)),
+                "InvalidCulture",
+                ErrorCategory.InvalidArgument,
+                culture);
+        }
+
+        /// <summary>
+        /// カルチャー名の前後の空白を除く（1.3.0 第六次 C。BUG-0038）。
+        /// </summary>
+        internal static string TrimCulture(string culture) => culture.Trim();
+
+        /// <summary>
+        /// 判定方式を検証する。解釈できない場合は、終了エラーとして報告する ErrorRecord を返す（解釈できる場合は null）。
+        /// </summary>
+        internal static ErrorRecord? ValidateStrategy(string strategy, out DetectionStrategy parsed)
+        {
+            if (TryParseStrategy(strategy, out parsed))
+            {
+                return null;
+            }
+
+            return new ErrorRecord(
+                new PSArgumentException(ValidationMessages.InvalidStrategy(strategy)),
+                "InvalidStrategy",
+                ErrorCategory.InvalidArgument,
+                strategy);
         }
 
         /// <summary>

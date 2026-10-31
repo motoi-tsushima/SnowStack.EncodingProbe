@@ -1,5 +1,4 @@
 using System;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Management.Automation;
@@ -25,6 +24,9 @@ namespace SnowStack.EncodingProbe.PowerShell.Cmdlets;
 /// <br/>
 /// 出力先は常に 1 件であり、失敗はすべて終了エラーとする（標準の Out-File と同じ）。
 /// 非終了エラーにすると、上流からレコードが届くたびに同じエラーが繰り返されるためである。
+/// <br/>
+/// パスの解決・事前の検査・ファイルを開く時点・空の入力・後始末は、1.3.0 で Export-ProbedCsv と共用するために
+/// <see cref="ProbedFileOutputCommandBase"/> へ移した（挙動は変えていない）。
 /// </remarks>
 [Cmdlet(
     VerbsData.Out,
@@ -32,7 +34,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Cmdlets;
     DefaultParameterSetName = ByPathParameterSet,
     SupportsShouldProcess = true)]
 [OutputType(typeof(void))]
-public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
+public sealed class OutProbedFileCommand : ProbedFileOutputCommandBase
 {
     /// <summary>-FilePath のパラメータセット名（標準の Out-File と同じ）</summary>
     private const string ByPathParameterSet = "ByPath";
@@ -40,40 +42,17 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
     /// <summary>-LiteralPath のパラメータセット名（標準の Out-File と同じ）</summary>
     private const string ByLiteralPathParameterSet = "ByLiteralPath";
 
-    /// <summary>ShouldProcess に表示する操作名</summary>
-    private const string OperationName = "Out-ProbedFile";
-
-    /// <summary>書き込み先の絶対パス。BeginProcessing で決まる。</summary>
-    private string _path = default!;
-
-    /// <summary>書き込みに使う文字エンコーディングと BOM 方針</summary>
-    private EncodingSpec _spec = default!;
-
     /// <summary>各行の後ろに付ける改行</summary>
     private string _lineBreak = default!;
 
-    /// <summary>
-    /// 追記の整合性検査に使う、追記先の文字エンコーディング。
-    /// 検査しない場合（上書き・追記先が無い・0 バイト・-AllowEncodingChange）は null。
-    /// </summary>
-    private Encoding? _baseline;
-
-    /// <summary>追記先が 1 バイト以上あるかどうか（BOM を書かない条件）</summary>
-    private bool _appendToExistingContent;
-
     /// <summary>整形に使う Out-String -Stream のステッパブルパイプライン</summary>
     private SteppablePipeline? _formatter;
-
-    /// <summary>開いているライター。最初の行を書く直前に開く。</summary>
-    private ProbedFileWriter? _writer;
 
     /// <summary>ShouldProcess が拒否された（-WhatIf を含む）。入力を受け取って捨てる。</summary>
     private bool _discard;
 
     /// <summary>BeginProcessing を最後まで終えたかどうか</summary>
     private bool _prepared;
-
-    private bool _disposed;
 
     /// <summary>
     /// 書き込み先のパス。ワイルドカードは、ちょうど 1 件のファイルに解決されること。
@@ -163,6 +142,16 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
     [Parameter]
     public SwitchParameter NoNewline { get; set; }
 
+
+    /// <inheritdoc />
+    private protected override string OperationName => "Out-ProbedFile";
+
+    /// <inheritdoc />
+    private protected override bool AppendRequested => this.Append.IsPresent;
+
+    /// <inheritdoc />
+    private protected override bool ForceRequested => this.Force.IsPresent;
+
     /// <summary>
     /// パラメータを検証し、出力先を決め、整形のパイプラインを開始する。ファイルはまだ開かない。
     /// </summary>
@@ -194,42 +183,26 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
             WriteWarning(ValidationMessages.AllowEncodingChangeWithoutAppend());
         }
 
-        this._path = ResolveOutputPath();
+        bool literal = this.ParameterSetName == ByLiteralPathParameterSet;
+        this.OutputPath = ResolveOutputPath(literal ? this.LiteralPath : this.FilePath, literal);
 
         // ファイルを変更しない検査（-NoClobber・読み取り専用・文字エンコーディングの決定）は、
         // ShouldProcess より前に行う。-WhatIf でも、実行すれば失敗することを報告するため（1.2.0 手動確認後の修正）
-        bool exists = File.Exists(this._path);
+        bool exists = File.Exists(this.OutputPath);
 
-        if (exists && this.NoClobber.IsPresent && !this.Append.IsPresent)
-        {
-            // -Force は -NoClobber を解除しない（標準と同じ）
-            ThrowTerminatingError(CreateError(
-                new IOException(ValidationMessages.NoClobberFileExists(this._path)),
-                "NoClobber",
-                ErrorCategory.ResourceExists,
-                this._path));
-        }
-
-        if (!this.Force.IsPresent && ReadOnlyAttributeScope.IsReadOnly(this._path))
-        {
-            ThrowTerminatingError(CreateError(
-                new UnauthorizedAccessException(ValidationMessages.FileIsReadOnly(this._path)),
-                "WriteAccessDenied",
-                ErrorCategory.PermissionDenied,
-                this._path));
-        }
+        CheckNoClobberAndReadOnly(exists, this.NoClobber.IsPresent);
 
         EncodingSpec? inherited = encodingFromBound ? ResolveEncodingFrom(this.EncodingFrom) : null;
 
         ResolveEncoding(inherited, encodingBound, exists);
 
-        if (!ShouldProcess(this._path, OperationName))
+        if (!ShouldProcess(this.OutputPath, this.OperationName))
         {
             this._discard = true;
             return;
         }
 
-        this._lineBreak = LineBreakResolver.Resolve(this.LineBreak, this._spec.LineBreak);
+        this._lineBreak = LineBreakResolver.Resolve(this.LineBreak, this.OutputSpec.LineBreak);
         this._formatter = CreateFormatter();
 
         // Begin(this) は使わない。コマンドを渡すと Out-String の出力が本コマンドの出力ストリームへ
@@ -264,118 +237,15 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
 
         WriteLines(this._formatter!.End());
 
-        if (this._writer == null)
+        if (!this.WriterOpened)
         {
             // BOM は 1 行でも書いたときにだけ書く。入力が 0 件なら、
             // 上書きは 0 バイトに切り詰め、追記は既存ファイルに触れない（無ければ 0 バイトで作る）
             CreateEmptyOutput();
         }
 
+        CompleteOutput();
         Cleanup();
-    }
-
-    /// <summary>
-    /// パイプラインが中断された場合もファイルを閉じ、読み取り専用属性を戻す
-    /// </summary>
-    protected override void StopProcessing() => Cleanup();
-
-    /// <summary>
-    /// 終了エラーなどで通常の経路を通らなかった場合に備えて後始末する
-    /// </summary>
-    public void Dispose()
-    {
-        if (this._disposed)
-        {
-            return;
-        }
-
-        this._disposed = true;
-        Cleanup();
-    }
-
-    /// <summary>
-    /// 出力先のパスを解決する。ちょうど 1 件に決まらなければ終了エラー。
-    /// </summary>
-    private string ResolveOutputPath()
-    {
-        string resolved;
-
-        if (this.ParameterSetName == ByLiteralPathParameterSet)
-        {
-            resolved = GetUnresolvedProviderPathFromPSPath(this.LiteralPath);
-        }
-        else if (WildcardPattern.ContainsWildcardCharacters(this.FilePath))
-        {
-            resolved = ResolveWildcardPath(this.FilePath);
-        }
-        else
-        {
-            resolved = GetUnresolvedProviderPathFromPSPath(this.FilePath);
-        }
-
-        string fullPath = System.IO.Path.GetFullPath(resolved);
-
-        if (Directory.Exists(fullPath))
-        {
-            ThrowTerminatingError(CreateError(
-                new IOException(ValidationMessages.PathIsNotFile(fullPath)),
-                "PathIsNotFile",
-                ErrorCategory.InvalidArgument,
-                fullPath));
-        }
-
-        string? parent = System.IO.Path.GetDirectoryName(fullPath);
-
-        if (string.IsNullOrEmpty(parent) || !Directory.Exists(parent))
-        {
-            ThrowTerminatingError(CreateError(
-                new DirectoryNotFoundException(ValidationMessages.ParentDirectoryNotFound(fullPath)),
-                "ParentDirectoryNotFound",
-                ErrorCategory.ObjectNotFound,
-                fullPath));
-        }
-
-        return fullPath;
-    }
-
-    /// <summary>
-    /// ワイルドカードを含むパスを、ちょうど 1 件の既存ファイルに解決する
-    /// </summary>
-    /// <remarks>
-    /// 0 件のとき新規作成しないのは標準の Out-File と同じ。c[1].txt のような名前は -LiteralPath で作る。
-    /// </remarks>
-    private string ResolveWildcardPath(string path)
-    {
-        Collection<string> matches;
-
-        try
-        {
-            matches = GetResolvedProviderPathFromPSPath(path, out _);
-        }
-        catch (ItemNotFoundException)
-        {
-            matches = new Collection<string>();
-        }
-
-        if (matches.Count == 0)
-        {
-            ThrowTerminatingError(CreateError(
-                new FileNotFoundException(ValidationMessages.WildcardMatchedNoFile(path), path),
-                "FileNotFound",
-                ErrorCategory.ObjectNotFound,
-                path));
-        }
-
-        if (matches.Count > 1)
-        {
-            ThrowTerminatingError(CreateError(
-                new PSInvalidOperationException(ValidationMessages.WildcardMatchedMultipleFiles(path, matches.Count)),
-                "MultipleFilesNotSupported",
-                ErrorCategory.InvalidArgument,
-                path));
-        }
-
-        return matches[0];
     }
 
     /// <summary>
@@ -386,7 +256,7 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
     /// <param name="exists">出力先が存在するかどうか</param>
     private void ResolveEncoding(EncodingSpec? inherited, bool encodingBound, bool exists)
     {
-        bool hasContent = exists && new FileInfo(this._path).Length > 0;
+        bool hasContent = exists && new FileInfo(this.OutputPath).Length > 0;
         bool append = this.Append.IsPresent;
         EncodingSpec specified = EncodingSpec.FromBoundParameter(this.Encoding);
 
@@ -403,14 +273,14 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
 
         if (inherited != null)
         {
-            this._spec = inherited;
+            this.OutputSpec = inherited;
         }
         else if (!encodingBound)
         {
             // 省略: 上書きは utf8NoBOM（捨てる内容のために判定を走らせない）。
             // 追記は追記先から継承し、無い・0 バイトなら utf8NoBOM とする。
             // 0 バイトを Encoding.Default に落とさないのは、それが PowerShell 5.1 と 7.x で異なるため
-            this._spec = append && existing != null ? existing : EncodingVocabulary.Utf8NoBom();
+            this.OutputSpec = append && existing != null ? existing : EncodingVocabulary.Utf8NoBom();
         }
         else if (specified.IsAuto)
         {
@@ -418,38 +288,21 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
             if (!exists)
             {
                 ThrowTerminatingError(CreateError(
-                    new FileNotFoundException(ValidationMessages.AutoEncodingRequiresExistingFile(this._path), this._path),
+                    new FileNotFoundException(ValidationMessages.AutoEncodingRequiresExistingFile(this.OutputPath), this.OutputPath),
                     "AutoEncodingRequiresExistingFile",
                     ErrorCategory.ObjectNotFound,
-                    this._path));
+                    this.OutputPath));
             }
 
-            this._spec = existing ?? EncodingInheritance.ForEmptySource();
+            this.OutputSpec = existing ?? EncodingInheritance.ForEmptySource();
         }
         else
         {
-            this._spec = specified;
+            this.OutputSpec = specified;
         }
 
-        this._appendToExistingContent = append && hasContent;
-        this._baseline = needsBaseline ? existing?.Encoding : null;
-    }
-
-    /// <summary>
-    /// 出力先の既存ファイルを判定する。失敗は終了エラー。
-    /// </summary>
-    private EncodingSpec DetectExisting()
-    {
-        try
-        {
-            return EncodingInheritance.FromFile(this._path, this.DetectorOptions);
-        }
-        catch (EncodingDetectionException exception)
-        {
-            ThrowTerminatingError(CreateError(exception, exception.ErrorId, ErrorCategory.InvalidData, this._path));
-
-            throw;  // ThrowTerminatingError は戻らないが、コンパイラには分からない
-        }
+        this.AppendToExistingContent = append && hasContent;
+        this.AppendBaseline = needsBaseline && existing?.Encoding != null ? existing : null;
     }
 
     /// <summary>
@@ -458,6 +311,13 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
     /// <remarks>
     /// モジュール修飾名で呼び、利用者が同名の関数を定義していても影響を受けないようにする。
     /// -Width は指定されたときだけ渡し、省略時は Out-String の既定（ホスト依存）に任せる。
+    /// <br/>
+    /// 利用者の <c>$PSDefaultParameterValues</c>（<c>'Out-String:Width'</c> など）が内部の Out-String に効かないよう、
+    /// 新しいスコープで <c>$PSDefaultParameterValues</c> を空のローカル変数にしてから、その中でステッパブルパイプラインを組み立てる（1.3.0 第六次 B。BUG-0035）。
+    /// 標準の Out-File は Out-String を呼ばないので、この設定の影響を受けない。
+    /// 幅を自分で計算して渡す方法は採らない（5.1 のコンソールでは、-Width 省略時の幅がバッファーの幅より 1 小さいなど、既定の求め方がホストで違う）。
+    /// ステッパブルパイプラインはスクリプトブロックのスコープを作らないので、外側を <c>&amp; { }</c> にする必要がある。
+    /// 本コマンド自身の -Width への既定値（<c>'Out-ProbedFile:Width'</c>・<c>'*:Width'</c>）は、BoundParameters に入るので今までどおり効く。
     /// </remarks>
     private SteppablePipeline CreateFormatter()
     {
@@ -468,7 +328,18 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
             command += " -Width " + this.Width.ToString(CultureInfo.InvariantCulture);
         }
 
-        return ScriptBlock.Create(command).GetSteppablePipeline(CommandOrigin.Internal);
+        string wrapper =
+            "& {\n"
+            + "    begin {\n"
+            + "        $PSDefaultParameterValues = @{}\n"
+            + "        $__probedFormatter = [System.Management.Automation.ScriptBlock]::Create('" + command + "').GetSteppablePipeline([System.Management.Automation.CommandOrigin]::Internal)\n"
+            + "        $__probedFormatter.Begin($true)\n"
+            + "    }\n"
+            + "    process { $__probedFormatter.Process($_) }\n"
+            + "    end { $__probedFormatter.End(); $__probedFormatter.Dispose() }\n"
+            + "}";
+
+        return ScriptBlock.Create(wrapper).GetSteppablePipeline(CommandOrigin.Internal);
     }
 
     /// <summary>
@@ -487,112 +358,16 @@ public sealed class OutProbedFileCommand : ProbedContentCommandBase, IDisposable
                 ? string.Empty
                 : (element is PSObject psObject ? psObject.BaseObject : element).ToString() ?? string.Empty;
 
-            WriteLine(line);
+            WriteChunk(this.NoNewline.IsPresent ? line : line + this._lineBreak);
         }
-    }
-
-    /// <summary>
-    /// 1 行を書く。必要ならファイルを開き、追記の整合性を検査する。
-    /// </summary>
-    private void WriteLine(string line)
-    {
-        string chunk = this.NoNewline.IsPresent ? line : line + this._lineBreak;
-
-        EnsureWriter();
-
-        if (this._baseline != null && !AppendConsistency.ProducesSameBytes(this._spec.Encoding!, this._baseline, chunk))
-        {
-            // それまでに書いた行は比較が成立した行だけなので、ファイルは追記先のエンコーディングのまま一貫している
-            Cleanup();
-
-            ThrowTerminatingError(CreateError(
-                new PSInvalidOperationException(ValidationMessages.EncodingChangeOnAppend(
-                    this._path, this._spec.Encoding!.WebName, this._baseline.WebName)),
-                "EncodingChangeOnAppend",
-                ErrorCategory.InvalidData,
-                this._path));
-        }
-
-        try
-        {
-            this._writer!.Write(chunk);
-        }
-        catch (IOException exception)
-        {
-            Cleanup();
-            ThrowTerminatingError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this._path));
-        }
-    }
-
-    /// <summary>
-    /// 最初の行を書く直前にファイルを開く
-    /// </summary>
-    private void EnsureWriter()
-    {
-        if (this._writer != null)
-        {
-            return;
-        }
-
-        // BOM は、上書き・新規作成と、追記先が無い・0 バイトの追記のときだけ書く
-        bool emitBom = this._spec.EmitBom == true && !this._appendToExistingContent;
-
-        this._writer = OpenWriter(emitBom);
-    }
-
-    /// <summary>
-    /// 入力が 0 件だったときに、BOM を書かずに出力先を作る（既存なら上書きは切り詰め、追記は触れない）
-    /// </summary>
-    private void CreateEmptyOutput()
-    {
-        if (this.Append.IsPresent && File.Exists(this._path))
-        {
-            return;
-        }
-
-        OpenWriter(emitBom: false).Dispose();
-    }
-
-    /// <summary>
-    /// ファイルを開く。同一パスの往復と、開けなかった場合は終了エラー。
-    /// </summary>
-    private ProbedFileWriter OpenWriter(bool emitBom)
-    {
-        if (ActiveReadRegistry.IsBeingRead(this._path))
-        {
-            // 同じパイプラインで読み取り中のファイルを書き換えると、残りを読めなくなる
-            ThrowTerminatingError(CreateError(
-                new PSInvalidOperationException(ValidationMessages.SamePathRoundTrip(this._path)),
-                "SamePathRoundTrip",
-                ErrorCategory.ResourceExists,
-                this._path));
-        }
-
-        try
-        {
-            return ProbedFileWriter.Open(
-                this._path, this._spec, this.Force.IsPresent, this.Append.IsPresent, emitBom);
-        }
-        catch (IOException exception)
-        {
-            ThrowTerminatingError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, this._path));
-        }
-        catch (UnauthorizedAccessException exception)
-        {
-            ThrowTerminatingError(CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, this._path));
-        }
-
-        throw new InvalidOperationException();  // ThrowTerminatingError は戻らないが、コンパイラには分からない
     }
 
     /// <summary>
     /// ファイルを閉じ（読み取り専用属性もここで戻る）、整形のパイプラインを破棄する
     /// </summary>
-    private void Cleanup()
+    private protected override void Cleanup()
     {
-        ProbedFileWriter? writer = this._writer;
-        this._writer = null;
-        writer?.Dispose();
+        base.Cleanup();
 
         SteppablePipeline? formatter = this._formatter;
         this._formatter = null;

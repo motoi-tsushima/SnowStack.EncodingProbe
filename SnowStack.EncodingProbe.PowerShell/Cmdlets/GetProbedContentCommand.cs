@@ -28,23 +28,29 @@ public sealed class GetProbedContentCommand : ProbedContentCommandBase
     /// <summary>
     /// 読み込むファイルのパス。ワイルドカードを使用できる。
     /// </summary>
+    /// <remarks>
+    /// 別名 FullName は -LiteralPath に移した（1.3.0 第五次の後半。BUG-0003）。FileInfo をパイプラインで渡すと
+    /// FullName がここに束縛されてワイルドカードとして展開され、a[1].txt を流すと a1.txt を読んでいた。
+    /// 文字列をパイプラインで渡した場合は、これまでどおりここに入り、ワイルドカードとして扱う。
+    /// </remarks>
     [Parameter(
         ParameterSetName = PathParameterSet,
         Mandatory = true,
         Position = 0,
         ValueFromPipeline = true,
         ValueFromPipelineByPropertyName = true)]
-    [Alias("FullName", "FilePath")]
+    [Alias("FilePath")]
     public string[] Path { get; set; } = default!;
 
     /// <summary>
     /// 読み込むファイルのパス。ワイルドカードを展開せず、そのままのパスとして扱う。
+    /// Get-ChildItem の出力は PSPath で、New-Object System.IO.FileInfo の出力は FullName でここに束縛される。
     /// </summary>
     [Parameter(
         ParameterSetName = LiteralPathParameterSet,
         Mandatory = true,
         ValueFromPipelineByPropertyName = true)]
-    [Alias("PSPath")]
+    [Alias("PSPath", "LP", "FullName")]
     public string[] LiteralPath { get; set; } = default!;
 
     /// <summary>
@@ -64,7 +70,12 @@ public sealed class GetProbedContentCommand : ProbedContentCommandBase
     /// <summary>
     /// 各ファイルの先頭から読み込む行数
     /// </summary>
+    /// <remarks>
+    /// 別名 -Head・-First は標準の Get-Content と同じ（1.3.0 第六次 C。BUG-0041）。
+    /// 負の値（-1 を含む）は今までどおり受け付けない（7.x の標準と同じ。5.1 の標準は -1 ですべての行を読む）。
+    /// </remarks>
     [Parameter]
+    [Alias("Head", "First")]
     [ValidateRange(0, long.MaxValue)]
     public long TotalCount { get; set; } = TotalCountUnlimited;
 
@@ -124,11 +135,11 @@ public sealed class GetProbedContentCommand : ProbedContentCommandBase
         }
         catch (IOException exception)
         {
-            WriteError(CreateError(exception, "ReadFailed", ErrorCategory.ReadError, file));
+            WriteError(CreateError(FileErrors.ReadFailed(file, exception), "ReadFailed", ErrorCategory.ReadError, file));
         }
         catch (UnauthorizedAccessException exception)
         {
-            WriteError(CreateError(exception, "ReadAccessDenied", ErrorCategory.PermissionDenied, file));
+            WriteError(CreateError(FileErrors.ReadAccessDenied(file, exception), "ReadAccessDenied", ErrorCategory.PermissionDenied, file));
         }
     }
 

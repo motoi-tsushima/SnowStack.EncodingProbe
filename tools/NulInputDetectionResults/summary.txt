@@ -1,0 +1,368 @@
+入力の数: 151（判定 API の行数: 906 = 入力 × カルチャー 2 × 判定方式 3）
+
+## TFM による違い（同じビルドの net48 と net10.0）
+  current: 0 行で違い
+  current: コマンドは 0 行で違い
+  proposal: 0 行で違い
+  proposal: コマンドは 0 行で違い
+
+# net10.0
+
+## 現状と修正案で結果が変わった行: 288 行（入力 72 件）
+  A1: 16 行
+  A2: 48 行
+  A3: 80 行
+  A4: 32 行
+  A5: 32 行
+  B1: 8 行
+  B3: 56 行
+  B5: 4 行
+  B7: 4 行
+  B8: 8 行
+
+## 1. C 群で変わった行
+  計 0 行
+
+## 2. A 群で修正案が UTF-16 / UTF-32 と答えなかった行
+  （UtfUnknownOnly: 104 行中 104 行が UTF-16 / UTF-32 以外。内訳: 20127 / ascii = 104 行）
+  計 0 行（Combined / NativeOnly）
+  A 群で UTF-16 / UTF-32 だが入力の形（幅・エンディアン）と違う行: 0 行
+
+## 3. 0x00 を含み、修正案（NativeOnly）が UTF-16 / UTF-32 と答えなかった入力
+  20127 / us-ascii / False / CrLf: 2 行
+    B3-rec17-crlf-x3|ja-JP|NativeOnly (現状 20127 / us-ascii / False / CrLf)
+    B3-rec17-crlf-x3|en-US|NativeOnly (現状 20127 / us-ascii / False / CrLf)
+  20127 / us-ascii / False / None: 36 行
+    B1-12+1|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B1-12+1|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+2|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+2|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+3|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+3|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+4|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+4|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+100|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+100|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B3-rec17-nonl-x3|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B3-rec17-nonl-x3|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B4-abc|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B4-abc|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B4-print0|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B4-print0|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B5-4+12|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B5-4+12|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero1|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero1|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero2|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero2|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero3|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero3|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero4|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero4|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero8|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero8|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero1024|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero1024|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B7-9|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B7-9|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B8-13|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B8-13|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B8-11|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B8-11|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+  50220 / iso-2022-jp / False / CrLf: 2 行
+    C2-wrap|ja-JP|NativeOnly (現状 50220 / iso-2022-jp / False / CrLf)
+    C2-wrap|en-US|NativeOnly (現状 50220 / iso-2022-jp / False / CrLf)
+  50220 / iso-2022-jp / False / None: 2 行
+    C2-mid|ja-JP|NativeOnly (現状 50220 / iso-2022-jp / False / None)
+    C2-mid|en-US|NativeOnly (現状 50220 / iso-2022-jp / False / None)
+
+## 4. B 群で修正案が UTF-16 / UTF-32 と答えた入力（ja-JP / NativeOnly）
+  B1-13+1: 1200 / utf-16 / False / None  [len=14 mod2=0 mod4=2 zeros=1 utf32=no utf16=LE null16=1/0 null32=0/0] Hello, World! + 00 (14 バイト)
+  B1-15+1: 1200 / utf-16 / False / None  [len=16 mod2=0 mod4=0 zeros=1 utf32=no utf16=LE null16=1/0 null32=0/0] Hello, World!!! + 00 (16 バイト)
+  B3-rec8-nonl-x3: 1200 / utf-16 / False / None  [len=24 mod2=0 mod4=0 zeros=13 utf32=no utf16=LE null16=3/0 null32=3/0] レコード長 8、nonl、3 レコード (24 バイト)
+  B3-rec8-nonl-x4: 1200 / utf-16 / False / None  [len=32 mod2=0 mod4=0 zeros=13 utf32=no utf16=LE null16=3/0 null32=3/0] レコード長 8、nonl、4 レコード (32 バイト)
+  B3-rec8-crlf-x3: 1200 / utf-16 / False / CrLf  [len=30 mod2=0 mod4=2 zeros=13 utf32=no utf16=LE null16=3/0 null32=2/0] レコード長 8、crlf、3 レコード (30 バイト)
+  B3-rec8-crlf-x4: 1200 / utf-16 / False / CrLf  [len=40 mod2=0 mod4=0 zeros=13 utf32=no utf16=LE null16=3/0 null32=2/0] レコード長 8、crlf、4 レコード (40 バイト)
+  B3-rec16-nonl-x3: 1200 / utf-16 / False / None  [len=48 mod2=0 mod4=0 zeros=37 utf32=no utf16=LE null16=3/0 null32=3/0] レコード長 16、nonl、3 レコード (48 バイト)
+  B3-rec16-nonl-x4: 1200 / utf-16 / False / None  [len=64 mod2=0 mod4=0 zeros=44 utf32=no utf16=LE null16=4/0 null32=4/0] レコード長 16、nonl、4 レコード (64 バイト)
+  B3-rec16-crlf-x3: 1200 / utf-16 / False / CrLf  [len=54 mod2=0 mod4=2 zeros=37 utf32=no utf16=LE null16=3/0 null32=2/0] レコード長 16、crlf、3 レコード (54 バイト)
+  B3-rec16-crlf-x4: 1200 / utf-16 / False / CrLf  [len=72 mod2=0 mod4=0 zeros=44 utf32=no utf16=LE null16=4/0 null32=2/0] レコード長 16、crlf、4 レコード (72 バイト)
+  B3-rec17-nonl-x4: 1200 / utf-16 / False / None  [len=68 mod2=0 mod4=0 zeros=48 utf32=no utf16=LE null16=2/2 null32=1/1] レコード長 17、nonl、4 レコード (68 バイト)
+  B3-rec17-crlf-x4: 1200 / utf-16 / False / CrLf  [len=76 mod2=0 mod4=0 zeros=48 utf32=no utf16=LE null16=2/2 null32=1/1] レコード長 17、crlf、4 レコード (76 バイト)
+  B3-rec32-nonl-x3: 1200 / utf-16 / False / None  [len=96 mod2=0 mod4=0 zeros=85 utf32=no utf16=LE null16=3/0 null32=3/0] レコード長 32、nonl、3 レコード (96 バイト)
+  B3-rec32-nonl-x4: 1200 / utf-16 / False / None  [len=128 mod2=0 mod4=0 zeros=108 utf32=no utf16=LE null16=4/0 null32=4/0] レコード長 32、nonl、4 レコード (128 バイト)
+  B3-rec32-crlf-x3: 1200 / utf-16 / False / CrLf  [len=102 mod2=0 mod4=2 zeros=85 utf32=no utf16=LE null16=3/0 null32=2/0] レコード長 32、crlf、3 レコード (102 バイト)
+  B3-rec32-crlf-x4: 1200 / utf-16 / False / CrLf  [len=136 mod2=0 mod4=0 zeros=108 utf32=no utf16=LE null16=4/0 null32=2/0] レコード長 32、crlf、4 レコード (136 バイト)
+  B5-1+13: 1201 / unicodeFFFE / False / None  [len=14 mod2=0 mod4=2 zeros=1 utf32=no utf16=BE null16=0/1 null32=0/0] 00 + "Hello, World!"
+  B7-10: 1200 / utf-16 / False / None  [len=10 mod2=0 mod4=2 zeros=5 utf32=no utf16=LE null16=3/0 null32=0/0] A 00 B 00 C 00 D E 00 00 (10 バイト)
+  B8-12: 12000 / utf-32 / False / None  [len=12 mod2=0 mod4=0 zeros=8 utf32=LE utf16=LE null16=2/0 null32=2/0] A 000000 B 000000 C D 0000 (12 バイト)
+  B8-16: 1200 / utf-16 / False / None  [len=16 mod2=0 mod4=0 zeros=12 utf32=no utf16=LE null16=4/0 null32=2/0] A 000000 B 000000 C 00 D 00000000 00 (16 バイト)
+  計 20 件
+
+## 5. 判定方式・カルチャーによる違い（入力ごとに 6 条件の結果が一致しないもの）
+  current C2-wrap: ja-JP/Combined=50220, ja-JP/NativeOnly=50220, ja-JP/UtfUnknownOnly=20127, en-US/Combined=50220, en-US/NativeOnly=50220, en-US/UtfUnknownOnly=20127
+  current C4-ja-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=-1, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=-1
+  current C4-ja-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=-1, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=-1
+  current C4-ja-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=-1, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=-1
+  current C4-ja-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=-1, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=-1
+  current: 6 条件で結果が一致しない入力 31 件（0x00 を含む入力だけ上に列挙）
+  proposal A1-crlf-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A1-crlf-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A1-crlf-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A1-crlf-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A2-cr-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A2-cr-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A2-cr-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A2-cr-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A2-lf-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A2-lf-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A2-lf-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A2-lf-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A2-none-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A2-none-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A2-none-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A2-none-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A3-10ch-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A3-10ch-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A3-10ch-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A3-10ch-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A3-1ch-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A3-1ch-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A3-1ch-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A3-1ch-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A3-1k-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A3-1k-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A3-1k-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A3-1k-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A3-2ch-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A3-2ch-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A3-2ch-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A3-2ch-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A3-40k-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A3-40k-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A3-40k-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A3-40k-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A4-printable-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A4-printable-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A4-printable-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A4-printable-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A4-tab-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A4-tab-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A4-tab-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A4-tab-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A5-c03-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A5-c03-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A5-c05-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A5-c05-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A5-c09-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A5-c09-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A5-c12-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A5-c12-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal B1-13+1: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B1-15+1: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec16-crlf-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec16-crlf-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec16-nonl-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec16-nonl-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec17-crlf-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec17-nonl-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec32-crlf-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec32-crlf-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec32-nonl-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec32-nonl-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec8-crlf-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec8-crlf-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec8-nonl-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec8-nonl-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B5-1+13: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal B7-10: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B8-12: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal B8-16: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal C2-wrap: ja-JP/Combined=50220, ja-JP/NativeOnly=50220, ja-JP/UtfUnknownOnly=20127, en-US/Combined=50220, en-US/NativeOnly=50220, en-US/UtfUnknownOnly=20127
+  proposal C4-ja-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=-1, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=-1
+  proposal C4-ja-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=-1, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=-1
+  proposal C4-ja-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=-1, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=-1
+  proposal C4-ja-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=-1, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=-1
+  proposal: 6 条件で結果が一致しない入力 103 件（0x00 を含む入力だけ上に列挙）
+  変化が Combined / NativeOnly × 2 カルチャーの 4 条件ちょうどでなかった入力: 0 件
+
+# net48
+
+## 現状と修正案で結果が変わった行: 288 行（入力 72 件）
+  A1: 16 行
+  A2: 48 行
+  A3: 80 行
+  A4: 32 行
+  A5: 32 行
+  B1: 8 行
+  B3: 56 行
+  B5: 4 行
+  B7: 4 行
+  B8: 8 行
+
+## 1. C 群で変わった行
+  計 0 行
+
+## 2. A 群で修正案が UTF-16 / UTF-32 と答えなかった行
+  （UtfUnknownOnly: 104 行中 104 行が UTF-16 / UTF-32 以外。内訳: 20127 / ascii = 104 行）
+  計 0 行（Combined / NativeOnly）
+  A 群で UTF-16 / UTF-32 だが入力の形（幅・エンディアン）と違う行: 0 行
+
+## 3. 0x00 を含み、修正案（NativeOnly）が UTF-16 / UTF-32 と答えなかった入力
+  20127 / us-ascii / False / CrLf: 2 行
+    B3-rec17-crlf-x3|ja-JP|NativeOnly (現状 20127 / us-ascii / False / CrLf)
+    B3-rec17-crlf-x3|en-US|NativeOnly (現状 20127 / us-ascii / False / CrLf)
+  20127 / us-ascii / False / None: 36 行
+    B1-12+1|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B1-12+1|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+2|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+2|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+3|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+3|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+4|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+4|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+100|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B2-12+100|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B3-rec17-nonl-x3|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B3-rec17-nonl-x3|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B4-abc|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B4-abc|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B4-print0|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B4-print0|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B5-4+12|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B5-4+12|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero1|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero1|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero2|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero2|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero3|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero3|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero4|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero4|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero8|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero8|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero1024|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B6-zero1024|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B7-9|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B7-9|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B8-13|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B8-13|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+    B8-11|ja-JP|NativeOnly (現状 20127 / us-ascii / False / None)
+    B8-11|en-US|NativeOnly (現状 20127 / us-ascii / False / None)
+  50220 / iso-2022-jp / False / CrLf: 2 行
+    C2-wrap|ja-JP|NativeOnly (現状 50220 / iso-2022-jp / False / CrLf)
+    C2-wrap|en-US|NativeOnly (現状 50220 / iso-2022-jp / False / CrLf)
+  50220 / iso-2022-jp / False / None: 2 行
+    C2-mid|ja-JP|NativeOnly (現状 50220 / iso-2022-jp / False / None)
+    C2-mid|en-US|NativeOnly (現状 50220 / iso-2022-jp / False / None)
+
+## 4. B 群で修正案が UTF-16 / UTF-32 と答えた入力（ja-JP / NativeOnly）
+  B1-13+1: 1200 / utf-16 / False / None  [len=14 mod2=0 mod4=2 zeros=1 utf32=no utf16=LE null16=1/0 null32=0/0] Hello, World! + 00 (14 バイト)
+  B1-15+1: 1200 / utf-16 / False / None  [len=16 mod2=0 mod4=0 zeros=1 utf32=no utf16=LE null16=1/0 null32=0/0] Hello, World!!! + 00 (16 バイト)
+  B3-rec8-nonl-x3: 1200 / utf-16 / False / None  [len=24 mod2=0 mod4=0 zeros=13 utf32=no utf16=LE null16=3/0 null32=3/0] レコード長 8、nonl、3 レコード (24 バイト)
+  B3-rec8-nonl-x4: 1200 / utf-16 / False / None  [len=32 mod2=0 mod4=0 zeros=13 utf32=no utf16=LE null16=3/0 null32=3/0] レコード長 8、nonl、4 レコード (32 バイト)
+  B3-rec8-crlf-x3: 1200 / utf-16 / False / CrLf  [len=30 mod2=0 mod4=2 zeros=13 utf32=no utf16=LE null16=3/0 null32=2/0] レコード長 8、crlf、3 レコード (30 バイト)
+  B3-rec8-crlf-x4: 1200 / utf-16 / False / CrLf  [len=40 mod2=0 mod4=0 zeros=13 utf32=no utf16=LE null16=3/0 null32=2/0] レコード長 8、crlf、4 レコード (40 バイト)
+  B3-rec16-nonl-x3: 1200 / utf-16 / False / None  [len=48 mod2=0 mod4=0 zeros=37 utf32=no utf16=LE null16=3/0 null32=3/0] レコード長 16、nonl、3 レコード (48 バイト)
+  B3-rec16-nonl-x4: 1200 / utf-16 / False / None  [len=64 mod2=0 mod4=0 zeros=44 utf32=no utf16=LE null16=4/0 null32=4/0] レコード長 16、nonl、4 レコード (64 バイト)
+  B3-rec16-crlf-x3: 1200 / utf-16 / False / CrLf  [len=54 mod2=0 mod4=2 zeros=37 utf32=no utf16=LE null16=3/0 null32=2/0] レコード長 16、crlf、3 レコード (54 バイト)
+  B3-rec16-crlf-x4: 1200 / utf-16 / False / CrLf  [len=72 mod2=0 mod4=0 zeros=44 utf32=no utf16=LE null16=4/0 null32=2/0] レコード長 16、crlf、4 レコード (72 バイト)
+  B3-rec17-nonl-x4: 1200 / utf-16 / False / None  [len=68 mod2=0 mod4=0 zeros=48 utf32=no utf16=LE null16=2/2 null32=1/1] レコード長 17、nonl、4 レコード (68 バイト)
+  B3-rec17-crlf-x4: 1200 / utf-16 / False / CrLf  [len=76 mod2=0 mod4=0 zeros=48 utf32=no utf16=LE null16=2/2 null32=1/1] レコード長 17、crlf、4 レコード (76 バイト)
+  B3-rec32-nonl-x3: 1200 / utf-16 / False / None  [len=96 mod2=0 mod4=0 zeros=85 utf32=no utf16=LE null16=3/0 null32=3/0] レコード長 32、nonl、3 レコード (96 バイト)
+  B3-rec32-nonl-x4: 1200 / utf-16 / False / None  [len=128 mod2=0 mod4=0 zeros=108 utf32=no utf16=LE null16=4/0 null32=4/0] レコード長 32、nonl、4 レコード (128 バイト)
+  B3-rec32-crlf-x3: 1200 / utf-16 / False / CrLf  [len=102 mod2=0 mod4=2 zeros=85 utf32=no utf16=LE null16=3/0 null32=2/0] レコード長 32、crlf、3 レコード (102 バイト)
+  B3-rec32-crlf-x4: 1200 / utf-16 / False / CrLf  [len=136 mod2=0 mod4=0 zeros=108 utf32=no utf16=LE null16=4/0 null32=2/0] レコード長 32、crlf、4 レコード (136 バイト)
+  B5-1+13: 1201 / unicodeFFFE / False / None  [len=14 mod2=0 mod4=2 zeros=1 utf32=no utf16=BE null16=0/1 null32=0/0] 00 + "Hello, World!"
+  B7-10: 1200 / utf-16 / False / None  [len=10 mod2=0 mod4=2 zeros=5 utf32=no utf16=LE null16=3/0 null32=0/0] A 00 B 00 C 00 D E 00 00 (10 バイト)
+  B8-12: 12000 / utf-32 / False / None  [len=12 mod2=0 mod4=0 zeros=8 utf32=LE utf16=LE null16=2/0 null32=2/0] A 000000 B 000000 C D 0000 (12 バイト)
+  B8-16: 1200 / utf-16 / False / None  [len=16 mod2=0 mod4=0 zeros=12 utf32=no utf16=LE null16=4/0 null32=2/0] A 000000 B 000000 C 00 D 00000000 00 (16 バイト)
+  計 20 件
+
+## 5. 判定方式・カルチャーによる違い（入力ごとに 6 条件の結果が一致しないもの）
+  current C2-wrap: ja-JP/Combined=50220, ja-JP/NativeOnly=50220, ja-JP/UtfUnknownOnly=20127, en-US/Combined=50220, en-US/NativeOnly=50220, en-US/UtfUnknownOnly=20127
+  current C4-ja-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=-1, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=-1
+  current C4-ja-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=-1, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=-1
+  current C4-ja-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=-1, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=-1
+  current C4-ja-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=-1, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=-1
+  current: 6 条件で結果が一致しない入力 31 件（0x00 を含む入力だけ上に列挙）
+  proposal A1-crlf-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A1-crlf-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A1-crlf-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A1-crlf-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A2-cr-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A2-cr-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A2-cr-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A2-cr-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A2-lf-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A2-lf-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A2-lf-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A2-lf-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A2-none-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A2-none-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A2-none-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A2-none-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A3-10ch-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A3-10ch-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A3-10ch-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A3-10ch-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A3-1ch-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A3-1ch-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A3-1ch-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A3-1ch-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A3-1k-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A3-1k-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A3-1k-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A3-1k-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A3-2ch-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A3-2ch-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A3-2ch-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A3-2ch-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A3-40k-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A3-40k-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A3-40k-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A3-40k-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A4-printable-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A4-printable-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A4-printable-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A4-printable-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A4-tab-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal A4-tab-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A4-tab-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=20127
+  proposal A4-tab-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A5-c03-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A5-c03-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A5-c05-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A5-c05-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A5-c09-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A5-c09-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal A5-c12-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal A5-c12-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal B1-13+1: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B1-15+1: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec16-crlf-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec16-crlf-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec16-nonl-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec16-nonl-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec17-crlf-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec17-nonl-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec32-crlf-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec32-crlf-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec32-nonl-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec32-nonl-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec8-crlf-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec8-crlf-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec8-nonl-x3: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B3-rec8-nonl-x4: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B5-1+13: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=20127
+  proposal B7-10: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal B8-12: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=20127, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=20127
+  proposal B8-16: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=20127, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=20127
+  proposal C2-wrap: ja-JP/Combined=50220, ja-JP/NativeOnly=50220, ja-JP/UtfUnknownOnly=20127, en-US/Combined=50220, en-US/NativeOnly=50220, en-US/UtfUnknownOnly=20127
+  proposal C4-ja-u16be: ja-JP/Combined=1201, ja-JP/NativeOnly=1201, ja-JP/UtfUnknownOnly=-1, en-US/Combined=1201, en-US/NativeOnly=1201, en-US/UtfUnknownOnly=-1
+  proposal C4-ja-u16le: ja-JP/Combined=1200, ja-JP/NativeOnly=1200, ja-JP/UtfUnknownOnly=-1, en-US/Combined=1200, en-US/NativeOnly=1200, en-US/UtfUnknownOnly=-1
+  proposal C4-ja-u32be: ja-JP/Combined=12001, ja-JP/NativeOnly=12001, ja-JP/UtfUnknownOnly=-1, en-US/Combined=12001, en-US/NativeOnly=12001, en-US/UtfUnknownOnly=-1
+  proposal C4-ja-u32le: ja-JP/Combined=12000, ja-JP/NativeOnly=12000, ja-JP/UtfUnknownOnly=-1, en-US/Combined=12000, en-US/NativeOnly=12000, en-US/UtfUnknownOnly=-1
+  proposal: 6 条件で結果が一致しない入力 103 件（0x00 を含む入力だけ上に列挙）
+  変化が Combined / NativeOnly × 2 カルチャーの 4 条件ちょうどでなかった入力: 0 件
+

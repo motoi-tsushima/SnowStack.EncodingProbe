@@ -1,0 +1,333 @@
+
+==============================================================================
+M0  Environment
+==============================================================================
+PSEdition      : Core
+PSVersion      : 7.6.7
+OS             : Microsoft Windows NT 10.0.26300.0
+CurrentCulture : ja-JP
+ListSeparator  : ,
+Encoding.Default CodePage/WebName : 65001 / utf-8
+NewLine        : \r\n
+
+==============================================================================
+M1  Import-Csv vs ConvertFrom-Csv (whole string) vs ConvertFrom-Csv (line by line)
+==============================================================================
+Purpose: confirm that ConvertFrom-Csv given the WHOLE file as one string gives the
+same result as Import-Csv, and that line-by-line input does not.
+
+--- c01 quoted CRLF inside field
+  bytes: 4E 61 6D 65 2C 4D 65 6D 6F 0D 0A 22 61 22 2C 22 6C 69 6E 65 31 0D 0A 6C 69 6E 65 32 22 0D 0A 22 62 22 2C 22 78 22 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : False
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[a] | Memo=[line1\r\nline2]}
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[b] | Memo=[x]}
+  [ConvertFrom-Csv line by line]
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[a] | Memo=[line1]}
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[line2"] | Memo=[<null>]}
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[b] | Memo=[x]}
+
+--- c02 quoted LF inside CRLF file
+  bytes: 4E 61 6D 65 2C 4D 65 6D 6F 0D 0A 22 61 22 2C 22 6C 69 6E 65 31 0A 6C 69 6E 65 32 22 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : False
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[a] | Memo=[line1\nline2]}
+  [ConvertFrom-Csv line by line]
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[a] | Memo=[line1]}
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[line2"] | Memo=[<null>]}
+
+--- c03 data row starting with #
+  bytes: 4E 61 6D 65 2C 4D 65 6D 6F 0D 0A 23 31 2C 61 62 63 0D 0A 32 2C 64 65 66 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : False
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[#1] | Memo=[abc]}
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[2] | Memo=[def]}
+  [ConvertFrom-Csv line by line]
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[2] | Memo=[def]}
+
+--- c04 #TYPE line
+  bytes: 23 54 59 50 45 20 46 6F 6F 2E 42 61 72 0D 0A 4E 61 6D 65 2C 4D 65 6D 6F 0D 0A 61 2C 62 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : True
+  [Import-Csv]
+  OBJ<Foo.Bar> {Name=[a] | Memo=[b]}
+
+--- c05 comment line before header
+  bytes: 23 20 63 6F 6D 6D 65 6E 74 0D 0A 4E 61 6D 65 2C 4D 65 6D 6F 0D 0A 61 2C 62 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : True
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[a] | Memo=[b]}
+
+--- c06 W3C #Fields
+  bytes: 23 53 6F 66 74 77 61 72 65 3A 20 78 0D 0A 23 46 69 65 6C 64 73 3A 20 64 61 74 65 20 74 69 6D 65 0D 0A 32 30 32 36 20 31 30 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : False
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {date time=[2026 10]}
+  [ConvertFrom-Csv line by line]
+  (no output)
+
+--- c07 blank lines
+  bytes: 4E 61 6D 65 2C 4D 65 6D 6F 0D 0A 0D 0A 61 2C 62 0D 0A 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : True
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[a] | Memo=[b]}
+
+--- c08 spaces around values
+  bytes: 4E 61 6D 65 2C 4D 65 6D 6F 0D 0A 20 20 61 20 2C 20 22 62 22 20 20 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : True
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {Name=[a ] | Memo=[b]}
+
+--- c09 ragged rows, no final newline
+  bytes: 41 2C 42 0D 0A 31 2C 32 2C 33 0D 0A 34 0D 0A 35 2C 36
+  Import == WholeString : True
+  Import == LineByLine  : True
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {A=[1] | B=[2]}
+  OBJ<System.Management.Automation.PSCustomObject> {A=[4] | B=[<null>]}
+  OBJ<System.Management.Automation.PSCustomObject> {A=[5] | B=[6]}
+
+--- c10 duplicate header
+  bytes: 41 2C 41 0D 0A 31 2C 32 0D 0A
+  Import == WholeString : False
+  Import == LineByLine  : False
+  [Import-Csv]
+  TERMINATING: AlreadyPresentPSMemberInfoInternalCollectionAdd,Microsoft.PowerShell.Commands.ImportCsvCommand :: \u30E1\u30F3\u30D0\u30FC "A" \u306F\u65E2\u306B\u5B58\u5728\u3057\u307E\u3059\u3002
+  [ConvertFrom-Csv whole string]
+  TERMINATING: AlreadyPresentPSMemberInfoInternalCollectionAdd,Microsoft.PowerShell.Commands.ConvertFromCsvCommand :: \u30E1\u30F3\u30D0\u30FC "A" \u306F\u65E2\u306B\u5B58\u5728\u3057\u307E\u3059\u3002
+  [ConvertFrom-Csv line by line]
+  TERMINATING: AlreadyPresentPSMemberInfoInternalCollectionAdd,Microsoft.PowerShell.Commands.ConvertFromCsvCommand :: \u30E1\u30F3\u30D0\u30FC "A" \u306F\u65E2\u306B\u5B58\u5728\u3057\u307E\u3059\u3002
+
+--- c11 empty header name
+  bytes: 41 2C 2C 43 0D 0A 31 2C 32 2C 33 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : True
+  [Import-Csv]
+  WARNING: 1 \u3064\u4EE5\u4E0A\u306E\u30D8\u30C3\u30C0\u30FC\u304C\u6307\u5B9A\u3055\u308C\u307E\u305B\u3093\u3067\u3057\u305F\u3002\u4E0D\u8DB3\u3057\u3066\u3044\u308B\u30D8\u30C3\u30C0\u30FC\u306E\u4EE3\u308F\u308A\u306B\u3001"H" \u3067\u59CB\u307E\u308B\u65E2\u5B9A\u306E\u540D\u524D\u304C\u4F7F\u7528\u3055\u308C\u3066\u3044\u307E\u3059\u3002
+  OBJ<System.Management.Automation.PSCustomObject> {A=[1] | H1=[2] | C=[3]}
+
+--- c12 CR only line breaks
+  bytes: 41 2C 42 0D 31 2C 32 0D 33 2C 34 0D
+  Import == WholeString : True
+  Import == LineByLine  : True
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {A=[1] | B=[2]}
+  OBJ<System.Management.Automation.PSCustomObject> {A=[3] | B=[4]}
+
+--- c13 Japanese values (UTF-8)
+  bytes: 41 2C 42 0D 0A E6 97 A5 E6 9C AC E8 AA 9E 2C E8 BF BD E8 A8 98 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : True
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {A=[\u65E5\u672C\u8A9E] | B=[\u8FFD\u8A18]}
+
+--- c14 trailing delimiter in header
+  bytes: 41 2C 42 2C 0D 0A 31 2C 32 2C 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : True
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {A=[1] | B=[2]}
+
+--- c15 escaped quotes
+  bytes: 41 2C 42 0D 0A 22 68 65 20 73 61 69 64 20 22 22 68 69 22 22 22 2C 78 0D 0A
+  Import == WholeString : True
+  Import == LineByLine  : True
+  [Import-Csv]
+  OBJ<System.Management.Automation.PSCustomObject> {A=[he said "hi"] | B=[x]}
+
+==============================================================================
+M2  Import-Csv -Path wildcard handling
+==============================================================================
+
+--- Path w*.csv (two matches)
+  TERMINATING: ReadWriteMultipleFilesNotSupported,Microsoft.PowerShell.Commands.ImportCsvCommand :: \u64CD\u4F5C "ReportMultipleFilesNotSupported" \u304C\u7121\u52B9\u306A\u305F\u3081\u3001\u64CD\u4F5C\u3092\u5B9F\u884C\u3067\u304D\u307E\u305B\u3093\u3002\u64CD\u4F5C "ReportMultipleFilesNotSupported" \u3092\u524A\u9664\u3059\u308B\u304B\u3001\u7121\u52B9\u306A\u7406\u7531\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002
+
+--- Path zz*.csv (no match)
+  TERMINATING: FileOpenFailure,Microsoft.PowerShell.Commands.ImportCsvCommand :: Unable to find the specified file.
+
+--- Path [x].csv (brackets as wildcard)
+  TERMINATING: FileOpenFailure,Microsoft.PowerShell.Commands.ImportCsvCommand :: Unable to find the specified file.
+
+--- LiteralPath [x].csv
+  OBJ<System.Management.Automation.PSCustomObject> {A=[3]}
+
+--- Path array (w1.csv, missing.csv, w2.csv)
+  TERMINATING: FileOpenFailure,Microsoft.PowerShell.Commands.ImportCsvCommand :: Could not find file 'C:\Users\motoi\GoogleDrive\212_ForProducts\SnowStack.EncodingProbe\claudecode_work\New_1_3_0\\u4ED5\u69D8\u5B9F\u6E2C\csv-measure-work-Core\missing.csv'.
+
+--- Pipeline: Get-ChildItem w*.csv | Import-Csv
+  OBJ<System.Management.Automation.PSCustomObject> {A=[1]}
+  OBJ<System.Management.Automation.PSCustomObject> {A=[2]}
+
+==============================================================================
+M3  Import-Csv -Encoding (Shift_JIS, strict decoder)
+==============================================================================
+
+--- Shift_JIS file, -Encoding Default
+  OBJ<System.Management.Automation.PSCustomObject> {A=[\uFFFD\uFFFD\uFFFD{\uFFFD\uFFFD] | B=[x]}
+
+--- Shift_JIS file, -Encoding <Encoding object 932>
+  OBJ<System.Management.Automation.PSCustomObject> {A=[\u65E5\u672C\u8A9E] | B=[x]}
+
+--- Shift_JIS file, -Encoding 932 (int)
+  OBJ<System.Management.Automation.PSCustomObject> {A=[\u65E5\u672C\u8A9E] | B=[x]}
+
+--- BOM-less UTF-8 Encoding object (UTF8Encoding $false)
+  OBJ<System.Management.Automation.PSCustomObject> {A=[\u65E5\u672C\u8A9E] | B=[x]}
+
+--- Invalid byte after 3000 rows, strict Encoding object: records emitted before error
+  TERMINATING: System.Text.DecoderFallbackException,Microsoft.PowerShell.Commands.ImportCsvCommand :: Unable to translate bytes [FF] at index 300 from specified code page to Unicode.
+  innermost exception type: System.Text.DecoderFallbackException
+  records emitted before error: 2966
+
+--- Same file, default (replacement) decoding: value of the bad row
+  OBJ<System.Management.Automation.PSCustomObject> {A=[x] | B=[\uFFFD]}
+
+==============================================================================
+M4  Export-Csv / ConvertTo-Csv defaults and value formatting
+==============================================================================
+
+--- Export-Csv with no options (bytes)
+  (no output)
+  bytes: 22 4E 61 6D 65 22 2C 22 51 75 6F 74 65 22 2C 22 4D 75 6C 74 69 22 2C 22 43 6F 6D 6D 61 22 2C 22 46 6C 61 67 22 2C 22 57 68 65 6E 22 2C 22 4E 75 6D 22 2C 22 45 6D 70 74 79 22 0D 0A 22 E6 97 A5 E6 9C AC E8 AA 9E 22 2C 22 73 61 79 20 22 22 68 69 22 22 22 2C 22 6C 31 0A 6C 32 22 2C 22 61 2C 62 22 2C 22 54 72 75 65 22 2C 22 32 30 32 36 2F 31 30 2F 31 35 20 31 34 3A 33 30 3A 30 30 22 2C 22 31 32 33 34 2E 35 22 2C 0D 0A
+
+--- Export-Csv -NoTypeInformation -Encoding UTF8 (bytes)
+  (no output)
+  bytes: 22 4E 61 6D 65 22 2C 22 51 75 6F 74 65 22 2C 22 4D 75 6C 74 69 22 2C 22 43 6F 6D 6D 61 22 2C 22 46 6C 61 67 22 2C 22 57 68 65 6E 22 2C 22 4E 75 6D 22 2C 22 45 6D 70 74 79 22 0D 0A 22 E6 97 A5 E6 9C AC E8 AA 9E 22 2C 22 73 61 79 20 22 22 68 69 22 22 22 2C 22 6C 31 0A 6C 32 22 2C 22 61 2C 62 22 2C 22 54 72 75 65 22 2C 22 32 30 32 36 2F 31 30 2F 31 35 20 31 34 3A 33 30 3A 30 30 22 2C 22 31 32 33 34 2E 35 22 2C 0D 0A
+
+--- ConvertTo-Csv (no options)
+  STR: "Name","Quote","Multi","Comma","Flag","When","Num","Empty"
+  STR: "\u65E5\u672C\u8A9E","say ""hi""","l1\nl2","a,b","True","2026/10/15 14:30:00","1234.5",
+
+--- ConvertTo-Csv -NoTypeInformation
+  STR: "Name","Quote","Multi","Comma","Flag","When","Num","Empty"
+  STR: "\u65E5\u672C\u8A9E","say ""hi""","l1\nl2","a,b","True","2026/10/15 14:30:00","1234.5",
+
+--- ConvertTo-Csv -UseQuotes AsNeeded
+  STR: Name,Quote,Multi,Comma,Flag,When,Num,Empty
+  STR: \u65E5\u672C\u8A9E,"say ""hi""","l1\nl2","a,b",True,2026/10/15 14:30:00,1234.5,
+
+--- ConvertTo-Csv -UseQuotes Never
+  STR: Name,Quote,Multi,Comma,Flag,When,Num,Empty
+  STR: \u65E5\u672C\u8A9E,say "hi",l1\nl2,a,b,True,2026/10/15 14:30:00,1234.5,
+
+--- ConvertTo-Csv -QuoteFields Name,Num
+  STR: "Name",Quote,Multi,Comma,Flag,When,"Num",Empty
+  STR: "\u65E5\u672C\u8A9E",say "hi",l1\nl2,a,b,True,2026/10/15 14:30:00,"1234.5",
+
+--- ConvertTo-Csv -NoHeader
+  STR: "\u65E5\u672C\u8A9E","say ""hi""","l1\nl2","a,b","True","2026/10/15 14:30:00","1234.5",
+
+--- ConvertTo-Csv of an ordered dictionary
+  STR: "A","B"
+  STR: "1","x"
+
+--- ConvertTo-Csv of a hashtable with a NoteProperty added
+  STR: "A","Extra"
+  STR: "1","e"
+
+--- ConvertTo-Csv of mixed objects (second has different properties)
+  STR: "A","B"
+  STR: "1","2"
+  STR: ,"3"
+
+--- ConvertTo-Csv of strings
+  STR: "Length"
+  STR: "3"
+  STR: "2"
+
+--- ConvertTo-Csv -Delimiter ";"
+  STR: "A";"B"
+  STR: "x;y";"z"
+
+--- ConvertTo-Csv -UseCulture
+  STR: "A","B"
+  STR: "1.5","z"
+
+==============================================================================
+M5  Export-Csv -Append
+==============================================================================
+
+--- a) same properties, different order
+  (no output)
+  bytes: 22 41 22 2C 22 42 22 0D 0A 22 31 22 2C 22 32 22 0D 0A 22 61 22 2C 22 62 22 0D 0A
+
+--- b) missing column B, no -Force
+  TERMINATING: CannotAppendCsvWithMismatchedPropertyNames,Microsoft.PowerShell.Commands.ExportCsvCommand :: CSV \u30B3\u30F3\u30C6\u30F3\u30C4\u3092\u6B21\u306E\u30D5\u30A1\u30A4\u30EB\u306B\u8FFD\u52A0\u3067\u304D\u307E\u305B\u3093: C:\Users\motoi\GoogleDrive\212_ForProducts\SnowStack.EncodingProbe\claudecode_work\New_1_3_0\\u4ED5\u69D8\u5B9F\u6E2C\csv-measure-work-Core\m5_b.csv\u3002\u8FFD\u52A0\u3055\u308C\u305F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u306F\u3001\u6B21\u306E\u5217\u306B\u5BFE\u5FDC\u3059\u308B\u30D7\u30ED\u30D1\u30C6\u30A3\u304C\u3042\u308A\u307E\u305B\u3093: B\u3002\u4E00\u81F4\u3057\u306A\u3044\u30D7\u30ED\u30D1\u30C6\u30A3\u3092\u7D9A\u884C\u3059\u308B\u306B\u306F\u3001-Force \u30D1\u30E9\u30E1\u30FC\u30BF\u30FC\u3092\u8FFD\u52A0\u3057\u3066\u304B\u3089\u3001\u30B3\u30DE\u30F3\u30C9\u3092\u518D\u8A66\u884C\u3057\u3066\u304F\u3060\u3055\u3044\u3002
+  bytes: 22 41 22 2C 22 42 22 0D 0A 22 31 22 2C 22 32 22 0D 0A
+
+--- b2) missing column B, -Force
+  (no output)
+  bytes: 22 41 22 2C 22 42 22 0D 0A 22 31 22 2C 22 32 22 0D 0A 22 61 22 2C 0D 0A
+
+--- c) extra property C
+  (no output)
+  bytes: 22 41 22 2C 22 42 22 0D 0A 22 31 22 2C 22 32 22 0D 0A 22 61 22 2C 22 62 22 0D 0A
+
+--- d) append to a 0-byte file
+  (no output)
+  bytes: 22 41 22 2C 22 42 22 0D 0A 22 61 22 2C 22 62 22 0D 0A
+
+--- e) append to a file that does not exist
+  (no output)
+  bytes: 22 41 22 2C 22 42 22 0D 0A 22 61 22 2C 22 62 22 0D 0A
+
+--- f) UTF-8 with BOM target, append Japanese, no -Encoding
+  (no output)
+  bytes: EF BB BF 22 41 22 2C 22 42 22 0D 0A 22 E6 97 A5 E6 9C AC E8 AA 9E 22 2C 22 78 22 0D 0A 22 E8 BF BD E8 A8 98 22 2C 22 79 22 0D 0A
+
+--- g) Shift_JIS target, append Japanese, no -Encoding
+  (no output)
+  bytes: 22 41 22 2C 22 42 22 0D 0A 22 93 FA 96 7B 8C EA 22 2C 22 78 22 0D 0A 22 E8 BF BD E8 A8 98 22 2C 22 79 22 0D 0A
+
+--- h) -Append -NoHeader
+  (no output)
+  bytes: 22 41 22 2C 22 42 22 0D 0A 22 31 22 2C 22 32 22 0D 0A 22 61 22 2C 22 62 22 0D 0A
+
+--- i) target header uses different case (a,b)
+  (no output)
+  bytes: 61 2C 62 0D 0A 31 2C 32 0D 0A 22 78 22 2C 22 79 22 0D 0A
+
+--- j) target ends without a final newline
+  (no output)
+  bytes: 41 2C 42 0D 0A 31 2C 32 22 78 22 2C 22 79 22 0D 0A
+
+--- k) target is LF only
+  (no output)
+  bytes: 41 2C 42 0A 31 2C 32 0A 22 78 22 2C 22 79 22 0D 0A
+
+--- l) target is read-only, no -Force
+  TERMINATING: FileOpenFailure,Microsoft.PowerShell.Commands.ExportCsvCommand :: Access to the path 'C:\Users\motoi\GoogleDrive\212_ForProducts\SnowStack.EncodingProbe\claudecode_work\New_1_3_0\\u4ED5\u69D8\u5B9F\u6E2C\csv-measure-work-Core\m5_l.csv' is denied.
+  bytes: 22 41 22 2C 22 42 22 0D 0A 22 31 22 2C 22 32 22 0D 0A
+  IsReadOnly after: True
+
+--- l2) target is read-only, -Force
+  (no output)
+  bytes: 22 41 22 2C 22 42 22 0D 0A 22 31 22 2C 22 32 22 0D 0A 22 78 22 2C 22 79 22 0D 0A
+  IsReadOnly after: True
+
+==============================================================================
+M6  Same file in one pipeline / -NoClobber / -WhatIf
+==============================================================================
+
+--- Import-Csv r.csv | Export-Csv r.csv
+  (no output)
+  bytes: <0 bytes>
+
+--- -NoClobber on an existing file
+  TERMINATING: NoClobber,Microsoft.PowerShell.Commands.ExportCsvCommand :: The file 'C:\Users\motoi\GoogleDrive\212_ForProducts\SnowStack.EncodingProbe\claudecode_work\New_1_3_0\\u4ED5\u69D8\u5B9F\u6E2C\csv-measure-work-Core\m6_nc.csv' already exists.
+  bytes: 22 41 22 2C 22 42 22 0D 0A 22 31 22 2C 22 32 22 0D 0A
+
+--- -WhatIf on a new file (is the file created?)
+  (no output)
+  bytes: <no file>
+
+--- No input objects (empty pipeline): is the file created?
+  (no output)
+  bytes: <0 bytes>

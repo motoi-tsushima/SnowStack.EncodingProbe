@@ -1,0 +1,46 @@
+group	id	command	result
+A1	A1-crlf-u16le	Resolve-Encoding	20127 / us-ascii / CrLf
+A1	A1-crlf-u16le	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / CrLf
+A1	A1-crlf-u16le	Get-ProbedContent	7 行; 1 行目: 41 00 2C 00 42 00
+A1	A1-crlf-u16le	Import-ProbedCsv	6 行; 列名: [41 00] [00 42 00]; 1 行目: [00] []
+A1	A1-crlf-u16le	Import-ProbedCsv -DetectionLineCount 1	2 行; 列名: [41] [42]; 1 行目: [31] [32]
+A1	A1-crlf-u16be	Resolve-Encoding	20127 / us-ascii / CrLf
+A1	A1-crlf-u16be	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / CrLf
+A1	A1-crlf-u16be	Get-ProbedContent	6 行; 1 行目: 00 41 00 2C 00 42 00
+A1	A1-crlf-u16be	Import-ProbedCsv	5 行; 列名: [00 41 00] [00 42 00]; 1 行目: [00] []
+A1	A1-crlf-u16be	Import-ProbedCsv -DetectionLineCount 1	2 行; 列名: [41] [42]; 1 行目: [31] [32]
+A1	A1-crlf-u32le	Resolve-Encoding	20127 / us-ascii / CrLf
+A1	A1-crlf-u32le	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / CrLf
+A1	A1-crlf-u32le	Get-ProbedContent	7 行; 1 行目: 41 00 00 00 2C 00 00 00 42 00 00 00
+A1	A1-crlf-u32le	Import-ProbedCsv	6 行; 列名: [41 00 00 00] [00 00 00 42 00 00 00]; 1 行目: [00 00 00] []
+A1	A1-crlf-u32le	Import-ProbedCsv -DetectionLineCount 1	2 行; 列名: [41] [42]; 1 行目: [31] [32]
+A1	A1-crlf-u32be	Resolve-Encoding	20127 / us-ascii / CrLf
+A1	A1-crlf-u32be	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / CrLf
+A1	A1-crlf-u32be	Get-ProbedContent	6 行; 1 行目: 00 00 00 41 00 00 00 2C 00 00 00 42 00 00 00
+A1	A1-crlf-u32be	Import-ProbedCsv	5 行; 列名: [00 00 00 41 00 00 00] [00 00 00 42 00 00 00]; 1 行目: [00 00 00] []
+A1	A1-crlf-u32be	Import-ProbedCsv -DetectionLineCount 1	2 行; 列名: [41] [42]; 1 行目: [31] [32]
+B1	B1-13+1	Resolve-Encoding	20127 / us-ascii / None
+B1	B1-13+1	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / None
+B1	B1-13+1	Get-ProbedContent	1 行; 1 行目: 48 65 6C 6C 6F 2C 20 57 6F 72 6C 64 21 00
+B1	B1-13+1	Import-ProbedCsv	(行なし)
+B1	B1-13+1	Import-ProbedCsv -DetectionLineCount 1	(行なし)
+B3	B3-rec8-nonl-x4	Resolve-Encoding	20127 / us-ascii / None
+B3	B3-rec8-nonl-x4	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / None
+B3	B3-rec8-nonl-x4	Get-ProbedContent	1 行; 1 行目: 49 44 30 30 31 00 00 00 41 6C 69 63 65 00 00 00 42 00 00 00 00 00 00 00 43 68 61 72 6C 69 65 30
+B3	B3-rec8-nonl-x4	Import-ProbedCsv	(行なし)
+B3	B3-rec8-nonl-x4	Import-ProbedCsv -DetectionLineCount 1	(行なし)
+B3	B3-rec16-crlf-x3	Resolve-Encoding	20127 / us-ascii / CrLf
+B3	B3-rec16-crlf-x3	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / CrLf
+B3	B3-rec16-crlf-x3	Get-ProbedContent	3 行; 1 行目: 49 44 30 30 31 00 00 00 00 00 00 00 00 00 00 00
+B3	B3-rec16-crlf-x3	Import-ProbedCsv	2 行; 列名: [49 44 30 30 31 00 00 00 00 00 00 00 00 00 00 00]; 1 行目: [41 6C 69 63 65 00 00 00 00 00 00 00 00 00 00 00]
+B3	B3-rec16-crlf-x3	Import-ProbedCsv -DetectionLineCount 1	2 行; 列名: [49 44 30 30 31 00 00 00 00 00 00 00 00 00 00 00]; 1 行目: [41 6C 69 63 65 00 00 00 00 00 00 00 00 00 00 00]
+B6	B6-zero2	Resolve-Encoding	20127 / us-ascii / None
+B6	B6-zero2	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / None
+B6	B6-zero2	Get-ProbedContent	1 行; 1 行目: 00 00
+B6	B6-zero2	Import-ProbedCsv	(行なし)
+B6	B6-zero2	Import-ProbedCsv -DetectionLineCount 1	(行なし)
+B6	B6-zero4	Resolve-Encoding	20127 / us-ascii / None
+B6	B6-zero4	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / None
+B6	B6-zero4	Get-ProbedContent	1 行; 1 行目: 00 00 00 00
+B6	B6-zero4	Import-ProbedCsv	(行なし)
+B6	B6-zero4	Import-ProbedCsv -DetectionLineCount 1	(行なし)

@@ -192,6 +192,107 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SkippedDirectory] =
                     "Skipped the directory '{0}'.",
+
+                [MessageKey.DetectionLinesTooLarge] =
+                    "Cannot detect the character encoding of '{0}' from the beginning of the file (with -DetectionLineCount {1}), because the lines to read are larger than the detection limit (they must be smaller than 2 GB). "
+                    + "A file without line breaks is read as a whole. Specify a smaller -DetectionLineCount. "
+                    + "Cmdlets that have -Encoding also let you specify the character encoding explicitly.",
+                [MessageKey.DetectionVerificationFailed] =
+                    "'{0}' was not processed because it contains bytes that are invalid in the character encoding '{1}', which was detected from the beginning of the file (with -DetectionLineCount {2}), at byte offset {3} ({4}). "
+                    + "Increase -DetectionLineCount, or specify the character encoding with -Encoding.",
+
+                [MessageKey.CsvHeaderAlreadyPresent] =
+                    "The column name \"{0}\" is specified more than once in the header (column names are not case-sensitive).",
+                [MessageKey.CsvUnspecifiedHeader] =
+                    "One or more headers were not specified. Default names starting with \"H\" have been used "
+                    + "in place of any missing headers.",
+                [MessageKey.CsvAppendMismatchedPropertyName] =
+                    "Cannot append CSV content to the following file: {1}. The appended object does not have a property "
+                    + "that corresponds to the following column: {0}. To continue with mismatched properties, "
+                    + "add the -Force parameter, and then retry the command.",
+
+                [MessageKey.FileTooLargeToDetectUseLineCount] =
+                    "'{0}' is too large for character encoding detection, which reads the whole file "
+                    + "(the file must be smaller than 2 GB). Specify -DetectionLineCount to detect the character encoding "
+                    + "from the first lines, or specify it explicitly with -Encoding.",
+                [MessageKey.InvalidBytesDuringImport] =
+                    "Stopped reading '{0}' because bytes that are invalid in the character encoding '{1}' were found "
+                    + "while reading, at byte offset {2} ({3}). The records already output cannot be withdrawn. "
+                    + "The file may have been changed after it was verified.",
+
+                [MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes] =
+                    "You must specify either the -UseQuotes or -QuoteFields parameters, but not both.",
+                [MessageKey.CannotSpecifyPathAndLiteralPath] =
+                    "You must specify either the -Path or -LiteralPath parameters, but not both.",
+
+                // ---- 1.3.0 第五次 ----
+
+                [MessageKey.UnrepresentableCharacterOnWrite] =
+                    "'{0}' was not written because the character {2} '{3}' cannot be represented in the character encoding '{1}'. "
+                    + "The file was left unchanged.",
+                [MessageKey.DetectionVerificationIso2022Escape] =
+                    "'{0}' was not processed because it contains an ISO-2022 escape sequence at byte offset {3} ({4}), although the beginning of the file (with -DetectionLineCount {2}) contains only ASCII characters and was read as '{1}'. "
+                    + "Remove -DetectionLineCount, or increase it so that the lines include the escape sequence.",
+                [MessageKey.CsvAppendEmptyPropertyName] =
+                    "Cannot append CSV content to the following file: {0}. The header of the file has an empty column name, "
+                    + "which cannot be used as a property name.",
+
+                // ---- 1.3.0 第五次の後半 ----
+
+                [MessageKey.WildcardMatchedNoFileForWrite] =
+                    "No file matches '{0}', so nothing was written. To create a file whose name contains wildcard characters, use "
+                    + "-LiteralPath.",
+                [MessageKey.AlternateDataStreamNotSupported] =
+                    "'{0}' specifies an alternate data stream. Only the main stream of a file (the path itself, or the path followed by "
+                    + "'::$DATA') can be read or written.",
+                [MessageKey.RestoreFromBackupFailed] =
+                    "'{0}' could not be restored and is left partially written. Its original content is kept in '{1}'; restore the file from this copy.",
+
+                [MessageKey.LinkTargetNotFound] =
+                    "'{0}' was not written because it is a symbolic link whose target does not exist. Like Set-Content, this command "
+                    + "does not create the target of a broken link. Write to the target path, or use Out-ProbedFile.",
+
+                [MessageKey.WriteAccessDenied] =
+                    "'{0}' was not written because access to it was denied. Check the permissions of the file (for a new file, of the folder).",
+
+                [MessageKey.FileInUseForRead] =
+                    "'{0}' could not be read because another program has it open without allowing others to read it. Close the program and try again.",
+
+                [MessageKey.FileReadFailed] =
+                    "'{0}' could not be read (error code {1}).",
+
+                [MessageKey.ReadAccessDenied] =
+                    "'{0}' could not be read because access to it was denied. Check the permissions of the file.",
+
+                [MessageKey.FileInUseForWrite] =
+                    "'{0}' was not written because another program has it open without allowing others to write to it. Close the program and try again.",
+
+                [MessageKey.NotEnoughMemoryToDetect] =
+                    "There is not enough memory to read the whole of '{0}' and detect its character encoding (detection uses several times the size of the file). Specify -DetectionLineCount to detect from the first lines only (Resolve-Encoding, Import-ProbedCsv, Export-ProbedCsv), or specify the character encoding with -Encoding.",
+
+                [MessageKey.NotEnoughMemoryToConvert] =
+                    "There is not enough memory to convert '{0}'. Convert-ProbedContent reads the whole file into memory to convert it. The file was not changed.",
+
+                [MessageKey.FileTooLargeToConvert] =
+                    "'{0}' is too large to convert (the file must be smaller than 2 GB). Convert-ProbedContent reads the whole file into memory to convert it. The file was not changed.",
+
+                [MessageKey.SamePathReadWhileWriting] =
+                    "'{0}' was not read because it is being written within the same pipeline. The write was cancelled and the file is unchanged. Write to a different file, or receive the content into a variable before writing.",
+
+                [MessageKey.SamePathWriteCancelled] =
+                    "The write to '{0}' was cancelled because the file was opened for reading within the same pipeline while it was being written. The file is unchanged. Write to a different file, or receive the content into a variable before writing.",
+
+                [MessageKey.EncodingObjectNotUsable] =
+                    "The value passed as the character encoding is a '{0}' object, which cannot be used as a character encoding. An EncodingInformation object (the result of Resolve-Encoding) can be passed as it is, but a detection result that has gone through Export-Clixml and Import-Clixml, a job, remoting or Select-Object is no longer an EncodingInformation object. In that case, pass its CodePage (for example, -Encoding $info.CodePage), or a unified vocabulary name that states the BOM (such as unicodeBOM or utf8NoBOM).",
+
+                [MessageKey.CsvHeaderAlreadyPresentInFile] =
+                    "The column name \"{1}\" is specified more than once in the header of '{0}' (column names are not case-sensitive).",
+
+                [MessageKey.CsvHeaderAlreadyPresentInParameter] =
+                    "'{0}' was not read because the column name \"{1}\" is specified more than once in -Header (column names are not case-sensitive).",
+
+                [MessageKey.FileWriteFailed] =
+                    "'{0}' could not be written (error code {1}).",
             };
 
         private static readonly Dictionary<MessageKey, string> JapaneseMessages =
@@ -336,6 +437,100 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SkippedDirectory] =
                     "ディレクトリ '{0}' は対象外のため飛ばしました。",
+
+                [MessageKey.DetectionLinesTooLarge] =
+                    "'{0}' の先頭 {1} 行は、文字エンコーディングを判定できる大きさ（2 GB 未満）を超えているため、判定できません。"
+                    + "改行の無いファイルは全体を読みます。-DetectionLineCount を小さくしてください。"
+                    + "-Encoding を持つコマンドでは、文字エンコーディングを明示することもできます。",
+                [MessageKey.DetectionVerificationFailed] =
+                    "'{0}' には、先頭 {2} 行から判定した文字エンコーディング '{1}' として不正なバイト列がある（バイト位置 {3}: {4}）ため、処理しませんでした。"
+                    + "-DetectionLineCount を増やすか、-Encoding で文字エンコーディングを指定してください。",
+
+                [MessageKey.CsvHeaderAlreadyPresent] =
+                    "列名 \"{0}\" がヘッダーに複数回指定されています（列名の大文字と小文字は区別しません）。",
+                [MessageKey.CsvUnspecifiedHeader] =
+                    "指定されていない列名があります。不足している列名には、\"H\" で始まる既定の名前を使いました。",
+                [MessageKey.CsvAppendMismatchedPropertyName] =
+                    "次のファイルに CSV を追記できません: {1}。追記するオブジェクトに、次の列に当たるプロパティがありません: {0}。"
+                    + "プロパティが一致しないまま続けるには、-Force を指定してもう一度実行してください。",
+
+                [MessageKey.FileTooLargeToDetectUseLineCount] =
+                    "'{0}' は大きすぎるため、文字エンコーディングを判定できません（判定はファイル全体を読むため、2 GB 未満である必要があります）。"
+                    + "先頭の行で判定するには -DetectionLineCount を、文字エンコーディングを明示するには -Encoding を指定してください。",
+                [MessageKey.InvalidBytesDuringImport] =
+                    "'{0}' の読み込み中に、文字エンコーディング '{1}' として不正なバイト列が見つかった（バイト位置 {2}: {3}）ため、読み込みを中止しました。"
+                    + "それまでに出力したレコードは取り消せません。検証の後にファイルが変更された可能性があります。",
+
+                [MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes] =
+                    "-UseQuotes と -QuoteFields は同時に指定できません。どちらか一方を指定してください。",
+                [MessageKey.CannotSpecifyPathAndLiteralPath] =
+                    "-Path と -LiteralPath のどちらか一方だけを指定してください。",
+
+                // ---- 1.3.0 第五次 ----
+
+                [MessageKey.UnrepresentableCharacterOnWrite] =
+                    "文字 {2} '{3}' は文字エンコーディング '{1}' で表現できないため、'{0}' に書き込みませんでした。ファイルは変更していません。",
+                [MessageKey.DetectionVerificationIso2022Escape] =
+                    "'{0}' は、先頭 {2} 行が英数字だけのため '{1}' として読みましたが、バイト位置 {3} に ISO-2022 のエスケープシーケンス（{4}）があるため、処理しませんでした。"
+                    + "-DetectionLineCount を外すか、エスケープシーケンスのある行まで行数を増やしてください。",
+                [MessageKey.CsvAppendEmptyPropertyName] =
+                    "次のファイルに CSV を追記できません: {0}。ファイルのヘッダーに空の列名があり、プロパティ名として使えません。",
+
+                // ---- 1.3.0 第五次の後半 ----
+
+                [MessageKey.WildcardMatchedNoFileForWrite] =
+                    "'{0}' に一致するファイルが無いため、書き込みませんでした。名前にワイルドカード文字を含むファイルを作成するには "
+                    + "-LiteralPath を使用してください。",
+                [MessageKey.AlternateDataStreamNotSupported] =
+                    "'{0}' は代替データストリームを指定しています。読み書きできるのは、ファイルの主ストリーム（パスそのもの、またはパスの後に '::$DATA' を付けたもの）だけです。",
+                [MessageKey.RestoreFromBackupFailed] =
+                    "'{0}' を元に戻せなかったため、元のファイルは書きかけの状態です。元の内容は '{1}' に写してあります。この写しから元に戻してください。",
+
+                [MessageKey.LinkTargetNotFound] =
+                    "'{0}' はリンク先が存在しないシンボリックリンクのため、書き込みませんでした。標準の Set-Content と同じく、リンク切れのリンク先は作りません。"
+                    + "リンク先のパスに書き込むか、Out-ProbedFile を使用してください。",
+
+                [MessageKey.WriteAccessDenied] =
+                    "'{0}' へのアクセスが拒否されたため、書き込みませんでした。ファイル（新しいファイルの場合はフォルダー）のアクセス権を確かめてください。",
+
+                [MessageKey.FileInUseForRead] =
+                    "'{0}' はほかのプログラムが読み込みを許さずに開いているため、読み込めませんでした。そのプログラムを閉じてから、もう一度実行してください。",
+
+                [MessageKey.FileReadFailed] =
+                    "'{0}' を読み込めませんでした（エラー コード {1}）。",
+
+                [MessageKey.ReadAccessDenied] =
+                    "'{0}' へのアクセスが拒否されたため、読み込めませんでした。ファイルのアクセス権を確かめてください。",
+
+                [MessageKey.FileInUseForWrite] =
+                    "'{0}' はほかのプログラムが書き込みを許さずに開いているため、書き込みませんでした。そのプログラムを閉じてから、もう一度実行してください。",
+
+                [MessageKey.NotEnoughMemoryToDetect] =
+                    "'{0}' の全体を読んで文字エンコーディングを判定するためのメモリが足りません（判定ではファイルの大きさの数倍のメモリを使います）。-DetectionLineCount を指定して先頭の行だけで判定する（Resolve-Encoding・Import-ProbedCsv・Export-ProbedCsv）か、-Encoding で文字エンコーディングを指定してください。",
+
+                [MessageKey.NotEnoughMemoryToConvert] =
+                    "'{0}' を変換するためのメモリが足りません。Convert-ProbedContent はファイル全体をメモリに読んで変換します。ファイルは変更していません。",
+
+                [MessageKey.FileTooLargeToConvert] =
+                    "'{0}' は大きすぎるため変換できません（2 GB 未満のファイルだけを変換できます）。Convert-ProbedContent はファイル全体をメモリに読んで変換します。ファイルは変更していません。",
+
+                [MessageKey.SamePathReadWhileWriting] =
+                    "'{0}' は同じパイプラインで書き込み中のため、読み込みませんでした。書き込みは取り消し、ファイルは元のままです。書き込み先を別のファイルにするか、いったん変数に受けてから書いてください。",
+
+                [MessageKey.SamePathWriteCancelled] =
+                    "'{0}' に書き込んでいる間に、同じパイプラインでこのファイルを読み込もうとしたため、書き込みを取り消しました。ファイルは元のままです。書き込み先を別のファイルにするか、いったん変数に受けてから書いてください。",
+
+                [MessageKey.EncodingObjectNotUsable] =
+                    "文字エンコーディングとして渡された値は '{0}' のオブジェクトで、文字エンコーディングとして使えません。EncodingInformation オブジェクト（Resolve-Encoding の結果）はそのまま渡せますが、Export-Clixml と Import-Clixml・ジョブ・リモート・Select-Object を通した判定結果は、EncodingInformation オブジェクトではなくなります。その場合は、CodePage の値（-Encoding $info.CodePage など）か、BOM を明示した統一語彙名（unicodeBOM・utf8NoBOM など）を渡してください。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInFile] =
+                    "'{0}' のヘッダーに、列名 \"{1}\" が複数回指定されています（列名の大文字と小文字は区別しません）。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInParameter] =
+                    "-Header に列名 \"{1}\" が複数回指定されているため、'{0}' を読み込みませんでした（列名の大文字と小文字は区別しません）。",
+
+                [MessageKey.FileWriteFailed] =
+                    "'{0}' に書き込めませんでした（エラー コード {1}）。",
             };
 
         private static readonly Dictionary<MessageKey, string> KoreanMessages =
@@ -482,6 +677,100 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SkippedDirectory] =
                     "디렉터리 '{0}'은(는) 대상이 아니므로 건너뛰었습니다.",
+
+                [MessageKey.DetectionLinesTooLarge] =
+                    "'{0}'의 처음 {1}줄은 문자 인코딩을 판별할 수 있는 크기(2GB 미만)를 초과하므로 판별할 수 없습니다. "
+                    + "줄 바꿈이 없는 파일은 전체를 읽습니다. -DetectionLineCount를 줄이십시오. "
+                    + "-Encoding이 있는 명령에서는 문자 인코딩을 명시할 수도 있습니다.",
+                [MessageKey.DetectionVerificationFailed] =
+                    "'{0}'에 처음 {2}줄에서 판별한 문자 인코딩 '{1}'(으)로서 잘못된 바이트열이 있으므로(바이트 위치 {3}: {4}) 처리하지 않았습니다. "
+                    + "-DetectionLineCount를 늘리거나 -Encoding으로 문자 인코딩을 지정하십시오.",
+
+                [MessageKey.CsvHeaderAlreadyPresent] =
+                    "열 이름 \"{0}\"이(가) 헤더에 여러 번 지정되었습니다(열 이름은 대/소문자를 구분하지 않습니다).",
+                [MessageKey.CsvUnspecifiedHeader] =
+                    "지정되지 않은 열 이름이 있습니다. 누락된 열 이름 대신 \"H\"로 시작하는 기본 이름을 사용했습니다.",
+                [MessageKey.CsvAppendMismatchedPropertyName] =
+                    "다음 파일에 CSV를 추가할 수 없습니다: {1}. 추가하는 개체에 다음 열에 해당하는 속성이 없습니다: {0}. "
+                    + "속성이 일치하지 않는 상태로 계속하려면 -Force를 지정하여 다시 실행하십시오.",
+
+                [MessageKey.FileTooLargeToDetectUseLineCount] =
+                    "'{0}'은(는) 너무 커서 문자 인코딩을 판별할 수 없습니다(판별은 파일 전체를 읽으므로 2GB 미만이어야 합니다). "
+                    + "처음 줄로 판별하려면 -DetectionLineCount를, 문자 인코딩을 명시하려면 -Encoding을 지정하십시오.",
+                [MessageKey.InvalidBytesDuringImport] =
+                    "'{0}'을(를) 읽는 중에 문자 인코딩 '{1}'(으)로서 잘못된 바이트열이 발견되었으므로(바이트 위치 {2}: {3}) 읽기를 중지했습니다. "
+                    + "이미 출력한 레코드는 취소할 수 없습니다. 검증 후에 파일이 변경되었을 수 있습니다.",
+
+                [MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes] =
+                    "-UseQuotes와 -QuoteFields는 동시에 지정할 수 없습니다. 둘 중 하나만 지정하십시오.",
+                [MessageKey.CannotSpecifyPathAndLiteralPath] =
+                    "-Path와 -LiteralPath 중 하나만 지정하십시오.",
+
+                // ---- 1.3.0 第五次 ----
+
+                [MessageKey.UnrepresentableCharacterOnWrite] =
+                    "문자 {2} '{3}'을(를) 문자 인코딩 '{1}'(으)로 표현할 수 없으므로 '{0}'에 쓰지 않았습니다. 파일은 변경하지 않았습니다.",
+                [MessageKey.DetectionVerificationIso2022Escape] =
+                    "'{0}'은(는) 처음 {2}줄이 ASCII 문자뿐이어서 '{1}'(으)로 읽었지만, 바이트 위치 {3}에 ISO-2022 이스케이프 시퀀스({4})가 있으므로 처리하지 않았습니다. "
+                    + "-DetectionLineCount를 제거하거나, 이스케이프 시퀀스가 있는 줄까지 줄 수를 늘리십시오.",
+                [MessageKey.CsvAppendEmptyPropertyName] =
+                    "다음 파일에 CSV를 추가할 수 없습니다: {0}. 파일의 헤더에 빈 열 이름이 있어 속성 이름으로 사용할 수 없습니다.",
+
+                // ---- 1.3.0 第五次の後半 ----
+
+                [MessageKey.WildcardMatchedNoFileForWrite] =
+                    "'{0}'과(와) 일치하는 파일이 없으므로 쓰지 않았습니다. 이름에 와일드카드 문자가 포함된 "
+                    + "파일을 만들려면 -LiteralPath를 사용하십시오.",
+                [MessageKey.AlternateDataStreamNotSupported] =
+                    "'{0}'은(는) 대체 데이터 스트림을 지정합니다. 읽고 쓸 수 있는 것은 파일의 기본 스트림(경로 자체 또는 경로 뒤에 '::$DATA'를 붙인 것)뿐입니다.",
+                [MessageKey.RestoreFromBackupFailed] =
+                    "'{0}'을(를) 원래대로 되돌리지 못해 원래 파일은 쓰다 만 상태입니다. 원래 내용은 '{1}'에 복사해 두었습니다. 이 복사본에서 원래대로 되돌리십시오.",
+
+                [MessageKey.LinkTargetNotFound] =
+                    "'{0}'은(는) 대상이 존재하지 않는 기호 링크이므로 쓰지 않았습니다. 표준 Set-Content와 마찬가지로 끊어진 링크의 대상은 만들지 않습니다. "
+                    + "대상 경로에 쓰거나 Out-ProbedFile을 사용하십시오.",
+
+                [MessageKey.WriteAccessDenied] =
+                    "'{0}'에 대한 액세스가 거부되어 쓰지 않았습니다. 파일(새 파일인 경우에는 폴더)의 액세스 권한을 확인하십시오.",
+
+                [MessageKey.FileInUseForRead] =
+                    "'{0}'은(는) 다른 프로그램이 읽기를 허용하지 않고 열어 두었기 때문에 읽지 못했습니다. 그 프로그램을 닫은 후 다시 실행하십시오.",
+
+                [MessageKey.FileReadFailed] =
+                    "'{0}'을(를) 읽지 못했습니다(오류 코드 {1}).",
+
+                [MessageKey.ReadAccessDenied] =
+                    "'{0}'에 대한 액세스가 거부되어 읽지 못했습니다. 파일의 액세스 권한을 확인하십시오.",
+
+                [MessageKey.FileInUseForWrite] =
+                    "'{0}'은(는) 다른 프로그램이 쓰기를 허용하지 않고 열어 두었기 때문에 쓰지 않았습니다. 그 프로그램을 닫은 후 다시 실행하십시오.",
+
+                [MessageKey.NotEnoughMemoryToDetect] =
+                    "'{0}' 전체를 읽어 문자 인코딩을 판정하기 위한 메모리가 부족합니다(판정에는 파일 크기의 몇 배의 메모리를 사용합니다). -DetectionLineCount를 지정하여 앞부분의 줄만으로 판정하거나(Resolve-Encoding, Import-ProbedCsv, Export-ProbedCsv), -Encoding으로 문자 인코딩을 지정하십시오.",
+
+                [MessageKey.NotEnoughMemoryToConvert] =
+                    "'{0}'을(를) 변환하기 위한 메모리가 부족합니다. Convert-ProbedContent는 파일 전체를 메모리로 읽어 변환합니다. 파일은 변경하지 않았습니다.",
+
+                [MessageKey.FileTooLargeToConvert] =
+                    "'{0}'은(는) 너무 커서 변환할 수 없습니다(2GB 미만의 파일만 변환할 수 있습니다). Convert-ProbedContent는 파일 전체를 메모리로 읽어 변환합니다. 파일은 변경하지 않았습니다.",
+
+                [MessageKey.SamePathReadWhileWriting] =
+                    "'{0}'은(는) 같은 파이프라인에서 쓰는 중이므로 읽지 않았습니다. 쓰기는 취소했으며 파일은 원래 상태 그대로입니다. 쓰기 대상을 다른 파일로 하거나, 일단 변수에 받은 후 쓰십시오.",
+
+                [MessageKey.SamePathWriteCancelled] =
+                    "'{0}'에 쓰는 동안 같은 파이프라인에서 이 파일을 읽으려고 했기 때문에 쓰기를 취소했습니다. 파일은 원래 상태 그대로입니다. 쓰기 대상을 다른 파일로 하거나, 일단 변수에 받은 후 쓰십시오.",
+
+                [MessageKey.EncodingObjectNotUsable] =
+                    "문자 인코딩으로 전달된 값은 '{0}' 개체이므로 문자 인코딩으로 사용할 수 없습니다. EncodingInformation 개체(Resolve-Encoding의 결과)는 그대로 전달할 수 있지만, Export-Clixml과 Import-Clixml, 작업(job), 원격, Select-Object를 거친 판정 결과는 더 이상 EncodingInformation 개체가 아닙니다. 이 경우에는 CodePage 값(-Encoding $info.CodePage 등) 또는 BOM 유무를 명시한 통합 어휘 이름(unicodeBOM, utf8NoBOM 등)을 전달하십시오.",
+
+                [MessageKey.CsvHeaderAlreadyPresentInFile] =
+                    "'{0}'의 헤더에 열 이름 \"{1}\"이(가) 여러 번 지정되었습니다(열 이름은 대/소문자를 구분하지 않습니다).",
+
+                [MessageKey.CsvHeaderAlreadyPresentInParameter] =
+                    "-Header에 열 이름 \"{1}\"이(가) 여러 번 지정되어 있으므로 '{0}'을(를) 읽지 않았습니다(열 이름은 대/소문자를 구분하지 않습니다).",
+
+                [MessageKey.FileWriteFailed] =
+                    "'{0}'에 쓰지 못했습니다(오류 코드 {1}).",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseTraditionalMessages =
@@ -622,6 +911,97 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SkippedDirectory] =
                     "已略過目錄 '{0}'。",
+
+                [MessageKey.DetectionLinesTooLarge] =
+                    "'{0}' 的前 {1} 行超過可判斷字元編碼的大小（必須小於 2 GB），因此無法判斷。沒有換行的檔案會讀取整個檔案。"
+                    + "請減少 -DetectionLineCount。在具有 -Encoding 的命令中，也可以明確指定字元編碼。",
+                [MessageKey.DetectionVerificationFailed] =
+                    "根據前 {2} 行判斷 '{0}' 的字元編碼為 '{1}'，但檔案含有以字元編碼 '{1}' 而言無效的位元組序列（位元組位置 {3}：{4}），因此未處理。"
+                    + "請增加 -DetectionLineCount，或以 -Encoding 指定字元編碼。",
+
+                [MessageKey.CsvHeaderAlreadyPresent] =
+                    "欄位名稱 \"{0}\" 在標頭中指定了多次（欄位名稱不區分大小寫）。",
+                [MessageKey.CsvUnspecifiedHeader] =
+                    "有未指定的欄位名稱。已使用以 \"H\" 開頭的預設名稱取代缺少的欄位名稱。",
+                [MessageKey.CsvAppendMismatchedPropertyName] =
+                    "無法將 CSV 附加到下列檔案：{1}。附加的物件沒有對應下列欄位的屬性：{0}。"
+                    + "若要在屬性不一致的情況下繼續，請指定 -Force 後再執行一次。",
+
+                [MessageKey.FileTooLargeToDetectUseLineCount] =
+                    "'{0}' 太大，無法判斷字元編碼（判斷會讀取整個檔案，因此檔案必須小於 2 GB）。"
+                    + "若要以開頭的行判斷，請指定 -DetectionLineCount；若要明確指定字元編碼，請指定 -Encoding。",
+                [MessageKey.InvalidBytesDuringImport] =
+                    "讀取 '{0}' 時發現以字元編碼 '{1}' 而言無效的位元組序列（位元組位置 {2}：{3}），因此已中止讀取。"
+                    + "已輸出的記錄無法取消。檔案可能在驗證之後被變更。",
+
+                [MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes] =
+                    "-UseQuotes 與 -QuoteFields 不能同時指定。請只指定其中一個。",
+                [MessageKey.CannotSpecifyPathAndLiteralPath] =
+                    "請只指定 -Path 與 -LiteralPath 其中一個。",
+
+                // ---- 1.3.0 第五次 ----
+
+                [MessageKey.UnrepresentableCharacterOnWrite] =
+                    "字元 {2} '{3}' 無法以字元編碼 '{1}' 表示，因此未寫入 '{0}'。檔案未變更。",
+                [MessageKey.DetectionVerificationIso2022Escape] =
+                    "'{0}' 的前 {2} 行只有 ASCII 字元，因此以 '{1}' 讀取，但在位元組位置 {3} 有 ISO-2022 跳脫序列（{4}），因此未處理。"
+                    + "請移除 -DetectionLineCount，或將行數增加到包含跳脫序列的行。",
+                [MessageKey.CsvAppendEmptyPropertyName] =
+                    "無法將 CSV 附加到下列檔案：{0}。檔案的標頭有空的欄位名稱，無法作為屬性名稱使用。",
+
+                // ---- 1.3.0 第五次の後半 ----
+
+                [MessageKey.WildcardMatchedNoFileForWrite] =
+                    "沒有符合 '{0}' 的檔案，因此未寫入。若要建立名稱包含萬用字元的檔案，請使用 -LiteralPath。",
+                [MessageKey.AlternateDataStreamNotSupported] =
+                    "'{0}' 指定了替代資料流。只能讀寫檔案的主要資料流（路徑本身，或在路徑後加上 '::$DATA'）。",
+                [MessageKey.RestoreFromBackupFailed] =
+                    "無法還原 '{0}'，原始檔案處於寫入到一半的狀態。原始內容已複製到 '{1}'，請從這個複本還原。",
+
+                [MessageKey.LinkTargetNotFound] =
+                    "'{0}' 是目標不存在的符號連結，因此未寫入。與標準的 Set-Content 相同，不會建立中斷連結的目標。請寫入目標路徑，或使用 Out-ProbedFile。",
+
+                [MessageKey.WriteAccessDenied] =
+                    "存取 '{0}' 遭到拒絕，因此未寫入。請確認檔案（若為新檔案，則為資料夾）的存取權限。",
+
+                [MessageKey.FileInUseForRead] =
+                    "'{0}' 已由其他程式以不允許讀取的方式開啟，因此無法讀取。請關閉該程式後再執行一次。",
+
+                [MessageKey.FileReadFailed] =
+                    "無法讀取 '{0}'（錯誤碼 {1}）。",
+
+                [MessageKey.ReadAccessDenied] =
+                    "存取 '{0}' 遭到拒絕，因此無法讀取。請確認檔案的存取權限。",
+
+                [MessageKey.FileInUseForWrite] =
+                    "'{0}' 已由其他程式以不允許寫入的方式開啟，因此未寫入。請關閉該程式後再執行一次。",
+
+                [MessageKey.NotEnoughMemoryToDetect] =
+                    "記憶體不足，無法讀取 '{0}' 的全部內容來判斷字元編碼（判斷時會使用檔案大小數倍的記憶體）。請指定 -DetectionLineCount 只以開頭的幾行判斷（Resolve-Encoding、Import-ProbedCsv、Export-ProbedCsv），或以 -Encoding 指定字元編碼。",
+
+                [MessageKey.NotEnoughMemoryToConvert] =
+                    "記憶體不足，無法轉換 '{0}'。Convert-ProbedContent 會將整個檔案讀入記憶體後轉換。檔案未變更。",
+
+                [MessageKey.FileTooLargeToConvert] =
+                    "'{0}' 太大，無法轉換（只能轉換小於 2 GB 的檔案）。Convert-ProbedContent 會將整個檔案讀入記憶體後轉換。檔案未變更。",
+
+                [MessageKey.SamePathReadWhileWriting] =
+                    "'{0}' 正在同一個管線中寫入，因此未讀取。寫入已取消，檔案維持原狀。請改為寫入其他檔案，或先將內容存入變數後再寫入。",
+
+                [MessageKey.SamePathWriteCancelled] =
+                    "寫入 '{0}' 期間，同一個管線嘗試讀取此檔案，因此已取消寫入。檔案維持原狀。請改為寫入其他檔案，或先將內容存入變數後再寫入。",
+
+                [MessageKey.EncodingObjectNotUsable] =
+                    "作為字元編碼傳入的值是 '{0}' 物件，無法作為字元編碼使用。EncodingInformation 物件（Resolve-Encoding 的結果）可以直接傳入，但經過 Export-Clixml 與 Import-Clixml、作業（job）、遠端或 Select-Object 的判斷結果已不再是 EncodingInformation 物件。在此情況下，請傳入其 CodePage 的值（例如 -Encoding $info.CodePage），或明確指定 BOM 的統一詞彙名稱（例如 unicodeBOM、utf8NoBOM）。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInFile] =
+                    "'{0}' 的標頭中，欄位名稱 \"{1}\" 指定了多次（欄位名稱不區分大小寫）。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInParameter] =
+                    "-Header 中欄位名稱 \"{1}\" 指定了多次，因此未讀取 '{0}'（欄位名稱不區分大小寫）。",
+
+                [MessageKey.FileWriteFailed] =
+                    "無法寫入 '{0}'（錯誤碼 {1}）。",
             };
 
         private static readonly Dictionary<MessageKey, string> ChineseSimplifiedMessages =
@@ -762,6 +1142,97 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
                 [MessageKey.SkippedDirectory] =
                     "已跳过目录 '{0}'。",
+
+                [MessageKey.DetectionLinesTooLarge] =
+                    "'{0}' 的前 {1} 行超过可判断字符编码的大小（必须小于 2 GB），因此无法判断。没有换行的文件会读取整个文件。"
+                    + "请减小 -DetectionLineCount。在具有 -Encoding 的命令中，也可以明确指定字符编码。",
+                [MessageKey.DetectionVerificationFailed] =
+                    "根据前 {2} 行判断 '{0}' 的字符编码为 '{1}'，但文件含有以字符编码 '{1}' 而言无效的字节序列（字节位置 {3}：{4}），因此未处理。"
+                    + "请增大 -DetectionLineCount，或用 -Encoding 指定字符编码。",
+
+                [MessageKey.CsvHeaderAlreadyPresent] =
+                    "列名 \"{0}\" 在标头中指定了多次（列名不区分大小写）。",
+                [MessageKey.CsvUnspecifiedHeader] =
+                    "有未指定的列名。已使用以 \"H\" 开头的默认名称代替缺少的列名。",
+                [MessageKey.CsvAppendMismatchedPropertyName] =
+                    "无法将 CSV 追加到以下文件：{1}。追加的对象没有与以下列对应的属性：{0}。"
+                    + "若要在属性不一致的情况下继续，请指定 -Force 后重新运行。",
+
+                [MessageKey.FileTooLargeToDetectUseLineCount] =
+                    "'{0}' 太大，无法判断字符编码（判断会读取整个文件，因此文件必须小于 2 GB）。"
+                    + "若要根据开头的行判断，请指定 -DetectionLineCount；若要明确指定字符编码，请指定 -Encoding。",
+                [MessageKey.InvalidBytesDuringImport] =
+                    "读取 '{0}' 时发现以字符编码 '{1}' 而言无效的字节序列（字节位置 {2}：{3}），因此已中止读取。"
+                    + "已输出的记录无法撤销。文件可能在验证之后被更改。",
+
+                [MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes] =
+                    "-UseQuotes 与 -QuoteFields 不能同时指定。请只指定其中一个。",
+                [MessageKey.CannotSpecifyPathAndLiteralPath] =
+                    "请只指定 -Path 与 -LiteralPath 其中一个。",
+
+                // ---- 1.3.0 第五次 ----
+
+                [MessageKey.UnrepresentableCharacterOnWrite] =
+                    "字符 {2} '{3}' 无法用字符编码 '{1}' 表示，因此未写入 '{0}'。文件未更改。",
+                [MessageKey.DetectionVerificationIso2022Escape] =
+                    "'{0}' 的前 {2} 行只有 ASCII 字符，因此按 '{1}' 读取，但在字节位置 {3} 有 ISO-2022 转义序列（{4}），因此未处理。"
+                    + "请去掉 -DetectionLineCount，或将行数增加到包含转义序列的行。",
+                [MessageKey.CsvAppendEmptyPropertyName] =
+                    "无法将 CSV 追加到以下文件：{0}。文件的标题中有空的列名，无法用作属性名称。",
+
+                // ---- 1.3.0 第五次の後半 ----
+
+                [MessageKey.WildcardMatchedNoFileForWrite] =
+                    "没有与 '{0}' 匹配的文件，因此未写入。若要创建名称包含通配符的文件，请使用 -LiteralPath。",
+                [MessageKey.AlternateDataStreamNotSupported] =
+                    "'{0}' 指定了备用数据流。只能读写文件的主数据流（路径本身，或在路径后加上 '::$DATA'）。",
+                [MessageKey.RestoreFromBackupFailed] =
+                    "无法还原 '{0}'，原始文件处于写入到一半的状态。原始内容已复制到 '{1}'，请从这个副本还原。",
+
+                [MessageKey.LinkTargetNotFound] =
+                    "'{0}' 是目标不存在的符号链接，因此未写入。与标准的 Set-Content 相同，不会创建断开链接的目标。请写入目标路径，或使用 Out-ProbedFile。",
+
+                [MessageKey.WriteAccessDenied] =
+                    "访问 '{0}' 被拒绝，因此未写入。请确认文件（若为新文件，则为文件夹）的访问权限。",
+
+                [MessageKey.FileInUseForRead] =
+                    "'{0}' 已被其他程序以不允许读取的方式打开，因此无法读取。请关闭该程序后再执行一次。",
+
+                [MessageKey.FileReadFailed] =
+                    "无法读取 '{0}'（错误代码 {1}）。",
+
+                [MessageKey.ReadAccessDenied] =
+                    "访问 '{0}' 被拒绝，因此无法读取。请确认文件的访问权限。",
+
+                [MessageKey.FileInUseForWrite] =
+                    "'{0}' 已被其他程序以不允许写入的方式打开，因此未写入。请关闭该程序后再执行一次。",
+
+                [MessageKey.NotEnoughMemoryToDetect] =
+                    "内存不足，无法读取 '{0}' 的全部内容来判定字符编码（判定时会使用文件大小数倍的内存）。请指定 -DetectionLineCount 只用开头的几行判定（Resolve-Encoding、Import-ProbedCsv、Export-ProbedCsv），或用 -Encoding 指定字符编码。",
+
+                [MessageKey.NotEnoughMemoryToConvert] =
+                    "内存不足，无法转换 '{0}'。Convert-ProbedContent 会将整个文件读入内存后转换。文件未更改。",
+
+                [MessageKey.FileTooLargeToConvert] =
+                    "'{0}' 太大，无法转换（只能转换小于 2 GB 的文件）。Convert-ProbedContent 会将整个文件读入内存后转换。文件未更改。",
+
+                [MessageKey.SamePathReadWhileWriting] =
+                    "'{0}' 正在同一管道中写入，因此未读取。写入已取消，文件保持原样。请改为写入其他文件，或先将内容存入变量后再写入。",
+
+                [MessageKey.SamePathWriteCancelled] =
+                    "写入 '{0}' 期间，同一管道尝试读取此文件，因此已取消写入。文件保持原样。请改为写入其他文件，或先将内容存入变量后再写入。",
+
+                [MessageKey.EncodingObjectNotUsable] =
+                    "作为字符编码传入的值是 '{0}' 对象，无法作为字符编码使用。EncodingInformation 对象（Resolve-Encoding 的结果）可以直接传入，但经过 Export-Clixml 与 Import-Clixml、作业（job）、远程或 Select-Object 的判断结果已不再是 EncodingInformation 对象。在这种情况下，请传入其 CodePage 的值（例如 -Encoding $info.CodePage），或明确指定 BOM 的统一词汇名称（例如 unicodeBOM、utf8NoBOM）。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInFile] =
+                    "'{0}' 的标头中，列名 \"{1}\" 指定了多次（列名不区分大小写）。",
+
+                [MessageKey.CsvHeaderAlreadyPresentInParameter] =
+                    "-Header 中列名 \"{1}\" 指定了多次，因此未读取 '{0}'（列名不区分大小写）。",
+
+                [MessageKey.FileWriteFailed] =
+                    "无法写入 '{0}'（错误代码 {1}）。",
             };
 
         private static readonly Dictionary<string, Dictionary<MessageKey, string>> Catalogs =

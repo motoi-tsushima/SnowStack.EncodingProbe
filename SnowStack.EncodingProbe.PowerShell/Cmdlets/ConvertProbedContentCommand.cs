@@ -43,9 +43,10 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     /// <summary>
     /// -Destination への出力で、この実行の中で書き込み先として決めたファイル（ファイル名の重なりの検出に使う）。
     /// 実際に書いたかどうかではなく、検査を通った時点で記録する。-WhatIf で何も書かない場合も、
-    /// 通常の実行と同じ N8 を報告するため（1.2.0 手動確認後の修正）
+    /// 通常の実行と同じ N8 を報告するため（1.2.0 手動確認後の修正）。
+    /// パスの文字列ではなく実体で比べる（1.3.0 第五次の後半。まだ無いファイルは、親フォルダーの実体と名前で比べる）
     /// </summary>
-    private readonly HashSet<string> _plannedDestinations = new HashSet<string>(PathComparison.Comparer);
+    private readonly List<FileIdentity> _plannedDestinations = new List<FileIdentity>();
 
     /// <summary>変換先の文字エンコーディング。変換元を保つ場合は null。</summary>
     private EncodingSpec? _targetSpec;
@@ -62,15 +63,24 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     /// <summary>
     /// 変換するファイルのパス。ワイルドカードを使用できる。
     /// </summary>
-    [Parameter(ParameterSetName = PathParameterSet, Mandatory = true, Position = 0)]
+    /// <remarks>
+    /// パイプラインの文字列も受け取る（1.3.0 第五次の後半。Get-ProbedContent・Import-ProbedCsv と束縛の形をそろえた）。
+    /// </remarks>
+    [Parameter(
+        ParameterSetName = PathParameterSet,
+        Mandatory = true,
+        Position = 0,
+        ValueFromPipeline = true,
+        ValueFromPipelineByPropertyName = true)]
+    [Alias("FilePath")]
     public string[] Path { get; set; } = default!;
 
     /// <summary>
     /// 変換するファイルのパス。ワイルドカードを展開せず、そのままのパスとして扱う。
-    /// Get-ChildItem の出力は PSPath でここに束縛される。
+    /// Get-ChildItem の出力は PSPath で、New-Object System.IO.FileInfo の出力は FullName でここに束縛される。
     /// </summary>
     [Parameter(ParameterSetName = LiteralPathParameterSet, Mandatory = true, ValueFromPipelineByPropertyName = true)]
-    [Alias("PSPath", "LP")]
+    [Alias("PSPath", "LP", "FullName")]
     public string[] LiteralPath { get; set; } = default!;
 
     /// <summary>
@@ -204,25 +214,31 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
 
             foreach (string resolved in matches)
             {
-                if (Directory.Exists(resolved))
+                // 主ストリームの名前（a.txt::$DATA）は a.txt として扱い、代替データストリームはエラーにする
+                if (!TryGetFullPath(resolved, out string fullPath))
                 {
-                    // Get-ChildItem -Recurse の出力にはディレクトリが混ざる。エラーにせず飛ばす
-                    WriteVerbose(ValidationMessages.SkippedDirectory(resolved));
                     continue;
                 }
 
-                if (!File.Exists(resolved))
+                if (Directory.Exists(fullPath))
+                {
+                    // Get-ChildItem -Recurse の出力にはディレクトリが混ざる。エラーにせず飛ばす
+                    WriteVerbose(ValidationMessages.SkippedDirectory(fullPath));
+                    continue;
+                }
+
+                if (!File.Exists(fullPath))
                 {
                     // N1
                     WriteError(CreateError(
-                        new FileNotFoundException(ValidationMessages.FileNotFound(resolved), resolved),
+                        new FileNotFoundException(ValidationMessages.FileNotFound(fullPath), fullPath),
                         "FileNotFound",
                         ErrorCategory.ObjectNotFound,
-                        resolved));
+                        fullPath));
                     continue;
                 }
 
-                ConvertFile(System.IO.Path.GetFullPath(resolved));
+                ConvertFile(fullPath);
             }
         }
     }
@@ -245,6 +261,13 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
         bool unicode = EncodingVocabulary.IsUnicodeCodePage(codePage);
         string display = DescribeEncoding(argument.Original, spec);
 
+        if (codePage == 65000)
+        {
+            // E5: utf7 は、名前でも Encoding のインスタンス（UTF7Encoding など）でも拒否する（1.3.0 第六次。BUG-0037）。
+            // インスタンスの分岐より先に調べる（以前はインスタンスを GetPreamble() の分岐で受け付けていた）
+            EnsureWritable(spec, argument.Original);
+        }
+
         if (argument.Original is System.Text.Encoding)
         {
             // GetPreamble() に従う。-Bom と食い違えば E8
@@ -259,9 +282,9 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
             return;
         }
 
-        if (codePage == 65000 || (!bomBound && unicode && argument.Original is not EncodingInformation))
+        if (!bomBound && unicode && argument.Original is not EncodingInformation)
         {
-            // E4 / E5: -Bom が無ければ 1.1.0 の書き込みの規則（裸の utf8・WebName・数値は拒否、utf7 は常に拒否）
+            // E4: -Bom が無ければ 1.1.0 の書き込みの規則（裸の utf8・WebName・数値は拒否）
             EnsureWritable(spec, argument.Original);
         }
 
@@ -345,7 +368,12 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     /// </summary>
     private string ResolveDestination()
     {
-        string destination = System.IO.Path.GetFullPath(GetUnresolvedProviderPathFromPSPath(this.Destination));
+        string unresolved = GetUnresolvedProviderPathFromPSPath(this.Destination);
+
+        if (!FileSystemPath.TryGetFullPath(unresolved, out string destination))
+        {
+            ThrowTerminatingError(CreateAlternateDataStreamError(unresolved));
+        }
 
         if (!Directory.Exists(destination))
         {
@@ -362,6 +390,22 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     /// <summary>
     /// 1 ファイルを変換する。失敗はそのファイルだけの非終了エラーとし、元のファイルは無傷で残す。
     /// </summary>
+    /// <summary>
+    /// 変換に必要なメモリが足りなかったことを、ID の付いた非終了エラーとして報告する（1.3.0 第六次 B。BUG-0030）。ファイルは変わらない
+    /// </summary>
+    private void ReportNotEnoughMemory(string file)
+        => WriteError(CreateError(
+            new InsufficientMemoryException(ValidationMessages.NotEnoughMemoryToConvert(file)), "NotEnoughMemoryToConvert", ErrorCategory.LimitsExceeded, file));
+
+    /// <summary>変換できる大きさを超えたファイル（読む前に分かる）</summary>
+    private sealed class FileTooLargeToConvertException : Exception
+    {
+        public FileTooLargeToConvertException(string message)
+            : base(message)
+        {
+        }
+    }
+
     private void ConvertFile(string file)
     {
         if (ActiveReadRegistry.IsBeingRead(file))
@@ -375,24 +419,55 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
             return;
         }
 
+        // 同じパイプラインで書き込み中のファイルは変換しない（逆向きの往復。1.3.0 第六次 B。BUG-0028）
+        if (ReportIfBeingWritten(file))
+        {
+            return;
+        }
+
         byte[] original;
 
         try
         {
-            original = File.ReadAllBytes(file);
+            // Get-ProbedContent と同じ共有モードで読む（1.3.0 第六次 B。BUG-0026）。
+            // 変換はファイル全体をメモリに読むので、上限を超えるファイルは読む前に止める（BUG-0030）
+            original = SharedFileReader.ReadAll(
+                file, EncodingInheritance.MaxDetectableLength, () => new FileTooLargeToConvertException(ValidationMessages.FileTooLargeToConvert(file)));
+        }
+        catch (FileTooLargeToConvertException exception)
+        {
+            WriteError(CreateError(exception, "FileTooLargeToConvert", ErrorCategory.LimitsExceeded, file));
+            return;
+        }
+        catch (OutOfMemoryException)
+        {
+            ReportNotEnoughMemory(file);
+            return;
         }
         catch (IOException exception)
         {
-            WriteError(CreateError(exception, "ReadFailed", ErrorCategory.ReadError, file));
+            WriteError(CreateError(FileErrors.ReadFailed(file, exception), "ReadFailed", ErrorCategory.ReadError, file));
             return;
         }
         catch (UnauthorizedAccessException exception)
         {
-            WriteError(CreateError(exception, "ReadAccessDenied", ErrorCategory.PermissionDenied, file));
+            WriteError(CreateError(FileErrors.ReadAccessDenied(file, exception), "ReadAccessDenied", ErrorCategory.PermissionDenied, file));
             return;
         }
 
-        ConversionResult? result = Transcode(file, original);
+        ConversionResult? result;
+
+        try
+        {
+            result = Transcode(file, original);
+        }
+        catch (OutOfMemoryException)
+        {
+            // 復号・符号化した文字列もファイルの大きさの数倍になる。生の OutOfMemoryException にしない（1.3.0 第六次 B。BUG-0030）
+            original = Array.Empty<byte>();
+            ReportNotEnoughMemory(file);
+            return;
+        }
 
         if (result == null)
         {
@@ -411,7 +486,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
 
         if (this._destination != null)
         {
-            this._plannedDestinations.Add(target);
+            this._plannedDestinations.Add(FileIdentity.Of(target));
         }
 
         if (!ShouldProcess(target, OperationName))
@@ -596,7 +671,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
                     file,
                     EncodingVocabulary.GetUnifiedName(codePage, bomLength > 0),
                     offset,
-                    FormatBytes(invalidBytes))),
+                    ByteSequenceText.Format(invalidBytes))),
                 "InvalidSourceBytes",
                 ErrorCategory.InvalidData,
                 file));
@@ -783,7 +858,11 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     {
         if (this._destination != null)
         {
-            if (PathComparison.Comparer.Equals(file, target))
+            var targetIdentity = FileIdentity.Of(target);
+
+            // N9 はパスの文字列ではなく実体で比べる（1.3.0 第五次の後半。BUG-0017）。
+            // -Destination に変換元のフォルダーを \\?\・UNC・subst・ジャンクション・リンクの書き方で渡しても N9 にし、-Force でも変換元を書き換えない
+            if (targetIdentity.Matches(FileIdentity.Of(file)))
             {
                 // N9
                 ReportWriteRejection(new IOException(ValidationMessages.DestinationIsSource(file)),
@@ -791,7 +870,7 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
                 return false;
             }
 
-            if (this._plannedDestinations.Contains(target))
+            if (this._plannedDestinations.Exists(planned => planned.Matches(targetIdentity)))
             {
                 // N8: 同じ実行で書いた（-WhatIf では書くはずだった）ファイルは -Force があっても消さない
                 ReportWriteRejection(new IOException(ValidationMessages.DestinationNameConflict(target, file)),
@@ -825,73 +904,45 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
     }
 
     /// <summary>
-    /// 同じフォルダーの一時ファイルに書いてから置き換える。失敗したら一時ファイルを消し、非終了エラーを報告する。
+    /// 書き込み系のほかのコマンドと同じ部品（<see cref="SafeFileOverwrite"/>）で書く。失敗したら元に戻し、非終了エラーを報告する。
     /// </summary>
+    /// <remarks>
+    /// 1.3.0 第五次の後半で、自前の一時ファイルと File.Replace をやめた（H-17）。ハードリンクは切らずに元のファイルへ直接書き、
+    /// シンボリックリンクはリンクの先の実体を置き換える（リンクは残す）。一時ファイルの名前も、ほかのコマンドと同じ
+    /// <c>.&lt;名前&gt;.&lt;8 桁&gt;.probedtmp</c> になった（1.2.0 までは <c>.&lt;名前&gt;.&lt;GUID&gt;.tmp</c>）。
+    /// 第六次 B で、元の名前によらない <c>.~probed&lt;8 桁&gt;.probedtmp</c> にした（名前の長いファイルで上限を超えていた。BUG-0027）。
+    /// </remarks>
     private bool WriteAtomically(string target, byte[] content)
     {
-        string directory = System.IO.Path.GetDirectoryName(target)!;
-        string temporary = System.IO.Path.Combine(
-            directory, "." + System.IO.Path.GetFileName(target) + "." + Guid.NewGuid().ToString("N") + ".tmp");
-
-        ReadOnlyAttributeScope? readOnlyScope = null;
+        ReadOnlyAttributeScope? readOnlyScope = this.Force.IsPresent ? ReadOnlyAttributeScope.ClearIfReadOnly(target) : null;
+        SafeFileOverwrite? overwrite = null;
 
         try
         {
-            File.WriteAllBytes(temporary, content);
-
-            if (File.Exists(target))
-            {
-                if (this.Force.IsPresent)
-                {
-                    readOnlyScope = ReadOnlyAttributeScope.ClearIfReadOnly(target);
-                }
-
-                File.Replace(temporary, target, null);
-            }
-            else
-            {
-                File.Move(temporary, target);
-            }
+            overwrite = SafeFileOverwrite.Begin(target, DanglingLinkPolicy.CreateTarget, 4096);
+            overwrite.Write(content, 0, content.Length);
+            overwrite.Commit();
 
             return true;
         }
         catch (IOException exception)
         {
-            WriteError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, target));
+            overwrite?.Rollback();
+            WriteError(RollbackNotice.Attach(
+                CreateError(FileErrors.WriteFailed(target, exception), "WriteFailed", ErrorCategory.WriteError, target), target, overwrite?.KeptBackupPath));
         }
         catch (UnauthorizedAccessException exception)
         {
-            WriteError(CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, target));
+            overwrite?.Rollback();
+            WriteError(RollbackNotice.Attach(
+                CreateError(FileErrors.WriteAccessDenied(target, exception), "WriteAccessDenied", ErrorCategory.PermissionDenied, target), target, overwrite?.KeptBackupPath));
         }
         finally
         {
             readOnlyScope?.Dispose();
-            DeleteQuietly(temporary);
         }
 
         return false;
-    }
-
-    /// <summary>
-    /// 一時ファイルを消す。置き換えが済んでいれば既に無い。
-    /// </summary>
-    private static void DeleteQuietly(string path)
-    {
-        try
-        {
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
-        }
-        catch (IOException)
-        {
-            // 後始末であり、消せなくても変換の結果は変わらない
-        }
-        catch (UnauthorizedAccessException)
-        {
-            // 同上
-        }
     }
 
     /// <summary>
@@ -939,31 +990,6 @@ public sealed class ConvertProbedContentCommand : ProbedContentCommandBase
             default:
                 return original.ToString() ?? string.Empty;
         }
-    }
-
-    /// <summary>
-    /// バイト列を 16 進で表す（エラーメッセージ用）
-    /// </summary>
-    private static string FormatBytes(byte[]? bytes)
-    {
-        if (bytes == null || bytes.Length == 0)
-        {
-            return string.Empty;
-        }
-
-        var builder = new StringBuilder(bytes.Length * 3);
-
-        foreach (byte value in bytes)
-        {
-            if (builder.Length > 0)
-            {
-                builder.Append(' ');
-            }
-
-            builder.Append(value.ToString("X2", CultureInfo.InvariantCulture));
-        }
-
-        return builder.ToString();
     }
 
     private static bool BytesAreEqual(byte[] left, byte[] right)

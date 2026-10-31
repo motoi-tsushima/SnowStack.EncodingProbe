@@ -1,0 +1,907 @@
+group	id	culture	strategy	CodePage	EncodingWebName	Bom	LineBreak
+A1	A1-crlf-u16le	ja-JP	Combined	1200	utf-16	False	CrLf
+A1	A1-crlf-u16le	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+A1	A1-crlf-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A1	A1-crlf-u16le	en-US	Combined	1200	utf-16	False	CrLf
+A1	A1-crlf-u16le	en-US	NativeOnly	1200	utf-16	False	CrLf
+A1	A1-crlf-u16le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A1	A1-crlf-u16be	ja-JP	Combined	1201	unicodeFFFE	False	CrLf
+A1	A1-crlf-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	CrLf
+A1	A1-crlf-u16be	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A1	A1-crlf-u16be	en-US	Combined	1201	unicodeFFFE	False	CrLf
+A1	A1-crlf-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	CrLf
+A1	A1-crlf-u16be	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A1	A1-crlf-u32le	ja-JP	Combined	12000	utf-32	False	CrLf
+A1	A1-crlf-u32le	ja-JP	NativeOnly	12000	utf-32	False	CrLf
+A1	A1-crlf-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A1	A1-crlf-u32le	en-US	Combined	12000	utf-32	False	CrLf
+A1	A1-crlf-u32le	en-US	NativeOnly	12000	utf-32	False	CrLf
+A1	A1-crlf-u32le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A1	A1-crlf-u32be	ja-JP	Combined	12001	utf-32BE	False	CrLf
+A1	A1-crlf-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	CrLf
+A1	A1-crlf-u32be	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A1	A1-crlf-u32be	en-US	Combined	12001	utf-32BE	False	CrLf
+A1	A1-crlf-u32be	en-US	NativeOnly	12001	utf-32BE	False	CrLf
+A1	A1-crlf-u32be	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A2	A2-lf-u16le	ja-JP	Combined	1200	utf-16	False	Lf
+A2	A2-lf-u16le	ja-JP	NativeOnly	1200	utf-16	False	Lf
+A2	A2-lf-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	Lf
+A2	A2-lf-u16le	en-US	Combined	1200	utf-16	False	Lf
+A2	A2-lf-u16le	en-US	NativeOnly	1200	utf-16	False	Lf
+A2	A2-lf-u16le	en-US	UtfUnknownOnly	20127	ascii	False	Lf
+A2	A2-lf-u16be	ja-JP	Combined	1201	unicodeFFFE	False	Lf
+A2	A2-lf-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	Lf
+A2	A2-lf-u16be	ja-JP	UtfUnknownOnly	20127	ascii	False	Lf
+A2	A2-lf-u16be	en-US	Combined	1201	unicodeFFFE	False	Lf
+A2	A2-lf-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	Lf
+A2	A2-lf-u16be	en-US	UtfUnknownOnly	20127	ascii	False	Lf
+A2	A2-lf-u32le	ja-JP	Combined	12000	utf-32	False	Lf
+A2	A2-lf-u32le	ja-JP	NativeOnly	12000	utf-32	False	Lf
+A2	A2-lf-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	Lf
+A2	A2-lf-u32le	en-US	Combined	12000	utf-32	False	Lf
+A2	A2-lf-u32le	en-US	NativeOnly	12000	utf-32	False	Lf
+A2	A2-lf-u32le	en-US	UtfUnknownOnly	20127	ascii	False	Lf
+A2	A2-lf-u32be	ja-JP	Combined	12001	utf-32BE	False	Lf
+A2	A2-lf-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	Lf
+A2	A2-lf-u32be	ja-JP	UtfUnknownOnly	20127	ascii	False	Lf
+A2	A2-lf-u32be	en-US	Combined	12001	utf-32BE	False	Lf
+A2	A2-lf-u32be	en-US	NativeOnly	12001	utf-32BE	False	Lf
+A2	A2-lf-u32be	en-US	UtfUnknownOnly	20127	ascii	False	Lf
+A2	A2-cr-u16le	ja-JP	Combined	1200	utf-16	False	Cr
+A2	A2-cr-u16le	ja-JP	NativeOnly	1200	utf-16	False	Cr
+A2	A2-cr-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	Cr
+A2	A2-cr-u16le	en-US	Combined	1200	utf-16	False	Cr
+A2	A2-cr-u16le	en-US	NativeOnly	1200	utf-16	False	Cr
+A2	A2-cr-u16le	en-US	UtfUnknownOnly	20127	ascii	False	Cr
+A2	A2-cr-u16be	ja-JP	Combined	1201	unicodeFFFE	False	Cr
+A2	A2-cr-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	Cr
+A2	A2-cr-u16be	ja-JP	UtfUnknownOnly	20127	ascii	False	Cr
+A2	A2-cr-u16be	en-US	Combined	1201	unicodeFFFE	False	Cr
+A2	A2-cr-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	Cr
+A2	A2-cr-u16be	en-US	UtfUnknownOnly	20127	ascii	False	Cr
+A2	A2-cr-u32le	ja-JP	Combined	12000	utf-32	False	Cr
+A2	A2-cr-u32le	ja-JP	NativeOnly	12000	utf-32	False	Cr
+A2	A2-cr-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	Cr
+A2	A2-cr-u32le	en-US	Combined	12000	utf-32	False	Cr
+A2	A2-cr-u32le	en-US	NativeOnly	12000	utf-32	False	Cr
+A2	A2-cr-u32le	en-US	UtfUnknownOnly	20127	ascii	False	Cr
+A2	A2-cr-u32be	ja-JP	Combined	12001	utf-32BE	False	Cr
+A2	A2-cr-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	Cr
+A2	A2-cr-u32be	ja-JP	UtfUnknownOnly	20127	ascii	False	Cr
+A2	A2-cr-u32be	en-US	Combined	12001	utf-32BE	False	Cr
+A2	A2-cr-u32be	en-US	NativeOnly	12001	utf-32BE	False	Cr
+A2	A2-cr-u32be	en-US	UtfUnknownOnly	20127	ascii	False	Cr
+A2	A2-none-u16le	ja-JP	Combined	1200	utf-16	False	None
+A2	A2-none-u16le	ja-JP	NativeOnly	1200	utf-16	False	None
+A2	A2-none-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A2	A2-none-u16le	en-US	Combined	1200	utf-16	False	None
+A2	A2-none-u16le	en-US	NativeOnly	1200	utf-16	False	None
+A2	A2-none-u16le	en-US	UtfUnknownOnly	20127	ascii	False	None
+A2	A2-none-u16be	ja-JP	Combined	1201	unicodeFFFE	False	None
+A2	A2-none-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	None
+A2	A2-none-u16be	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A2	A2-none-u16be	en-US	Combined	1201	unicodeFFFE	False	None
+A2	A2-none-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	None
+A2	A2-none-u16be	en-US	UtfUnknownOnly	20127	ascii	False	None
+A2	A2-none-u32le	ja-JP	Combined	12000	utf-32	False	None
+A2	A2-none-u32le	ja-JP	NativeOnly	12000	utf-32	False	None
+A2	A2-none-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A2	A2-none-u32le	en-US	Combined	12000	utf-32	False	None
+A2	A2-none-u32le	en-US	NativeOnly	12000	utf-32	False	None
+A2	A2-none-u32le	en-US	UtfUnknownOnly	20127	ascii	False	None
+A2	A2-none-u32be	ja-JP	Combined	12001	utf-32BE	False	None
+A2	A2-none-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	None
+A2	A2-none-u32be	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A2	A2-none-u32be	en-US	Combined	12001	utf-32BE	False	None
+A2	A2-none-u32be	en-US	NativeOnly	12001	utf-32BE	False	None
+A2	A2-none-u32be	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-1ch-u16le	ja-JP	Combined	1200	utf-16	False	None
+A3	A3-1ch-u16le	ja-JP	NativeOnly	1200	utf-16	False	None
+A3	A3-1ch-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-1ch-u16le	en-US	Combined	1200	utf-16	False	None
+A3	A3-1ch-u16le	en-US	NativeOnly	1200	utf-16	False	None
+A3	A3-1ch-u16le	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-1ch-u16be	ja-JP	Combined	1201	unicodeFFFE	False	None
+A3	A3-1ch-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	None
+A3	A3-1ch-u16be	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-1ch-u16be	en-US	Combined	1201	unicodeFFFE	False	None
+A3	A3-1ch-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	None
+A3	A3-1ch-u16be	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-1ch-u32le	ja-JP	Combined	12000	utf-32	False	None
+A3	A3-1ch-u32le	ja-JP	NativeOnly	12000	utf-32	False	None
+A3	A3-1ch-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-1ch-u32le	en-US	Combined	12000	utf-32	False	None
+A3	A3-1ch-u32le	en-US	NativeOnly	12000	utf-32	False	None
+A3	A3-1ch-u32le	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-1ch-u32be	ja-JP	Combined	12001	utf-32BE	False	None
+A3	A3-1ch-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	None
+A3	A3-1ch-u32be	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-1ch-u32be	en-US	Combined	12001	utf-32BE	False	None
+A3	A3-1ch-u32be	en-US	NativeOnly	12001	utf-32BE	False	None
+A3	A3-1ch-u32be	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-2ch-u16le	ja-JP	Combined	1200	utf-16	False	None
+A3	A3-2ch-u16le	ja-JP	NativeOnly	1200	utf-16	False	None
+A3	A3-2ch-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-2ch-u16le	en-US	Combined	1200	utf-16	False	None
+A3	A3-2ch-u16le	en-US	NativeOnly	1200	utf-16	False	None
+A3	A3-2ch-u16le	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-2ch-u16be	ja-JP	Combined	1201	unicodeFFFE	False	None
+A3	A3-2ch-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	None
+A3	A3-2ch-u16be	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-2ch-u16be	en-US	Combined	1201	unicodeFFFE	False	None
+A3	A3-2ch-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	None
+A3	A3-2ch-u16be	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-2ch-u32le	ja-JP	Combined	12000	utf-32	False	None
+A3	A3-2ch-u32le	ja-JP	NativeOnly	12000	utf-32	False	None
+A3	A3-2ch-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-2ch-u32le	en-US	Combined	12000	utf-32	False	None
+A3	A3-2ch-u32le	en-US	NativeOnly	12000	utf-32	False	None
+A3	A3-2ch-u32le	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-2ch-u32be	ja-JP	Combined	12001	utf-32BE	False	None
+A3	A3-2ch-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	None
+A3	A3-2ch-u32be	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-2ch-u32be	en-US	Combined	12001	utf-32BE	False	None
+A3	A3-2ch-u32be	en-US	NativeOnly	12001	utf-32BE	False	None
+A3	A3-2ch-u32be	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-10ch-u16le	ja-JP	Combined	1200	utf-16	False	None
+A3	A3-10ch-u16le	ja-JP	NativeOnly	1200	utf-16	False	None
+A3	A3-10ch-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-10ch-u16le	en-US	Combined	1200	utf-16	False	None
+A3	A3-10ch-u16le	en-US	NativeOnly	1200	utf-16	False	None
+A3	A3-10ch-u16le	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-10ch-u16be	ja-JP	Combined	1201	unicodeFFFE	False	None
+A3	A3-10ch-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	None
+A3	A3-10ch-u16be	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-10ch-u16be	en-US	Combined	1201	unicodeFFFE	False	None
+A3	A3-10ch-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	None
+A3	A3-10ch-u16be	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-10ch-u32le	ja-JP	Combined	12000	utf-32	False	None
+A3	A3-10ch-u32le	ja-JP	NativeOnly	12000	utf-32	False	None
+A3	A3-10ch-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-10ch-u32le	en-US	Combined	12000	utf-32	False	None
+A3	A3-10ch-u32le	en-US	NativeOnly	12000	utf-32	False	None
+A3	A3-10ch-u32le	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-10ch-u32be	ja-JP	Combined	12001	utf-32BE	False	None
+A3	A3-10ch-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	None
+A3	A3-10ch-u32be	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-10ch-u32be	en-US	Combined	12001	utf-32BE	False	None
+A3	A3-10ch-u32be	en-US	NativeOnly	12001	utf-32BE	False	None
+A3	A3-10ch-u32be	en-US	UtfUnknownOnly	20127	ascii	False	None
+A3	A3-1k-u16le	ja-JP	Combined	1200	utf-16	False	CrLf
+A3	A3-1k-u16le	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+A3	A3-1k-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-1k-u16le	en-US	Combined	1200	utf-16	False	CrLf
+A3	A3-1k-u16le	en-US	NativeOnly	1200	utf-16	False	CrLf
+A3	A3-1k-u16le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-1k-u16be	ja-JP	Combined	1201	unicodeFFFE	False	CrLf
+A3	A3-1k-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	CrLf
+A3	A3-1k-u16be	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-1k-u16be	en-US	Combined	1201	unicodeFFFE	False	CrLf
+A3	A3-1k-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	CrLf
+A3	A3-1k-u16be	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-1k-u32le	ja-JP	Combined	12000	utf-32	False	CrLf
+A3	A3-1k-u32le	ja-JP	NativeOnly	12000	utf-32	False	CrLf
+A3	A3-1k-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-1k-u32le	en-US	Combined	12000	utf-32	False	CrLf
+A3	A3-1k-u32le	en-US	NativeOnly	12000	utf-32	False	CrLf
+A3	A3-1k-u32le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-1k-u32be	ja-JP	Combined	12001	utf-32BE	False	CrLf
+A3	A3-1k-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	CrLf
+A3	A3-1k-u32be	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-1k-u32be	en-US	Combined	12001	utf-32BE	False	CrLf
+A3	A3-1k-u32be	en-US	NativeOnly	12001	utf-32BE	False	CrLf
+A3	A3-1k-u32be	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-40k-u16le	ja-JP	Combined	1200	utf-16	False	CrLf
+A3	A3-40k-u16le	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+A3	A3-40k-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-40k-u16le	en-US	Combined	1200	utf-16	False	CrLf
+A3	A3-40k-u16le	en-US	NativeOnly	1200	utf-16	False	CrLf
+A3	A3-40k-u16le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-40k-u16be	ja-JP	Combined	1201	unicodeFFFE	False	CrLf
+A3	A3-40k-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	CrLf
+A3	A3-40k-u16be	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-40k-u16be	en-US	Combined	1201	unicodeFFFE	False	CrLf
+A3	A3-40k-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	CrLf
+A3	A3-40k-u16be	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-40k-u32le	ja-JP	Combined	12000	utf-32	False	CrLf
+A3	A3-40k-u32le	ja-JP	NativeOnly	12000	utf-32	False	CrLf
+A3	A3-40k-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-40k-u32le	en-US	Combined	12000	utf-32	False	CrLf
+A3	A3-40k-u32le	en-US	NativeOnly	12000	utf-32	False	CrLf
+A3	A3-40k-u32le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-40k-u32be	ja-JP	Combined	12001	utf-32BE	False	CrLf
+A3	A3-40k-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	CrLf
+A3	A3-40k-u32be	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A3	A3-40k-u32be	en-US	Combined	12001	utf-32BE	False	CrLf
+A3	A3-40k-u32be	en-US	NativeOnly	12001	utf-32BE	False	CrLf
+A3	A3-40k-u32be	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A4	A4-printable-u16le	ja-JP	Combined	1200	utf-16	False	None
+A4	A4-printable-u16le	ja-JP	NativeOnly	1200	utf-16	False	None
+A4	A4-printable-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A4	A4-printable-u16le	en-US	Combined	1200	utf-16	False	None
+A4	A4-printable-u16le	en-US	NativeOnly	1200	utf-16	False	None
+A4	A4-printable-u16le	en-US	UtfUnknownOnly	20127	ascii	False	None
+A4	A4-printable-u16be	ja-JP	Combined	1201	unicodeFFFE	False	None
+A4	A4-printable-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	None
+A4	A4-printable-u16be	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A4	A4-printable-u16be	en-US	Combined	1201	unicodeFFFE	False	None
+A4	A4-printable-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	None
+A4	A4-printable-u16be	en-US	UtfUnknownOnly	20127	ascii	False	None
+A4	A4-printable-u32le	ja-JP	Combined	12000	utf-32	False	None
+A4	A4-printable-u32le	ja-JP	NativeOnly	12000	utf-32	False	None
+A4	A4-printable-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A4	A4-printable-u32le	en-US	Combined	12000	utf-32	False	None
+A4	A4-printable-u32le	en-US	NativeOnly	12000	utf-32	False	None
+A4	A4-printable-u32le	en-US	UtfUnknownOnly	20127	ascii	False	None
+A4	A4-printable-u32be	ja-JP	Combined	12001	utf-32BE	False	None
+A4	A4-printable-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	None
+A4	A4-printable-u32be	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+A4	A4-printable-u32be	en-US	Combined	12001	utf-32BE	False	None
+A4	A4-printable-u32be	en-US	NativeOnly	12001	utf-32BE	False	None
+A4	A4-printable-u32be	en-US	UtfUnknownOnly	20127	ascii	False	None
+A4	A4-tab-u16le	ja-JP	Combined	1200	utf-16	False	CrLf
+A4	A4-tab-u16le	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+A4	A4-tab-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A4	A4-tab-u16le	en-US	Combined	1200	utf-16	False	CrLf
+A4	A4-tab-u16le	en-US	NativeOnly	1200	utf-16	False	CrLf
+A4	A4-tab-u16le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A4	A4-tab-u16be	ja-JP	Combined	1201	unicodeFFFE	False	CrLf
+A4	A4-tab-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	CrLf
+A4	A4-tab-u16be	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A4	A4-tab-u16be	en-US	Combined	1201	unicodeFFFE	False	CrLf
+A4	A4-tab-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	CrLf
+A4	A4-tab-u16be	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A4	A4-tab-u32le	ja-JP	Combined	12000	utf-32	False	CrLf
+A4	A4-tab-u32le	ja-JP	NativeOnly	12000	utf-32	False	CrLf
+A4	A4-tab-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A4	A4-tab-u32le	en-US	Combined	12000	utf-32	False	CrLf
+A4	A4-tab-u32le	en-US	NativeOnly	12000	utf-32	False	CrLf
+A4	A4-tab-u32le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A4	A4-tab-u32be	ja-JP	Combined	12001	utf-32BE	False	CrLf
+A4	A4-tab-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	CrLf
+A4	A4-tab-u32be	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A4	A4-tab-u32be	en-US	Combined	12001	utf-32BE	False	CrLf
+A4	A4-tab-u32be	en-US	NativeOnly	12001	utf-32BE	False	CrLf
+A4	A4-tab-u32be	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c03-u16le	ja-JP	Combined	1200	utf-16	False	CrLf
+A5	A5-c03-u16le	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+A5	A5-c03-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c03-u16le	en-US	Combined	1200	utf-16	False	CrLf
+A5	A5-c03-u16le	en-US	NativeOnly	1200	utf-16	False	CrLf
+A5	A5-c03-u16le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c03-u32le	ja-JP	Combined	12000	utf-32	False	CrLf
+A5	A5-c03-u32le	ja-JP	NativeOnly	12000	utf-32	False	CrLf
+A5	A5-c03-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c03-u32le	en-US	Combined	12000	utf-32	False	CrLf
+A5	A5-c03-u32le	en-US	NativeOnly	12000	utf-32	False	CrLf
+A5	A5-c03-u32le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c05-u16le	ja-JP	Combined	1200	utf-16	False	CrLf
+A5	A5-c05-u16le	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+A5	A5-c05-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c05-u16le	en-US	Combined	1200	utf-16	False	CrLf
+A5	A5-c05-u16le	en-US	NativeOnly	1200	utf-16	False	CrLf
+A5	A5-c05-u16le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c05-u32le	ja-JP	Combined	12000	utf-32	False	CrLf
+A5	A5-c05-u32le	ja-JP	NativeOnly	12000	utf-32	False	CrLf
+A5	A5-c05-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c05-u32le	en-US	Combined	12000	utf-32	False	CrLf
+A5	A5-c05-u32le	en-US	NativeOnly	12000	utf-32	False	CrLf
+A5	A5-c05-u32le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c09-u16le	ja-JP	Combined	1200	utf-16	False	CrLf
+A5	A5-c09-u16le	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+A5	A5-c09-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c09-u16le	en-US	Combined	1200	utf-16	False	CrLf
+A5	A5-c09-u16le	en-US	NativeOnly	1200	utf-16	False	CrLf
+A5	A5-c09-u16le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c09-u32le	ja-JP	Combined	12000	utf-32	False	CrLf
+A5	A5-c09-u32le	ja-JP	NativeOnly	12000	utf-32	False	CrLf
+A5	A5-c09-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c09-u32le	en-US	Combined	12000	utf-32	False	CrLf
+A5	A5-c09-u32le	en-US	NativeOnly	12000	utf-32	False	CrLf
+A5	A5-c09-u32le	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+A5	A5-c12-u16le	ja-JP	Combined	1200	utf-16	False	Cr
+A5	A5-c12-u16le	ja-JP	NativeOnly	1200	utf-16	False	Cr
+A5	A5-c12-u16le	ja-JP	UtfUnknownOnly	20127	ascii	False	Cr
+A5	A5-c12-u16le	en-US	Combined	1200	utf-16	False	Cr
+A5	A5-c12-u16le	en-US	NativeOnly	1200	utf-16	False	Cr
+A5	A5-c12-u16le	en-US	UtfUnknownOnly	20127	ascii	False	Cr
+A5	A5-c12-u32le	ja-JP	Combined	12000	utf-32	False	Cr
+A5	A5-c12-u32le	ja-JP	NativeOnly	12000	utf-32	False	Cr
+A5	A5-c12-u32le	ja-JP	UtfUnknownOnly	20127	ascii	False	Cr
+A5	A5-c12-u32le	en-US	Combined	12000	utf-32	False	Cr
+A5	A5-c12-u32le	en-US	NativeOnly	12000	utf-32	False	Cr
+A5	A5-c12-u32le	en-US	UtfUnknownOnly	20127	ascii	False	Cr
+B1	B1-13+1	ja-JP	Combined	1200	utf-16	False	None
+B1	B1-13+1	ja-JP	NativeOnly	1200	utf-16	False	None
+B1	B1-13+1	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B1	B1-13+1	en-US	Combined	1200	utf-16	False	None
+B1	B1-13+1	en-US	NativeOnly	1200	utf-16	False	None
+B1	B1-13+1	en-US	UtfUnknownOnly	20127	ascii	False	None
+B1	B1-12+1	ja-JP	Combined	20127	us-ascii	False	None
+B1	B1-12+1	ja-JP	NativeOnly	20127	us-ascii	False	None
+B1	B1-12+1	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B1	B1-12+1	en-US	Combined	20127	us-ascii	False	None
+B1	B1-12+1	en-US	NativeOnly	20127	us-ascii	False	None
+B1	B1-12+1	en-US	UtfUnknownOnly	20127	ascii	False	None
+B1	B1-15+1	ja-JP	Combined	1200	utf-16	False	None
+B1	B1-15+1	ja-JP	NativeOnly	1200	utf-16	False	None
+B1	B1-15+1	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B1	B1-15+1	en-US	Combined	1200	utf-16	False	None
+B1	B1-15+1	en-US	NativeOnly	1200	utf-16	False	None
+B1	B1-15+1	en-US	UtfUnknownOnly	20127	ascii	False	None
+B2	B2-12+2	ja-JP	Combined	20127	us-ascii	False	None
+B2	B2-12+2	ja-JP	NativeOnly	20127	us-ascii	False	None
+B2	B2-12+2	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B2	B2-12+2	en-US	Combined	20127	us-ascii	False	None
+B2	B2-12+2	en-US	NativeOnly	20127	us-ascii	False	None
+B2	B2-12+2	en-US	UtfUnknownOnly	20127	ascii	False	None
+B2	B2-12+3	ja-JP	Combined	20127	us-ascii	False	None
+B2	B2-12+3	ja-JP	NativeOnly	20127	us-ascii	False	None
+B2	B2-12+3	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B2	B2-12+3	en-US	Combined	20127	us-ascii	False	None
+B2	B2-12+3	en-US	NativeOnly	20127	us-ascii	False	None
+B2	B2-12+3	en-US	UtfUnknownOnly	20127	ascii	False	None
+B2	B2-12+4	ja-JP	Combined	20127	us-ascii	False	None
+B2	B2-12+4	ja-JP	NativeOnly	20127	us-ascii	False	None
+B2	B2-12+4	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B2	B2-12+4	en-US	Combined	20127	us-ascii	False	None
+B2	B2-12+4	en-US	NativeOnly	20127	us-ascii	False	None
+B2	B2-12+4	en-US	UtfUnknownOnly	20127	ascii	False	None
+B2	B2-12+100	ja-JP	Combined	20127	us-ascii	False	None
+B2	B2-12+100	ja-JP	NativeOnly	20127	us-ascii	False	None
+B2	B2-12+100	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B2	B2-12+100	en-US	Combined	20127	us-ascii	False	None
+B2	B2-12+100	en-US	NativeOnly	20127	us-ascii	False	None
+B2	B2-12+100	en-US	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec8-nonl-x3	ja-JP	Combined	1200	utf-16	False	None
+B3	B3-rec8-nonl-x3	ja-JP	NativeOnly	1200	utf-16	False	None
+B3	B3-rec8-nonl-x3	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec8-nonl-x3	en-US	Combined	1200	utf-16	False	None
+B3	B3-rec8-nonl-x3	en-US	NativeOnly	1200	utf-16	False	None
+B3	B3-rec8-nonl-x3	en-US	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec8-nonl-x4	ja-JP	Combined	1200	utf-16	False	None
+B3	B3-rec8-nonl-x4	ja-JP	NativeOnly	1200	utf-16	False	None
+B3	B3-rec8-nonl-x4	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec8-nonl-x4	en-US	Combined	1200	utf-16	False	None
+B3	B3-rec8-nonl-x4	en-US	NativeOnly	1200	utf-16	False	None
+B3	B3-rec8-nonl-x4	en-US	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec8-crlf-x3	ja-JP	Combined	1200	utf-16	False	CrLf
+B3	B3-rec8-crlf-x3	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec8-crlf-x3	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec8-crlf-x3	en-US	Combined	1200	utf-16	False	CrLf
+B3	B3-rec8-crlf-x3	en-US	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec8-crlf-x3	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec8-crlf-x4	ja-JP	Combined	1200	utf-16	False	CrLf
+B3	B3-rec8-crlf-x4	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec8-crlf-x4	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec8-crlf-x4	en-US	Combined	1200	utf-16	False	CrLf
+B3	B3-rec8-crlf-x4	en-US	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec8-crlf-x4	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec16-nonl-x3	ja-JP	Combined	1200	utf-16	False	None
+B3	B3-rec16-nonl-x3	ja-JP	NativeOnly	1200	utf-16	False	None
+B3	B3-rec16-nonl-x3	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec16-nonl-x3	en-US	Combined	1200	utf-16	False	None
+B3	B3-rec16-nonl-x3	en-US	NativeOnly	1200	utf-16	False	None
+B3	B3-rec16-nonl-x3	en-US	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec16-nonl-x4	ja-JP	Combined	1200	utf-16	False	None
+B3	B3-rec16-nonl-x4	ja-JP	NativeOnly	1200	utf-16	False	None
+B3	B3-rec16-nonl-x4	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec16-nonl-x4	en-US	Combined	1200	utf-16	False	None
+B3	B3-rec16-nonl-x4	en-US	NativeOnly	1200	utf-16	False	None
+B3	B3-rec16-nonl-x4	en-US	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec16-crlf-x3	ja-JP	Combined	1200	utf-16	False	CrLf
+B3	B3-rec16-crlf-x3	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec16-crlf-x3	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec16-crlf-x3	en-US	Combined	1200	utf-16	False	CrLf
+B3	B3-rec16-crlf-x3	en-US	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec16-crlf-x3	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec16-crlf-x4	ja-JP	Combined	1200	utf-16	False	CrLf
+B3	B3-rec16-crlf-x4	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec16-crlf-x4	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec16-crlf-x4	en-US	Combined	1200	utf-16	False	CrLf
+B3	B3-rec16-crlf-x4	en-US	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec16-crlf-x4	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec17-nonl-x3	ja-JP	Combined	20127	us-ascii	False	None
+B3	B3-rec17-nonl-x3	ja-JP	NativeOnly	20127	us-ascii	False	None
+B3	B3-rec17-nonl-x3	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec17-nonl-x3	en-US	Combined	20127	us-ascii	False	None
+B3	B3-rec17-nonl-x3	en-US	NativeOnly	20127	us-ascii	False	None
+B3	B3-rec17-nonl-x3	en-US	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec17-nonl-x4	ja-JP	Combined	1200	utf-16	False	None
+B3	B3-rec17-nonl-x4	ja-JP	NativeOnly	1200	utf-16	False	None
+B3	B3-rec17-nonl-x4	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec17-nonl-x4	en-US	Combined	1200	utf-16	False	None
+B3	B3-rec17-nonl-x4	en-US	NativeOnly	1200	utf-16	False	None
+B3	B3-rec17-nonl-x4	en-US	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec17-crlf-x3	ja-JP	Combined	20127	us-ascii	False	CrLf
+B3	B3-rec17-crlf-x3	ja-JP	NativeOnly	20127	us-ascii	False	CrLf
+B3	B3-rec17-crlf-x3	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec17-crlf-x3	en-US	Combined	20127	us-ascii	False	CrLf
+B3	B3-rec17-crlf-x3	en-US	NativeOnly	20127	us-ascii	False	CrLf
+B3	B3-rec17-crlf-x3	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec17-crlf-x4	ja-JP	Combined	1200	utf-16	False	CrLf
+B3	B3-rec17-crlf-x4	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec17-crlf-x4	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec17-crlf-x4	en-US	Combined	1200	utf-16	False	CrLf
+B3	B3-rec17-crlf-x4	en-US	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec17-crlf-x4	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec32-nonl-x3	ja-JP	Combined	1200	utf-16	False	None
+B3	B3-rec32-nonl-x3	ja-JP	NativeOnly	1200	utf-16	False	None
+B3	B3-rec32-nonl-x3	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec32-nonl-x3	en-US	Combined	1200	utf-16	False	None
+B3	B3-rec32-nonl-x3	en-US	NativeOnly	1200	utf-16	False	None
+B3	B3-rec32-nonl-x3	en-US	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec32-nonl-x4	ja-JP	Combined	1200	utf-16	False	None
+B3	B3-rec32-nonl-x4	ja-JP	NativeOnly	1200	utf-16	False	None
+B3	B3-rec32-nonl-x4	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec32-nonl-x4	en-US	Combined	1200	utf-16	False	None
+B3	B3-rec32-nonl-x4	en-US	NativeOnly	1200	utf-16	False	None
+B3	B3-rec32-nonl-x4	en-US	UtfUnknownOnly	20127	ascii	False	None
+B3	B3-rec32-crlf-x3	ja-JP	Combined	1200	utf-16	False	CrLf
+B3	B3-rec32-crlf-x3	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec32-crlf-x3	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec32-crlf-x3	en-US	Combined	1200	utf-16	False	CrLf
+B3	B3-rec32-crlf-x3	en-US	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec32-crlf-x3	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec32-crlf-x4	ja-JP	Combined	1200	utf-16	False	CrLf
+B3	B3-rec32-crlf-x4	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec32-crlf-x4	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+B3	B3-rec32-crlf-x4	en-US	Combined	1200	utf-16	False	CrLf
+B3	B3-rec32-crlf-x4	en-US	NativeOnly	1200	utf-16	False	CrLf
+B3	B3-rec32-crlf-x4	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+B4	B4-abc	ja-JP	Combined	20127	us-ascii	False	None
+B4	B4-abc	ja-JP	NativeOnly	20127	us-ascii	False	None
+B4	B4-abc	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B4	B4-abc	en-US	Combined	20127	us-ascii	False	None
+B4	B4-abc	en-US	NativeOnly	20127	us-ascii	False	None
+B4	B4-abc	en-US	UtfUnknownOnly	20127	ascii	False	None
+B4	B4-print0	ja-JP	Combined	20127	us-ascii	False	None
+B4	B4-print0	ja-JP	NativeOnly	20127	us-ascii	False	None
+B4	B4-print0	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B4	B4-print0	en-US	Combined	20127	us-ascii	False	None
+B4	B4-print0	en-US	NativeOnly	20127	us-ascii	False	None
+B4	B4-print0	en-US	UtfUnknownOnly	20127	ascii	False	None
+B5	B5-1+13	ja-JP	Combined	1201	unicodeFFFE	False	None
+B5	B5-1+13	ja-JP	NativeOnly	1201	unicodeFFFE	False	None
+B5	B5-1+13	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B5	B5-1+13	en-US	Combined	1201	unicodeFFFE	False	None
+B5	B5-1+13	en-US	NativeOnly	1201	unicodeFFFE	False	None
+B5	B5-1+13	en-US	UtfUnknownOnly	20127	ascii	False	None
+B5	B5-4+12	ja-JP	Combined	20127	us-ascii	False	None
+B5	B5-4+12	ja-JP	NativeOnly	20127	us-ascii	False	None
+B5	B5-4+12	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B5	B5-4+12	en-US	Combined	20127	us-ascii	False	None
+B5	B5-4+12	en-US	NativeOnly	20127	us-ascii	False	None
+B5	B5-4+12	en-US	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero1	ja-JP	Combined	20127	us-ascii	False	None
+B6	B6-zero1	ja-JP	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero1	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero1	en-US	Combined	20127	us-ascii	False	None
+B6	B6-zero1	en-US	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero1	en-US	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero2	ja-JP	Combined	20127	us-ascii	False	None
+B6	B6-zero2	ja-JP	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero2	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero2	en-US	Combined	20127	us-ascii	False	None
+B6	B6-zero2	en-US	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero2	en-US	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero3	ja-JP	Combined	20127	us-ascii	False	None
+B6	B6-zero3	ja-JP	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero3	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero3	en-US	Combined	20127	us-ascii	False	None
+B6	B6-zero3	en-US	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero3	en-US	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero4	ja-JP	Combined	20127	us-ascii	False	None
+B6	B6-zero4	ja-JP	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero4	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero4	en-US	Combined	20127	us-ascii	False	None
+B6	B6-zero4	en-US	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero4	en-US	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero8	ja-JP	Combined	20127	us-ascii	False	None
+B6	B6-zero8	ja-JP	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero8	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero8	en-US	Combined	20127	us-ascii	False	None
+B6	B6-zero8	en-US	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero8	en-US	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero1024	ja-JP	Combined	20127	us-ascii	False	None
+B6	B6-zero1024	ja-JP	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero1024	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B6	B6-zero1024	en-US	Combined	20127	us-ascii	False	None
+B6	B6-zero1024	en-US	NativeOnly	20127	us-ascii	False	None
+B6	B6-zero1024	en-US	UtfUnknownOnly	20127	ascii	False	None
+B7	B7-9	ja-JP	Combined	20127	us-ascii	False	None
+B7	B7-9	ja-JP	NativeOnly	20127	us-ascii	False	None
+B7	B7-9	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B7	B7-9	en-US	Combined	20127	us-ascii	False	None
+B7	B7-9	en-US	NativeOnly	20127	us-ascii	False	None
+B7	B7-9	en-US	UtfUnknownOnly	20127	ascii	False	None
+B7	B7-10	ja-JP	Combined	1200	utf-16	False	None
+B7	B7-10	ja-JP	NativeOnly	1200	utf-16	False	None
+B7	B7-10	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B7	B7-10	en-US	Combined	1200	utf-16	False	None
+B7	B7-10	en-US	NativeOnly	1200	utf-16	False	None
+B7	B7-10	en-US	UtfUnknownOnly	20127	ascii	False	None
+B8	B8-13	ja-JP	Combined	20127	us-ascii	False	None
+B8	B8-13	ja-JP	NativeOnly	20127	us-ascii	False	None
+B8	B8-13	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B8	B8-13	en-US	Combined	20127	us-ascii	False	None
+B8	B8-13	en-US	NativeOnly	20127	us-ascii	False	None
+B8	B8-13	en-US	UtfUnknownOnly	20127	ascii	False	None
+B8	B8-11	ja-JP	Combined	20127	us-ascii	False	None
+B8	B8-11	ja-JP	NativeOnly	20127	us-ascii	False	None
+B8	B8-11	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B8	B8-11	en-US	Combined	20127	us-ascii	False	None
+B8	B8-11	en-US	NativeOnly	20127	us-ascii	False	None
+B8	B8-11	en-US	UtfUnknownOnly	20127	ascii	False	None
+B8	B8-12	ja-JP	Combined	12000	utf-32	False	None
+B8	B8-12	ja-JP	NativeOnly	12000	utf-32	False	None
+B8	B8-12	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B8	B8-12	en-US	Combined	12000	utf-32	False	None
+B8	B8-12	en-US	NativeOnly	12000	utf-32	False	None
+B8	B8-12	en-US	UtfUnknownOnly	20127	ascii	False	None
+B8	B8-16	ja-JP	Combined	1200	utf-16	False	None
+B8	B8-16	ja-JP	NativeOnly	1200	utf-16	False	None
+B8	B8-16	ja-JP	UtfUnknownOnly	20127	ascii	False	None
+B8	B8-16	en-US	Combined	1200	utf-16	False	None
+B8	B8-16	en-US	NativeOnly	1200	utf-16	False	None
+B8	B8-16	en-US	UtfUnknownOnly	20127	ascii	False	None
+C1	C1-Chinese_HongKong/sample_big5.txt	ja-JP	Combined	932	shift_jis	False	CrLf
+C1	C1-Chinese_HongKong/sample_big5.txt	ja-JP	NativeOnly	932	shift_jis	False	CrLf
+C1	C1-Chinese_HongKong/sample_big5.txt	ja-JP	UtfUnknownOnly	950	big5	False	CrLf
+C1	C1-Chinese_HongKong/sample_big5.txt	en-US	Combined	950	big5	False	CrLf
+C1	C1-Chinese_HongKong/sample_big5.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Chinese_HongKong/sample_big5.txt	en-US	UtfUnknownOnly	950	big5	False	CrLf
+C1	C1-Chinese_HongKong/sample_big5hkscs.txt	ja-JP	Combined	-1		False	CrLf
+C1	C1-Chinese_HongKong/sample_big5hkscs.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-Chinese_HongKong/sample_big5hkscs.txt	ja-JP	UtfUnknownOnly	-1		False	CrLf
+C1	C1-Chinese_HongKong/sample_big5hkscs.txt	en-US	Combined	-1		False	CrLf
+C1	C1-Chinese_HongKong/sample_big5hkscs.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Chinese_HongKong/sample_big5hkscs.txt	en-US	UtfUnknownOnly	-1		False	CrLf
+C1	C1-Chinese_HongKong/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	CrLf
+C1	C1-Chinese_HongKong/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Chinese_HongKong/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Chinese_HongKong/sample_utf8.txt	en-US	Combined	65001	utf-8	False	CrLf
+C1	C1-Chinese_HongKong/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Chinese_HongKong/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Chinese_Simplified/sample_gb18030.txt	ja-JP	Combined	54936	gb18030	False	None
+C1	C1-Chinese_Simplified/sample_gb18030.txt	ja-JP	NativeOnly	-1		False	None
+C1	C1-Chinese_Simplified/sample_gb18030.txt	ja-JP	UtfUnknownOnly	54936	gb18030	False	None
+C1	C1-Chinese_Simplified/sample_gb18030.txt	en-US	Combined	54936	gb18030	False	None
+C1	C1-Chinese_Simplified/sample_gb18030.txt	en-US	NativeOnly	-1		False	None
+C1	C1-Chinese_Simplified/sample_gb18030.txt	en-US	UtfUnknownOnly	54936	gb18030	False	None
+C1	C1-Chinese_Simplified/sample_gb2312.txt	ja-JP	Combined	932	shift_jis	False	None
+C1	C1-Chinese_Simplified/sample_gb2312.txt	ja-JP	NativeOnly	932	shift_jis	False	None
+C1	C1-Chinese_Simplified/sample_gb2312.txt	ja-JP	UtfUnknownOnly	-1		False	None
+C1	C1-Chinese_Simplified/sample_gb2312.txt	en-US	Combined	-1		False	None
+C1	C1-Chinese_Simplified/sample_gb2312.txt	en-US	NativeOnly	-1		False	None
+C1	C1-Chinese_Simplified/sample_gb2312.txt	en-US	UtfUnknownOnly	-1		False	None
+C1	C1-Chinese_Simplified/sample_gbk.txt	ja-JP	Combined	-1		False	None
+C1	C1-Chinese_Simplified/sample_gbk.txt	ja-JP	NativeOnly	-1		False	None
+C1	C1-Chinese_Simplified/sample_gbk.txt	ja-JP	UtfUnknownOnly	-1		False	None
+C1	C1-Chinese_Simplified/sample_gbk.txt	en-US	Combined	-1		False	None
+C1	C1-Chinese_Simplified/sample_gbk.txt	en-US	NativeOnly	-1		False	None
+C1	C1-Chinese_Simplified/sample_gbk.txt	en-US	UtfUnknownOnly	-1		False	None
+C1	C1-Chinese_Simplified/sample_gbk_long.txt	ja-JP	Combined	20932	euc-jp	False	CrLf
+C1	C1-Chinese_Simplified/sample_gbk_long.txt	ja-JP	NativeOnly	20932	euc-jp	False	CrLf
+C1	C1-Chinese_Simplified/sample_gbk_long.txt	ja-JP	UtfUnknownOnly	54936	gb18030	False	CrLf
+C1	C1-Chinese_Simplified/sample_gbk_long.txt	en-US	Combined	54936	gb18030	False	CrLf
+C1	C1-Chinese_Simplified/sample_gbk_long.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Chinese_Simplified/sample_gbk_long.txt	en-US	UtfUnknownOnly	54936	gb18030	False	CrLf
+C1	C1-Chinese_Simplified/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	None
+C1	C1-Chinese_Simplified/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	None
+C1	C1-Chinese_Simplified/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	None
+C1	C1-Chinese_Simplified/sample_utf8.txt	en-US	Combined	65001	utf-8	False	None
+C1	C1-Chinese_Simplified/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	None
+C1	C1-Chinese_Simplified/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	None
+C1	C1-Chinese_Traditional/sample_big5.txt	ja-JP	Combined	932	shift_jis	False	None
+C1	C1-Chinese_Traditional/sample_big5.txt	ja-JP	NativeOnly	932	shift_jis	False	None
+C1	C1-Chinese_Traditional/sample_big5.txt	ja-JP	UtfUnknownOnly	-1		False	None
+C1	C1-Chinese_Traditional/sample_big5.txt	en-US	Combined	-1		False	None
+C1	C1-Chinese_Traditional/sample_big5.txt	en-US	NativeOnly	-1		False	None
+C1	C1-Chinese_Traditional/sample_big5.txt	en-US	UtfUnknownOnly	-1		False	None
+C1	C1-Chinese_Traditional/sample_big5_long.txt	ja-JP	Combined	950	big5	False	CrLf
+C1	C1-Chinese_Traditional/sample_big5_long.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-Chinese_Traditional/sample_big5_long.txt	ja-JP	UtfUnknownOnly	950	big5	False	CrLf
+C1	C1-Chinese_Traditional/sample_big5_long.txt	en-US	Combined	950	big5	False	CrLf
+C1	C1-Chinese_Traditional/sample_big5_long.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Chinese_Traditional/sample_big5_long.txt	en-US	UtfUnknownOnly	950	big5	False	CrLf
+C1	C1-Chinese_Traditional/sample_euctw.txt	ja-JP	Combined	20932	euc-jp	False	None
+C1	C1-Chinese_Traditional/sample_euctw.txt	ja-JP	NativeOnly	20932	euc-jp	False	None
+C1	C1-Chinese_Traditional/sample_euctw.txt	ja-JP	UtfUnknownOnly	-1		False	None
+C1	C1-Chinese_Traditional/sample_euctw.txt	en-US	Combined	-1		False	None
+C1	C1-Chinese_Traditional/sample_euctw.txt	en-US	NativeOnly	-1		False	None
+C1	C1-Chinese_Traditional/sample_euctw.txt	en-US	UtfUnknownOnly	-1		False	None
+C1	C1-Chinese_Traditional/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	None
+C1	C1-Chinese_Traditional/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	None
+C1	C1-Chinese_Traditional/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	None
+C1	C1-Chinese_Traditional/sample_utf8.txt	en-US	Combined	65001	utf-8	False	None
+C1	C1-Chinese_Traditional/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	None
+C1	C1-Chinese_Traditional/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	None
+C1	C1-English/sample_ascii.txt	ja-JP	Combined	20127	us-ascii	False	Lf
+C1	C1-English/sample_ascii.txt	ja-JP	NativeOnly	20127	us-ascii	False	Lf
+C1	C1-English/sample_ascii.txt	ja-JP	UtfUnknownOnly	20127	ascii	False	Lf
+C1	C1-English/sample_ascii.txt	en-US	Combined	20127	us-ascii	False	Lf
+C1	C1-English/sample_ascii.txt	en-US	NativeOnly	20127	us-ascii	False	Lf
+C1	C1-English/sample_ascii.txt	en-US	UtfUnknownOnly	20127	ascii	False	Lf
+C1	C1-English/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	Lf
+C1	C1-English/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	Lf
+C1	C1-English/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	Lf
+C1	C1-English/sample_utf8.txt	en-US	Combined	65001	utf-8	False	Lf
+C1	C1-English/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	Lf
+C1	C1-English/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	Lf
+C1	C1-English/sample_utf8_bom.txt	ja-JP	Combined	65001	utf-8	True	Lf
+C1	C1-English/sample_utf8_bom.txt	ja-JP	NativeOnly	65001	utf-8	True	Lf
+C1	C1-English/sample_utf8_bom.txt	ja-JP	UtfUnknownOnly	65001	utf-8	True	Lf
+C1	C1-English/sample_utf8_bom.txt	en-US	Combined	65001	utf-8	True	Lf
+C1	C1-English/sample_utf8_bom.txt	en-US	NativeOnly	65001	utf-8	True	Lf
+C1	C1-English/sample_utf8_bom.txt	en-US	UtfUnknownOnly	65001	utf-8	True	Lf
+C1	C1-Estonian/sample_cp1257.txt	ja-JP	Combined	1257	windows-1257	False	CrLf
+C1	C1-Estonian/sample_cp1257.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-Estonian/sample_cp1257.txt	ja-JP	UtfUnknownOnly	1257	windows-1257	False	CrLf
+C1	C1-Estonian/sample_cp1257.txt	en-US	Combined	1257	windows-1257	False	CrLf
+C1	C1-Estonian/sample_cp1257.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Estonian/sample_cp1257.txt	en-US	UtfUnknownOnly	1257	windows-1257	False	CrLf
+C1	C1-Estonian/sample_iso8859_15.txt	ja-JP	Combined	28605	iso-8859-15	False	CrLf
+C1	C1-Estonian/sample_iso8859_15.txt	ja-JP	NativeOnly	932	shift_jis	False	CrLf
+C1	C1-Estonian/sample_iso8859_15.txt	ja-JP	UtfUnknownOnly	28605	iso-8859-15	False	CrLf
+C1	C1-Estonian/sample_iso8859_15.txt	en-US	Combined	28605	iso-8859-15	False	CrLf
+C1	C1-Estonian/sample_iso8859_15.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Estonian/sample_iso8859_15.txt	en-US	UtfUnknownOnly	28605	iso-8859-15	False	CrLf
+C1	C1-Estonian/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	CrLf
+C1	C1-Estonian/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Estonian/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Estonian/sample_utf8.txt	en-US	Combined	65001	utf-8	False	CrLf
+C1	C1-Estonian/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Estonian/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-French/sample_cp1252.txt	ja-JP	Combined	28591	iso-8859-1	False	CrLf
+C1	C1-French/sample_cp1252.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-French/sample_cp1252.txt	ja-JP	UtfUnknownOnly	28591	iso-8859-1	False	CrLf
+C1	C1-French/sample_cp1252.txt	en-US	Combined	28591	iso-8859-1	False	CrLf
+C1	C1-French/sample_cp1252.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-French/sample_cp1252.txt	en-US	UtfUnknownOnly	28591	iso-8859-1	False	CrLf
+C1	C1-French/sample_iso8859_15.txt	ja-JP	Combined	28591	iso-8859-1	False	CrLf
+C1	C1-French/sample_iso8859_15.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-French/sample_iso8859_15.txt	ja-JP	UtfUnknownOnly	28591	iso-8859-1	False	CrLf
+C1	C1-French/sample_iso8859_15.txt	en-US	Combined	28591	iso-8859-1	False	CrLf
+C1	C1-French/sample_iso8859_15.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-French/sample_iso8859_15.txt	en-US	UtfUnknownOnly	28591	iso-8859-1	False	CrLf
+C1	C1-French/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	CrLf
+C1	C1-French/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-French/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-French/sample_utf8.txt	en-US	Combined	65001	utf-8	False	CrLf
+C1	C1-French/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-French/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-German/sample_cp1252.txt	ja-JP	Combined	28591	iso-8859-1	False	CrLf
+C1	C1-German/sample_cp1252.txt	ja-JP	NativeOnly	932	shift_jis	False	CrLf
+C1	C1-German/sample_cp1252.txt	ja-JP	UtfUnknownOnly	28591	iso-8859-1	False	CrLf
+C1	C1-German/sample_cp1252.txt	en-US	Combined	28591	iso-8859-1	False	CrLf
+C1	C1-German/sample_cp1252.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-German/sample_cp1252.txt	en-US	UtfUnknownOnly	28591	iso-8859-1	False	CrLf
+C1	C1-German/sample_iso8859_1.txt	ja-JP	Combined	28591	iso-8859-1	False	CrLf
+C1	C1-German/sample_iso8859_1.txt	ja-JP	NativeOnly	932	shift_jis	False	CrLf
+C1	C1-German/sample_iso8859_1.txt	ja-JP	UtfUnknownOnly	28591	iso-8859-1	False	CrLf
+C1	C1-German/sample_iso8859_1.txt	en-US	Combined	28591	iso-8859-1	False	CrLf
+C1	C1-German/sample_iso8859_1.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-German/sample_iso8859_1.txt	en-US	UtfUnknownOnly	28591	iso-8859-1	False	CrLf
+C1	C1-German/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	CrLf
+C1	C1-German/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-German/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-German/sample_utf8.txt	en-US	Combined	65001	utf-8	False	CrLf
+C1	C1-German/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-German/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Icelandic/sample_short_cp1252.txt	ja-JP	Combined	932	shift_jis	False	CrLf
+C1	C1-Icelandic/sample_short_cp1252.txt	ja-JP	NativeOnly	932	shift_jis	False	CrLf
+C1	C1-Icelandic/sample_short_cp1252.txt	ja-JP	UtfUnknownOnly	852	ibm852	False	CrLf
+C1	C1-Icelandic/sample_short_cp1252.txt	en-US	Combined	852	ibm852	False	CrLf
+C1	C1-Icelandic/sample_short_cp1252.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Icelandic/sample_short_cp1252.txt	en-US	UtfUnknownOnly	852	ibm852	False	CrLf
+C1	C1-Japanese/sample_eucjp.txt	ja-JP	Combined	20932	euc-jp	False	Lf
+C1	C1-Japanese/sample_eucjp.txt	ja-JP	NativeOnly	20932	euc-jp	False	Lf
+C1	C1-Japanese/sample_eucjp.txt	ja-JP	UtfUnknownOnly	51932	euc-jp	False	Lf
+C1	C1-Japanese/sample_eucjp.txt	en-US	Combined	51932	euc-jp	False	Lf
+C1	C1-Japanese/sample_eucjp.txt	en-US	NativeOnly	-1		False	Lf
+C1	C1-Japanese/sample_eucjp.txt	en-US	UtfUnknownOnly	51932	euc-jp	False	Lf
+C1	C1-Japanese/sample_jis.txt	ja-JP	Combined	50220	iso-2022-jp	False	Lf
+C1	C1-Japanese/sample_jis.txt	ja-JP	NativeOnly	50220	iso-2022-jp	False	Lf
+C1	C1-Japanese/sample_jis.txt	ja-JP	UtfUnknownOnly	50220	iso-2022-jp	False	Lf
+C1	C1-Japanese/sample_jis.txt	en-US	Combined	50220	iso-2022-jp	False	Lf
+C1	C1-Japanese/sample_jis.txt	en-US	NativeOnly	50220	iso-2022-jp	False	Lf
+C1	C1-Japanese/sample_jis.txt	en-US	UtfUnknownOnly	50220	iso-2022-jp	False	Lf
+C1	C1-Japanese/sample_shiftjis.txt	ja-JP	Combined	932	shift_jis	False	Lf
+C1	C1-Japanese/sample_shiftjis.txt	ja-JP	NativeOnly	932	shift_jis	False	Lf
+C1	C1-Japanese/sample_shiftjis.txt	ja-JP	UtfUnknownOnly	932	shift-jis	False	Lf
+C1	C1-Japanese/sample_shiftjis.txt	en-US	Combined	932	shift-jis	False	Lf
+C1	C1-Japanese/sample_shiftjis.txt	en-US	NativeOnly	-1		False	Lf
+C1	C1-Japanese/sample_shiftjis.txt	en-US	UtfUnknownOnly	932	shift-jis	False	Lf
+C1	C1-Japanese/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	Lf
+C1	C1-Japanese/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	Lf
+C1	C1-Japanese/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	Lf
+C1	C1-Japanese/sample_utf8.txt	en-US	Combined	65001	utf-8	False	Lf
+C1	C1-Japanese/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	Lf
+C1	C1-Japanese/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	Lf
+C1	C1-Japanese/sample_utf8_bom.txt	ja-JP	Combined	65001	utf-8	True	Lf
+C1	C1-Japanese/sample_utf8_bom.txt	ja-JP	NativeOnly	65001	utf-8	True	Lf
+C1	C1-Japanese/sample_utf8_bom.txt	ja-JP	UtfUnknownOnly	65001	utf-8	True	Lf
+C1	C1-Japanese/sample_utf8_bom.txt	en-US	Combined	65001	utf-8	True	Lf
+C1	C1-Japanese/sample_utf8_bom.txt	en-US	NativeOnly	65001	utf-8	True	Lf
+C1	C1-Japanese/sample_utf8_bom.txt	en-US	UtfUnknownOnly	65001	utf-8	True	Lf
+C1	C1-Korean/sample_cp949.txt	ja-JP	Combined	932	shift_jis	False	None
+C1	C1-Korean/sample_cp949.txt	ja-JP	NativeOnly	932	shift_jis	False	None
+C1	C1-Korean/sample_cp949.txt	ja-JP	UtfUnknownOnly	-1		False	None
+C1	C1-Korean/sample_cp949.txt	en-US	Combined	-1		False	None
+C1	C1-Korean/sample_cp949.txt	en-US	NativeOnly	-1		False	None
+C1	C1-Korean/sample_cp949.txt	en-US	UtfUnknownOnly	-1		False	None
+C1	C1-Korean/sample_euckr.txt	ja-JP	Combined	20932	euc-jp	False	None
+C1	C1-Korean/sample_euckr.txt	ja-JP	NativeOnly	20932	euc-jp	False	None
+C1	C1-Korean/sample_euckr.txt	ja-JP	UtfUnknownOnly	-1		False	None
+C1	C1-Korean/sample_euckr.txt	en-US	Combined	-1		False	None
+C1	C1-Korean/sample_euckr.txt	en-US	NativeOnly	-1		False	None
+C1	C1-Korean/sample_euckr.txt	en-US	UtfUnknownOnly	-1		False	None
+C1	C1-Korean/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	None
+C1	C1-Korean/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	None
+C1	C1-Korean/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	None
+C1	C1-Korean/sample_utf8.txt	en-US	Combined	65001	utf-8	False	None
+C1	C1-Korean/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	None
+C1	C1-Korean/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	None
+C1	C1-Polish/sample_cp1250.txt	ja-JP	Combined	1250	windows-1250	False	CrLf
+C1	C1-Polish/sample_cp1250.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-Polish/sample_cp1250.txt	ja-JP	UtfUnknownOnly	1250	windows-1250	False	CrLf
+C1	C1-Polish/sample_cp1250.txt	en-US	Combined	1250	windows-1250	False	CrLf
+C1	C1-Polish/sample_cp1250.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Polish/sample_cp1250.txt	en-US	UtfUnknownOnly	1250	windows-1250	False	CrLf
+C1	C1-Polish/sample_iso8859_2.txt	ja-JP	Combined	28592	iso-8859-2	False	CrLf
+C1	C1-Polish/sample_iso8859_2.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-Polish/sample_iso8859_2.txt	ja-JP	UtfUnknownOnly	28592	iso-8859-2	False	CrLf
+C1	C1-Polish/sample_iso8859_2.txt	en-US	Combined	28592	iso-8859-2	False	CrLf
+C1	C1-Polish/sample_iso8859_2.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Polish/sample_iso8859_2.txt	en-US	UtfUnknownOnly	28592	iso-8859-2	False	CrLf
+C1	C1-Polish/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	CrLf
+C1	C1-Polish/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Polish/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Polish/sample_utf8.txt	en-US	Combined	65001	utf-8	False	CrLf
+C1	C1-Polish/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Polish/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Romanian/sample_iso8859_16.txt	ja-JP	Combined	-1	iso-8859-16	False	CrLf
+C1	C1-Romanian/sample_iso8859_16.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-Romanian/sample_iso8859_16.txt	ja-JP	UtfUnknownOnly	-1	iso-8859-16	False	CrLf
+C1	C1-Romanian/sample_iso8859_16.txt	en-US	Combined	-1	iso-8859-16	False	CrLf
+C1	C1-Romanian/sample_iso8859_16.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Romanian/sample_iso8859_16.txt	en-US	UtfUnknownOnly	-1	iso-8859-16	False	CrLf
+C1	C1-Romanian/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	CrLf
+C1	C1-Romanian/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Romanian/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Romanian/sample_utf8.txt	en-US	Combined	65001	utf-8	False	CrLf
+C1	C1-Romanian/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Romanian/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Russian/sample_cp1251.txt	ja-JP	Combined	1251	windows-1251	False	CrLf
+C1	C1-Russian/sample_cp1251.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-Russian/sample_cp1251.txt	ja-JP	UtfUnknownOnly	1251	windows-1251	False	CrLf
+C1	C1-Russian/sample_cp1251.txt	en-US	Combined	1251	windows-1251	False	CrLf
+C1	C1-Russian/sample_cp1251.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Russian/sample_cp1251.txt	en-US	UtfUnknownOnly	1251	windows-1251	False	CrLf
+C1	C1-Russian/sample_koi8r.txt	ja-JP	Combined	20866	koi8-r	False	CrLf
+C1	C1-Russian/sample_koi8r.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-Russian/sample_koi8r.txt	ja-JP	UtfUnknownOnly	20866	koi8-r	False	CrLf
+C1	C1-Russian/sample_koi8r.txt	en-US	Combined	20866	koi8-r	False	CrLf
+C1	C1-Russian/sample_koi8r.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Russian/sample_koi8r.txt	en-US	UtfUnknownOnly	20866	koi8-r	False	CrLf
+C1	C1-Russian/sample_short_koi8r.txt	ja-JP	Combined	932	shift_jis	False	CrLf
+C1	C1-Russian/sample_short_koi8r.txt	ja-JP	NativeOnly	932	shift_jis	False	CrLf
+C1	C1-Russian/sample_short_koi8r.txt	ja-JP	UtfUnknownOnly	-1		False	CrLf
+C1	C1-Russian/sample_short_koi8r.txt	en-US	Combined	-1		False	CrLf
+C1	C1-Russian/sample_short_koi8r.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Russian/sample_short_koi8r.txt	en-US	UtfUnknownOnly	-1		False	CrLf
+C1	C1-Russian/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	CrLf
+C1	C1-Russian/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Russian/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Russian/sample_utf8.txt	en-US	Combined	65001	utf-8	False	CrLf
+C1	C1-Russian/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Russian/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Spanish/sample_cp1252.txt	ja-JP	Combined	28591	iso-8859-1	False	CrLf
+C1	C1-Spanish/sample_cp1252.txt	ja-JP	NativeOnly	932	shift_jis	False	CrLf
+C1	C1-Spanish/sample_cp1252.txt	ja-JP	UtfUnknownOnly	28591	iso-8859-1	False	CrLf
+C1	C1-Spanish/sample_cp1252.txt	en-US	Combined	28591	iso-8859-1	False	CrLf
+C1	C1-Spanish/sample_cp1252.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Spanish/sample_cp1252.txt	en-US	UtfUnknownOnly	28591	iso-8859-1	False	CrLf
+C1	C1-Spanish/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	CrLf
+C1	C1-Spanish/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Spanish/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Spanish/sample_utf8.txt	en-US	Combined	65001	utf-8	False	CrLf
+C1	C1-Spanish/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Spanish/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Thai/sample_cp874.txt	ja-JP	Combined	874	tis-620	False	CrLf
+C1	C1-Thai/sample_cp874.txt	ja-JP	NativeOnly	932	shift_jis	False	CrLf
+C1	C1-Thai/sample_cp874.txt	ja-JP	UtfUnknownOnly	874	tis-620	False	CrLf
+C1	C1-Thai/sample_cp874.txt	en-US	Combined	874	tis-620	False	CrLf
+C1	C1-Thai/sample_cp874.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Thai/sample_cp874.txt	en-US	UtfUnknownOnly	874	tis-620	False	CrLf
+C1	C1-Thai/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	CrLf
+C1	C1-Thai/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Thai/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Thai/sample_utf8.txt	en-US	Combined	65001	utf-8	False	CrLf
+C1	C1-Thai/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Thai/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Ukrainian/sample_cp1251.txt	ja-JP	Combined	-1		False	CrLf
+C1	C1-Ukrainian/sample_cp1251.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-Ukrainian/sample_cp1251.txt	ja-JP	UtfUnknownOnly	-1		False	CrLf
+C1	C1-Ukrainian/sample_cp1251.txt	en-US	Combined	-1		False	CrLf
+C1	C1-Ukrainian/sample_cp1251.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Ukrainian/sample_cp1251.txt	en-US	UtfUnknownOnly	-1		False	CrLf
+C1	C1-Ukrainian/sample_koi8u.txt	ja-JP	Combined	-1		False	CrLf
+C1	C1-Ukrainian/sample_koi8u.txt	ja-JP	NativeOnly	-1		False	CrLf
+C1	C1-Ukrainian/sample_koi8u.txt	ja-JP	UtfUnknownOnly	-1		False	CrLf
+C1	C1-Ukrainian/sample_koi8u.txt	en-US	Combined	-1		False	CrLf
+C1	C1-Ukrainian/sample_koi8u.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Ukrainian/sample_koi8u.txt	en-US	UtfUnknownOnly	-1		False	CrLf
+C1	C1-Ukrainian/sample_short_koi8u.txt	ja-JP	Combined	932	shift_jis	False	CrLf
+C1	C1-Ukrainian/sample_short_koi8u.txt	ja-JP	NativeOnly	932	shift_jis	False	CrLf
+C1	C1-Ukrainian/sample_short_koi8u.txt	ja-JP	UtfUnknownOnly	-1		False	CrLf
+C1	C1-Ukrainian/sample_short_koi8u.txt	en-US	Combined	-1		False	CrLf
+C1	C1-Ukrainian/sample_short_koi8u.txt	en-US	NativeOnly	-1		False	CrLf
+C1	C1-Ukrainian/sample_short_koi8u.txt	en-US	UtfUnknownOnly	-1		False	CrLf
+C1	C1-Ukrainian/sample_utf8.txt	ja-JP	Combined	65001	utf-8	False	CrLf
+C1	C1-Ukrainian/sample_utf8.txt	ja-JP	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Ukrainian/sample_utf8.txt	ja-JP	UtfUnknownOnly	65001	utf-8	False	CrLf
+C1	C1-Ukrainian/sample_utf8.txt	en-US	Combined	65001	utf-8	False	CrLf
+C1	C1-Ukrainian/sample_utf8.txt	en-US	NativeOnly	65001	utf-8	False	CrLf
+C1	C1-Ukrainian/sample_utf8.txt	en-US	UtfUnknownOnly	65001	utf-8	False	CrLf
+C2	C2-mid	ja-JP	Combined	50220	iso-2022-jp	False	None
+C2	C2-mid	ja-JP	NativeOnly	50220	iso-2022-jp	False	None
+C2	C2-mid	ja-JP	UtfUnknownOnly	50220	iso-2022-jp	False	None
+C2	C2-mid	en-US	Combined	50220	iso-2022-jp	False	None
+C2	C2-mid	en-US	NativeOnly	50220	iso-2022-jp	False	None
+C2	C2-mid	en-US	UtfUnknownOnly	50220	iso-2022-jp	False	None
+C2	C2-wrap	ja-JP	Combined	50220	iso-2022-jp	False	CrLf
+C2	C2-wrap	ja-JP	NativeOnly	50220	iso-2022-jp	False	CrLf
+C2	C2-wrap	ja-JP	UtfUnknownOnly	20127	ascii	False	CrLf
+C2	C2-wrap	en-US	Combined	50220	iso-2022-jp	False	CrLf
+C2	C2-wrap	en-US	NativeOnly	50220	iso-2022-jp	False	CrLf
+C2	C2-wrap	en-US	UtfUnknownOnly	20127	ascii	False	CrLf
+C3	C3-bom-u16le	ja-JP	Combined	1200	utf-16	True	CrLf
+C3	C3-bom-u16le	ja-JP	NativeOnly	1200	utf-16	True	CrLf
+C3	C3-bom-u16le	ja-JP	UtfUnknownOnly	1200	utf-16le	True	CrLf
+C3	C3-bom-u16le	en-US	Combined	1200	utf-16	True	CrLf
+C3	C3-bom-u16le	en-US	NativeOnly	1200	utf-16	True	CrLf
+C3	C3-bom-u16le	en-US	UtfUnknownOnly	1200	utf-16le	True	CrLf
+C3	C3-bom-u16be	ja-JP	Combined	1201	unicodeFFFE	True	CrLf
+C3	C3-bom-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	True	CrLf
+C3	C3-bom-u16be	ja-JP	UtfUnknownOnly	1201	utf-16be	True	CrLf
+C3	C3-bom-u16be	en-US	Combined	1201	unicodeFFFE	True	CrLf
+C3	C3-bom-u16be	en-US	NativeOnly	1201	unicodeFFFE	True	CrLf
+C3	C3-bom-u16be	en-US	UtfUnknownOnly	1201	utf-16be	True	CrLf
+C3	C3-bom-u32le	ja-JP	Combined	12000	utf-32	True	CrLf
+C3	C3-bom-u32le	ja-JP	NativeOnly	12000	utf-32	True	CrLf
+C3	C3-bom-u32le	ja-JP	UtfUnknownOnly	12000	utf-32le	True	CrLf
+C3	C3-bom-u32le	en-US	Combined	12000	utf-32	True	CrLf
+C3	C3-bom-u32le	en-US	NativeOnly	12000	utf-32	True	CrLf
+C3	C3-bom-u32le	en-US	UtfUnknownOnly	12000	utf-32le	True	CrLf
+C3	C3-bom-u32be	ja-JP	Combined	12001	utf-32BE	True	CrLf
+C3	C3-bom-u32be	ja-JP	NativeOnly	12001	utf-32BE	True	CrLf
+C3	C3-bom-u32be	ja-JP	UtfUnknownOnly	12001	utf-32be	True	CrLf
+C3	C3-bom-u32be	en-US	Combined	12001	utf-32BE	True	CrLf
+C3	C3-bom-u32be	en-US	NativeOnly	12001	utf-32BE	True	CrLf
+C3	C3-bom-u32be	en-US	UtfUnknownOnly	12001	utf-32be	True	CrLf
+C4	C4-ja-u16le	ja-JP	Combined	1200	utf-16	False	CrLf
+C4	C4-ja-u16le	ja-JP	NativeOnly	1200	utf-16	False	CrLf
+C4	C4-ja-u16le	ja-JP	UtfUnknownOnly	-1		False	CrLf
+C4	C4-ja-u16le	en-US	Combined	1200	utf-16	False	CrLf
+C4	C4-ja-u16le	en-US	NativeOnly	1200	utf-16	False	CrLf
+C4	C4-ja-u16le	en-US	UtfUnknownOnly	-1		False	CrLf
+C4	C4-ja-u16be	ja-JP	Combined	1201	unicodeFFFE	False	CrLf
+C4	C4-ja-u16be	ja-JP	NativeOnly	1201	unicodeFFFE	False	CrLf
+C4	C4-ja-u16be	ja-JP	UtfUnknownOnly	-1		False	CrLf
+C4	C4-ja-u16be	en-US	Combined	1201	unicodeFFFE	False	CrLf
+C4	C4-ja-u16be	en-US	NativeOnly	1201	unicodeFFFE	False	CrLf
+C4	C4-ja-u16be	en-US	UtfUnknownOnly	-1		False	CrLf
+C4	C4-ja-u32le	ja-JP	Combined	12000	utf-32	False	CrLf
+C4	C4-ja-u32le	ja-JP	NativeOnly	12000	utf-32	False	CrLf
+C4	C4-ja-u32le	ja-JP	UtfUnknownOnly	-1		False	CrLf
+C4	C4-ja-u32le	en-US	Combined	12000	utf-32	False	CrLf
+C4	C4-ja-u32le	en-US	NativeOnly	12000	utf-32	False	CrLf
+C4	C4-ja-u32le	en-US	UtfUnknownOnly	-1		False	CrLf
+C4	C4-ja-u32be	ja-JP	Combined	12001	utf-32BE	False	CrLf
+C4	C4-ja-u32be	ja-JP	NativeOnly	12001	utf-32BE	False	CrLf
+C4	C4-ja-u32be	ja-JP	UtfUnknownOnly	-1		False	CrLf
+C4	C4-ja-u32be	en-US	Combined	12001	utf-32BE	False	CrLf
+C4	C4-ja-u32be	en-US	NativeOnly	12001	utf-32BE	False	CrLf
+C4	C4-ja-u32be	en-US	UtfUnknownOnly	-1		False	CrLf

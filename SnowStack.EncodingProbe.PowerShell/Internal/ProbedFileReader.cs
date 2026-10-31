@@ -17,6 +17,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
     /// StreamReader に detectEncodingFromByteOrderMarks: false を渡すと BOM が
     /// U+FEFF として1行目の先頭に混入するため、ストリームの位置を BOM の後ろに
     /// 進めたうえで StreamReader を生成する。
+    /// 取り除く BOM は先頭の 1 個だけで、2 個目の U+FEFF は文字として残す（1.3.0 第六次。BUG-0021）。
+    /// StreamReader は Encoding の preamble と一致する先頭を読み飛ばすので、preamble を持たない包み（<see cref="ReaderEncoding"/>）を渡す。
     /// </remarks>
     internal sealed class ProbedFileReader : IDisposable
     {
@@ -42,6 +44,11 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
         /// <summary>ファイル先頭に BOM があったかどうか</summary>
         public bool HadBom { get; }
+
+        /// <summary>
+        /// BOM の後ろから復号する読み取り器。CSV の解析（移植した ImportCsvHelper）に渡すために使う。
+        /// </summary>
+        internal TextReader Reader => this._reader;
 
         /// <summary>
         /// ファイルを開き、必要なら文字エンコーディングを判定する。
@@ -75,9 +82,12 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                     // 判定はファイル全体を対象とする。先頭の一定量だけで判定すると、
                     // 英数字が続いたあとにマルチバイト文字が現れるファイルを誤判定し、
                     // 後続の文字をすべて壊して復号してしまうため。
-                    byte[] content = ReadAll(stream, path);
-                    bomLength = GetBomLength(content);
-                    encoding = Detect(path, content, detectorOptions);
+                    // メモリ不足は ID の付いた判定の失敗にする（1.3.0 第六次 B。BUG-0030）
+                    (encoding, bomLength) = EncodingDetectionException.GuardMemory(path, () =>
+                    {
+                        byte[] content = ReadAll(stream, path);
+                        return (Detect(path, content, detectorOptions), GetBomLength(content));
+                    });
                 }
                 else
                 {
@@ -90,9 +100,18 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 // BOM の直後から復号を始めることで、U+FEFF が本文に混入するのを防ぐ
                 stream.Seek(bomLength, SeekOrigin.Begin);
 
+                // 渡す Encoding に preamble があると、StreamReader が BOM の後ろでもう一度読み飛ばす（BUG-0021）。
+                // .NET Framework では、終わりで Decoder を flush させるため、目印を足すストリームを挟む（BUG-0042。.NET は StreamReader が flush する）
+#if NETFRAMEWORK
+                var signal = new EndOfStreamSignal(stream);
+                var reader = new StreamReader(
+                    signal,
+                    new ReaderEncoding(encoding, signal),
+#else
                 var reader = new StreamReader(
                     stream,
-                    encoding,
+                    new ReaderEncoding(encoding),
+#endif
                     detectEncodingFromByteOrderMarks: false,
                     bufferSize: ReadBufferSize,
                     leaveOpen: true);
@@ -134,6 +153,8 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             {
                 throw new EncodingDetectionException(ValidationMessages.FileTooLargeToDetect(path), path);
             }
+
+            SharedFileReader.BeforeAllocateForTests?.Invoke(length);
 
             return ReadHead(stream, (int)length);
         }
@@ -209,7 +230,7 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// BOM の判定にはクラスライブラリ側の実装を用いる。UTF-32 のBOMは UTF-16 のBOMを
         /// 前方に含むため判定順序が重要であり、規則を二重に持たないようにする。
         /// </remarks>
-        private static int GetBomLength(byte[] head)
+        internal static int GetBomLength(byte[] head)
         {
             var detection = new ByteOrderMarkDetection();
 

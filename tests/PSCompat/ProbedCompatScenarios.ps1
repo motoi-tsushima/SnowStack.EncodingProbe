@@ -1600,6 +1600,1570 @@ Add-Scenario 'Add-ProbedContent/LineBreak-does-not-replace-inside-values' {
 }
 
 # ---------------------------------------------------------------------------
+# Resolve-Encoding -DetectionLineCount (1.3.0 仕様書 第 2 部)
+#
+# 先頭 N 行の切り出しと判定が、両ホストで同じ結果になることを確かめる。
+# PSEncodingName / UsePSName は TFM ごとに意味が違う（仕様）ので記録しない。
+# パラメータ束縛のエラーは PowerShell 自身の文言を含むため、FullyQualifiedErrorId だけを記録する。
+# ---------------------------------------------------------------------------
+
+function Format-DetectionResult {
+    param($Information)
+
+    return ("cp={0} web={1} bom={2} lb={3} culture={4}" -f
+        $Information.CodePage, $Information.EncodingWebName, $Information.Bom, $Information.LineBreak, $Information.Culture)
+}
+
+$script:utf8Bytes = { param([string]$Text) (New-Object System.Text.UTF8Encoding($false)).GetBytes($Text) }
+$script:asciiHead = "Name,Memo`r`na,b`r`n"
+$script:jpTail = "$([char]0x65E5)$([char]0x672C),$([char]0x8A9E)`r`n"
+
+# 先頭だけが ASCII の UTF-8 / Shift_JIS / EUC-JP（後半に「日本,語」）
+$script:dlcFiles = [ordered]@{
+    'utf8'     = New-ByteFile 'dlc_utf8.csv' ([byte[]]((& $script:utf8Bytes ($script:asciiHead + $script:jpTail))))
+    'shiftjis' = New-ByteFile 'dlc_sjis.csv' ([byte[]]((& $script:utf8Bytes $script:asciiHead) + @(0x93, 0xFA, 0x96, 0x7B, 0x2C, 0x8C, 0xEA, 0x0D, 0x0A)))
+    'eucjp'    = New-ByteFile 'dlc_eucjp.csv' ([byte[]]((& $script:utf8Bytes $script:asciiHead) + @(0xC6, 0xFC, 0xCB, 0xDC, 0x2C, 0xB8, 0xEC, 0x0A)))
+    'utf8bom'  = New-ByteFile 'dlc_utf8bom.csv' ([byte[]](@(0xEF, 0xBB, 0xBF) + (& $script:utf8Bytes ($script:asciiHead + $script:jpTail))))
+    'nobreak'  = New-ByteFile 'dlc_nobreak.csv' ([byte[]](& $script:utf8Bytes "A,B,$([char]0x65E5)"))
+    'mixedlb'  = New-ByteFile 'dlc_mixedlb.csv' ([byte[]](& $script:utf8Bytes "a`r`nb`r`nc`nd`n"))
+    'empty'    = New-ByteFile 'dlc_empty.csv' ([byte[]]@())
+}
+
+# UTF-16 / UTF-32（BOM 有無）。先頭が英数字のものと、先頭に日本語があるもの
+foreach ($unicode in @(
+    @('utf16le', (New-Object System.Text.UnicodeEncoding($false, $false)), [byte[]](0xFF, 0xFE)),
+    @('utf16be', (New-Object System.Text.UnicodeEncoding($true, $false)), [byte[]](0xFE, 0xFF)),
+    @('utf32le', (New-Object System.Text.UTF32Encoding($false, $false)), [byte[]](0xFF, 0xFE, 0x00, 0x00)),
+    @('utf32be', (New-Object System.Text.UTF32Encoding($true, $false)), [byte[]](0x00, 0x00, 0xFE, 0xFF)))) {
+
+    $label = $unicode[0]
+    $encoding = $unicode[1]
+    $bom = $unicode[2]
+    $asciiFirst = $encoding.GetBytes($script:asciiHead + $script:jpTail)
+    $jpFirst = $encoding.GetBytes($script:jpTail + $script:asciiHead)
+
+    $script:dlcFiles["$label/ascii-head"] = New-ByteFile "dlc_${label}_a.csv" ([byte[]]$asciiFirst)
+    $script:dlcFiles["$label/jp-head"] = New-ByteFile "dlc_${label}_j.csv" ([byte[]]$jpFirst)
+    $script:dlcFiles["$label/bom"] = New-ByteFile "dlc_${label}_bom.csv" ([byte[]]($bom + $asciiFirst))
+}
+
+foreach ($entry in $script:dlcFiles.GetEnumerator()) {
+    foreach ($lineCount in @(1, 2, 3, 1000)) {
+        $path = $entry.Value
+        Add-Scenario ("Resolve/DetectionLineCount/{0}/{1}" -f $entry.Key, $lineCount) {
+            Format-DetectionResult (Resolve-Encoding -Path $path -DetectionLineCount $lineCount -Culture ja-JP)
+        }.GetNewClosure()
+    }
+
+    $path = $entry.Value
+    Add-Scenario ("Resolve/DetectionLineCount/{0}/whole" -f $entry.Key) {
+        Format-DetectionResult (Resolve-Encoding -Path $path -Culture ja-JP)
+    }.GetNewClosure()
+}
+
+# -Strategy も先頭 N 行の判定に効く
+$path = $script:dlcFiles['shiftjis']
+Add-Scenario 'Resolve/DetectionLineCount/shiftjis/3/UtfUnknownOnly' {
+    Format-DetectionResult (Resolve-Encoding -Path $path -DetectionLineCount 3 -Culture ja-JP -Strategy UtfUnknownOnly)
+}.GetNewClosure()
+
+# 0 以下はパラメータ束縛の段階で拒否する
+foreach ($lineCount in @(0, -1)) {
+    $path = $script:dlcFiles['utf8']
+    Add-Scenario ("Resolve/DetectionLineCount/error/{0}" -f $lineCount) {
+        try {
+            Resolve-Encoding -Path $path -DetectionLineCount $lineCount | Out-Null
+            'no error'
+        }
+        catch {
+            $_.FullyQualifiedErrorId
+        }
+    }.GetNewClosure()
+}
+
+# -License に PowerShell 由来のコードの表示が含まれる
+Add-Scenario 'Resolve/License/PowerShell' {
+    $text = Resolve-Encoding -License
+    ($text -split "`r?`n" | Where-Object { $_ -match 'PowerShell/PowerShell|portions of PowerShell|MIT License\. See' }) -join ' / '
+}
+
+# ---------------------------------------------------------------------------
+# Import-ProbedCsv (1.3.0 仕様書 第 3 部)
+#
+# 解析は PowerShell 7.x の Import-Csv から移植した処理で行う。5.1 でも 7.x と同じオブジェクトになることを確かめる。
+# 両ホストの結果の一致と、xUnit（ImportProbedCsvTests）での 7.6.7 の Import-Csv との一致を合わせて、
+# 「5.1 でも 7.6.7 と同じ」ことの確認とする（c04 の型名の順序、c06 の W3C、c12 の CR だけの改行は、5.1 の標準とは違う結果が正しい）。
+# ---------------------------------------------------------------------------
+
+function Format-CsvText {
+    # [string] で受けると $null が空文字列になり、値の無い列と空文字列の列を区別できないので、型を付けない
+    param($Text)
+
+    if ($null -eq $Text) { return '<null>' }
+    $escaped = ([string]$Text) -replace "`r", '\r' -replace "`n", '\n'
+
+    # 制御文字（U+0000 など）はレポートを壊すので \uXXXX で表す
+    return [regex]::Replace($escaped, '[\x00-\x1F]', { param($m) '\u{0:X4}' -f [int][char]$m.Value })
+}
+
+<#
+.SYNOPSIS
+    Import-ProbedCsv の出力・警告・非終了エラーを 1 行にする。
+.DESCRIPTION
+    オブジェクトは型名（すべて、順序どおり）と、列名・値の組で表す。値が $null の列は <null> とする。
+    エラーは FullyQualifiedErrorId とメッセージ、警告は件数を記録する（UI カルチャーは en-US に固定している）。
+#>
+function Invoke-ImportProbedCsv {
+    param([scriptblock]$Body)
+
+    # スクリプト全体は ErrorActionPreference = Stop なので、非終了エラーを非終了のまま受け取るために戻す
+    $ErrorActionPreference = 'Continue'
+    $all = @(& $Body 3>&1 2>&1)
+    $warnings = @($all | Where-Object { $_ -is [System.Management.Automation.WarningRecord] })
+    $errors = @($all | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
+    $items = @($all | Where-Object { $_ -isnot [System.Management.Automation.WarningRecord] -and $_ -isnot [System.Management.Automation.ErrorRecord] })
+    $parts = foreach ($item in $items) {
+        $columns = foreach ($property in $item.PSObject.Properties) { '{0}=[{1}]' -f (Format-CsvText $property.Name), (Format-CsvText $property.Value) }
+        'OBJ<{0}> {{{1}}}' -f ($item.PSObject.TypeNames -join ';'), ($columns -join ' | ')
+    }
+    $errorText = foreach ($e in @($errors)) { 'ERROR ' + $e.FullyQualifiedErrorId.Split(',')[0] + ' :: ' + $e.Exception.Message }
+
+    return ('warnings={0} // {1} // {2}' -f @($warnings).Count, ($parts -join ' // '), ($errorText -join ' // '))
+}
+
+# 実測報告 M1 の 15 ケース（tools/Measure-CsvBehavior.ps1 の $m1 と同じ入力。UTF-8、BOM 無し）
+$script:jp3 = "$([char]0x65E5)$([char]0x672C)$([char]0x8A9E)"
+$script:jp2 = "$([char]0x8FFD)$([char]0x8A18)"
+$script:m1 = [ordered]@{
+    'c01' = "Name,Memo`r`n`"a`",`"line1`r`nline2`"`r`n`"b`",`"x`"`r`n"
+    'c02' = "Name,Memo`r`n`"a`",`"line1`nline2`"`r`n"
+    'c03' = "Name,Memo`r`n#1,abc`r`n2,def`r`n"
+    'c04' = "#TYPE Foo.Bar`r`nName,Memo`r`na,b`r`n"
+    'c05' = "# comment`r`nName,Memo`r`na,b`r`n"
+    'c06' = "#Software: x`r`n#Fields: date time`r`n2026 10`r`n"
+    'c07' = "Name,Memo`r`n`r`na,b`r`n`r`n"
+    'c08' = "Name,Memo`r`n  a , `"b`"  `r`n"
+    'c09' = "A,B`r`n1,2,3`r`n4`r`n5,6"
+    'c10' = "A,A`r`n1,2`r`n"
+    'c11' = "A,,C`r`n1,2,3`r`n"
+    'c12' = "A,B`r1,2`r3,4`r"
+    'c13' = "A,B`r`n$($script:jp3),$($script:jp2)`r`n"
+    'c14' = "A,B,`r`n1,2,`r`n"
+    'c15' = "A,B`r`n`"he said `"`"hi`"`"`",x`r`n"
+}
+
+foreach ($key in $script:m1.Keys) {
+    $path = New-ByteFile ("import_m1_{0}.csv" -f $key) ([byte[]](& $script:utf8Bytes $script:m1[$key]))
+    Add-Scenario ("Import/M1/{0}" -f $key) {
+        Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path }
+    }.GetNewClosure()
+}
+
+# パス（仕様書 9 章）。Get-ChildItem からの入力は、標準の 5.1 では CannotSpecifyPathAndLiteralPath で失敗する
+$script:importDir = Join-Path $script:WorkRoot 'import_paths'
+$null = New-Item -ItemType Directory -Path $script:importDir
+[IO.File]::WriteAllBytes((Join-Path $script:importDir 'w1.csv'), [byte[]](& $script:utf8Bytes "A`r`n1`r`n"))
+[IO.File]::WriteAllBytes((Join-Path $script:importDir 'w2.csv'), [byte[]](& $script:utf8Bytes "A`r`n2`r`n"))
+[IO.File]::WriteAllBytes((Join-Path $script:importDir '[x].csv'), [byte[]](& $script:utf8Bytes "A`r`n3`r`n"))
+
+$dir = $script:importDir
+Add-Scenario 'Import/Path/Get-ChildItem' {
+    Invoke-ImportProbedCsv { Get-ChildItem -LiteralPath $dir -Filter 'w*.csv' | Sort-Object Name | Import-ProbedCsv -ErrorAction Continue }
+}.GetNewClosure()
+Add-Scenario 'Import/Path/wildcard-multiple' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -Path (Join-Path $dir 'w*.csv') }
+}.GetNewClosure()
+Add-Scenario 'Import/Path/wildcard-none' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -Path (Join-Path $dir 'zz*.csv') }
+}.GetNewClosure()
+Add-Scenario 'Import/Path/array-with-missing' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -Path (Join-Path $dir 'w1.csv'), (Join-Path $dir 'missing.csv'), $dir, (Join-Path $dir 'w2.csv') }
+}.GetNewClosure()
+Add-Scenario 'Import/Path/LiteralPath-brackets' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LP (Join-Path $dir '[x].csv') }
+}.GetNewClosure()
+
+# 文字エンコーディングの決定（仕様書 10 章）。先頭 2 行が ASCII で、3 行目に「日本,語」がある
+$script:importEncodingFiles = [ordered]@{
+    'shiftjis'     = New-ByteFile 'import_sjis.csv' ([byte[]]((& $script:utf8Bytes $script:asciiHead) + @(0x93, 0xFA, 0x96, 0x7B, 0x2C, 0x8C, 0xEA, 0x0D, 0x0A)))
+    'eucjp'        = New-ByteFile 'import_eucjp.csv' ([byte[]]((& $script:utf8Bytes $script:asciiHead) + @(0xC6, 0xFC, 0xCB, 0xDC, 0x2C, 0xB8, 0xEC, 0x0D, 0x0A)))
+    'utf8'         = New-ByteFile 'import_utf8.csv' ([byte[]](& $script:utf8Bytes ($script:asciiHead + $script:jpTail)))
+    'utf8bom'      = New-ByteFile 'import_utf8bom.csv' ([byte[]](@(0xEF, 0xBB, 0xBF) + (& $script:utf8Bytes ($script:asciiHead + $script:jpTail))))
+    'utf16le'      = New-ByteFile 'import_utf16le.csv' ([byte[]](@(0xFF, 0xFE) + (New-Object System.Text.UnicodeEncoding($false, $false)).GetBytes($script:asciiHead + $script:jpTail)))
+    'utf16le-nobom' = New-ByteFile 'import_utf16le_nobom.csv' ([byte[]](New-Object System.Text.UnicodeEncoding($false, $false)).GetBytes($script:asciiHead + $script:jpTail))
+    'utf32be-nobom' = New-ByteFile 'import_utf32be_nobom.csv' ([byte[]](New-Object System.Text.UTF32Encoding($true, $false)).GetBytes($script:asciiHead + "c,d`r`n"))
+}
+
+foreach ($entry in $script:importEncodingFiles.GetEnumerator()) {
+    $path = $entry.Value
+    Add-Scenario ("Import/Encoding/{0}/whole" -f $entry.Key) {
+        Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -Culture ja-JP }
+    }.GetNewClosure()
+
+    foreach ($lineCount in @(2, 3)) {
+        Add-Scenario ("Import/Encoding/{0}/DetectionLineCount{1}" -f $entry.Key, $lineCount) {
+            Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -DetectionLineCount $lineCount -Culture ja-JP }
+        }.GetNewClosure()
+    }
+}
+
+# -Encoding の明示は、判定も検証も行わない（-DetectionLineCount は無視する）
+$path = $script:importEncodingFiles['shiftjis']
+Add-Scenario 'Import/Encoding/shiftjis/explicit' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -Encoding shift_jis -DetectionLineCount 1 }
+}.GetNewClosure()
+
+# 検証の失敗。位置とバイト列が両ホストで同じであること（指示書 4.2、第一次で後回しにした正式な確認）。
+# 64 KiB を超える位置（複数のバッファにまたがる場合）も確かめる
+$script:largeSjis = New-ByteFile 'import_sjis_large.csv' ([byte[]]((& $script:utf8Bytes ("A,B`r`n" + ("1,2`r`n" * 20000))) + @(0x93, 0xFA, 0x96, 0x7B, 0x2C, 0x8C, 0xEA, 0x0D, 0x0A)))
+$path = $script:largeSjis
+Add-Scenario 'Import/Verification/shiftjis-beyond-64KiB' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -DetectionLineCount 100 }
+}.GetNewClosure()
+
+$path = New-ByteFile 'import_utf8bom_invalid.csv' ([byte[]](@(0xEF, 0xBB, 0xBF) + (& $script:utf8Bytes "A`r`n1`r`n") + @(0xE6, 0x97)))
+Add-Scenario 'Import/Verification/utf8bom-truncated-at-end' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -DetectionLineCount 1 }
+}.GetNewClosure()
+
+# 区切り文字と -Header。-UseCulture は区切り文字、-Culture は判定のカルチャー（別のもの）
+$path = New-ByteFile 'import_semicolon.csv' ([byte[]](& $script:utf8Bytes "A;B`r`n`"x;y`";z`r`n"))
+Add-Scenario 'Import/Delimiter/semicolon' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue $path ';' }
+}.GetNewClosure()
+Add-Scenario 'Import/Header' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -Header X, Y -Delimiter ';' }
+}.GetNewClosure()
+Add-Scenario 'Import/UseCulture/de-DE' {
+    $saved = [System.Threading.Thread]::CurrentThread.CurrentCulture
+    try {
+        [System.Threading.Thread]::CurrentThread.CurrentCulture = [System.Globalization.CultureInfo]::GetCultureInfo('de-DE')
+        Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -UseCulture -Culture ja-JP }
+    }
+    finally {
+        [System.Threading.Thread]::CurrentThread.CurrentCulture = $saved
+    }
+}.GetNewClosure()
+
+# 列名が空のときの警告は、複数のファイルにまたがって 1 回だけ
+$first = New-ByteFile 'import_unnamed1.csv' ([byte[]](& $script:utf8Bytes "A,,C`r`n1,2,3`r`n"))
+$second = New-ByteFile 'import_unnamed2.csv' ([byte[]](& $script:utf8Bytes ",B`r`n4,5`r`n"))
+Add-Scenario 'Import/UnspecifiedHeader/warn-once' {
+    Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $first, $second }
+}.GetNewClosure()
+
+# ---------------------------------------------------------------------------
+# 0x00 を含む入力の判定（1.3.0 仕様書 追補。クラスライブラリ 1.3.0 の修正）
+#
+# alnum: 英数字だけの BOM 無し UTF-16 / UTF-32。全体の判定でも入力どおりの文字エンコーディングになる
+# lowbyte: 2 バイトとも 0x80 未満になる文字（上 U+4E0A）を含むもの。全体の判定では ASCII のまま（既知の限界。追補 4.1）で、
+#          Import-ProbedCsv -DetectionLineCount 1 では改行の型による読み替えで正しく読める
+# ---------------------------------------------------------------------------
+
+foreach ($unicode in @(
+    @('utf16le', (New-Object System.Text.UnicodeEncoding($false, $false))),
+    @('utf16be', (New-Object System.Text.UnicodeEncoding($true, $false))),
+    @('utf32le', (New-Object System.Text.UTF32Encoding($false, $false))),
+    @('utf32be', (New-Object System.Text.UTF32Encoding($true, $false))))) {
+
+    $label = $unicode[0]
+    $encoding = $unicode[1]
+
+    $alnum = New-ByteFile "nul_${label}_alnum.csv" ([byte[]]$encoding.GetBytes("Name,Memo`r`na,b`r`nc,d`r`n"))
+    $lowbyte = New-ByteFile "nul_${label}_lowbyte.csv" ([byte[]]$encoding.GetBytes(("A,{0}`r`n1,2`r`n" -f [char]0x4E0A)))
+
+    foreach ($entry in @(@('alnum', $alnum), @('lowbyte', $lowbyte))) {
+        $kind = $entry[0]
+        $path = $entry[1]
+
+        Add-Scenario ("NulInput/{0}/{1}/Resolve/whole" -f $label, $kind) {
+            Format-DetectionResult (Resolve-Encoding -Path $path -Culture ja-JP)
+        }.GetNewClosure()
+
+        Add-Scenario ("NulInput/{0}/{1}/Get/whole" -f $label, $kind) {
+            Format-Lines (Get-ProbedContent -LiteralPath $path -Culture ja-JP)
+        }.GetNewClosure()
+
+        Add-Scenario ("NulInput/{0}/{1}/Import/whole" -f $label, $kind) {
+            Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -Culture ja-JP }
+        }.GetNewClosure()
+    }
+
+    $path = $lowbyte
+    Add-Scenario ("NulInput/{0}/lowbyte/Import/DetectionLineCount1" -f $label) {
+        Invoke-ImportProbedCsv { Import-ProbedCsv -ErrorAction Continue -LiteralPath $path -DetectionLineCount 1 -Culture ja-JP }
+    }.GetNewClosure()
+}
+
+# ---------------------------------------------------------------------------
+# Export-ProbedCsv (1.3.0 仕様書 第 4 部)
+#
+# CSV の文字列化は PowerShell 7.x の Export-Csv から移植した処理で行う。出力が両ホストでバイト単位で同じになることを確かめる。
+# 日付・数値はカルチャーに依存するので、値は文字列だけにする。ホストによって形が変わるオブジェクト（FileInfo など）は使わない
+# （第一次の決定）。実測報告 M4 / M5 / M6 に対応するケースを含む。
+# ---------------------------------------------------------------------------
+
+<#
+.SYNOPSIS
+    Export-ProbedCsv を実行し、出力先のバイト列とエラーを 1 行にする。
+.DESCRIPTION
+    終了エラーは FullyQualifiedErrorId とメッセージを記録する（UI カルチャーは en-US に固定している）。
+    警告は件数を記録する。
+#>
+function Invoke-ExportProbedCsv {
+    param([string]$Path, [scriptblock]$Body)
+
+    $ErrorActionPreference = 'Continue'
+    $outcome = 'ok'
+    $warnings = 0
+
+    try {
+        $all = @(& $Body 3>&1)
+        $warnings = @($all | Where-Object { $_ -is [System.Management.Automation.WarningRecord] }).Count
+    }
+    catch {
+        # PowerShell 自身が付ける枠の文言（パラメータの変換の失敗など）を含めないよう、最も内側のメッセージを記録する
+        $outcome = 'ERROR ' + $_.FullyQualifiedErrorId.Split(',')[0] + ' :: ' + (Get-InnermostMessage $_.Exception)
+    }
+
+    return ('{0} // warnings={1} // {2}' -f $outcome, $warnings, (Format-FileBytes $Path))
+}
+
+$script:exportDir = Join-Path $script:WorkRoot 'export'
+$null = New-Item -ItemType Directory -Path $script:exportDir
+$script:exportCount = 0
+
+<#
+.SYNOPSIS
+    Export-ProbedCsv のシナリオを追加する。追記先などの既存ファイルはバイト列を明示して作る。
+#>
+function Add-ExportScenario {
+    param([string]$Name, [byte[]]$Existing, [scriptblock]$Body)
+
+    $script:exportCount++
+    $target = Join-Path $script:exportDir ("e{0:D3}.csv" -f $script:exportCount)
+
+    if ($null -ne $Existing) {
+        [IO.File]::WriteAllBytes($target, $Existing)
+    }
+
+    $run = $Body
+    Add-Scenario ("Export/{0}" -f $Name) {
+        Invoke-ExportProbedCsv -Path $target -Body { & $run $target }
+    }.GetNewClosure()
+}
+
+$script:jpValue = "$([char]0x65E5)$([char]0x672C)$([char]0x8A9E)"
+$script:tsuiki = "$([char]0x8FFD)$([char]0x8A18)"
+$script:baseCsv = [byte[]](& $script:utf8Bytes "`"A`",`"B`"`r`n`"1`",`"2`"`r`n")
+$script:sjisCsv = [byte[]]($script:baseCsv + @(0x93, 0xFA, 0x96, 0x7B, 0x2C, 0x8C, 0xEA, 0x0D, 0x0A))
+
+# M4: 既定（utf8NoBOM、#TYPE 行なし、Always）と各オプション。値は文字列だけ
+$sample = [pscustomobject]@{ Name = $script:jpValue; Quote = 'say "hi"'; Multi = "l1`nl2"; Comma = 'a,b'; Empty = $null }
+foreach ($options in @('default', 'AsNeeded', 'Never', 'QuoteFields', 'NoHeader', 'IncludeTypeInformation', 'NoTypeInformation', 'Semicolon')) {
+    $o = $options
+    Add-ExportScenario "M4/$o" $null {
+        param($p)
+        switch ($o) {
+            'default' { $sample | Export-ProbedCsv -LiteralPath $p }
+            'AsNeeded' { $sample | Export-ProbedCsv -LiteralPath $p -UseQuotes AsNeeded }
+            'Never' { $sample | Export-ProbedCsv -LiteralPath $p -UseQuotes Never }
+            'QuoteFields' { $sample | Export-ProbedCsv -LiteralPath $p -QuoteFields Name, comma }
+            'NoHeader' { $sample | Export-ProbedCsv -LiteralPath $p -NoHeader }
+            'IncludeTypeInformation' { $sample | Export-ProbedCsv -LiteralPath $p -IncludeTypeInformation }
+            'NoTypeInformation' { $sample | Export-ProbedCsv -LiteralPath $p -NoTypeInformation }
+            'Semicolon' { $sample | Export-ProbedCsv $p ';' }
+        }
+    }.GetNewClosure()
+}
+
+# M4: 入力の種類（5.1 の標準は辞書オブジェクト自体のプロパティを書く）
+Add-ExportScenario 'M4/ordered-dictionary' $null { param($p) [ordered]@{ A = '1'; B = 'x' } | Export-ProbedCsv -LiteralPath $p }
+Add-ExportScenario 'M4/hashtable-with-note' $null {
+    param($p)
+    $h = @{ A = '1' }
+    $h = Add-Member -InputObject $h -NotePropertyName Extra -NotePropertyValue 'e' -PassThru
+    $h | Export-ProbedCsv -LiteralPath $p
+}
+Add-ExportScenario 'M4/mixed-objects' $null { param($p) [pscustomobject]@{ A = '1'; B = '2' }, [pscustomobject]@{ B = '3'; C = '4' } | Export-ProbedCsv -LiteralPath $p }
+Add-ExportScenario 'M4/strings' $null { param($p) 'abc', 'de' | Export-ProbedCsv -LiteralPath $p }
+
+# 文字エンコーディングの決定（仕様書 16.1）
+foreach ($encoding in @('utf8BOM', 'shift_jis', 'euc-jp', 'unicodeBOM', 'bigendianunicodeNoBOM', 'utf32BOM')) {
+    $enc = $encoding
+    Add-ExportScenario "Encoding/$enc" $null { param($p) [pscustomobject]@{ A = $script:jpValue } | Export-ProbedCsv -LiteralPath $p -Encoding $enc }.GetNewClosure()
+}
+Add-ExportScenario 'Encoding/omitted-overwrites-sjis-as-utf8' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p }
+Add-ExportScenario 'Encoding/Auto-inherits-sjis' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p -Encoding Auto -Culture ja-JP }
+Add-ExportScenario 'Encoding/Auto-missing' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -Encoding Auto }
+Add-ExportScenario 'Encoding/bare-utf8' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -Encoding utf8 }
+$lfSjisReference = New-ByteFile 'export_ref_lf_sjis.csv' ([byte[]]((& $script:utf8Bytes "x`n") + @(0x93, 0xFA, 0x96, 0x7B, 0x0A)))
+Add-ExportScenario 'Encoding/EncodingFrom-lf-sjis' $null { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p -EncodingFrom $lfSjisReference -Culture ja-JP }.GetNewClosure()
+
+# -DetectionLineCount（仕様書 16.2）。先頭が ASCII の Shift_JIS は、どの箇所でも検証で止まり何も書かない（-WhatIf でも報告）
+$sjisReference = New-ByteFile 'export_ref_sjis.csv' $script:sjisCsv
+Add-ExportScenario 'DetectionLineCount/Append-verification-failed' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'x' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 2 }
+Add-ExportScenario 'DetectionLineCount/Append-WhatIf-verification-failed' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'x' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 2 -WhatIf }
+Add-ExportScenario 'DetectionLineCount/Auto-verification-failed' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p -Encoding Auto -DetectionLineCount 2 }
+Add-ExportScenario 'DetectionLineCount/EncodingFrom-verification-failed' $null { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p -EncodingFrom $sjisReference -DetectionLineCount 2 }.GetNewClosure()
+Add-ExportScenario 'DetectionLineCount/Append-covering' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'x' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 3 -Culture ja-JP }
+
+# -Append（仕様書 18 章、実測報告 M5 a〜l）
+Add-ExportScenario 'M5/a-different-order' $script:baseCsv { param($p) [pscustomobject]@{ B = 'b'; A = 'a' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/b-missing-column' $script:baseCsv { param($p) [pscustomobject]@{ A = 'a' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/b2-missing-column-Force' $script:baseCsv { param($p) [pscustomobject]@{ A = 'a' } | Export-ProbedCsv -LiteralPath $p -Append -Force }
+Add-ExportScenario 'M5/c-extra-property' $script:baseCsv { param($p) [pscustomobject]@{ A = 'a'; B = 'b'; C = 'c' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/d-empty-file' ([byte[]]@()) { param($p) [pscustomobject]@{ A = 'a'; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/e-missing-file' $null { param($p) [pscustomobject]@{ A = 'a'; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/f-utf8bom-target' ([byte[]](@(0xEF, 0xBB, 0xBF) + $script:baseCsv)) { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/g-sjis-target' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append -Culture ja-JP }
+Add-ExportScenario 'M5/h-Append-NoHeader' $script:baseCsv { param($p) [pscustomobject]@{ A = 'a'; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append -NoHeader }
+Add-ExportScenario 'M5/i-lowercase-header' ([byte[]](& $script:utf8Bytes "a,b`r`n1,2`r`n")) { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/j-no-trailing-newline' ([byte[]](& $script:utf8Bytes "`"A`",`"B`"`r`n1,2")) { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/j-utf16le-no-trailing-newline' ([byte[]](@(0xFF, 0xFE) + (New-Object System.Text.UnicodeEncoding($false, $false)).GetBytes("`"A`",`"B`"`r`n1,2"))) { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/k-lf-target' ([byte[]](& $script:utf8Bytes "`"A`",`"B`"`n`"1`",`"2`"`n")) { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/l-readonly' $script:baseCsv {
+    param($p)
+    Set-ItemProperty -LiteralPath $p -Name IsReadOnly -Value $true
+    try { [pscustomobject]@{ A = 'a'; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append }
+    finally { Set-ItemProperty -LiteralPath $p -Name IsReadOnly -Value $false }
+}
+Add-ExportScenario 'M5/l2-readonly-Force' $script:baseCsv {
+    param($p)
+    Set-ItemProperty -LiteralPath $p -Name IsReadOnly -Value $true
+    try {
+        [pscustomobject]@{ A = 'a'; B = 'b' } | Export-ProbedCsv -LiteralPath $p -Append -Force
+        if (-not (Get-Item -LiteralPath $p).IsReadOnly) { throw 'read-only attribute was not restored' }
+    }
+    finally { Set-ItemProperty -LiteralPath $p -Name IsReadOnly -Value $false }
+}
+Add-ExportScenario 'M5/bom-only-target' ([byte[]]@(0xEF, 0xBB, 0xBF)) { param($p) [pscustomobject]@{ A = $script:tsuiki } | Export-ProbedCsv -LiteralPath $p -Append }
+Add-ExportScenario 'M5/encoding-change' $script:sjisCsv { param($p) [pscustomobject]@{ A = $script:tsuiki; B = 'x' } | Export-ProbedCsv -LiteralPath $p -Append -Encoding utf8NoBOM -Culture ja-JP }
+
+# M6 とその他（仕様書 19 章）
+$roundTrip = New-ByteFile 'export_roundtrip.csv' $script:baseCsv
+Add-Scenario 'Export/M6/same-path-round-trip' {
+    Invoke-ExportProbedCsv -Path $roundTrip -Body { Import-ProbedCsv -LiteralPath $roundTrip | Export-ProbedCsv -LiteralPath $roundTrip }
+}.GetNewClosure()
+Add-ExportScenario 'M6/NoClobber' $script:baseCsv { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -NoClobber }
+Add-ExportScenario 'M6/NoClobber-WhatIf' $script:baseCsv { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -NoClobber -WhatIf }
+Add-ExportScenario 'M6/WhatIf-new-file' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -WhatIf }
+Add-ExportScenario 'M6/empty-input' $script:baseCsv { param($p) @() | Export-ProbedCsv -LiteralPath $p }
+Add-ExportScenario 'M6/empty-input-Append' ([byte[]](& $script:utf8Bytes "`"A`"`r`n1")) { param($p) @() | Export-ProbedCsv -LiteralPath $p -Append }
+
+# エラー（仕様書 20 章）と警告
+Add-ExportScenario 'Errors/QuoteFields-and-UseQuotes' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -QuoteFields A -UseQuotes Always }
+Add-ExportScenario 'Errors/Path-and-LiteralPath' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -Path $p -LiteralPath $p }
+Add-ExportScenario 'Errors/AllowEncodingChange-without-Append' $null { param($p) [pscustomobject]@{ A = '1' } | Export-ProbedCsv -LiteralPath $p -AllowEncodingChange }
+
+# 往復: Export-ProbedCsv で書いたものを Import-ProbedCsv で読むと元の値に戻る
+Add-ExportScenario 'RoundTrip/shift_jis' $null {
+    param($p)
+    $src = [pscustomobject]@{ Q = 'say "hi"'; D = 'a,b'; N = "l1`r`nl2"; J = $script:jpValue }
+    $src | Export-ProbedCsv -LiteralPath $p -Encoding shift_jis
+    $back = Import-ProbedCsv -LiteralPath $p -Culture ja-JP
+    if (-not (($src.Q -ceq $back.Q) -and ($src.D -ceq $back.D) -and ($src.N -ceq $back.N) -and ($src.J -ceq $back.J))) { throw 'round trip changed the values' }
+}
+
+# ---------------------------------------------------------------------------
+# 1.3.0 第五次: 表現できない文字・継承した us-ascii・改行の単位・切り出し・ISO-2022・空の列名
+#
+# 書き込みの 4 コマンドは、表現できない文字を '?' やベストフィット（é → e。5.1 の .NET Framework で起きる）にせず、
+# UnrepresentableCharacter で止めてファイルを元に戻す。結果は「ok / ERROR <ID> :: <メッセージ>」と書いた後のバイト列で比べる。
+# ---------------------------------------------------------------------------
+
+function Invoke-FifthWrite {
+    param([string]$Path, [scriptblock]$Body)
+
+    $outcome = 'ok'
+
+    try {
+        $null = & $Body
+    }
+    catch {
+        $outcome = 'ERROR ' + $_.FullyQualifiedErrorId.Split(',')[0] + ' :: ' + (Get-InnermostMessage $_.Exception)
+    }
+
+    $leftovers = @(Get-ChildItem -LiteralPath (Split-Path -Parent $Path) -Filter '*.probedtmp' -Force).Count
+    return ('{0} // tmp={1} // {2}' -f $outcome, $leftovers, (Format-FileBytes $Path))
+}
+
+$script:fifthDir = Join-Path $script:WorkRoot 'fifth'
+$null = New-Item -ItemType Directory -Path $script:fifthDir
+$script:fifthCount = 0
+
+function Add-FifthScenario {
+    param([string]$Name, [byte[]]$Existing, [scriptblock]$Body)
+
+    $script:fifthCount++
+    $target = Join-Path $script:fifthDir ("f{0:D3}.txt" -f $script:fifthCount)
+
+    if ($null -ne $Existing) {
+        [IO.File]::WriteAllBytes($target, $Existing)
+    }
+
+    $run = $Body
+    Add-Scenario ("Fifth/{0}" -f $Name) {
+        Invoke-FifthWrite -Path $target -Body { & $run $target }
+    }.GetNewClosure()
+}
+
+$script:korean = "$([char]0xD55C)$([char]0xAD6D)"
+$script:cafe = "caf$([char]0xE9)"
+$script:euro = "$([char]0x20AC)"
+$script:fifthOld = [byte[]](0x6F, 0x6C, 0x64, 0x31, 0x0D, 0x0A, 0x6F, 0x6C, 0x64, 0x32, 0x0D, 0x0A)
+$script:fifthCsv = [byte[]](0x22, 0x56, 0x22, 0x0D, 0x0A, 0x22, 0x6F, 0x6C, 0x64, 0x22, 0x0D, 0x0A)
+
+# BUG-0010: -Encoding で明示した狭い文字エンコーディングで表現できない文字（ベストフィットを含む）
+foreach ($pair in @(@('shift_jis', 'korean'), @('shift_jis', 'cafe'), @('shift_jis', 'euro'), @('ascii', 'jp'), @('iso-2022-jp', 'cafe'), @('ks_c_5601-1987', 'cafe'), @('iso-8859-1', 'euro'))) {
+    $enc = $pair[0]
+    $value = switch ($pair[1]) { 'korean' { $script:korean } 'cafe' { $script:cafe } 'euro' { $script:euro } default { $script:jpValue } }
+    $label = $pair[1]
+    Add-FifthScenario "Unrepresentable/Set/$enc/$label" $script:fifthOld { param($p) Set-ProbedContent -LiteralPath $p -Value $value -Encoding $enc -ErrorAction Stop }.GetNewClosure()
+    Add-FifthScenario "Unrepresentable/Add/$enc/$label" $script:fifthOld { param($p) Add-ProbedContent -LiteralPath $p -Value $value -Encoding $enc -AllowEncodingChange -ErrorAction Stop }.GetNewClosure()
+    Add-FifthScenario "Unrepresentable/Out/$enc/$label" $script:fifthOld { param($p) $value | Out-ProbedFile -LiteralPath $p -Encoding $enc }.GetNewClosure()
+    Add-FifthScenario "Unrepresentable/OutAppend/$enc/$label" $script:fifthOld { param($p) $value | Out-ProbedFile -LiteralPath $p -Encoding $enc -Append -AllowEncodingChange }.GetNewClosure()
+    Add-FifthScenario "Unrepresentable/Export/$enc/$label" $script:fifthCsv { param($p) [pscustomobject]@{ V = $value } | Export-ProbedCsv -LiteralPath $p -Encoding $enc }.GetNewClosure()
+    Add-FifthScenario "Unrepresentable/ExportAppend/$enc/$label" $script:fifthCsv { param($p) [pscustomobject]@{ V = $value } | Export-ProbedCsv -LiteralPath $p -Encoding $enc -Append -AllowEncodingChange }.GetNewClosure()
+}
+
+# 途中のレコードで止まったら、それまでに書いた内容も取り消す
+Add-FifthScenario 'Rollback/Set-pipeline' $script:fifthOld { param($p) 'ok', $script:korean, 'after' | Set-ProbedContent -LiteralPath $p -Encoding shift_jis -ErrorAction Stop }
+Add-FifthScenario 'Rollback/Add-pipeline' $script:fifthOld { param($p) 'ok', $script:korean, 'after' | Add-ProbedContent -LiteralPath $p -Encoding shift_jis -AllowEncodingChange -ErrorAction Stop }
+Add-FifthScenario 'Rollback/Out-pipeline' $script:fifthOld { param($p) 'ok', $script:korean, 'after' | Out-ProbedFile -LiteralPath $p -Encoding shift_jis }
+Add-FifthScenario 'Rollback/Export-pipeline' $script:fifthCsv { param($p) 'ok', $script:korean | ForEach-Object { [pscustomobject]@{ V = $_ } } | Export-ProbedCsv -LiteralPath $p -Encoding shift_jis }
+Add-FifthScenario 'Rollback/Add-missing-file' $null { param($p) Add-ProbedContent -LiteralPath $p -Value $script:korean -Encoding shift_jis -ErrorAction Stop }
+
+# BUG-0012: 例外フォールバック・置換フォールバックの Encoding を渡しても、組み立て直して UnrepresentableCharacter
+Add-FifthScenario 'Instance/exception-fallback/Set' $script:fifthOld {
+    param($p)
+    $ef = [Text.Encoding]::GetEncoding(932, [Text.EncoderFallback]::ExceptionFallback, [Text.DecoderFallback]::ExceptionFallback)
+    Set-ProbedContent -LiteralPath $p -Value 'ok', $script:korean, 'after' -Encoding $ef -ErrorAction Stop
+}
+Add-FifthScenario 'Instance/exception-fallback/Add' $script:fifthOld {
+    param($p)
+    $ef = [Text.Encoding]::GetEncoding(932, [Text.EncoderFallback]::ExceptionFallback, [Text.DecoderFallback]::ExceptionFallback)
+    Add-ProbedContent -LiteralPath $p -Value 'ok', $script:korean, 'after' -Encoding $ef -ErrorAction Stop
+}
+Add-FifthScenario 'Instance/replacement-fallback/Out' $script:fifthOld { param($p) 'ok', $script:korean | Out-ProbedFile -LiteralPath $p -Encoding ([Text.Encoding]::GetEncoding(932)) }
+
+# BUG-0001: 継承した us-ascii は BOM 無しの UTF-8 とみなす（ASCII だけならバイト列は変わらない）
+$script:asciiText = [byte[]](0x61, 0x62, 0x63, 0x0D, 0x0A)
+$script:asciiCsv = [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A)
+Add-FifthScenario 'InheritedAscii/Add' $script:asciiText { param($p) Add-ProbedContent -LiteralPath $p -Value $script:jpValue -ErrorAction Stop }
+Add-FifthScenario 'InheritedAscii/Add-ascii-only' $script:asciiText { param($p) Add-ProbedContent -LiteralPath $p -Value 'xyz' -ErrorAction Stop }
+Add-FifthScenario 'InheritedAscii/Add-utf8NoBOM' $script:asciiText { param($p) Add-ProbedContent -LiteralPath $p -Value $script:jpValue -Encoding utf8NoBOM -ErrorAction Stop }
+Add-FifthScenario 'InheritedAscii/Add-ascii-explicit' $script:asciiText { param($p) Add-ProbedContent -LiteralPath $p -Value $script:jpValue -Encoding ascii -ErrorAction Stop }
+Add-FifthScenario 'InheritedAscii/Set' $script:asciiText { param($p) Set-ProbedContent -LiteralPath $p -Value $script:jpValue -ErrorAction Stop }
+Add-FifthScenario 'InheritedAscii/OutAppend' $script:asciiText { param($p) $script:jpValue | Out-ProbedFile -LiteralPath $p -Append }
+Add-FifthScenario 'InheritedAscii/ExportAppend' $script:asciiCsv { param($p) [pscustomobject]@{ A = $script:jpValue; B = 'x' } | Export-ProbedCsv -LiteralPath $p -Append }
+$asciiReference = New-ByteFile 'fifth_ascii_ref.txt' ([byte[]](0x61, 0x62, 0x63, 0x0A))
+Add-FifthScenario 'InheritedAscii/EncodingFrom' $null { param($p) Set-ProbedContent -LiteralPath $p -Value $jpValue -EncodingFrom $asciiReference -ErrorAction Stop }.GetNewClosure()
+Add-FifthScenario 'InheritedAscii/EncodingInformation' $null { param($p) Set-ProbedContent -LiteralPath $p -Value $jpValue -Encoding (Resolve-Encoding -Path $asciiReference) -ErrorAction Stop }.GetNewClosure()
+
+# 改行の単位（UTF-16 / UTF-32 の「上」「《」「不」を LF / CR と数えない）
+$unitEncodings = [ordered]@{
+    'u16le' = (New-Object System.Text.UnicodeEncoding($false, $false))
+    'u16be' = (New-Object System.Text.UnicodeEncoding($true, $false))
+    'u32le' = (New-Object System.Text.UTF32Encoding($false, $false))
+    'u32be' = (New-Object System.Text.UTF32Encoding($true, $false))
+}
+$unitBreaks = [ordered]@{ 'CrLf' = "`r`n"; 'Lf' = "`n"; 'Cr' = "`r" }
+$unitHeader = "$([char]0x65E5)$([char]0x672C)$([char]0x8A9E)$([char]0x4E0A)$([char]0x300A)$([char]0x4E0D)"
+foreach ($formName in $unitEncodings.Keys) {
+    foreach ($breakName in $unitBreaks.Keys) {
+        $unitEncoding = $unitEncodings[$formName]
+        $nl = $unitBreaks[$breakName]
+        $text = ("$unitHeader,B", "1$([char]0x4E0A),2", "$([char]0x4E0D)3,4") -join $nl
+        $bytes = [byte[]]$unitEncoding.GetBytes($text + $nl)
+        $unitFile = New-ByteFile ("fifth_unit_{0}_{1}.csv" -f $formName, $breakName) $bytes
+        Add-Scenario "Fifth/UnitLineBreak/$formName/$breakName/Resolve" { (Resolve-Encoding -Path $unitFile -Culture ja-JP).LineBreak }.GetNewClosure()
+        Add-FifthScenario "UnitLineBreak/$formName/$breakName/Add" $bytes { param($p) Add-ProbedContent -LiteralPath $p -Value '9,8' -Culture ja-JP -ErrorAction Stop }.GetNewClosure()
+        $h = $unitHeader
+        Add-FifthScenario "UnitLineBreak/$formName/$breakName/ExportAppend-N1" $bytes { param($p) [pscustomobject]@{ "$h" = '9'; B = '8' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 1 -Culture ja-JP }.GetNewClosure()
+    }
+}
+
+# BUG-0014: 英数字と「上」だけの BOM 無し UTF-16LE（改行は CR）。-DetectionLineCount で読み替えた後の単位で改行を数える
+$bug0014 = [byte[]](0x41, 0x00, 0x0A, 0x4E, 0x2C, 0x00, 0x42, 0x00, 0x0D, 0x00, 0x31, 0x00, 0x2C, 0x00, 0x32, 0x00, 0x0D, 0x00)
+Add-FifthScenario 'BUG-0014/ExportAppend-N1' $bug0014 { param($p) [pscustomobject]@{ "A$([char]0x4E0A)" = '9'; B = '8' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 1 }
+
+# BUG-0002: 0x00 を含む ASCII の CSV（-DetectionLineCount の有無で同じ値、追記は ASCII の行）
+foreach ($case in @(
+    @('A-lf', [byte[]](0x41, 0x2C, 0x42, 0x00, 0x0A, 0x31, 0x2C, 0x32, 0x00, 0x0A)),
+    @('B-crlf', [byte[]](0x41, 0x2C, 0x42, 0x00, 0x00, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x00, 0x00, 0x0D, 0x0A)))) {
+    $caseName = $case[0]
+    $caseBytes = $case[1]
+    $caseFile = New-ByteFile ("fifth_bug0002_{0}.csv" -f $caseName) $caseBytes
+    Add-Scenario "Fifth/BUG-0002/$caseName/Import-N1" { Import-ProbedCsv -LiteralPath $caseFile -DetectionLineCount 1 | ConvertTo-Json -Compress }.GetNewClosure()
+    Add-Scenario "Fifth/BUG-0002/$caseName/Resolve-N1" { $r = Resolve-Encoding -Path $caseFile -DetectionLineCount 1; '{0} {1}' -f $r.CodePage, $r.LineBreak }.GetNewClosure()
+    Add-FifthScenario "BUG-0002/$caseName/ExportAppend-N1" $caseBytes { param($p) [pscustomobject]@{ A = 'z'; "B$([char]0)" = 'z' } | Export-ProbedCsv -LiteralPath $p -Append -Force -DetectionLineCount 1 }
+}
+
+# BUG-0013: 最初の改行より前に U+0D00 がある BOM 無し UTF-16BE
+$bug0013 = New-ByteFile 'fifth_bug0013.csv' ([byte[]](0x65, 0xE5, 0x0D, 0x00, 0x00, 0x2C, 0x00, 0x42, 0x00, 0x0D, 0x00, 0x0A, 0x00, 0x31, 0x00, 0x2C, 0x00, 0x32, 0x00, 0x0D, 0x00, 0x0A))
+Add-Scenario 'Fifth/BUG-0013/Import-N1' { Import-ProbedCsv -LiteralPath $bug0013 -DetectionLineCount 1 | ConvertTo-Json -Compress }.GetNewClosure()
+
+# BUG-0009: 先頭行が ASCII だけの ISO-2022-JP / KR
+$iso2022jp = [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x22, 0x1B, 0x24, 0x42, 0x46, 0x7C, 0x4B, 0x5C, 0x1B, 0x28, 0x42, 0x22, 0x2C, 0x78, 0x0D, 0x0A)
+$iso2022kr = [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x22, 0x1B, 0x24, 0x29, 0x43, 0x0E, 0x47, 0x51, 0x31, 0x39, 0x0F, 0x22, 0x2C, 0x78, 0x0D, 0x0A)
+$iso2022jpFile = New-ByteFile 'fifth_iso2022jp.csv' $iso2022jp
+Add-Scenario 'Fifth/BUG-0009/jp/Import-N1' { Import-ProbedCsv -LiteralPath $iso2022jpFile -DetectionLineCount 1 -Culture ja-JP -ErrorAction Stop }.GetNewClosure()
+Add-FifthScenario 'BUG-0009/jp/ExportAppend-N1' $iso2022jp { param($p) [pscustomobject]@{ A = $script:jpValue; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 1 -Culture ja-JP }
+Add-FifthScenario 'BUG-0009/kr/ExportAppend-N1' $iso2022kr { param($p) [pscustomobject]@{ A = $script:korean; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append -DetectionLineCount 1 -Culture ko-KR }
+
+# Export-ProbedCsv -Append で、追記先のヘッダーに空の列名がある（-Force なしは本家と同じ ID、-Force ありは本モジュールの ID）
+foreach ($header in @('A,,B', ',A,B', 'A,B,')) {
+    $headerBytes = [byte[]]([Text.Encoding]::ASCII.GetBytes($header + "`r`n1,2,3`r`n"))
+    $hd = $header
+    Add-FifthScenario "EmptyColumn/$hd" $headerBytes { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }.GetNewClosure()
+    Add-FifthScenario "EmptyColumn/$hd/Force" $headerBytes { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append -Force }.GetNewClosure()
+}
+
+# ---------------------------------------------------------------------------
+# 1.3.0 第五次の後半: パスの束縛・同じファイルの判定（実体で比べる）・リンクと権限・追記の取り消し・-Culture の検証
+#
+# リンクは cmd の mklink で作る（両ホストで同じ）。作れない環境では両ホストとも「(作れない)」を記録する。
+# 同じファイルの往復は、エラーの ID と、元のファイルの長さが変わっていないか（unchanged / changed）で比べる。
+# ---------------------------------------------------------------------------
+
+$script:f2Dir = Join-Path $script:WorkRoot 'fifth2'
+$null = New-Item -ItemType Directory -Path $script:f2Dir
+
+function New-F2Folder {
+    param([string]$Name)
+
+    $folder = Join-Path $script:f2Dir $Name
+    $null = New-Item -ItemType Directory -Path $folder
+    return $folder
+}
+
+function New-F2Link {
+    param([string]$Kind, [string]$Link, [string]$Target)
+
+    $switch = switch ($Kind) { 'symlink' { '' } 'hardlink' { '/H' } 'junction' { '/J' } 'dirlink' { '/D' } }
+    $null = cmd /c "mklink $switch `"$Link`" `"$Target`"" 2>&1
+    return (Test-Path -LiteralPath $Link)
+}
+
+function Invoke-F2 {
+    param([scriptblock]$Body)
+
+    $outcome = @()
+
+    try {
+        $outcome = @(& $Body 2>&1 | ForEach-Object {
+            if ($_ -is [System.Management.Automation.ErrorRecord]) { 'ERR ' + $_.FullyQualifiedErrorId.Split(',')[0] } else { [string]$_ }
+        })
+    }
+    catch {
+        $outcome += 'TERM ' + $_.FullyQualifiedErrorId.Split(',')[0]
+    }
+
+    return ($outcome -join ' | ')
+}
+
+# BUG-0003: [ ] を含む名前のファイルをパイプラインで渡す（a1.csv / b1.txt はワイルドカードとして一致してしまう別のファイル）
+$bindDir = New-F2Folder 'bind'
+$bindCsv = Join-Path $bindDir 'a[1].csv'
+[IO.File]::WriteAllBytes($bindCsv, [byte[]](0x41, 0x0D, 0x0A, 0x78, 0x0D, 0x0A))
+[IO.File]::WriteAllBytes((Join-Path $bindDir 'a1.csv'), [byte[]](0x41, 0x0D, 0x0A, 0x79, 0x0D, 0x0A))
+$bindTxt = Join-Path $bindDir 'b[1].txt'
+$bindOther = Join-Path $bindDir 'b1.txt'
+Add-Scenario 'Fifth2/Bind/Get-Item|Get' { Invoke-F2 { Get-Item -LiteralPath $bindCsv | Get-ProbedContent } }.GetNewClosure()
+Add-Scenario 'Fifth2/Bind/Get-Item|Import' { Invoke-F2 { Get-Item -LiteralPath $bindCsv | Import-ProbedCsv | ForEach-Object { $_.A } } }.GetNewClosure()
+Add-Scenario 'Fifth2/Bind/FileInfo|Get' { Invoke-F2 { New-Object System.IO.FileInfo $bindCsv | Get-ProbedContent } }.GetNewClosure()
+Add-Scenario 'Fifth2/Bind/gci|Import' { Invoke-F2 { Get-ChildItem -LiteralPath $bindDir -Filter '*.csv' | Import-ProbedCsv | ForEach-Object { $_.A } | Sort-Object } }.GetNewClosure()
+foreach ($bindCommand in @('Set', 'Add')) {
+    $bc = $bindCommand
+    Add-Scenario "Fifth2/Bind/Get-Item|$bc" {
+        [IO.File]::WriteAllBytes($bindTxt, [byte[]](0x78, 0x0D, 0x0A))
+        [IO.File]::WriteAllBytes($bindOther, [byte[]](0x79, 0x0D, 0x0A))
+        $r = Invoke-F2 { Get-Item -LiteralPath $bindTxt | & "$bc-ProbedContent" -Value z -Encoding utf8NoBOM -LineBreak CrLf }
+        '{0} // b[1]={1} // b1={2}' -f $r, (Format-FileBytes $bindTxt), (Format-FileBytes $bindOther)
+    }.GetNewClosure()
+}
+Add-Scenario 'Fifth2/Bind/string|Get (wildcard)' { Invoke-F2 { (Join-Path $bindDir 'a?.csv') | Get-ProbedContent } }.GetNewClosure()
+
+# BUG-0015: 書き込み側のワイルドカードが 0 件（標準と同じ ItemNotFound の非終了エラー。読み込み側はエラーにしない）
+$wildDir = New-F2Folder 'wild'
+foreach ($wildCommand in @('Set', 'Add')) {
+    foreach ($pattern in @('c[1].txt', 'x*.txt')) {
+        $wc = $wildCommand
+        $wp = Join-Path $wildDir $pattern
+        Add-Scenario "Fifth2/WildcardNoMatch/$wc/$pattern" {
+            $r = Invoke-F2 { & "$wc-ProbedContent" -Path $wp -Value x -Encoding utf8NoBOM }
+            '{0} // files={1}' -f $r, @(Get-ChildItem -LiteralPath $wildDir -Force).Count
+        }.GetNewClosure()
+    }
+}
+Add-Scenario 'Fifth2/WildcardNoMatch/Get' { Invoke-F2 { Get-ProbedContent -Path (Join-Path $wildDir 'x*.txt') } }.GetNewClosure()
+
+# BUG-0004: 読み込み中のファイルに、別の書き方で書く（どれも SamePathRoundTrip で止まり、元のファイルは変わらない）
+$sameDir = New-F2Folder 'same'
+$sameSub = Join-Path $sameDir 'sub'
+$null = New-Item -ItemType Directory -Path $sameSub
+$sameData = Join-Path $sameSub 'data.txt'
+$sameBytes = [byte[]][Text.Encoding]::ASCII.GetBytes(('line' + "`r`n") * 2000)
+$sameFull = (Resolve-Path -LiteralPath $sameSub).ProviderPath
+$sameSpellings = [ordered]@{
+    'extended' = '\\?\' + (Join-Path $sameFull 'data.txt')
+    'device' = '\\.\' + (Join-Path $sameFull 'data.txt')
+    'unc' = '\\localhost\' + $sameFull.Substring(0, 1) + '$' + $sameFull.Substring(2) + '\data.txt'
+    'mainstream' = (Join-Path $sameFull 'data.txt') + '::$DATA'
+    'symlink' = Join-Path $sameDir 'link.txt'
+    'hardlink' = Join-Path $sameDir 'hard.txt'
+    'junction' = Join-Path (Join-Path $sameDir 'junction') 'data.txt'
+}
+[IO.File]::WriteAllBytes($sameData, $sameBytes)
+$sameAvailable = @{
+    'extended' = $true; 'device' = $true; 'mainstream' = $true
+    'unc' = (Test-Path -LiteralPath $sameSpellings['unc'])
+    'symlink' = (New-F2Link 'symlink' $sameSpellings['symlink'] $sameData)
+    'hardlink' = (New-F2Link 'hardlink' $sameSpellings['hardlink'] $sameData)
+    'junction' = (New-F2Link 'junction' (Join-Path $sameDir 'junction') $sameSub)
+}
+foreach ($spelling in $sameSpellings.Keys) {
+    foreach ($writer in @('Set', 'Add', 'Out', 'OutAppend')) {
+        $other = $sameSpellings[$spelling]
+        $available = $sameAvailable[$spelling]
+        $w = $writer
+        Add-Scenario "Fifth2/SameFile/$spelling/$w" {
+            if (-not $available) { return '(作れない)' }
+            [IO.File]::WriteAllBytes($sameData, $sameBytes)
+            $r = Invoke-F2 {
+                switch ($w) {
+                    'Set' { Get-ProbedContent -LiteralPath $sameData | Set-ProbedContent -LiteralPath $other -Encoding utf8NoBOM }
+                    'Add' { Get-ProbedContent -LiteralPath $sameData | Add-ProbedContent -LiteralPath $other -Encoding utf8NoBOM }
+                    'Out' { Get-ProbedContent -LiteralPath $sameData | Out-ProbedFile -LiteralPath $other -Encoding utf8NoBOM }
+                    'OutAppend' { Get-ProbedContent -LiteralPath $sameData | Out-ProbedFile -LiteralPath $other -Encoding utf8NoBOM -Append }
+                }
+            }
+            $state = if ((Get-Item -LiteralPath $sameData).Length -eq $sameBytes.Length) { 'unchanged' } else { 'changed' }
+            '{0} // {1}' -f $r, $state
+        }.GetNewClosure()
+    }
+}
+Add-Scenario 'Fifth2/SameFile/Csv/extended' {
+    $csv = Join-Path $sameSub 'data.csv'
+    [IO.File]::WriteAllBytes($csv, [byte[]][Text.Encoding]::ASCII.GetBytes("A,B`r`n" + ('1,2' + "`r`n") * 2000))
+    $len = (Get-Item -LiteralPath $csv).Length
+    $r = Invoke-F2 { Import-ProbedCsv -LiteralPath $csv | Export-ProbedCsv -LiteralPath ('\\?\' + (Join-Path $sameFull 'data.csv')) }
+    '{0} // {1}' -f $r, ($(if ((Get-Item -LiteralPath $csv).Length -eq $len) { 'unchanged' } else { 'changed' }))
+}.GetNewClosure()
+
+# BUG-0016: 同じ実体を 2 回（Set は 1 回書いたのと同じ。Add は 1 回の指定の中では 1 回、レコードをまたげば 2 回）
+$dupFile = Join-Path $script:f2Dir 'dup.txt'
+foreach ($dup in @(
+    @('Set/a,A', { Set-ProbedContent -LiteralPath $dupFile, $dupFile.ToUpperInvariant() -Value Z -Encoding utf8NoBOM -LineBreak CrLf }),
+    @('Set/pipeline', { (Get-Item -LiteralPath $dupFile), (Get-Item -LiteralPath $dupFile) | Set-ProbedContent -Value Z -Encoding utf8NoBOM -LineBreak CrLf }),
+    @('Set/values', { 'p', 'q' | Set-ProbedContent -LiteralPath $dupFile -Encoding utf8NoBOM -LineBreak CrLf }),
+    @('Add/a,A', { Add-ProbedContent -LiteralPath $dupFile, $dupFile.ToUpperInvariant() -Value Z -Encoding utf8NoBOM -LineBreak CrLf }),
+    @('Add/pipeline', { (Get-Item -LiteralPath $dupFile), (Get-Item -LiteralPath $dupFile) | Add-ProbedContent -Value Z -Encoding utf8NoBOM -LineBreak CrLf }))) {
+    $dupName = $dup[0]
+    $dupBody = $dup[1]
+    Add-Scenario "Fifth2/Duplicate/$dupName" {
+        [IO.File]::WriteAllBytes($dupFile, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+        '{0} // {1}' -f (Invoke-F2 $dupBody), (Format-FileBytes $dupFile)
+    }.GetNewClosure()
+}
+
+# BUG-0017: Convert-ProbedContent -Destination に変換元のフォルダーを別の書き方で渡す（-Force でも N9）
+$convDir = New-F2Folder 'conv'
+$convSrc = Join-Path $convDir 'src'
+$null = New-Item -ItemType Directory -Path $convSrc
+$convFile = Join-Path $convSrc 'a.txt'
+$convFull = (Resolve-Path -LiteralPath $convSrc).ProviderPath
+$convJunction = Join-Path $convDir 'junction'
+$convJunctionOk = New-F2Link 'junction' $convJunction $convSrc
+$convDestinations = [ordered]@{
+    'upper' = $convFull.ToUpperInvariant()
+    'extended' = '\\?\' + $convFull
+    'device' = '\\.\' + $convFull
+    'unc' = '\\localhost\' + $convFull.Substring(0, 1) + '$' + $convFull.Substring(2)
+    'junction' = $convJunction
+}
+foreach ($dest in $convDestinations.GetEnumerator()) {
+    foreach ($force in @($false, $true)) {
+        $destName = $dest.Key
+        $destPath = $dest.Value
+        $f = $force
+        Add-Scenario "Fifth2/ConvertDestination/$destName/Force=$f" {
+            if ($destName -eq 'junction' -and -not $convJunctionOk) { return '(作れない)' }
+            if (-not (Test-Path -LiteralPath $destPath)) { return '(作れない)' }
+            [IO.File]::WriteAllBytes($convFile, [byte[]](0x61, 0x62, 0x63, 0x0D, 0x0A))
+            $r = Invoke-F2 { Convert-ProbedContent -LiteralPath $convFile -Encoding utf8BOM -Destination $destPath -Force:$f }
+            '{0} // {1}' -f $r, (Format-FileBytes $convFile)
+        }.GetNewClosure()
+    }
+}
+
+# 書き込みのリンク・権限（実装記録 9.9 節の 4、H-17）
+$linkDir = New-F2Folder 'links'
+$linkSub = Join-Path $linkDir 'sub'
+$null = New-Item -ItemType Directory -Path $linkSub
+$linkTarget = Join-Path $linkSub 't.txt'
+$linkWriters = [ordered]@{
+    'Set' = { param($p) Set-ProbedContent -LiteralPath $p -Value new -Encoding utf8NoBOM -LineBreak CrLf }
+    'Add' = { param($p) Add-ProbedContent -LiteralPath $p -Value new -Encoding utf8NoBOM -LineBreak CrLf }
+    'Out' = { param($p) 'new' | Out-ProbedFile -LiteralPath $p -Encoding utf8NoBOM -LineBreak CrLf }
+    'Export' = { param($p) [pscustomobject]@{ A = 'new' } | Export-ProbedCsv -LiteralPath $p }
+    'Convert' = { param($p) Convert-ProbedContent -LiteralPath $p -Encoding utf8BOM }
+}
+$linkIndex = 0
+foreach ($kind in @('symlink-relative-chain', 'hardlink')) {
+    foreach ($writerName in $linkWriters.Keys) {
+        $linkIndex++
+        $k = $kind
+        $wb = $linkWriters[$writerName]
+        $n = $linkIndex
+        Add-Scenario "Fifth2/Link/$k/$writerName" {
+            [IO.File]::WriteAllBytes($linkTarget, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+            if ($k -eq 'hardlink') {
+                $entry = Join-Path $linkDir ("hard{0}.txt" -f $n)
+                if (-not (New-F2Link 'hardlink' $entry $linkTarget)) { return '(作れない)' }
+            }
+            else {
+                $mid = Join-Path $linkDir ("mid{0}.txt" -f $n)
+                $entry = Join-Path $linkDir ("link{0}.txt" -f $n)
+                if (-not (New-F2Link 'symlink' $mid 'sub\t.txt') -or -not (New-F2Link 'symlink' $entry ("mid{0}.txt" -f $n))) { return '(作れない)' }
+            }
+            $r = Invoke-F2 { & $wb $entry }
+            $linkType = (Get-Item -LiteralPath $entry -Force).LinkType
+            '{0} // target={1} // entry={2} // linktype={3} // tmp={4}' -f $r, (Format-FileBytes $linkTarget), (Format-FileBytes $entry), $linkType, @(Get-ChildItem -LiteralPath $linkDir -Recurse -Force -Filter '*.probedtmp').Count
+        }.GetNewClosure()
+    }
+}
+foreach ($writerName in @('Set', 'Add', 'Out', 'Export')) {
+    $linkIndex++
+    $wb = $linkWriters[$writerName]
+    $n = $linkIndex
+    Add-Scenario "Fifth2/Link/dangling/$writerName" {
+        $entry = Join-Path $linkDir ("dangling{0}.txt" -f $n)
+        $missing = Join-Path $linkSub ("missing{0}.txt" -f $n)
+        if (-not (New-F2Link 'symlink' $entry ("sub\missing{0}.txt" -f $n))) { return '(作れない)' }
+        $r = Invoke-F2 { & $wb $entry }
+        '{0} // target={1} // linktype={2}' -f $r, (Format-FileBytes $missing), (Get-Item -LiteralPath $entry -Force).LinkType
+    }.GetNewClosure()
+}
+Add-Scenario 'Fifth2/Link/hardlink/Set-rollback' {
+    [IO.File]::WriteAllBytes($linkTarget, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+    $entry = Join-Path $linkDir 'hard-rollback.txt'
+    if (-not (New-F2Link 'hardlink' $entry $linkTarget)) { return '(作れない)' }
+    $r = Invoke-F2 { Set-ProbedContent -LiteralPath $entry -Value 'a', "$([char]0xD55C)" -Encoding shift_jis }
+    '{0} // target={1} // entry={2}' -f $r, (Format-FileBytes $linkTarget), (Format-FileBytes $entry)
+}.GetNewClosure()
+
+# 2 章: EncodingChangeOnAppend でも、その呼び出しで書いた分を残さない
+$appendDir = New-F2Folder 'append'
+$appendSjis = [byte[]](0x82, 0xA0, 0x0A)
+foreach ($appendCase in @(
+    @('Add', { param($p) 'x', "$([char]0x3044)", 'y' | Add-ProbedContent -LiteralPath $p -Encoding utf8NoBOM -Culture ja-JP -LineBreak Lf }),
+    @('Add-Stop', { param($p) 'x', "$([char]0x3044)" | Add-ProbedContent -LiteralPath $p -Encoding utf8NoBOM -Culture ja-JP -LineBreak Lf -ErrorAction Stop }),
+    @('OutAppend', { param($p) 'x', "$([char]0x3044)" | Out-ProbedFile -LiteralPath $p -Encoding utf8NoBOM -Append -Culture ja-JP -LineBreak Lf }),
+    @('ExportAppend', { param($p) [pscustomobject]@{ A = 'x' }, [pscustomobject]@{ A = "$([char]0x3044)" } | Export-ProbedCsv -LiteralPath $p -Encoding utf8NoBOM -Append -Culture ja-JP }))) {
+    $an = $appendCase[0]
+    $ab = $appendCase[1]
+    $ap = Join-Path $appendDir ("{0}.txt" -f $an)
+    $initial = if ($an -eq 'ExportAppend') { [byte[]](0x41, 0x0A, 0x82, 0xA0, 0x0A) } else { $appendSjis }
+    Add-Scenario "Fifth2/AppendRollback/$an" {
+        [IO.File]::WriteAllBytes($ap, $initial)
+        '{0} // {1}' -f (Invoke-F2 { & $ab $ap }), (Format-FileBytes $ap)
+    }.GetNewClosure()
+}
+
+# 代替データストリーム（主ストリームの名前はそのファイル。ほかのストリームは両ホストで AlternateDataStreamNotSupported）
+$streamFile = Join-Path $script:f2Dir 'stream.txt'
+[IO.File]::WriteAllBytes($streamFile, [byte[]](0x61, 0x62, 0x63, 0x0D, 0x0A))
+Add-Scenario 'Fifth2/Stream/Get-main' { Invoke-F2 { Get-ProbedContent -LiteralPath ($streamFile + '::$DATA') } }.GetNewClosure()
+Add-Scenario 'Fifth2/Stream/Resolve-main' { Invoke-F2 { (Resolve-Encoding -Path ($streamFile + '::$DATA')).CodePage } }.GetNewClosure()
+Add-Scenario 'Fifth2/Stream/Get-alt' { Invoke-F2 { Get-ProbedContent -LiteralPath ($streamFile + ':alt') } }.GetNewClosure()
+Add-Scenario 'Fifth2/Stream/Set-alt' { Invoke-F2 { Set-ProbedContent -LiteralPath ($streamFile + ':alt') -Value x -Encoding utf8NoBOM } }.GetNewClosure()
+Add-Scenario 'Fifth2/Stream/Out-alt' { Invoke-F2 { 'x' | Out-ProbedFile -LiteralPath ($streamFile + ':alt') } }.GetNewClosure()
+
+# BUG-0006・0007: -Culture / -Strategy の検証（Resolve-Encoding もほかのコマンドと同じ ID。受け付ける名前は形で決める）
+$cultureFile = Join-Path $script:f2Dir 'culture.txt'
+[IO.File]::WriteAllBytes($cultureFile, [byte[]](0xC7, 0xD1, 0xB1, 0xB9, 0xBE, 0xEE, 0x0D, 0x0A))
+foreach ($cultureName in @('C', 'c', 'root', 'POSIX', 'xx-YY', 'ko-KR', 'ko_KR', 'art-lojban', 'zh-yue', 'zh-min-nan', 'und-u-ca-gregory', 'c-JP', 'ja-JP-x', 'i-klingon', 'x-test', 'en-u', 'not a culture!', 'cel-gaulish', 'zh-min', 'no-bok', 'zh-cmn', 'zh-guoyu', 'zh-yue-HK')) {
+    $cn = $cultureName
+    Add-Scenario "Fifth2/Culture/$cn/Resolve" { Invoke-F2 { $r = Resolve-Encoding -Path $cultureFile -Culture $cn; '{0} {1}' -f $r.CodePage, $r.Culture } }.GetNewClosure()
+    Add-Scenario "Fifth2/Culture/$cn/Get" { Invoke-F2 { (Get-ProbedContent -LiteralPath $cultureFile -Culture $cn -Raw).Length } }.GetNewClosure()
+    Add-Scenario "Fifth2/Culture/$cn/Import" { Invoke-F2 { @(Import-ProbedCsv -LiteralPath $cultureFile -Culture $cn).Count } }.GetNewClosure()
+    Add-Scenario "Fifth2/Culture/$cn/Convert" { Invoke-F2 { (Convert-ProbedContent -LiteralPath $cultureFile -Culture $cn -Encoding utf8BOM -WhatIf -PassThru | Measure-Object).Count } }.GetNewClosure()
+}
+Add-Scenario 'Fifth2/Strategy/Resolve-invalid' {
+    try { Resolve-Encoding -Path $cultureFile -Strategy Nonexistent; 'no error' }
+    catch { '{0} [{1}] {2} :: {3}' -f $_.FullyQualifiedErrorId.Split(',')[0], $_.CategoryInfo.Category, $_.Exception.GetType().Name, (Get-InnermostMessage $_.Exception) }
+}.GetNewClosure()
+Add-Scenario 'Fifth2/Culture/Resolve-invalid-message' {
+    try { Resolve-Encoding -Path $cultureFile -Culture 'not a culture!'; 'no error' }
+    catch { '{0} [{1}] {2} :: {3}' -f $_.FullyQualifiedErrorId.Split(',')[0], $_.CategoryInfo.Category, $_.Exception.GetType().Name, (Get-InnermostMessage $_.Exception) }
+}.GetNewClosure()
+
+# BUG-0008 (5): OS の説明に前後の空白が無い
+Add-Scenario 'Fifth2/PlatformInfo/OsDescriptionTrimmed' { $d = (Get-EncodingProbePlatformInfo).Os.Description; [string]($d -ceq $d.Trim()) }
+
+# ---------------------------------------------------------------------------
+# 1.3.0 第五次の仕上げ: 小さなファイルはメモリに写してから直接書く（実装記録 10.16 節）
+#
+# 境目（SafeFileOverwrite.DefaultDirectWriteThreshold）ちょうどと 1 バイト超えたところで、書き方が両ホストで同じに切り替わること、
+# 失敗したときに元どおりになることを確かめる。書き方は、実体（ファイル ID）が変わったかどうか（置き換えなら変わる）で記録する。
+# ファイル ID そのものはホストや実行ごとに違うので、変わったかどうかだけを記録する。
+# ---------------------------------------------------------------------------
+$f3Assembly = [SnowStack.EncodingProbe.PowerShell.Cmdlets.ResolveEncodingCmdlet].Assembly
+$f3Threshold = [int]$f3Assembly.GetType('SnowStack.EncodingProbe.PowerShell.Internal.SafeFileOverwrite').GetField('DefaultDirectWriteThreshold').GetValue($null)
+$f3IdentityOf = $f3Assembly.GetType('SnowStack.EncodingProbe.PowerShell.Internal.FileIdentity').GetMethod('Of', [Reflection.BindingFlags]'Public, NonPublic, Static')
+$f3Dir = New-F2Folder 'directwrite'
+
+function Get-F3FileId {
+    param([string]$Path)
+
+    # 実体の鍵（ボリュームのシリアル番号とファイル ID）。モジュールの内部の FileIdentity を使う（fsutil は環境によって使えない）
+    return $f3IdentityOf.Invoke($null, @($Path)).EntityKey
+}
+
+function Format-F3File {
+    param([string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) { return '(ファイルなし)' }
+    $bytes = [IO.File]::ReadAllBytes($Path)
+    if ($bytes.Length -le 16) { return (Format-FileBytes $Path) }
+    $sha = [Security.Cryptography.SHA256]::Create()
+    $hash = (($sha.ComputeHash($bytes) | ForEach-Object { $_.ToString('X2') }) -join '').Substring(0, 16)
+    return ('{0} bytes sha256={1}' -f $bytes.Length, $hash)
+}
+
+$f3Writers = [ordered]@{
+    'Set' = { param($p, $v) Set-ProbedContent -LiteralPath $p -Value $v -Encoding utf8NoBOM -NoNewline }
+    'Out' = { param($p, $v) $v | Out-ProbedFile -LiteralPath $p -Encoding utf8NoBOM -NoNewline }
+    'Export' = { param($p, $v) [pscustomobject]@{ A = $v } | Export-ProbedCsv -LiteralPath $p -Encoding utf8NoBOM }
+}
+$f3Index = 0
+# 書く内容の大きさと、元のファイルの大きさ（-1 はまだ無いファイル）。Export は見出しと引用符・改行の 9 バイトを引いて、ファイルの大きさをそろえる
+foreach ($f3Case in @(
+    @('content=T', $f3Threshold, 5),
+    @('content=T+1', ($f3Threshold + 1), 5),
+    @('original=T', 3, $f3Threshold),
+    @('original=T+1', 3, ($f3Threshold + 1)),
+    @('new-small', 3, -1),
+    @('new-T+1', ($f3Threshold + 1), -1))) {
+    foreach ($writerName in $f3Writers.Keys) {
+        $f3Index++
+        $cn = $f3Case[0]
+        $contentLength = $f3Case[1]
+        $originalLength = $f3Case[2]
+        $wb = $f3Writers[$writerName]
+        $valueLength = if ($writerName -eq 'Export' -and $contentLength -gt 9) { $contentLength - 9 } else { $contentLength }
+        $p = Join-Path $f3Dir ("size{0}.txt" -f $f3Index)
+        Add-Scenario "Finish/DirectWrite/Size/$cn/$writerName" {
+            if ($originalLength -ge 0) { [IO.File]::WriteAllBytes($p, [byte[]]@(0x6F) * $originalLength) }
+            $before = if ($originalLength -ge 0) { Get-F3FileId $p } else { $null }
+            $r = Invoke-F2 { & $wb $p ('n' * $valueLength) }
+            $entity = if ($null -eq $before) { 'new' } elseif ($before -eq (Get-F3FileId $p)) { 'same' } else { 'changed' }
+            '{0} // {1} // entity={2} // tmp={3}' -f $r, (Format-F3File $p), $entity, @(Get-ChildItem -LiteralPath $f3Dir -Force -Filter '*.probedtmp').Count
+        }.GetNewClosure()
+    }
+}
+
+# Convert-ProbedContent（その場の変換と -Destination）も、小さなファイルには直接書く
+$f3ConvertDest = Join-Path $f3Dir 'dest'
+$null = New-Item -ItemType Directory -Path $f3ConvertDest
+Add-Scenario 'Finish/DirectWrite/Convert/inplace' {
+    $p = Join-Path $f3Dir 'convert.txt'
+    [IO.File]::WriteAllBytes($p, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+    $before = Get-F3FileId $p
+    $r = Invoke-F2 { Convert-ProbedContent -LiteralPath $p -Encoding utf8BOM }
+    '{0} // {1} // same={2}' -f $r, (Format-FileBytes $p), ($before -eq (Get-F3FileId $p))
+}.GetNewClosure()
+Add-Scenario 'Finish/DirectWrite/Convert/destination' {
+    $p = Join-Path $f3Dir 'convert2.txt'
+    $d = Join-Path $f3ConvertDest 'convert2.txt'
+    [IO.File]::WriteAllBytes($p, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+    [IO.File]::WriteAllBytes($d, [byte[]](0x70, 0x0D, 0x0A))
+    $before = Get-F3FileId $d
+    $r = Invoke-F2 { Convert-ProbedContent -LiteralPath $p -Destination $f3ConvertDest -Encoding utf8BOM -Force }
+    '{0} // {1} // same={2}' -f $r, (Format-FileBytes $d), ($before -eq (Get-F3FileId $d))
+}.GetNewClosure()
+
+# 表現できない文字で失敗したら、元のファイルはバイト単位で元どおり（まだ無かったファイルは残らない）。-ErrorAction Stop も
+$f3Original = [byte[]](0..255)
+foreach ($f3Fail in @(
+    @('Set', { param($p) Set-ProbedContent -LiteralPath $p -Value 'a', "$([char]0xD55C)" -Encoding shift_jis }),
+    @('Set-Stop', { param($p) 'a', "$([char]0xD55C)" | Set-ProbedContent -LiteralPath $p -Encoding shift_jis -ErrorAction Stop }),
+    @('Out', { param($p) 'a', "$([char]0xD55C)" | Out-ProbedFile -LiteralPath $p -Encoding shift_jis }),
+    @('Export', { param($p) [pscustomobject]@{ A = 'a' }, [pscustomobject]@{ A = "$([char]0xD55C)" } | Export-ProbedCsv -LiteralPath $p -Encoding shift_jis }))) {
+    foreach ($newFile in @($false, $true)) {
+        $f3Index++
+        $fn = $f3Fail[0]
+        $fb = $f3Fail[1]
+        $nf = $newFile
+        $p = Join-Path $f3Dir ("fail{0}.txt" -f $f3Index)
+        Add-Scenario "Finish/DirectWrite/Unrepresentable/$fn/new=$nf" {
+            if (-not $nf) { [IO.File]::WriteAllBytes($p, $f3Original) }
+            '{0} // {1}' -f (Invoke-F2 { & $fb $p }), (Format-F3File $p)
+        }.GetNewClosure()
+    }
+}
+
+# 直接書いている途中の IOException（ほかのハンドルが、元のファイルの末尾より先の範囲をロックしている）は WriteFailed で、元どおり
+foreach ($writerName in $f3Writers.Keys) {
+    $f3Index++
+    $wb = $f3Writers[$writerName]
+    $p = Join-Path $f3Dir ("lock{0}.txt" -f $f3Index)
+    Add-Scenario "Finish/DirectWrite/LockedRange/$writerName" {
+        [IO.File]::WriteAllBytes($p, [byte[]](0x6F, 0x6C, 0x64, 0x0D, 0x0A))
+        $locker = New-Object IO.FileStream($p, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+        try {
+            $locker.Lock(50, 10)
+            $r = Invoke-F2 { & $wb $p ('n' * 100) }
+            $locker.Unlock(50, 10)
+        }
+        finally { $locker.Dispose() }
+        '{0} // {1}' -f $r, (Format-FileBytes $p)
+    }.GetNewClosure()
+}
+
+# ほかのハンドルが開いているとき: 直接書く方法は相手が書き込みの共有を、置き換えは削除の共有を許していないと、完了の時点で失敗する
+foreach ($f3Share in @('Read', 'ReadWrite', 'Read, Delete')) {
+    foreach ($large in @($false, $true)) {
+        $f3Index++
+        $share = [IO.FileShare]$f3Share
+        $lg = $large
+        $p = Join-Path $f3Dir ("busy{0}.txt" -f $f3Index)
+        Add-Scenario "Finish/DirectWrite/OpenedByAnother/$f3Share/large=$lg" {
+            [IO.File]::WriteAllBytes($p, [byte[]]@(0x6F) * $(if ($lg) { $f3Threshold + 1 } else { 5 }))
+            $other = New-Object IO.FileStream($p, [IO.FileMode]::Open, [IO.FileAccess]::Read, $share)
+            try { $r = Invoke-F2 { Set-ProbedContent -LiteralPath $p -Value new -Encoding utf8NoBOM -LineBreak CrLf } }
+            finally { $other.Dispose() }
+            '{0} // {1}' -f $r, (Format-F3File $p)
+        }.GetNewClosure()
+    }
+}
+
+# 1 回の Set-ProbedContent で複数のファイルに書く（パイプラインの各要素を、すべてのファイルに書く）
+Add-Scenario 'Finish/DirectWrite/MultipleFiles' {
+    $files = 1..5 | ForEach-Object { Join-Path $f3Dir ("multi{0}.txt" -f $_) }
+    foreach ($f in $files[0..2]) { [IO.File]::WriteAllBytes($f, [byte[]](0x6F, 0x0D, 0x0A)) }
+    $r = Invoke-F2 { 'a', 'b' | Set-ProbedContent -LiteralPath $files -Encoding utf8NoBOM -LineBreak CrLf }
+    '{0} // {1}' -f $r, (($files | ForEach-Object { Format-FileBytes $_ }) -join ' / ')
+}.GetNewClosure()
+
+# ---------------------------------------------------------------------------
+# 1.3.0 第六次 A（実装記録 11 章）
+# ---------------------------------------------------------------------------
+$f6Dir = Join-Path $script:WorkRoot 'sixth'
+[void](New-Item -ItemType Directory -Path $f6Dir)
+$f6Index = 0
+
+# BUG-0037: UTF-7 の Encoding のインスタンスを、書き込みのすべてのコマンドが名前の utf7 と同じ ID で拒否する。ファイルは変わらない
+$f6Utf7Writers = [ordered]@{
+    'Set'     = { param($p, $e) Set-ProbedContent -LiteralPath $p -Value x -Encoding $e }
+    'Add'     = { param($p, $e) Add-ProbedContent -LiteralPath $p -Value x -Encoding $e }
+    'Out'     = { param($p, $e) 'x' | Out-ProbedFile -LiteralPath $p -Encoding $e }
+    'Export'  = { param($p, $e) [pscustomobject]@{ A = 'x' } | Export-ProbedCsv -LiteralPath $p -Encoding $e }
+    'Convert' = { param($p, $e) Convert-ProbedContent -LiteralPath $p -SourceEncoding utf8NoBOM -Encoding $e }
+}
+foreach ($f6Name in $f6Utf7Writers.Keys) {
+    foreach ($f6Kind in @('name', 'instance')) {
+        $f6Index++
+        $wb = $f6Utf7Writers[$f6Name]
+        $kind = $f6Kind
+        $p = Join-Path $f6Dir ("utf7_{0}.txt" -f $f6Index)
+        Add-Scenario "Sixth/Utf7/$f6Name/$kind" {
+            [IO.File]::WriteAllBytes($p, [byte[]](0x41, 0x0D, 0x0A))
+            $e = if ($kind -eq 'name') { 'utf7' } else { New-Object System.Text.UTF7Encoding }
+            '{0} // {1}' -f (Invoke-F2 { & $wb $p $e }), (Format-FileBytes $p)
+        }.GetNewClosure()
+    }
+}
+
+# BUG-0033: -Value の配列の $null の要素は飛ばす（標準の Set-Content / Add-Content と同じ）。パイプラインで渡した場合と同じになる
+foreach ($f6Cmd in @('Set-ProbedContent', 'Add-ProbedContent')) {
+    foreach ($f6Shape in @('a,null,b', 'null,null', 'null')) {
+        foreach ($f6Nn in @($false, $true)) {
+            foreach ($f6Via in @('Value', 'Pipeline')) {
+                $f6Index++
+                $cmd = $f6Cmd; $nn = $f6Nn; $via = $f6Via
+                $arr = switch ($f6Shape) { 'a,null,b' { @('a', $null, 'b') } 'null,null' { @($null, $null) } default { @($null) } }
+                $p = Join-Path $f6Dir ("null_{0}.txt" -f $f6Index)
+                Add-Scenario "Sixth/NullElement/$cmd/$f6Shape/NoNewline=$nn/$via" {
+                    [IO.File]::WriteAllBytes($p, [byte[]](0x4F, 0x4C, 0x44, 0x0D, 0x0A))
+                    $x = @{ LiteralPath = $p; Encoding = 'utf8NoBOM'; LineBreak = 'CrLf' }
+                    if ($nn) { $x.NoNewline = $true; $x.Remove('LineBreak') }
+                    if ($via -eq 'Value') { $r = Invoke-F2 { & $cmd -Value $arr @x } } else { $r = Invoke-F2 { $arr | & $cmd @x } }
+                    '{0} // {1}' -f $r, (Format-FileBytes $p)
+                }.GetNewClosure()
+            }
+        }
+    }
+}
+
+# BUG-0032: ansi / oem と Locale のコードページは、スレッドのカルチャーではなくシステムのロケールの値。
+# ホストによらず同じ値になることを、標準の 7.x の ansi / 5.1 の Default と一致するかで記録する（値そのものはホストの設定による）
+foreach ($f6Culture in @('ja-JP', 'de-DE', 'en-US', 'ru-RU', 'ko-KR', '')) {
+    $cu = $f6Culture
+    Add-Scenario "Sixth/SystemCodePage/culture=$cu" {
+        $old = [Threading.Thread]::CurrentThread.CurrentCulture
+        try {
+            [Threading.Thread]::CurrentThread.CurrentCulture = [Globalization.CultureInfo]::GetCultureInfo($cu)
+            $ansi = (ConvertTo-DotNetEncoding ansi).CodePage
+            $oem = (ConvertTo-DotNetEncoding oem).CodePage
+            $loc = (Get-EncodingProbePlatformInfo).Locale
+            $system = if ($PSVersionTable.PSEdition -eq 'Core') { [Text.Encoding]::GetEncoding([Globalization.CultureInfo]::InstalledUICulture.TextInfo.ANSICodePage).CodePage } else { [Text.Encoding]::Default.CodePage }
+            'ansi=locale:{0} oem=locale:{1} sameAsInstalled:{2}' -f ($ansi -eq $loc.AnsiCodePage), ($oem -eq $loc.OemCodePage), ($ansi -eq $system)
+        }
+        finally { [Threading.Thread]::CurrentThread.CurrentCulture = $old }
+    }.GetNewClosure()
+}
+foreach ($f6Zero in @('0', 0)) {
+    $z = $f6Zero
+    Add-Scenario "Sixth/CodePageZero/$($z.GetType().Name)" { Invoke-F2 { ConvertTo-DotNetEncoding $z } }.GetNewClosure()
+}
+
+# BUG-0021: BOM が 2 個続くファイルは、-Encoding の指定によらず先頭の 1 個だけを取り除く（2 個目の U+FEFF は文字として残る）
+$f6DoubleBom = [ordered]@{
+    'utf8'  = @{ Bytes = [byte[]](0xEF, 0xBB, 0xBF, 0xEF, 0xBB, 0xBF, 0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A); Names = @('Auto', 'utf8BOM', 'utf8NoBOM', 'utf-8') }
+    'utf16' = @{ Bytes = [byte[]](0xFF, 0xFE, 0xFF, 0xFE, 0x41, 0, 0x2C, 0, 0x42, 0, 0x0D, 0, 0x0A, 0, 0x31, 0, 0x2C, 0, 0x32, 0, 0x0D, 0, 0x0A, 0); Names = @('Auto', 'unicodeBOM', 'unicodeNoBOM', 'unicode', 'utf-16') }
+}
+foreach ($f6Family in $f6DoubleBom.Keys) {
+    foreach ($f6Name in $f6DoubleBom[$f6Family].Names) {
+        $f6Index++
+        $bytes = $f6DoubleBom[$f6Family].Bytes; $en = $f6Name
+        $p = Join-Path $f6Dir ("dbom_{0}.csv" -f $f6Index)
+        Add-Scenario "Sixth/DoubleBom/$f6Family/$en" {
+            [IO.File]::WriteAllBytes($p, $bytes)
+            $first = (Get-ProbedContent -LiteralPath $p -Encoding $en)[0]
+            $col = (Import-ProbedCsv -LiteralPath $p -Encoding $en).PSObject.Properties.Name[0]
+            $colHead = (Import-ProbedCsv -LiteralPath $p -Encoding $en -DetectionLineCount 1).PSObject.Properties.Name[0]
+            $raw = Get-ProbedContent -LiteralPath $p -Encoding $en -Raw
+            $q = $p + '.out'
+            Set-ProbedContent -LiteralPath $q -Value $raw -NoNewline -EncodingFrom $p
+            'line={0} col={1} head={2} roundtrip={3}' -f ([int][char]$first[0]), ([int][char]$col[0]), ([int][char]$colHead[0]), ((Format-FileBytes $q) -eq (Format-FileBytes $p))
+        }.GetNewClosure()
+    }
+}
+$f6Index++
+$p = Join-Path $f6Dir ("dbom_{0}.csv" -f $f6Index)
+Add-Scenario 'Sixth/DoubleBom/ExportAppend' {
+    [IO.File]::WriteAllBytes($p, [byte[]](0xEF, 0xBB, 0xBF, 0xEF, 0xBB, 0xBF, 0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A))
+    $r = Invoke-F2 { [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append }
+    '{0} // {1}' -f $r, (Format-FileBytes $p)
+}.GetNewClosure()
+
+# BUG-0042: 途中で切れたファイルの末尾は、5.1 でも 7.x と同じく置換フォールバックの文字として読む（以前の 5.1 は黙って捨てていた）。
+# GB18030 の途中で切れた 4 バイトの列は、.NET Framework と .NET の復号器の違いで両ホストの結果が違う（直さない。実装記録 11 章）ので入れない。
+# Convert-ProbedContent は今のまま（InvalidSourceBytes）
+$f6Truncated = [ordered]@{
+    'utf8-2of3'     = @('utf8NoBOM', [byte[]](0x41, 0x0D, 0x0A, 0xE6, 0x97))
+    'utf8-3of4'     = @('utf8NoBOM', [byte[]](0x41, 0x0D, 0x0A, 0xF0, 0x9F, 0x98))
+    'utf16le-odd'   = @('Auto', [byte[]](0xFF, 0xFE, 0x41, 0, 0x0D, 0, 0x0A, 0, 0x31, 0, 0x32))
+    'utf16be-odd'   = @('bigendianunicodeNoBOM', [byte[]](0, 0x41, 0, 0x0D, 0, 0x0A, 0, 0x31, 0x32))
+    'utf16le-hisur' = @('unicodeNoBOM', [byte[]](0x41, 0, 0x0D, 0, 0x0A, 0, 0x3D, 0xD8))
+    'utf32le-1'     = @('utf32NoBOM', [byte[]](0x41, 0, 0, 0, 0x0A, 0, 0, 0, 0x31))
+    'utf32le-3'     = @('utf32NoBOM', [byte[]](0x41, 0, 0, 0, 0x0A, 0, 0, 0, 0x31, 0, 0))
+    'sjis-lead'     = @('shift_jis', [byte[]](0x41, 0x0D, 0x0A, 0x93, 0xFA, 0x93))
+    'eucjp-lead'    = @('euc-jp', [byte[]](0x41, 0x0D, 0x0A, 0xC6))
+    'cp949-lead'    = @('ks_c_5601-1987', [byte[]](0x41, 0x0D, 0x0A, 0xC7))
+    'big5-lead'     = @('big5', [byte[]](0x41, 0x0D, 0x0A, 0xA4))
+    'jis-half'      = @('iso-2022-jp', [byte[]](0x41, 0x0D, 0x0A, 0x1B, 0x24, 0x42, 0x46))
+    'jis-esc'       = @('iso-2022-jp', [byte[]](0x41, 0x0D, 0x0A, 0x1B, 0x24))
+    'kr-so-half'    = @('iso-2022-kr', [byte[]](0x1B, 0x24, 0x29, 0x43, 0x41, 0x0D, 0x0A, 0x0E, 0x30))
+}
+foreach ($f6Name in $f6Truncated.Keys) {
+    $f6Index++
+    $en = $f6Truncated[$f6Name][0]; $bytes = $f6Truncated[$f6Name][1]
+    $p = Join-Path $f6Dir ("trunc_{0}.txt" -f $f6Index)
+    Add-Scenario "Sixth/Truncated/$f6Name" {
+        [IO.File]::WriteAllBytes($p, $bytes)
+        $cp = { param($t) (($t.ToCharArray()) | ForEach-Object { '{0:X4}' -f [int]$_ }) -join ' ' }
+        $lines = (Get-ProbedContent -LiteralPath $p -Encoding $en | ForEach-Object { & $cp $_ }) -join ' | '
+        $raw = & $cp (Get-ProbedContent -LiteralPath $p -Encoding $en -Raw)
+        $csv = (Import-ProbedCsv -LiteralPath $p -Encoding $en -Header H | ForEach-Object { & $cp $_.H }) -join ' | '
+        $q = $p + '.c'; Copy-Item -LiteralPath $p -Destination $q
+        $conv = Invoke-F2 { Convert-ProbedContent -LiteralPath $q -SourceEncoding $en -Encoding utf8NoBOM }
+        'lines={0} raw={1} csv={2} convert={3} // {4}' -f $lines, $raw, $csv, $conv, (Format-FileBytes $q)
+    }.GetNewClosure()
+}
+
+# BUG-0018: ISO-2022 の追記先が ASCII 以外の状態のまま終わっていれば、追記の前に戻すシーケンスを書く（戻す → 補う改行 → 内容）。
+# エラーで止まったら戻すシーケンスも残さない。-AllowEncodingChange で別の文字エンコーディングを足すときは書かない
+$f6JisTail = [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x1B, 0x24, 0x42, 0x46, 0x7C)
+$f6Iso = [ordered]@{
+    'Add'            = @($f6JisTail, { param($p) Add-ProbedContent -LiteralPath $p -Value 'xy' })
+    'Out'            = @($f6JisTail, { param($p) 'xy' | Out-ProbedFile -LiteralPath $p -Append })
+    'Export'         = @($f6JisTail, { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append })
+    'Add/CrLf'       = @([byte[]]($f6JisTail + [byte[]](0x0D, 0x0A)), { param($p) Add-ProbedContent -LiteralPath $p -Value 'xy' })
+    'Export/CrLf'    = @([byte[]]($f6JisTail + [byte[]](0x0D, 0x0A)), { param($p) [pscustomobject]@{ A = 'x'; B = 'y' } | Export-ProbedCsv -LiteralPath $p -Append })
+    'Add/Japanese'   = @($f6JisTail, { param($p) Add-ProbedContent -LiteralPath $p -Value ('x' + [char]0x672C) })
+    'Add/50222-SO'   = @([byte[]](0x41, 0x0D, 0x0A, 0x1B, 0x29, 0x49, 0x0E, 0x31), { param($p) Add-ProbedContent -LiteralPath $p -Value 'xy' -Encoding 50222 })
+    'Add/KR-SO'      = @([byte[]](0x1B, 0x24, 0x29, 0x43, 0x41, 0x0D, 0x0A, 0x0E, 0x30, 0x21), { param($p) Add-ProbedContent -LiteralPath $p -Value 'xy' -Encoding iso-2022-kr })
+    'Add/Rollback'   = @($f6JisTail, { param($p) Add-ProbedContent -LiteralPath $p -Value 'ok', ([string][char]0xD55C) })
+    'Export/Rollback'= @($f6JisTail, { param($p) 'ok', ([string][char]0xD55C) | ForEach-Object { [pscustomobject]@{ A = $_; B = 'y' } } | Export-ProbedCsv -LiteralPath $p -Append })
+    'Add/Empty'      = @($f6JisTail, { param($p) Add-ProbedContent -LiteralPath $p -Value @() })
+    'Add/AllowChange'= @($f6JisTail, { param($p) Add-ProbedContent -LiteralPath $p -Value 'xy' -Encoding utf8NoBOM -AllowEncodingChange })
+}
+foreach ($f6Name in $f6Iso.Keys) {
+    $f6Index++
+    $bytes = $f6Iso[$f6Name][0]; $wb = $f6Iso[$f6Name][1]
+    $p = Join-Path $f6Dir ("iso_{0}.txt" -f $f6Index)
+    Add-Scenario "Sixth/Iso2022Append/$f6Name" {
+        [IO.File]::WriteAllBytes($p, $bytes)
+        '{0} // {1}' -f (Invoke-F2 { & $wb $p }), (Format-FileBytes $p)
+    }.GetNewClosure()
+}
+
+# BUG-0020: CSV の列名の比較（Import の重複の検査・-Append の照合と値・-QuoteFields）は、5.1 でも .NET 10 の OrdinalIgnoreCase と同じ。
+foreach ($f6Pair in @(@(0xC4, 0xE4), @(0x1C5, 0x1C6), @(0x1C5, 0x1C4), @(0x3C2, 0x3A3), @(0x10400, 0x10428), @(0xDF, 0x53), @(0x130, 0x69), @(0x212A, 0x6B), @(0xAD, 0x2D))) {
+    $f6Index++
+    $h = [char]::ConvertFromUtf32($f6Pair[0]); $pn = [char]::ConvertFromUtf32($f6Pair[1])
+    $p = Join-Path $f6Dir ("name_{0}.csv" -f $f6Index)
+    $q = Join-Path $f6Dir ("name_{0}q.csv" -f $f6Index)
+    Add-Scenario ("Sixth/CsvName/{0:X4}-{1:X4}" -f $f6Pair[0], $f6Pair[1]) {
+        $utf8 = New-Object System.Text.UTF8Encoding($false)
+        [IO.File]::WriteAllText($p, "$h,$pn`r`n1,2`r`n", $utf8)
+        $import = Invoke-F2 { @(Import-ProbedCsv -LiteralPath $p).Count }
+        [IO.File]::WriteAllText($p, "$h,Z`r`n1,2`r`n", $utf8)
+        $o = New-Object psobject; $o | Add-Member NoteProperty $pn 'x'; $o | Add-Member NoteProperty 'Z' 'y'
+        $append = Invoke-F2 { $o | Export-ProbedCsv -LiteralPath $p -Append }
+        $quote = Invoke-F2 { $o | Export-ProbedCsv -LiteralPath $q -QuoteFields $h }
+        'import={0} append={1} // {2} quote={3} // {4}' -f $import, $append, (Format-FileBytes $p), $quote, (Format-FileBytes $q)
+    }.GetNewClosure()
+}
+
+# 全符号位置: 列名の比較器が表の同値類どおりに比べること（7.x は実行環境の OrdinalIgnoreCase、5.1 は表）。
+# ホストの .NET の大文字・小文字の組でも、比較器の結果が表と一致すること。結果は不一致の数だけを記録する（組の数はホストで違う）
+Add-Type -TypeDefinition @'
+using System; using System.Collections.Generic;
+public static class ProbedCompatCsvNameProbe {
+    static string S(int cp) { return (cp >= 0xD800 && cp <= 0xDFFF) ? ((char)cp).ToString() : char.ConvertFromUtf32(cp); }
+    public static string Run(IEqualityComparer<string> comparer, int[] pairs) {
+        var rep = new Dictionary<int, int>();
+        for (int i = 0; i < pairs.Length; i += 2) { rep[pairs[i]] = pairs[i + 1]; }
+        Func<int, int> r = c => rep.ContainsKey(c) ? rep[c] : c;
+        int byTable = 0, byHostCase = 0, hostOnly = 0;
+        for (int c = 0; c <= 0x10FFFF; c++) {
+            string s = S(c);
+            if (!comparer.Equals(s, S(r(c)))) { byTable++; }
+            foreach (string d in new[] { s.ToUpperInvariant(), s.ToLowerInvariant() }) {
+                if (d == s) { continue; }
+                int dc = (d.Length == 2 && char.IsSurrogatePair(d[0], d[1])) ? char.ConvertToUtf32(d[0], d[1]) : (d.Length == 1 ? d[0] : -1);
+                bool tableEqual = dc >= 0 && r(c) == r(dc);
+                if (comparer.Equals(s, d) != tableEqual) { byHostCase++; }
+                if (string.Equals(s, d, StringComparison.OrdinalIgnoreCase) && !tableEqual) { hostOnly++; }
+            }
+        }
+        return string.Format("comparerVsTable={0} comparerVsTableOnHostCasePairs={1} hostEqualButTableNot={2}", byTable, byHostCase, hostOnly);
+    }
+}
+'@
+Add-Scenario 'Sixth/CsvName/AllCodePoints' {
+    $asm = [SnowStack.EncodingProbe.PowerShell.Cmdlets.ImportProbedCsvCommand].Assembly
+    $comparer = $asm.GetType('SnowStack.EncodingProbe.PowerShell.Internal.CsvNameComparer').GetField('Instance', [Reflection.BindingFlags]'Static,Public').GetValue($null)
+    $pairs = $asm.GetType('SnowStack.EncodingProbe.PowerShell.Internal.CsvNameCaseTable').GetField('Pairs', [Reflection.BindingFlags]'Static,NonPublic').GetValue($null)
+    [ProbedCompatCsvNameProbe]::Run($comparer, $pairs)
+}
+
+# BUG-0031: 短い EUC-JP（CP932 では割り当ての無い 2 バイトを含む）は、ja-JP でも改行によらず EUC-JP（20932）。-DetectionLineCount も同じ
+$f6EucText = [byte[]](0xC6, 0xFC, 0xCB, 0xDC, 0xB8, 0xEC, 0xA4, 0xCE, 0xCA, 0xB8, 0xBD, 0xF1, 0xA4, 0xC7, 0xA4, 0xB9)
+foreach ($f6Lb in @('CRLF', 'LF', 'None')) {
+    $f6Index++
+    $bytes = [byte[]]($f6EucText + $(switch ($f6Lb) { 'CRLF' { [byte[]](0x0D, 0x0A) } 'LF' { [byte[]](0x0A) } default { [byte[]]@() } }))
+    $p = Join-Path $f6Dir ("euc_{0}.txt" -f $f6Index)
+    Add-Scenario "Sixth/ShortEucJp/$f6Lb" {
+        [IO.File]::WriteAllBytes($p, $bytes)
+        $cp = { param($t) (($t.ToCharArray()) | ForEach-Object { '{0:X4}' -f [int]$_ }) -join ' ' }
+        'resolve={0} head={1} text={2}' -f (Resolve-Encoding -Path $p -Culture ja-JP).CodePage, (Resolve-Encoding -Path $p -Culture ja-JP -DetectionLineCount 1).CodePage, (& $cp (Get-ProbedContent -LiteralPath $p -Culture ja-JP -Raw))
+    }.GetNewClosure()
+}
+
+# （第六次 A のシナリオはここより前に足す）
+
+# ---------------------------------------------------------------------------
+# 1.3.0 第六次 B（実装記録 12 章）
+# ---------------------------------------------------------------------------
+$f7Dir = Join-Path $script:WorkRoot 'sixthB'
+[void](New-Item -ItemType Directory -Path $f7Dir)
+$f7Index = 0
+$f7Threshold = 1048576
+function Format-F7Attributes { param([string]$Path) ([IO.File]::GetAttributes($Path) -band ([IO.FileAttributes]'Hidden, System, Archive, ReadOnly')).ToString() }
+
+# BUG-0025: 隠し・システム属性のファイルに -Force なしで書け、代替データストリームを保ち、書いたら Archive 属性が付く。取り消しでは元の属性のまま
+$f7Writers = [ordered]@{
+    'Set'    = { param($p, $r) $r | Set-ProbedContent -LiteralPath $p -Encoding shift_jis }
+    'Out'    = { param($p, $r) $r | Out-ProbedFile -LiteralPath $p -Encoding shift_jis }
+    'Export' = { param($p, $r) $r | ForEach-Object { [pscustomobject]@{ A = $_ } } | Export-ProbedCsv -LiteralPath $p -Encoding shift_jis }
+    'Add'    = { param($p, $r) $r | Add-ProbedContent -LiteralPath $p -Encoding shift_jis }
+}
+foreach ($f7Name in $f7Writers.Keys) {
+    foreach ($f7Large in @($false, $true)) {
+        foreach ($f7Fail in @($false, $true)) {
+            $f7Index++
+            $wb = $f7Writers[$f7Name]; $lg = $f7Large; $fl = $f7Fail
+            $p = Join-Path $f7Dir ("attr_{0}.txt" -f $f7Index)
+            Add-Scenario "SixthB/Archive/$f7Name/large=$lg/fail=$fl" {
+                [IO.File]::WriteAllText($p, ('o' * $(if ($lg) { $f7Threshold + 10 } else { 3 })) + "`r`n")
+                # Zone.Identifier（ZoneId=3）を付けた大きなファイルはウイルス対策の検査の対象になり、検査と重なると 5.1 の標準の -Stream が失敗することがあるので、別の名前のストリームを使う
+                Set-Content -LiteralPath $p -Stream probedmeta -Value 'meta1', 'meta2'
+                [IO.File]::SetAttributes($p, 'Hidden, System')
+                $first = if ($lg) { 'y' * ($f7Threshold + 10) } else { 'y' }
+                $records = if ($fl) { @($first, [string][char]0xD55C) } else { @($first) }
+                $r = Invoke-F2 { & $wb $p $records }
+                $len = (New-Object IO.FileInfo $p).Length
+                $stream = (Get-Content -LiteralPath $p -Stream probedmeta) -join '|'
+                $attr = Format-F7Attributes $p
+                [IO.File]::SetAttributes($p, 'Normal')
+                '{0} // len={1} attr={2} stream={3}' -f $r, $len, $attr, $stream
+            }.GetNewClosure()
+        }
+    }
+}
+
+# BUG-0025: ACL で書き込みを拒否したファイルの WriteAccessDenied は、本モジュールのメッセージ（.NET の例外の文面ではない）
+foreach ($f7Name in $f7Writers.Keys) {
+    $f7Index++
+    $wb = $f7Writers[$f7Name]
+    $p = Join-Path $f7Dir ("acl_{0}.txt" -f $f7Index)
+    Add-Scenario "SixthB/WriteAccessDenied/$f7Name" {
+        [IO.File]::WriteAllText($p, "o`r`n")
+        $user = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+        & icacls.exe $p /deny "${user}:(WD,AD)" | Out-Null
+        try {
+            $message = $null
+            $outcome = try { & $wb $p @('x') 2>&1 | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $message = $_.Exception.Message; 'ERR ' + $_.FullyQualifiedErrorId.Split(',')[0] } } } catch { $message = $_.Exception.Message; 'TERM ' + $_.FullyQualifiedErrorId.Split(',')[0] }
+        }
+        finally { & icacls.exe $p /remove:d $user | Out-Null }
+        '{0} // {1} // {2}' -f ($outcome -join ','), $message, (Format-FileBytes $p)
+    }.GetNewClosure()
+}
+
+# BUG-0026: ほかのプログラムが開いているファイル。判定・変換の読み取りは Get-ProbedContent と同じ共有（ReadWrite）で開き、開けなければ ID の付いた 5 言語のメッセージ
+$f7Readers = [ordered]@{
+    'Resolve'      = { param($p, $d) Get-ChildItem -LiteralPath $d -Filter *.csv | Resolve-Encoding | ForEach-Object { $_.CodePage } }
+    'Get'          = { param($p, $d) @(Get-ProbedContent -LiteralPath $p).Count }
+    'Import'       = { param($p, $d) @(Import-ProbedCsv -LiteralPath $p).Count }
+    'Convert'      = { param($p, $d) Convert-ProbedContent -LiteralPath $p -Destination (Join-Path $d 'out') -Encoding utf8BOM -PassThru | ForEach-Object { $_.Changed } }
+    'EncodingFrom' = { param($p, $d) Set-ProbedContent -LiteralPath (Join-Path $d 'new.txt') -Value x -EncodingFrom $p }
+    'Add'          = { param($p, $d) Add-ProbedContent -LiteralPath $p -Value '9,9' }
+    'OutAppend'    = { param($p, $d) '9,9' | Out-ProbedFile -LiteralPath $p -Append }
+    'ExportAppend' = { param($p, $d) [pscustomobject]@{ A = '9'; B = '9' } | Export-ProbedCsv -LiteralPath $p -Append }
+}
+foreach ($f7Share in @('ReadWrite', 'None')) {
+    foreach ($f7Name in $f7Readers.Keys) {
+        $f7Index++
+        $rb = $f7Readers[$f7Name]; $share = $f7Share
+        $d = Join-Path $f7Dir ("open_{0}" -f $f7Index)
+        Add-Scenario "SixthB/OpenedByAnother/$f7Share/$f7Name" {
+            [void](New-Item -ItemType Directory -Path $d)
+            [void](New-Item -ItemType Directory -Path (Join-Path $d 'out'))
+            foreach ($n in 'a', 'b', 'c') { [IO.File]::WriteAllBytes((Join-Path $d "$n.csv"), [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A)) }
+            $p = Join-Path $d 'b.csv'
+            $other = New-Object IO.FileStream($p, [IO.FileMode]::Open, [IO.FileAccess]::ReadWrite, [IO.FileShare]$share)
+            try {
+                $messages = New-Object System.Collections.Generic.List[string]
+                $outcome = @(try { & $rb $p $d 2>&1 | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $messages.Add($_.Exception.Message); 'ERR ' + $_.FullyQualifiedErrorId.Split(',')[0] } else { [string]$_ } } } catch { $messages.Add($_.Exception.Message); 'TERM ' + $_.FullyQualifiedErrorId.Split(',')[0] })
+            }
+            finally { $other.Dispose() }
+            '{0} // {1} // {2}' -f ($outcome -join ','), ($messages -join ' | '), (Format-FileBytes $p)
+        }.GetNewClosure()
+    }
+}
+
+# BUG-0027: 一時ファイルの名前は元の名前によらない固定長（.~probed<8 桁>.probedtmp）。1 MiB を超える書き込みで、
+# 名前の長いファイル（パス全体は 260 文字未満）も書け、5.1 で一時ファイルのパスだけが上限を超える場合は写してから直接書く方法に切り替える
+$f7Short = Join-Path ([IO.Path]::GetPathRoot($script:WorkRoot)) ('pe27_' + [Guid]::NewGuid().ToString('N').Substring(0, 8))
+[void](New-Item -ItemType Directory -Path $f7Short)
+$f7Deep = $f7Short
+while ($f7Deep.Length -lt 240) { $f7Deep = Join-Path $f7Deep ('d' * [Math]::Min(40, 239 - $f7Deep.Length)) }
+[void](New-Item -ItemType Directory -Path $f7Deep -Force)
+$f7LongCases = [ordered]@{
+    'LongName240' = Join-Path $f7Short (('n' * 236) + '.txt')
+    'DeepFolder'  = Join-Path $f7Deep 'a.txt'
+}
+$f7LongWriters = [ordered]@{
+    'Set'     = { param($p, $v) Set-ProbedContent -LiteralPath $p -Value $v -Encoding utf8NoBOM -NoNewline }
+    'Convert' = { param($p, $v) Convert-ProbedContent -LiteralPath $p -SourceEncoding utf8NoBOM -Encoding utf8BOM }
+}
+foreach ($f7Case in $f7LongCases.Keys) {
+    foreach ($f7Name in $f7LongWriters.Keys) {
+        $p = $f7LongCases[$f7Case]; $wb = $f7LongWriters[$f7Name]
+        Add-Scenario "SixthB/LongPath/$f7Case/$f7Name" {
+            [IO.File]::WriteAllText($p, 'o' * ($f7Threshold + 10))
+            $r = Invoke-F2 { & $wb $p ('y' * ($f7Threshold + 20)) }
+            $leftovers = @(Get-ChildItem -LiteralPath (Split-Path -Parent $p) -Force -Filter '*.probedtmp').Count
+            $len = (New-Object IO.FileInfo $p).Length
+            [IO.File]::Delete($p)
+            '{0} // len={1} tmp={2} pathLength={3} temporaryPathOver259={4}' -f $r, $len, $leftovers, $p.Length, ((Split-Path -Parent $p).Length + 27 -gt 259)
+        }.GetNewClosure()
+    }
+}
+Add-Scenario 'SixthB/LongPath/Cleanup' { Remove-Item -LiteralPath $f7Short -Recurse -Force; Test-Path -LiteralPath $f7Short }.GetNewClosure()
+
+# BUG-0030: 全体の判定の上限を超えるファイル（上限を内部で 5 バイトにして確かめる）。Resolve-Encoding は読む前に止め、非終了エラーで次のファイルへ進む
+$f7LimitProperty = [SnowStack.EncodingProbe.PowerShell.Cmdlets.ImportProbedCsvCommand].Assembly.GetType('SnowStack.EncodingProbe.PowerShell.Internal.EncodingInheritance').GetProperty('MaxDetectableLength', [Reflection.BindingFlags]'Static,NonPublic')
+$f7Index++
+$d = Join-Path $f7Dir ("limit_{0}" -f $f7Index)
+Add-Scenario 'SixthB/TooLarge' {
+    [void](New-Item -ItemType Directory -Path $d)
+    [IO.File]::WriteAllBytes((Join-Path $d 'a.csv'), [byte[]](0x41, 0x2C, 0x42, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A))
+    [IO.File]::WriteAllBytes((Join-Path $d 'b.csv'), [byte[]](0x41, 0x0D, 0x0A))
+    $before = $f7LimitProperty.GetValue($null)
+    $f7LimitProperty.SetValue($null, [long]5)
+    try {
+        $resolve = Invoke-F2 { Get-ChildItem -LiteralPath $d -Filter *.csv | Resolve-Encoding | ForEach-Object { $_.CodePage } }
+        $get = Invoke-F2 { @(Get-ProbedContent -LiteralPath (Join-Path $d 'a.csv')).Count }
+        $convert = Invoke-F2 { Convert-ProbedContent -LiteralPath (Join-Path $d 'a.csv') -SourceEncoding utf8NoBOM -Encoding utf8BOM }
+        $head = Invoke-F2 { (Resolve-Encoding -Path (Join-Path $d 'a.csv') -DetectionLineCount 1).CodePage }
+    }
+    finally { $f7LimitProperty.SetValue($null, $before) }
+    'resolve={0} get={1} convert={2} head={3} // {4}' -f $resolve, $get, $convert, $head, (Format-FileBytes (Join-Path $d 'a.csv'))
+}.GetNewClosure()
+
+# BUG-0035: 利用者の $PSDefaultParameterValues は、内部の Out-String に効かない（Out-File と同じ）。Out-ProbedFile 自身の -Width への既定値は効く
+foreach ($f7Key in @('Out-String:Width', 'Out-String:*', 'Out-ProbedFile:Width', '*:Width')) {
+    $f7Index++
+    $key = $f7Key
+    $p = Join-Path $f7Dir ("width_{0}.txt" -f $f7Index)
+    $q = Join-Path $f7Dir ("width_{0}s.txt" -f $f7Index)
+    Add-Scenario "SixthB/DefaultParameterValues/$key" {
+        $objects = [pscustomobject]@{ Name = ('a' * 20); Value = ('b' * 40); N = 1 }, [pscustomobject]@{ Name = 'c'; Value = 'd'; N = 2 }
+        $global:PSDefaultParameterValues[$key] = 30
+        try {
+            $objects | Out-ProbedFile -LiteralPath $p -Encoding utf8NoBOM -Width 200 -ErrorAction Stop
+            $objects | Out-ProbedFile -LiteralPath $q -Encoding utf8NoBOM -ErrorAction Stop
+        }
+        finally { $global:PSDefaultParameterValues.Remove($key) }
+        $max = ([IO.File]::ReadAllLines($q) | ForEach-Object { $_.TrimEnd().Length } | Measure-Object -Maximum).Maximum
+        'explicitWidthKept={0} maxLineLength={1}' -f (([IO.File]::ReadAllLines($p) | Where-Object { $_ -like 'aaa*' }) -match ' 1$').Count, $max
+    }.GetNewClosure()
+}
+
+# BUG-0028: 書き込み側が先に開いたファイルを、同じパイプラインの読み込み側が後から開く（逆向きの往復）。両方が SamePathRoundTrip、ファイルは元のまま
+$f7Pipelines = [ordered]@{
+    'Get|Out'             = { param($a, $z) Get-ProbedContent -LiteralPath $a, $z | Out-ProbedFile -LiteralPath $z }
+    'Get|Set'             = { param($a, $z) Get-ProbedContent -LiteralPath $a, $z | Set-ProbedContent -LiteralPath $z }
+    'Get|Add'             = { param($a, $z) Get-ProbedContent -LiteralPath $a, $z | Add-ProbedContent -LiteralPath $z }
+    'GetRaw|Set'          = { param($a, $z) Get-ProbedContent -LiteralPath $a, $z -Raw | Set-ProbedContent -LiteralPath $z -NoNewline }
+    'Import|Export'       = { param($a, $z) Import-ProbedCsv -LiteralPath $a, $z | Export-ProbedCsv -LiteralPath $z }
+    'Import|ExportAppend' = { param($a, $z) Import-ProbedCsv -LiteralPath $a, $z | Export-ProbedCsv -LiteralPath $z -Append }
+}
+foreach ($f7Name in $f7Pipelines.Keys) {
+    foreach ($f7Large in @($false, $true)) {
+        foreach ($f7New in @($false, $true)) {
+            $f7Index++
+            $pb = $f7Pipelines[$f7Name]; $lg = $f7Large; $nw = $f7New
+            $d = Join-Path $f7Dir ("rev_{0}" -f $f7Index)
+            Add-Scenario "SixthB/ReverseRoundTrip/$f7Name/large=$lg/new=$nw" {
+                [void](New-Item -ItemType Directory -Path $d)
+                $a = Join-Path $d 'a.csv'; $z = Join-Path $d 'z.csv'
+                [IO.File]::WriteAllText($a, "A`r`n" + ('a' * $(if ($lg) { $f7Threshold + 10 } else { 2 })) + "`r`n")
+                if (-not $nw) { [IO.File]::WriteAllText($z, "A`r`nz1`r`n") }
+                $errors = New-Object System.Collections.Generic.List[string]
+                try { & $pb $a $z 2>&1 | ForEach-Object { if ($_ -is [System.Management.Automation.ErrorRecord]) { $errors.Add('ERR ' + $_.FullyQualifiedErrorId.Split(',')[0]) } } }
+                catch { $errors.Add('TERM ' + $_.FullyQualifiedErrorId.Split(',')[0]) }
+                $tmp = @(Get-ChildItem -LiteralPath $d -Force -Filter '*.probedtmp').Count
+                '{0} // {1} // tmp={2}' -f ($errors -join ','), (Format-FileBytes $z), $tmp
+            }.GetNewClosure()
+        }
+    }
+}
+
+# （第六次 B のシナリオはここより前に足す）
+
+# ---------------------------------------------------------------------------
+# 第六次 C（パラメーター・メッセージ）
+# ---------------------------------------------------------------------------
+$f8Dir = Join-Path $script:WorkRoot 'sixthC'
+[void](New-Item -ItemType Directory -Path $f8Dir)
+$f8Ko = Join-Path $f8Dir 'ko.txt'
+# EUC-KR と CP949 のどちらにも当たる韓国語（「한국어」の EUC-KR）。韓国語のカルチャーなら 949
+[IO.File]::WriteAllBytes($f8Ko, [byte[]](0xC7, 0xD1, 0xB1, 0xB9, 0xBE, 0xEE, 0x0D, 0x0A))
+
+# BUG-0038: -Culture の前後の空白を除く（-Encoding・-Strategy と同じ）。名前の中の空白は今までどおり InvalidCulture
+foreach ($f8Culture in @('ko-KR', ' ko-KR', "ko-KR`t", ' ', ' ko KR ')) {
+    $cu = $f8Culture
+    $label = $cu.Replace(' ', '_').Replace("`t", '\t')
+    Add-Scenario "SixthC/CultureTrim/Resolve/$label" {
+        Invoke-F2 { $i = Resolve-Encoding -Path $f8Ko -Culture $cu; '{0} culture=[{1}]' -f $i.CodePage, $i.Culture }
+    }.GetNewClosure()
+    Add-Scenario "SixthC/CultureTrim/Get/$label" {
+        Invoke-F2 { Get-ProbedContent -LiteralPath $f8Ko -Culture $cu -Strategy ' NativeOnly ' }
+    }.GetNewClosure()
+}
+
+
+# BUG-0039: 逆シリアル化した判定結果などの PSCustomObject は今までどおり受け付けず、型が違うことと渡し方を示すメッセージにする
+$f8U16 = Join-Path $f8Dir 'u16.txt'
+[IO.File]::WriteAllBytes($f8U16, [byte[]](0xFF, 0xFE, 0x61, 0x00, 0x0A, 0x00))
+$f8Shapes = [ordered]@{
+    'Clixml'   = { param($src, $dir) $x = Join-Path $dir 'info.xml'; Resolve-Encoding -Path $src | Export-Clixml -LiteralPath $x; Import-Clixml -LiteralPath $x }
+    'Select'   = { param($src, $dir) Resolve-Encoding -Path $src | Select-Object * }
+    'Json'     = { param($src, $dir) Resolve-Encoding -Path $src | ConvertTo-Json | ConvertFrom-Json }
+    'Unrelated' = { param($src, $dir) [pscustomobject]@{ A = 1 } }
+}
+foreach ($f8Shape in $f8Shapes.Keys) {
+    $sb = $f8Shapes[$f8Shape]
+    foreach ($f8Command in @('ConvertTo', 'Set')) {
+        $cmd = $f8Command
+        Add-Scenario "SixthC/EncodingObject/$f8Shape/$cmd" {
+            $v = & $sb $f8U16 $f8Dir
+            $out = Join-Path $f8Dir 'obj_out.txt'
+            try {
+                if ($cmd -eq 'ConvertTo') { ConvertTo-DotNetEncoding -Encoding $v } else { Set-ProbedContent -LiteralPath $out -Value a -Encoding $v }
+                'NO-ERROR'
+            }
+            catch { '{0} // {1} // exists={2}' -f $_.FullyQualifiedErrorId.Split(',')[0], $_.Exception.InnerException.Message, (Test-Path -LiteralPath $out) }
+        }.GetNewClosure()
+    }
+}
+
+# BUG-0041: -TotalCount の別名 -Head・-First。-1 は今までどおり拒否する
+$f8Lines = Join-Path $f8Dir 'lines.txt'
+[IO.File]::WriteAllBytes($f8Lines, [byte[]](0x61, 0x0D, 0x0A, 0x62, 0x0D, 0x0A, 0x63, 0x0D, 0x0A))
+Add-Scenario 'SixthC/TotalCount/Head' { Invoke-F2 { Get-ProbedContent -LiteralPath $f8Lines -Head 2 } }.GetNewClosure()
+Add-Scenario 'SixthC/TotalCount/First' { Invoke-F2 { Get-ProbedContent -LiteralPath $f8Lines -First 2 } }.GetNewClosure()
+Add-Scenario 'SixthC/TotalCount/Minus1' { Invoke-F2 { Get-ProbedContent -LiteralPath $f8Lines -TotalCount -1 } }.GetNewClosure()
+Add-Scenario 'SixthC/TotalCount/FirstRaw' { Invoke-F2 { Get-ProbedContent -LiteralPath $f8Lines -First 1 -Raw } }.GetNewClosure()
+
+# BUG-0045: メッセージの細部。(a) 列名の重複にパス（ファイルのヘッダーか -Header か）、(b) EncodingChangeOnAppend を統一語彙名で、(d) 行数によらない言い方
+$f8Good = Join-Path $f8Dir 'good.csv'
+$f8Dup = Join-Path $f8Dir 'dup.csv'
+[IO.File]::WriteAllBytes($f8Good, [byte[]](0x58, 0x0D, 0x0A, 0x39, 0x0D, 0x0A))
+[IO.File]::WriteAllBytes($f8Dup, [byte[]](0x41, 0x2C, 0x61, 0x0D, 0x0A, 0x31, 0x2C, 0x32, 0x0D, 0x0A))
+function Format-F8Error { param($e, $dir) '{0} // {1} // {2} // target={3}' -f $e.FullyQualifiedErrorId.Split(',')[0], $e.CategoryInfo.Category, $e.Exception.Message.Replace($dir, '<dir>'), ([string]$e.TargetObject).Replace($dir, '<dir>') }
+Add-Scenario 'SixthC/DuplicateColumn/File' {
+    $errors = @(); $null = Import-ProbedCsv -LiteralPath $f8Good, $f8Dup -ErrorVariable errors -ErrorAction SilentlyContinue
+    @($errors | ForEach-Object { Format-F8Error $_ $f8Dir }) -join ' | '
+}.GetNewClosure()
+Add-Scenario 'SixthC/DuplicateColumn/HeaderParameter' {
+    $errors = @(); $null = Import-ProbedCsv -LiteralPath $f8Good, $f8Dup -Header 'Name', 'NAME' -ErrorVariable errors -ErrorAction SilentlyContinue
+    @($errors | ForEach-Object { Format-F8Error $_ $f8Dir }) -join ' | '
+}.GetNewClosure()
+Add-Scenario 'SixthC/DuplicateColumn/ExportAppend' {
+    $t = Join-Path $f8Dir 'dupappend.csv'; [IO.File]::WriteAllBytes($t, [IO.File]::ReadAllBytes($f8Dup))
+    try { [pscustomobject]@{ A = 1 } | Export-ProbedCsv -LiteralPath $t -Append; 'NO-ERROR' } catch { (Format-F8Error $_ $f8Dir) + ' // ' + (Format-FileBytes $t) }
+}.GetNewClosure()
+$f8Appenders = [ordered]@{
+    'Add'          = { param($p) Add-ProbedContent -LiteralPath $p -Value 'あ' -Encoding utf8NoBOM -ErrorAction Stop }
+    'OutAppend'    = { param($p) 'あ' | Out-ProbedFile -LiteralPath $p -Append -Encoding utf8NoBOM }
+    'ExportAppend' = { param($p) [pscustomobject]@{ A = 'あ' } | Export-ProbedCsv -LiteralPath $p -Append -Encoding utf8NoBOM }
+}
+foreach ($f8Name in $f8Appenders.Keys) {
+    $ap = $f8Appenders[$f8Name]
+    Add-Scenario "SixthC/EncodingChangeOnAppend/$f8Name" {
+        $t = Join-Path $f8Dir "change_$f8Name.csv"
+        [IO.File]::WriteAllBytes($t, [byte[]](0xFF, 0xFE, 0x41, 0x00, 0x0D, 0x00, 0x0A, 0x00))
+        try { & $ap $t; 'NO-ERROR' } catch { (Format-F8Error $_ $f8Dir) + ' // ' + (Format-FileBytes $t) }
+    }.GetNewClosure()
+}
+Add-Scenario 'SixthC/DetectionVerificationFailed/OneLine' {
+    $t = Join-Path $f8Dir 'verify.csv'
+    [IO.File]::WriteAllBytes($t, [byte[]](0x41, 0x0D, 0x0A, 0x31, 0x0D, 0x0A, 0x82, 0xA0, 0x0D, 0x0A))
+    $errors = @(); $null = Import-ProbedCsv -LiteralPath $t -DetectionLineCount 1 -ErrorVariable errors -ErrorAction SilentlyContinue
+    @($errors | ForEach-Object { Format-F8Error $_ $f8Dir }) -join ' | '
+}.GetNewClosure()
+# （第六次 C のシナリオはここより前に足す）
+
+# ---------------------------------------------------------------------------
 # 香港ロケールのメッセージとヘルプ (1.2.0 第三次修正)
 #
 # UI カルチャーごとに、同じホストの子プロセスでモジュールを読み込み直して確かめる。

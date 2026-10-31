@@ -18,36 +18,43 @@ namespace SnowStack.EncodingProbe.PowerShell.Cmdlets;
 public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase, IDisposable
 {
     /// <summary>
-    /// 書き込み先ごとに開いた状態。値が null のものは、エラー・-WhatIf・
-    /// 書き込みの中止により、以後書き込まないと決まったパスである。
+    /// 書き込み先ごとに開いた状態。書き込み先はパスの文字列ではなくファイルの実体で区別する（1.3.0 第五次の後半。BUG-0016）。
     /// </summary>
-    private readonly Dictionary<string, WriteTarget?> _targets =
-        new Dictionary<string, WriteTarget?>(PathComparison.Comparer);
+    private readonly WriteTargetTable _targets = new WriteTargetTable();
 
     /// <summary>-EncodingFrom から得た継承情報。指定されていない場合は null。</summary>
     private EncodingSpec? _inheritedSpec;
+
+    /// <summary>書き込み先のパスをパイプラインから受け取っているかどうか（-Path も -LiteralPath もコマンド行で指定されていない）</summary>
+    private bool _pathsFromPipeline;
 
     private bool _disposed;
 
     /// <summary>
     /// 書き込み先のパス。ワイルドカードを使用できる。
     /// </summary>
+    /// <remarks>
+    /// 別名 FullName は -LiteralPath に移した（1.3.0 第五次の後半。BUG-0003）。
+    /// FileInfo をパイプラインで渡すと FullName がここに束縛されてワイルドカードとして展開され、
+    /// a[1].txt を流すと a1.txt に書いていた。
+    /// </remarks>
     [Parameter(
         ParameterSetName = PathParameterSet,
         Mandatory = true,
         Position = 0,
         ValueFromPipelineByPropertyName = true)]
-    [Alias("FullName", "FilePath")]
+    [Alias("FilePath")]
     public string[] Path { get; set; } = default!;
 
     /// <summary>
     /// 書き込み先のパス。ワイルドカードを展開せず、そのままのパスとして扱う。
+    /// Get-ChildItem の出力は PSPath で、New-Object System.IO.FileInfo の出力は FullName でここに束縛される。
     /// </summary>
     [Parameter(
         ParameterSetName = LiteralPathParameterSet,
         Mandatory = true,
         ValueFromPipelineByPropertyName = true)]
-    [Alias("PSPath")]
+    [Alias("PSPath", "LP", "FullName")]
     public string[] LiteralPath { get; set; } = default!;
 
     /// <summary>
@@ -108,6 +115,16 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     protected virtual bool RequiresExistingEncoding => false;
 
     /// <summary>
+    /// パスをパイプラインから受け取っていて、前のレコードと同じ実体が再び現れたときに、書き直すかどうか。
+    /// </summary>
+    /// <remarks>
+    /// Set-ProbedContent は true（前のレコードで書いた内容を取り消して、新しく書く。標準の Set-Content がレコードごとに切り詰め直すのと同じ結果）。
+    /// Add-ProbedContent は false（レコードごとに追記する。標準の Add-Content と同じ）。
+    /// 1 つのレコードの中で同じ実体が重なった場合は、どちらも 1 回だけ書く。
+    /// </remarks>
+    protected virtual bool RewritesRepeatedPipelinePath => false;
+
+    /// <summary>
     /// 書き込み先を開く
     /// </summary>
     private protected abstract ProbedFileWriter CreateWriter(string file, EncodingSpec spec, bool force);
@@ -119,12 +136,12 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// <param name="file">書き込み先の絶対パス</param>
     /// <param name="spec">使用する文字エンコーディングと BOM 方針</param>
     /// <param name="baseline">
-    /// 書き込みの前にファイルが持っていた文字エンコーディング。
+    /// 書き込みの前にファイルが持っていた文字エンコーディングと BOM の有無（メッセージに統一語彙名で出すため。BUG-0045 (b)）。
     /// 新規作成・空ファイル・検査が不要な場合は null。
     /// </param>
     /// <param name="chunk">1要素分の書き込み内容（改行を含む）</param>
     private protected virtual string? RejectChunk(
-        string file, EncodingSpec spec, Encoding? baseline, string chunk) => null;
+        string file, EncodingSpec spec, EncodingSpec? baseline, string chunk) => null;
 
     /// <summary>
     /// パラメータの組み合わせを検証し、-EncodingFrom の継承情報を求める
@@ -158,33 +175,118 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         {
             this._inheritedSpec = ResolveEncodingFrom(this.EncodingFrom);
         }
+
+        // BeginProcessing の時点で束縛されていなければ、パスはパイプラインから来る（標準の Set-Content と同じ見分け方）
+        this._pathsFromPipeline =
+            !this.MyInvocation.BoundParameters.ContainsKey(nameof(this.Path))
+            && !this.MyInvocation.BoundParameters.ContainsKey(nameof(this.LiteralPath));
     }
 
     /// <summary>
     /// 指定されたファイルへ内容を書き込む
     /// </summary>
+    /// <remarks>
+    /// 同じ実体を指すパス（a.txt と A.TXT、ハードリンク、\\?\ の書き方など）は、1 つの書き込み先として扱う（BUG-0016）。
+    /// 1 つのレコードの中で重なったものは 1 回だけ書く（Add-ProbedContent は標準の 7.x の Add-Content と同じ。
+    /// 5.1 の標準は 1 回書いた後に 2 件目で GetContentWriterIOError を出すが、エラーにはしない）。
+    /// </remarks>
     protected override void ProcessRecord()
     {
         bool literal = this.ParameterSetName == LiteralPathParameterSet;
         string[] inputPaths = literal ? this.LiteralPath : this.Path;
+        var writtenInThisRecord = new List<WriteTargetEntry>();
 
         foreach (string file in ResolveWritablePaths(inputPaths, literal))
         {
-            WriteTarget? target = GetTarget(file);
+            var identity = FileIdentity.Of(file);
+            WriteTargetEntry? entry = this._targets.Find(identity);
 
-            if (target == null)
+            if (entry != null && writtenInThisRecord.Contains(entry))
             {
                 continue;
             }
 
-            WriteValues(target, file);
+            if (entry != null && ReportIfAborted(entry))
+            {
+                // 同じパイプラインの読み込み側が開こうとしたので、元に戻して止めた（BUG-0028）。以後の入力は書かない
+                continue;
+            }
+
+            if (entry != null && entry.Target != null && this._pathsFromPipeline && this.RewritesRepeatedPipelinePath)
+            {
+                // 前のレコードで書いた内容を取り消して、書き直す（Set-ProbedContent）
+                string? kept = RollbackTarget(entry);
+
+                if (kept != null)
+                {
+                    // 写しから書き戻せなかった。書き直さず、写しのパスを知らせる
+                    WriteError(CreateError(
+                        new IOException(ValidationMessages.RestoreFromBackupFailed(file, kept)), "WriteFailed", ErrorCategory.WriteError, file));
+                    continue;
+                }
+
+                this._targets.Remove(entry);
+                entry = null;
+            }
+
+            if (entry == null)
+            {
+                entry = this._targets.Add(identity, file, OpenTarget(file));
+            }
+
+            writtenInThisRecord.Add(entry);
+
+            if (entry.Target == null)
+            {
+                continue;
+            }
+
+            WriteValues(entry);
         }
     }
 
     /// <summary>
-    /// 開いているファイルをすべて閉じる
+    /// 開いているファイルをすべて閉じる（書き込みを完了する）。完了に失敗したファイルは元に戻し、非終了エラーを報告する。
     /// </summary>
-    protected override void EndProcessing() => CloseTargets();
+    protected override void EndProcessing()
+    {
+        foreach (WriteTargetEntry entry in this._targets.Entries)
+        {
+            if (entry.Target == null)
+            {
+                continue;
+            }
+
+            if (ReportIfAborted(entry))
+            {
+                continue;
+            }
+
+            ProbedFileWriter writer = entry.Target!.Writer;
+
+            try
+            {
+                writer.Complete();
+            }
+            catch (UnrepresentableCharacterException exception)
+            {
+                WriteError(RollbackNotice.Attach(CreateError(
+                    exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, entry.Path), entry.Path, writer.KeptBackupPath));
+            }
+            catch (IOException exception)
+            {
+                WriteError(RollbackNotice.Attach(
+                    CreateError(FileErrors.WriteFailed(entry.Path, exception), "WriteFailed", ErrorCategory.WriteError, entry.Path), entry.Path, writer.KeptBackupPath));
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                WriteError(RollbackNotice.Attach(
+                    CreateError(FileErrors.WriteAccessDenied(entry.Path, exception), "WriteAccessDenied", ErrorCategory.PermissionDenied, entry.Path), entry.Path, writer.KeptBackupPath));
+            }
+        }
+
+        CloseTargets();
+    }
 
     /// <summary>
     /// パイプラインが中断された場合もファイルを閉じる
@@ -206,44 +308,25 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     }
 
     /// <summary>
-    /// 書き込み先の状態を取得する。まだ開いていなければ開く。
-    /// 書き込まないと決まっているパスに対しては null を返す。
-    /// </summary>
-    private WriteTarget? GetTarget(string file)
-    {
-        if (this._targets.TryGetValue(file, out WriteTarget? existing))
-        {
-            return existing;
-        }
-
-        WriteTarget? target = OpenTarget(file);
-
-        // 開けなかった場合も記録しておく。パイプラインで要素が流れてくるたびに
-        // 同じエラーを繰り返し報告しないため。
-        this._targets[file] = target;
-
-        return target;
-    }
-
-    /// <summary>
     /// 書き込み先を開く。開かない・開けない場合は非終了エラーを報告して null を返す。
     /// </summary>
+    /// <remarks>
+    /// null を返した場合も、呼び出し側はそれを記録しておく。パイプラインで要素が流れてくるたびに
+    /// 同じエラーを繰り返し報告しないため。
+    /// </remarks>
     private WriteTarget? OpenTarget(string file)
     {
         if (ActiveReadRegistry.IsBeingRead(file))
         {
-            // 同じパイプラインで読み取り中のファイルを書き換えると、残りを読めなくなる
-            WriteError(CreateError(
-                new PSInvalidOperationException(ValidationMessages.SamePathRoundTrip(file)),
-                "SamePathRoundTrip",
-                ErrorCategory.ResourceExists,
-                file));
+            // 同じパイプラインで読み取り中のファイルを書き換えると、残りを読めなくなる。
+            // パスの文字列ではなく実体で比べる（\\?\・UNC・subst・リンクの書き方でもすり抜けない。BUG-0004）
+            ReportSameFileRoundTrip(new SameFileRoundTripException(file), file);
 
             return null;
         }
 
         EncodingSpec spec;
-        Encoding? baseline;
+        EncodingSpec? baseline;
 
         try
         {
@@ -252,7 +335,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
             EncodingSpec? existing = ResolveExistingSpec(file);
 
             spec = ResolveSpec(file, existing);
-            baseline = this.RequiresExistingEncoding ? existing?.Encoding : null;
+            baseline = this.RequiresExistingEncoding && existing?.Encoding != null ? existing : null;
         }
         catch (FileNotFoundException exception)
         {
@@ -264,6 +347,19 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         catch (EncodingDetectionException exception)
         {
             WriteError(CreateError(exception, exception.ErrorId, ErrorCategory.InvalidData, file));
+
+            return null;
+        }
+        catch (IOException exception)
+        {
+            // 書き込み先・追記先を判定のために読めない（1.3.0 第六次 B。BUG-0026。以前は生の IOException の終了エラーだった）
+            WriteError(CreateError(FileErrors.ReadFailed(file, exception), "ReadFailed", ErrorCategory.ReadError, file));
+
+            return null;
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            WriteError(CreateError(FileErrors.ReadAccessDenied(file, exception), "ReadAccessDenied", ErrorCategory.PermissionDenied, file));
 
             return null;
         }
@@ -288,13 +384,23 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
 
             return new WriteTarget(writer, spec, lineBreak, baseline);
         }
+        catch (SameFileRoundTripException exception)
+        {
+            // 追記で、開いたハンドルで比べて初めて分かった場合（何も書いていない）
+            ReportSameFileRoundTrip(exception, file);
+        }
+        catch (LinkTargetNotFoundException exception)
+        {
+            // Set-ProbedContent で、リンク切れのシンボリックリンク（標準の Set-Content と同じく書かない）
+            WriteError(CreateError(exception, LinkTargetNotFoundException.ErrorId, ErrorCategory.ObjectNotFound, file));
+        }
         catch (IOException exception)
         {
-            WriteError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, file));
+            WriteError(CreateError(FileErrors.WriteFailed(file, exception), "WriteFailed", ErrorCategory.WriteError, file));
         }
         catch (UnauthorizedAccessException exception)
         {
-            WriteError(CreateError(exception, "WriteAccessDenied", ErrorCategory.PermissionDenied, file));
+            WriteError(CreateError(FileErrors.WriteAccessDenied(file, exception), "WriteAccessDenied", ErrorCategory.PermissionDenied, file));
         }
 
         return null;
@@ -391,39 +497,72 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         return existing ?? EncodingInheritance.ForEmptySource();
     }
 
+
     /// <summary>
     /// -Value の各要素を書き込む
     /// </summary>
     /// <remarks>
     /// 1レコード分をまとめて検査してから書き込む。途中の要素で拒否された場合に
     /// 手前の要素だけが書き込まれた状態にならないようにするためである。
+    /// <br/>
+    /// 表現できない文字・追記の整合性検査（EncodingChangeOnAppend）・書き込みの失敗のどれでも、そのファイルへの書き込みを取りやめ、
+    /// ファイルを元に戻す（それまでのレコードで書いた内容も取り消す）。ほかのファイルへの書き込みは続ける。
+    /// 「エラーで止まったら、そのファイルには、その呼び出しで書いた分を残さない」（1.3.0 第五次の後半で EncodingChangeOnAppend もそろえた）。
+    /// 表現できない文字は、追記の整合性検査より先に調べる。
     /// </remarks>
-    private void WriteValues(WriteTarget target, string file)
+    private void WriteValues(WriteTargetEntry entry)
     {
+        WriteTarget target = entry.Target!;
+        string file = entry.Path;
+
         if (this.Value == null)
         {
             return;
         }
 
-        var chunks = new List<string>(this.Value.Length);
+        var texts = new List<string>(this.Value.Length);
 
         foreach (object? item in this.Value)
         {
-            string chunk = this.NoNewline.IsPresent
-                ? ToText(item)
-                : ToText(item) + target.LineBreak;
+            if (item == null)
+            {
+                // 配列の $null の要素は飛ばす（標準の Set-Content / Add-Content と同じ。1.3.0 第六次。BUG-0033）。
+                // 以前は改行だけを書いていた。すべて $null なら -Value $null と同じく何も書かない
+                continue;
+            }
 
+            texts.Add(this.NoNewline.IsPresent
+                ? ToText(item)
+                : ToText(item) + target.LineBreak);
+        }
+
+        try
+        {
+            // 要素の境目で分かれたサロゲートペアも 1 文字として調べるため、レコードをまとめて調べる
+            target.Writer.EnsureRepresentable(string.Concat(texts));
+        }
+        catch (UnrepresentableCharacterException exception)
+        {
+            ReportUnrepresentable(exception, entry);
+            return;
+        }
+
+        var chunks = new List<string>(this.Value.Length);
+
+        foreach (string chunk in texts)
+        {
             string? rejection = RejectChunk(file, target.Spec, target.Baseline, chunk);
 
             if (rejection != null)
             {
-                WriteError(CreateError(
+                // -ErrorAction Stop では WriteError が戻らない（後始末が書き込みを完了してしまう）ので、先に元に戻す
+                string? kept = RollbackTarget(entry);
+                WriteError(RollbackNotice.Attach(CreateError(
                     new PSInvalidOperationException(rejection),
                     "EncodingChangeOnAppend",
                     ErrorCategory.InvalidData,
-                    file));
+                    file), file, kept));
 
-                AbandonTarget(file);
                 return;
             }
 
@@ -437,24 +576,77 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
                 target.Writer.Write(chunk);
             }
         }
+        catch (UnrepresentableCharacterException exception)
+        {
+            ReportUnrepresentable(exception, entry);
+        }
         catch (IOException exception)
         {
-            WriteError(CreateError(exception, "WriteFailed", ErrorCategory.WriteError, file));
-            AbandonTarget(file);
+            // 書きかけのファイルを残さない（第五次）。-ErrorAction Stop では WriteError が戻らないので、先に元に戻す
+            string? kept = RollbackTarget(entry);
+            WriteError(RollbackNotice.Attach(CreateError(FileErrors.WriteFailed(file, exception), "WriteFailed", ErrorCategory.WriteError, file), file, kept));
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            // 書く内容が境目を超えて書き方を切り替えたときに、切り替えた先を開けなかった（第五次の仕上げ）
+            string? kept = RollbackTarget(entry);
+            WriteError(RollbackNotice.Attach(CreateError(FileErrors.WriteAccessDenied(file, exception), "WriteAccessDenied", ErrorCategory.PermissionDenied, file), file, kept));
         }
     }
 
     /// <summary>
-    /// 書き込み先を閉じ、以後そのパスへは書き込まないようにする
+    /// 表現できない文字を非終了エラーとして報告し、ファイルを元に戻す（ほかのファイルへの書き込みは続ける）
     /// </summary>
-    private void AbandonTarget(string file)
+    private void ReportUnrepresentable(UnrepresentableCharacterException exception, WriteTargetEntry entry)
     {
-        if (this._targets.TryGetValue(file, out WriteTarget? target))
+        // -ErrorAction Stop では WriteError が戻らない（後始末が書き込みを完了してしまう）ので、先に元に戻す
+        string? kept = RollbackTarget(entry);
+        WriteError(RollbackNotice.Attach(
+            CreateError(exception, UnrepresentableCharacterException.ErrorId, ErrorCategory.InvalidData, entry.Path), entry.Path, kept));
+    }
+
+    /// <summary>
+    /// 書き込み先が読み取り中のファイルと同じ実体だったことを、非終了エラーとして報告する
+    /// </summary>
+    private void ReportSameFileRoundTrip(SameFileRoundTripException exception, string file)
+        => WriteError(CreateError(
+            new PSInvalidOperationException(exception.Message),
+            SameFileRoundTripException.ErrorId,
+            ErrorCategory.ResourceExists,
+            file));
+
+    /// <summary>
+    /// 書き込み先を書き込みの前の状態に戻し、以後そのファイルへは書き込まないようにする（第五次）
+    /// </summary>
+    /// <returns>写しから書き戻せず、一時フォルダーに残した写しのパス（<see cref="ProbedFileWriter.KeptBackupPath"/>）。無ければ null</returns>
+    /// <summary>
+    /// 書き込み先を、同じパイプラインの読み込み側が開こうとしたので元に戻して止めていたら、SamePathRoundTrip（非終了エラー）を 1 回だけ報告して true を返す
+    /// （1.3.0 第六次 B。BUG-0028）。ファイルはすでに元に戻っている。
+    /// </summary>
+    private bool ReportIfAborted(WriteTargetEntry entry)
+    {
+        if (entry.Target == null || !entry.Target.Writer.AbortedByRoundTrip)
         {
-            target?.Dispose();
+            return false;
         }
 
-        this._targets[file] = null;
+        entry.Target = null;
+        WriteError(CreateError(
+            new PSInvalidOperationException(ValidationMessages.SamePathWriteCancelled(entry.Path)),
+            SameFileRoundTripException.ErrorId,
+            ErrorCategory.ResourceExists,
+            entry.Path));
+
+        return true;
+    }
+
+    private static string? RollbackTarget(WriteTargetEntry entry)
+    {
+        ProbedFileWriter? writer = entry.Target?.Writer;
+        writer?.Rollback();
+        entry.Target = null;
+
+        return writer?.KeptBackupPath;
     }
 
     /// <summary>
@@ -472,9 +664,9 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// </summary>
     private void CloseTargets()
     {
-        foreach (WriteTarget? target in this._targets.Values)
+        foreach (WriteTargetEntry entry in this._targets.Entries)
         {
-            target?.Dispose();
+            entry.Target?.Dispose();
         }
 
         this._targets.Clear();
@@ -485,7 +677,7 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
     /// </summary>
     private sealed class WriteTarget : IDisposable
     {
-        public WriteTarget(ProbedFileWriter writer, EncodingSpec spec, string lineBreak, Encoding? baseline)
+        public WriteTarget(ProbedFileWriter writer, EncodingSpec spec, string lineBreak, EncodingSpec? baseline)
         {
             this.Writer = writer;
             this.Spec = spec;
@@ -502,9 +694,112 @@ public abstract class ProbedContentWriterCommandBase : ProbedContentCommandBase,
         /// <summary>改行として出力する文字列</summary>
         public string LineBreak { get; }
 
-        /// <summary>書き込みの前にファイルが持っていた文字エンコーディング</summary>
-        public Encoding? Baseline { get; }
+        /// <summary>書き込みの前にファイルが持っていた文字エンコーディングと BOM の有無</summary>
+        public EncodingSpec? Baseline { get; }
 
         public void Dispose() => this.Writer.Dispose();
+    }
+
+    /// <summary>
+    /// 書き込み先 1 つ分の記録（実体と、最初に現れたときのパス）
+    /// </summary>
+    private sealed class WriteTargetEntry
+    {
+        public WriteTargetEntry(FileIdentity identity, string path, WriteTarget? target)
+        {
+            this.Identity = identity;
+            this.Path = path;
+            this.Target = target;
+        }
+
+        public FileIdentity Identity { get; }
+
+        /// <summary>最初に現れたときのパス（エラーの対象・メッセージに使う）</summary>
+        public string Path { get; }
+
+        /// <summary>
+        /// 開いている書き込み先。null は、エラー・-WhatIf・書き込みの中止により、以後書き込まないと決まったもの。
+        /// </summary>
+        public WriteTarget? Target { get; set; }
+    }
+
+    /// <summary>
+    /// 書き込み先の表。実体の鍵と、親フォルダーと名前の鍵の両方で引く（<see cref="FileIdentity.Matches"/> と同じ規則）。
+    /// </summary>
+    private sealed class WriteTargetTable
+    {
+        private readonly List<WriteTargetEntry> _entries = new List<WriteTargetEntry>();
+        private readonly Dictionary<string, WriteTargetEntry> _byEntity = new Dictionary<string, WriteTargetEntry>(PathComparison.Comparer);
+        private readonly Dictionary<string, WriteTargetEntry> _byLocation = new Dictionary<string, WriteTargetEntry>(PathComparison.Comparer);
+
+        /// <summary>記録した順の書き込み先</summary>
+        public IEnumerable<WriteTargetEntry> Entries => this._entries;
+
+        public WriteTargetEntry? Find(FileIdentity identity)
+        {
+            if (identity.EntityKey != null && this._byEntity.TryGetValue(identity.EntityKey, out WriteTargetEntry? byEntity))
+            {
+                return byEntity;
+            }
+
+            return this._byLocation.TryGetValue(identity.LocationKey, out WriteTargetEntry? byLocation) ? byLocation : null;
+        }
+
+        public WriteTargetEntry Add(FileIdentity identity, string path, WriteTarget? target)
+        {
+            var entry = new WriteTargetEntry(identity, path, target);
+            this._entries.Add(entry);
+            Index(identity, entry);
+
+            if (identity.EntityKey == null && target != null)
+            {
+                // 追記で新しく作ったファイルは、開いた後に実体の鍵を持つ（リンクなど別の書き方で現れても引けるようにする）
+                Index(FileIdentity.Of(path), entry);
+            }
+
+            return entry;
+        }
+
+        public void Remove(WriteTargetEntry entry)
+        {
+            this._entries.Remove(entry);
+            RemoveFrom(this._byEntity, entry);
+            RemoveFrom(this._byLocation, entry);
+        }
+
+        public void Clear()
+        {
+            this._entries.Clear();
+            this._byEntity.Clear();
+            this._byLocation.Clear();
+        }
+
+        private void Index(FileIdentity identity, WriteTargetEntry entry)
+        {
+            if (identity.EntityKey != null)
+            {
+                this._byEntity[identity.EntityKey] = entry;
+            }
+
+            this._byLocation[identity.LocationKey] = entry;
+        }
+
+        private static void RemoveFrom(Dictionary<string, WriteTargetEntry> index, WriteTargetEntry entry)
+        {
+            var keys = new List<string>();
+
+            foreach (KeyValuePair<string, WriteTargetEntry> pair in index)
+            {
+                if (ReferenceEquals(pair.Value, entry))
+                {
+                    keys.Add(pair.Key);
+                }
+            }
+
+            foreach (string key in keys)
+            {
+                index.Remove(key);
+            }
+        }
     }
 }

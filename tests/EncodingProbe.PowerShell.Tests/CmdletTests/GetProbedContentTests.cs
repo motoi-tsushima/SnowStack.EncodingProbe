@@ -129,6 +129,30 @@ public class GetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
     }
 
     /// <summary>
+    /// 英数字だけの BOM 無し UTF-16 / UTF-32 を判定して、U+0000 の混じらない行として読むこと（1.3.0 仕様書 追補 5 章）。
+    /// 追補より前は us-ascii と判定し、各文字の後ろに U+0000 が混じっていた。
+    /// </summary>
+    [Theory]
+    [InlineData(1200)]
+    [InlineData(1201)]
+    [InlineData(12000)]
+    [InlineData(12001)]
+    public void Read_AlphanumericUnicodeWithoutBom_DetectsAndDecodes(int codePage)
+    {
+        Encoding encoding = codePage switch
+        {
+            1200 => new UnicodeEncoding(false, false),
+            1201 => new UnicodeEncoding(true, false),
+            12000 => new UTF32Encoding(false, false),
+            _ => new UTF32Encoding(true, false),
+        };
+
+        using var file = ByteExactFile.Create(encoding.GetBytes("Name,Memo\r\na,b\r\n"));
+
+        Assert.Equal(new[] { "Name,Memo", "a,b" }, ReadLines(file.Path));
+    }
+
+    /// <summary>
     /// -Encoding を明示した場合は判定を行わないこと。
     /// 判定に委ねると Shift-JIS と解釈されうるバイト列を EUC-JP として読ませて確認する。
     /// </summary>
@@ -326,6 +350,29 @@ public class GetProbedContentTests : IClassFixture<ProbedCommandRunspaceFixture>
             });
 
         Assert.Equal(new[] { "a1", "b1" }, result.AsStrings());
+    }
+
+    /// <summary>
+    /// 別名 -Head・-First は -TotalCount と同じ（標準の Get-Content と同じ。1.3.0 第六次 C。BUG-0041）。
+    /// -1 を含む負の値は今までどおり受け付けず、-Raw との同時指定は別名でも拒否する。
+    /// </summary>
+    [Theory]
+    [InlineData("-TotalCount 2", "a|b")]
+    [InlineData("-Head 2", "a|b")]
+    [InlineData("-First 2", "a|b")]
+    [InlineData("-First 0", "")]
+    [InlineData("", "a|b|c")]
+    [InlineData("-TotalCount -1", "ERR ParameterArgumentValidationError")]
+    [InlineData("-Head -1", "ERR ParameterArgumentValidationError")]
+    [InlineData("-First 1 -Raw", "ERR RawAndTotalCountAreExclusive")]
+    public void Read_TotalCountAliases(string arguments, string expected)
+    {
+        using var file = ByteExactFile.Create(Encoding.ASCII.GetBytes("a\r\nb\r\nc\r\n"));
+
+        InvocationResult result = this._fixture.InvokeScriptCapturingErrors(
+            $"try {{ Get-ProbedContent -LiteralPath '{file.Path}' {arguments} -ErrorAction Stop }} catch {{ 'ERR ' + $_.FullyQualifiedErrorId.Split(',')[0] }}");
+
+        Assert.Equal(expected, string.Join("|", result.AsStrings()));
     }
 
     #endregion

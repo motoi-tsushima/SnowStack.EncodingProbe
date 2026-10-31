@@ -1,10 +1,10 @@
 ﻿@{
     RootModule           = 'SnowStack.EncodingProbe.PowerShell.psm1'
-    ModuleVersion        = '1.2.0'
+    ModuleVersion        = '1.3.0'
     GUID                 = 'c807b12c-ca2a-4964-a3fe-b5f8823f78e8'
     Author               = 'motoi.tsushima'
     CompanyName          = 'motoi.tsushima'
-    Copyright            = 'Copyright © 2026 motoi.tsushima'
+    Copyright            = 'Copyright (c) 2026 Motoi Tsushima'
     Description          = 'A PowerShell module for detecting the character encoding of text files. テキストファイルの文字エンコーディングを判定する PowerShell モジュールです。'
 
     PowerShellVersion    = '5.1'
@@ -18,7 +18,9 @@
         'Add-ProbedContent',
         'Out-ProbedFile',
         'Convert-ProbedContent',
-        'ConvertTo-DotNetEncoding'
+        'ConvertTo-DotNetEncoding',
+        'Import-ProbedCsv',
+        'Export-ProbedCsv'
     )
     FunctionsToExport    = @()
     VariablesToExport    = @()
@@ -31,6 +33,77 @@
             LicenseUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe/blob/master/LICENSE.txt'
             ProjectUri   = 'https://github.com/motoi-tsushima/SnowStack.EncodingProbe'
             ReleaseNotes = @'
+1.3.0
+CSV の読み書きコマンドを 2 つ追加し、Resolve-Encoding で先頭の行だけを判定できるようにしました。
+同梱のクラスライブラリも 1.3.0 です（判定処理の不具合を 3 件修正し、カルチャー名の検証と ANSI / OEM コードページを改めました）。
+
+- Import-ProbedCsv : 文字エンコーディングを判定して CSV ファイルを読み込みます。解析は PowerShell 7.x の
+  Import-Csv から移植した処理で行うため、PowerShell 5.1 でも 7.x と同じ結果になります（CR だけの改行の
+  CSV も読め、W3C 拡張ログ形式にも対応します）。ワイルドカードで複数のファイルを読め、
+  Get-ChildItem | Import-ProbedCsv も 5.1 で動きます。
+- Export-ProbedCsv : 文字エンコーディング・BOM・改行を指定して CSV ファイルに書き出します。
+  文字列化は PowerShell 7.x の Export-Csv から移植した処理で行うため、5.1 と 7.x でバイト単位まで同じ
+  ファイルになります（日付・数値の書式は、カルチャーとホストの .NET によって違うことがあります）。-Encoding を省略すると 5.1 でも utf8NoBOM で書きます。-Append では追記先の
+  文字エンコーディングと改行を継承し、最後の行に改行が無ければ補ってから追記します。
+  -UseQuotes / -QuoteFields / -NoHeader は 5.1 でも使えます。
+- -DetectionLineCount : Resolve-Encoding / Import-ProbedCsv / Export-ProbedCsv で、先頭の N 行だけで
+  文字エンコーディングを判定します。Import-ProbedCsv / Export-ProbedCsv では、使う前にファイル全体を
+  厳密に検証し、判定を誤っていれば処理せずに止めます。
+- 不具合の修正（クラスライブラリ）: BOM 無しの UTF-16 / UTF-32 で英数字だけのファイルが us-ascii と
+  判定され、U+0000 が混じって読まれていた問題を直しました。2 バイトとも 0x80 未満になる文字（「上」など）を
+  英数字に混ぜたものは従来どおり us-ascii と判定されます（Import-ProbedCsv / Export-ProbedCsv では
+  -DetectionLineCount を指定すると正しく読めます）。
+- 不具合の修正（クラスライブラリ）: UTF-16 / UTF-32 のファイルの改行コード（LineBreak）を、1 文字分の単位で
+  数えるようにしました。「上」などの文字のバイトを改行と数え、改行が混在していると報告していました。
+- 挙動の変更: 書き込みの 4 コマンド（Set-ProbedContent / Add-ProbedContent / Out-ProbedFile /
+  Export-ProbedCsv）は、書き込み先の文字エンコーディングで表現できない文字を '?' や似た文字に置き換えず、
+  エラー UnrepresentableCharacter にしてファイルを元のままにします。
+- 挙動の変更: 継承した文字エンコーディングが us-ascii の場合は、BOM 無しの UTF-8 とみなして書きます
+  （英数字だけのログや CSV にも日本語を追記できます）。
+- 挙動の変更: 別名 FullName を -Path から -LiteralPath に移しました。Get-ChildItem から渡したファイルの
+  名前に [ ] があっても、そのファイルそのものを読み書きします。Set-ProbedContent / Add-ProbedContent -Path の
+  ワイルドカードがどのファイルにも一致しないときは、エラー ItemNotFound にします。
+- 挙動の変更: 読み取り中のファイルへの書き込み（SamePathRoundTrip）と Convert-ProbedContent -Destination の
+  変換元との比較を、パスの文字列ではなくファイルの実体で行います（\\?\・UNC・subst・リンクの書き方でも検出）。
+  1 回の Set-ProbedContent で同じファイルを 2 回指定しても、1 回書いたのと同じ結果になります。
+- 挙動の変更: 追記の整合性検査（EncodingChangeOnAppend）で止まった場合も、ファイルを追記の前に戻します。
+- 挙動の変更: シンボリックリンクに上書きするとリンクの先の実体を書き換え、リンクを残します。ハードリンクは
+  切りません（Convert-ProbedContent を含む）。リンク切れへの Set-ProbedContent はエラー LinkTargetNotFound です。
+- 挙動の変更（Linux / macOS）: 1 MiB を超える上書きは一時ファイルで置き換えるため、ハードリンクが切れ、ACL と拡張属性が
+  消えます（モードは保ちます）。Linux / macOS の既知の制限（D1〜D7）は README にあります。
+- 挙動の変更: 上書きは同じフォルダーの一時ファイルに書いてから置き換えます。ただし書く内容と元のファイルが
+  どちらも 1 MiB 以内なら、元のファイルの中身をメモリに写してから直接書き、失敗したら書き戻します
+  （小さなファイルを速く書くため。書いている最中にプロセスが強制終了されると、書きかけで残ることがあります）。
+- 挙動の変更: a.txt::$DATA は a.txt として扱い、代替データストリームはエラー AlternateDataStreamNotSupported
+  にします。Resolve-Encoding の -Strategy / -Culture の誤りは、ほかのコマンドと同じ ID のエラーにします。
+  -Culture に受け付ける名前は、名前の形（BCP 47）で決めます（C・root は両ホストで InvalidCulture）。
+- 不具合の修正（クラスライブラリ）: 短い EUC-JP の日本語を、日本語のカルチャーで Shift_JIS と判定していた
+  問題を直しました（Shift_JIS として読めないバイト列は、Shift_JIS を選びません）。
+- 挙動の変更: ansi / oem は、Windows ではシステムのロケールの ANSI / OEM コードページです（5.1 の Default /
+  Oem、7.x の oem と同じ）。標準の 7.x の -Encoding ansi はプロセスの開始時の「形式」のコードページなので、
+  「形式」をシステムのロケールと違う値にしている環境では違います（日本語の Windows で形式が英語（米国）なら、
+  標準は 1252、本モジュールは 932）。Get-EncodingProbePlatformInfo の Locale も同じ値です。-Encoding 0 はエラーです。
+- 挙動の変更: BOM が 2 個続くファイルは、先頭の 1 個だけを取り除きます。5.1 でも、途中で切れたファイルの末尾を
+  7.x と同じく置き換えの文字（U+FFFD など）として読みます。CSV の列名の大文字小文字の比べ方を 5.1 でも 7.x と同じに
+  しました。JIS のまま終わっているファイルに追記するときは、先に ASCII に戻すエスケープシーケンスを書きます。
+  -Value の配列の $null は標準と同じく飛ばします。Convert-ProbedContent は UTF7Encoding のインスタンスでも書きません。
+- 挙動の変更: 同じパイプラインで、書き込み中のファイルを後から読もうとした場合も SamePathRoundTrip にし、
+  書き込みを取り消します（Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt など）。
+- 挙動の変更: ほかのプログラムが書き込み用に開いているファイルも、判定・変換のために読めます。読めない場合や、
+  大きすぎる・メモリが足りない場合は ID の付いたエラーで、Resolve-Encoding は次のファイルに進みます。
+- 挙動の変更: 書き込んだファイルには Archive 属性が付きます。WriteAccessDenied のメッセージを 5 言語にしました。
+  一時ファイルの名前は元の名前によらない .~probed<8 桁>.probedtmp です（名前の長いファイルにも書けます）。
+  Out-ProbedFile は $PSDefaultParameterValues['Out-String:Width'] などの影響を受けません。
+- 挙動の変更: -Culture も前後の空白を無視します。Get-ProbedContent -TotalCount に別名 -Head・-First を付けました。
+  逆シリアル化した判定結果を -Encoding に渡すと、型が違うことと渡し方を示すエラーになります（今までどおり使えません）。
+  列名の重複のエラーにファイルのパスを示し、EncodingChangeOnAppend は統一語彙名（utf8NoBOM など）で示します。
+  ディスクの空き不足などの書き込みの失敗も、エラー コードを示す 5 言語のメッセージです。
+- 注意: $PSDefaultParameterValues['*:Encoding'] = 'utf8' は書き込みのコマンドでは無視されます（警告だけ）。
+  既定値には utf8NoBOM か utf8BOM を使ってください。-UseCulture の区切り文字は、一部のカルチャーで 5.1 と 7.x で違います。
+
+CSV の読み書き処理には、PowerShell（Copyright (c) Microsoft Corporation、MIT License）のコードの
+一部を改変して含めています。詳細は THIRD-PARTY-NOTICES.txt を参照してください。
+
 1.2.0
 コマンドを 2 つ追加し、文字エンコーディング判定を東アジア以外の言語に対応させました。
 

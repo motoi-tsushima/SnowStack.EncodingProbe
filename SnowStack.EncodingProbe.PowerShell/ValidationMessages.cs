@@ -252,5 +252,188 @@ namespace SnowStack.EncodingProbe.PowerShell
         /// </summary>
         public static string SkippedDirectory(string path)
             => MessageCatalog.Format(MessageKey.SkippedDirectory, path);
+
+        /// <summary>
+        /// 先頭 N 行の切り出しが、判定できる大きさを超えた場合のエラーメッセージ
+        /// </summary>
+        public static string DetectionLinesTooLarge(string path, long lineCount)
+            => MessageCatalog.Format(MessageKey.DetectionLinesTooLarge, path, lineCount);
+
+        /// <summary>
+        /// 先頭 N 行で判定した文字エンコーディングで、ファイル全体を復号できなかった場合のエラーメッセージ
+        /// </summary>
+        public static string DetectionVerificationFailed(
+            string path, string encoding, long lineCount, long offset, string bytes)
+            => MessageCatalog.Format(MessageKey.DetectionVerificationFailed, path, encoding, lineCount, offset, bytes);
+
+        /// <summary>
+        /// us-ascii を UTF-8 に読み替えて全体を検証したら、ISO-2022 のエスケープシーケンスがあった場合のエラーメッセージ（第五次）
+        /// </summary>
+        public static string DetectionVerificationIso2022Escape(
+            string path, string encoding, long lineCount, long offset, string bytes)
+            => MessageCatalog.Format(MessageKey.DetectionVerificationIso2022Escape, path, encoding, lineCount, offset, bytes);
+
+        /// <summary>
+        /// 書き込み系のコマンドで、表現できない文字があったため書き込まなかった場合のエラーメッセージ（第五次）
+        /// </summary>
+        public static string UnrepresentableCharacterOnWrite(string path, string encoding, string codePoint, string character)
+            => MessageCatalog.Format(MessageKey.UnrepresentableCharacterOnWrite, path, encoding, codePoint, character);
+
+        /// <summary>
+        /// Export-ProbedCsv -Append -Force で、追記先のヘッダーに空の列名がある場合のエラーメッセージ（第五次）
+        /// </summary>
+        public static string CsvAppendEmptyPropertyName(string path)
+            => MessageCatalog.Format(MessageKey.CsvAppendEmptyPropertyName, path);
+
+        /// <summary>
+        /// Set-ProbedContent / Add-ProbedContent の -Path のワイルドカードが、どのファイルにも一致しなかった場合のエラーメッセージ（第五次の後半）
+        /// </summary>
+        public static string WildcardMatchedNoFileForWrite(string path)
+            => MessageCatalog.Format(MessageKey.WildcardMatchedNoFileForWrite, path);
+
+        /// <summary>
+        /// 代替データストリームが指定された場合のエラーメッセージ（第五次の後半）
+        /// </summary>
+        public static string AlternateDataStreamNotSupported(string path)
+            => MessageCatalog.Format(MessageKey.AlternateDataStreamNotSupported, path);
+
+        /// <summary>
+        /// Set-ProbedContent の書き込み先が、リンク先の存在しないシンボリックリンクだった場合のエラーメッセージ（第五次の後半）
+        /// </summary>
+        public static string LinkTargetNotFound(string path)
+            => MessageCatalog.Format(MessageKey.LinkTargetNotFound, path);
+
+        /// <summary>
+        /// 写してから直接書く方法で失敗し、写しから書き戻せなかった場合に、エラーのメッセージに添える文（第五次の後半）
+        /// </summary>
+        public static string RestoreFromBackupFailed(string path, string backupPath)
+            => MessageCatalog.Format(MessageKey.RestoreFromBackupFailed, path, backupPath);
+
+        /// <summary>
+        /// CSV のヘッダーに同じ列名が複数ある場合のエラーメッセージ
+        /// </summary>
+        public static string CsvHeaderAlreadyPresent(string name)
+            => MessageCatalog.Format(MessageKey.CsvHeaderAlreadyPresent, name);
+
+        /// <summary>
+        /// CSV のヘッダーに空の列名があり、既定の名前で補った場合の警告
+        /// </summary>
+        public static string CsvUnspecifiedHeader()
+            => MessageCatalog.Get(MessageKey.CsvUnspecifiedHeader);
+
+        /// <summary>
+        /// 追記するオブジェクトに、追記先の列に当たるプロパティが無い場合のエラーメッセージ
+        /// </summary>
+        public static string CsvAppendMismatchedPropertyName(string column, string path)
+            => MessageCatalog.Format(MessageKey.CsvAppendMismatchedPropertyName, column, path);
+
+        /// <summary>
+        /// 全体の判定の上限を超えるファイルが指定された場合のエラーメッセージ（-DetectionLineCount を案内する）
+        /// </summary>
+        public static string FileTooLargeToDetectUseLineCount(string path)
+            => MessageCatalog.Format(MessageKey.FileTooLargeToDetectUseLineCount, path);
+
+        /// <summary>
+        /// Import-ProbedCsv の解析の途中で不正なバイト列が見つかった場合のエラーメッセージ
+        /// </summary>
+        /// <param name="offset">バイト位置。求められなかった場合は "?"</param>
+        public static string InvalidBytesDuringImport(string path, string encoding, string offset, string bytes)
+            => MessageCatalog.Format(MessageKey.InvalidBytesDuringImport, path, encoding, offset, bytes);
+
+        /// <summary>
+        /// Export-ProbedCsv で -QuoteFields と -UseQuotes が同時に指定された場合のエラーメッセージ
+        /// </summary>
+        public static string CannotSpecifyQuoteFieldsAndUseQuotes()
+            => MessageCatalog.Get(MessageKey.CannotSpecifyQuoteFieldsAndUseQuotes);
+
+        /// <summary>
+        /// Export-ProbedCsv で -Path と -LiteralPath のちょうど一方が指定されなかった場合のエラーメッセージ
+        /// </summary>
+        public static string CannotSpecifyPathAndLiteralPath()
+            => MessageCatalog.Get(MessageKey.CannotSpecifyPathAndLiteralPath);
+
+        /// <summary>
+        /// 書き込む権限が無い（ファイルの ACL・フォルダーの権限など。読み取り専用属性は FileIsReadOnly）
+        /// </summary>
+        public static string WriteAccessDenied(string path)
+            => MessageCatalog.Format(MessageKey.WriteAccessDenied, path);
+
+        /// <summary>
+        /// ほかのプログラムが共有を許さずに開いているため、読み込めなかった
+        /// </summary>
+        public static string FileInUseForRead(string path)
+            => MessageCatalog.Format(MessageKey.FileInUseForRead, path);
+
+        /// <summary>
+        /// 読み込めなかった（共有違反・権限以外の理由。{1} は HRESULT）
+        /// </summary>
+        public static string FileReadFailed(string path, string code)
+            => MessageCatalog.Format(MessageKey.FileReadFailed, path, code);
+
+        /// <summary>
+        /// 読み込む権限が無い
+        /// </summary>
+        public static string ReadAccessDenied(string path)
+            => MessageCatalog.Format(MessageKey.ReadAccessDenied, path);
+
+        /// <summary>
+        /// ほかのプログラムが共有を許さずに開いているため、書き込めなかった
+        /// </summary>
+        public static string FileInUseForWrite(string path)
+            => MessageCatalog.Format(MessageKey.FileInUseForWrite, path);
+
+        /// <summary>
+        /// ファイル全体を読んで判定するためのメモリが足りなかった
+        /// </summary>
+        public static string NotEnoughMemoryToDetect(string path)
+            => MessageCatalog.Format(MessageKey.NotEnoughMemoryToDetect, path);
+
+        /// <summary>
+        /// Convert-ProbedContent でファイル全体を読んで変換するためのメモリが足りなかった
+        /// </summary>
+        public static string NotEnoughMemoryToConvert(string path)
+            => MessageCatalog.Format(MessageKey.NotEnoughMemoryToConvert, path);
+
+        /// <summary>
+        /// Convert-ProbedContent で変換できる大きさを超えている
+        /// </summary>
+        public static string FileTooLargeToConvert(string path)
+            => MessageCatalog.Format(MessageKey.FileTooLargeToConvert, path);
+
+        /// <summary>
+        /// 読み込もうとしたファイルに、同じパイプラインで書き込み中だった（読み込み側。書き込みは取り消した）
+        /// </summary>
+        public static string SamePathReadWhileWriting(string path)
+            => MessageCatalog.Format(MessageKey.SamePathReadWhileWriting, path);
+
+        /// <summary>
+        /// 書き込み中のファイルを同じパイプラインで読み込もうとしたので、書き込みを取り消した（書き込み側）
+        /// </summary>
+        public static string SamePathWriteCancelled(string path)
+            => MessageCatalog.Format(MessageKey.SamePathWriteCancelled, path);
+
+        /// <summary>
+        /// 文字エンコーディングとして PSCustomObject（逆シリアル化した判定結果など）が渡された（1.3.0 第六次 C。BUG-0039）
+        /// </summary>
+        public static string EncodingObjectNotUsable(string typeName)
+            => MessageCatalog.Format(MessageKey.EncodingObjectNotUsable, typeName);
+
+        /// <summary>
+        /// ファイルのヘッダーで列名が重複している（パスを示す。1.3.0 第六次 C。BUG-0045 (a)）
+        /// </summary>
+        public static string CsvHeaderAlreadyPresentInFile(string path, string name)
+            => MessageCatalog.Format(MessageKey.CsvHeaderAlreadyPresentInFile, path, name);
+
+        /// <summary>
+        /// -Header の値で列名が重複している（読まなかったファイルのパスを示す。1.3.0 第六次 C。BUG-0045 (a)）
+        /// </summary>
+        public static string CsvHeaderAlreadyPresentInParameter(string path, string name)
+            => MessageCatalog.Format(MessageKey.CsvHeaderAlreadyPresentInParameter, path, name);
+
+        /// <summary>
+        /// 共有違反以外の理由（ディスクの空き不足など）で書き込めなかった（エラー コードを示す。1.3.0 第六次 C）
+        /// </summary>
+        public static string FileWriteFailed(string path, string code)
+            => MessageCatalog.Format(MessageKey.FileWriteFailed, path, code);
     }
 }

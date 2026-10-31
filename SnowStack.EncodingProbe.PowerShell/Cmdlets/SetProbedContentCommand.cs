@@ -30,4 +30,7 @@ public sealed class SetProbedContentCommand : ProbedContentWriterCommandBase
     /// </summary>
     private protected override ProbedFileWriter CreateWriter(string file, EncodingSpec spec, bool force)
         => ProbedFileWriter.Create(file, spec, force);
+
+    /// <inheritdoc/>
+    protected override bool RewritesRepeatedPipelinePath => true;
 }

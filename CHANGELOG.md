@@ -3,6 +3,331 @@
 このファイルは SnowStack.EncodingProbe（NuGet パッケージ）と
 SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更をまとめたものです。
 
+## 1.3.0
+
+2026年10月31日にリリースしました（クラスライブラリ・PowerShell モジュールとも）。
+
+PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv` / `Export-ProbedCsv` を追加し、
+`Resolve-Encoding` に `-DetectionLineCount` を追加しました。
+
+クラスライブラリ（NuGet パッケージ `SnowStack.EncodingProbe`）は、判定処理の不具合を 3 件直し、カルチャー名の検証・OS の説明・ANSI / OEM コードページの挙動を改めて、1.3.0 としました（公開 API の変更はありません）。
+モジュール 1.3.0 はクラスライブラリ 1.3.0 を同梱します。
+
+ブログの解説記事:
+
+- [SnowStack.EncodingProbe 1.3.0 解説](https://snow-stack.net/encodingprobe_1_3_0/)
+- [SnowStack.EncodingProbe NuGet Package 解説](https://snow-stack.net/encodingprobe_guide/)
+- [SnowStack.EncodingProbe.PowerShell 解説](https://snow-stack.net/encodingprobe_powershell_guide/)
+
+仕様は `docs/EncodingProbe-1.3.0-仕様書.md` と `docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md`（クラスライブラリの修正）、
+根拠となった標準の CSV コマンドの実測は `docs/EncodingProbe-1.3.0-調査-CSVコマンド挙動の実測.md`、
+`0x00` を含む入力の判定の実測は `docs/EncodingProbe-1.3.0-調査-NUL入りの入力の判定.md`、
+実装の過程で決めたことは `docs/EncodingProbe-1.3.0-実装記録.md` にあります。
+
+### 不具合の修正（クラスライブラリ）
+
+- **BOM 無しの UTF-16 / UTF-32 で英数字だけのテキストが、`us-ascii` と判定されていた問題を直しました**（1.0.0 から存在）。
+  読み込むと各文字の間に `U+0000` が混じっていました。`Resolve-Encoding`・`Get-ProbedContent`・`Import-ProbedCsv` など、判定を使うすべてのコマンドに効きます
+  - `0x00` を含み、すべてのバイトが `0x80` 未満の入力を、**すべての単位**が UTF-16 / UTF-32 の英数字の形（UTF-16LE なら `<00 以外> 00`）に合うときだけ UTF-16 / UTF-32 と判定します。
+    合わなければ、従来どおり `us-ascii` です。`0x00` を含む ASCII のテキスト（末尾の `00`、`00` で埋めた固定長レコードなど）は `us-ascii` のままです
+  - 判定順序と、それ以外の入力に対する結果は変わりません（`0x00` を含まない入力、BOM のある入力、`0x80` 以上のバイトを含む入力、ESC シーケンスのある入力）
+  - 既知の限界: 2 バイトとも `0x80` 未満になる文字（「上」U+4E0A など）や U+0000 を英数字に混ぜた BOM 無しの UTF-16 / UTF-32 は、従来どおり `us-ascii` です
+    （`Import-ProbedCsv` / `Export-ProbedCsv` で `-DetectionLineCount` を指定すれば、正しく読み書きできます）。
+    `41 00` のような数バイトの入力は、形に合えば UTF-16 / UTF-32 と判定します
+- **UTF-16 / UTF-32 と判定したときの改行コード（`LineBreak`）を、その単位（2 バイト / 4 バイト）で数えるようにしました**（1.0.0 から存在）。
+  1 バイトずつ `0A` / `0D` を数えていたため、「上」U+4E0A（UTF-16LE で `0A 4E`）・「《」U+300A・「不」U+4E0D のような文字があると、
+  CR-LF のファイルを `LfAndCrAndCrLf`、LF・CR のファイルを `LfAndCr` と報告していました。BOM の有無によりません
+  - PowerShell モジュールでは、`Resolve-Encoding` の `LineBreak` のほか、改行を継承する書き込み（`-EncodingFrom`、`-Encoding` 省略の追記、
+    `Convert-ProbedContent -EncodingFrom`）が、改行が CR のファイルから LF を継承していました。`Convert-ProbedContent -PassThru` の `SourceLineBreak` は、
+    復号した文字列から求めているので、もともと正しい値でした
+  - 公開の `EncodingDetector.DetectLineBreak()` は、文字エンコーディングを知らずに呼ばれるメソッドなので、従来どおりバイト単位で数えます
+- **短い EUC-JP の日本語を、日本語のカルチャーで Shift_JIS と判定していた問題を直しました**（1.0.0 から存在。BUG-0031）。
+  バイト列だけでは区別できない組み合わせ（EUC-JP と Shift_JIS、EUC-KR と CP949、EUC-TW と CP950）をカルチャーと改行で決める処理で、
+  判定に使った標本を、決めた候補では厳密に（例外フォールバックで）復号できず、もう一方では復号できる場合は、もう一方を選びます。
+  CP932 に割り当ての無い 2 バイト（`FC CB` など）を含む約 40 バイト以下の EUC-JP を、改行が CRLF・改行なしのときに 932 と判定し、読み込みが `・` や私用領域の文字に黙って化けていました
+  - どちらの候補も厳密に復号できない場合と、その TFM で作れない候補（EUC-TW の 51950）は、今までどおりカルチャーと改行で決めます
+  - 既存のテストとテストデータ全件（6 カルチャー × 2 方式、両 TFM）の判定結果は変わりません
+
+### 挙動の変更（クラスライブラリ）
+
+公開 API（型・メソッド・プロパティ、引数と戻り値の型）は変えていません。次の 5 点は、1.2.0 までと結果が変わります。
+
+- **曖昧な組み合わせで、標本を厳密に復号できない候補を選びません**（上の「不具合の修正」の 3 件目。BUG-0031）
+- **`PlatformInformation.Locale` の `AnsiCodePage` / `OemCodePage` を、Windows ではシステムのロケールの値（`GetACP` / `GetOEMCP`）にしました**（BUG-0032）。
+  1.2.0 までは、スレッドのカルチャー（`CultureInfo.CurrentCulture`）の `TextInfo` の値でした。Windows の「地域」の形式をシステムのロケールと違う値にしている環境
+  （日本語の Windows で形式を「英語（米国）」にしているなど）で、1252 / 437 などを返していました。Windows 以外は今までどおり現在のカルチャーの値です。
+  `CurrentCulture` はスレッドのカルチャーの名前のままです
+
+- **UTF-16 / UTF-32 と判定したときの `LineBreak` を、その単位で数えます**（上の「不具合の修正」の 2 件目。BUG-0014）。1.2.0 までと違う `LineBreak` を返すことがあります
+- **カルチャー名（`EncodingDetectorOptions.Culture`）を受け付けるかどうかを、名前の形（BCP 47）で決めるようにしました**（BUG-0007）。
+  1.2.0 までは `CultureInfo` で作れるかどうかで決めていたため、net48（NLS）と net10.0（ICU）のビルドで結果が違いました（`C`・`root` は net10.0 だけが受け付け、`und-u-ca-gregory` は net48 だけが受け付けていた）。
+  **`ArgumentException` になる名前の集合が変わります**（net48 と net10.0 でそろいます）。受け付けない名前は従来どおり `ArgumentException`（.NET の `CultureNotFoundException` を内部例外に持たない）です。規則は `CultureNameSubtags.IsWellFormed` にあります
+  - `C`・`root`・`POSIX`・`c-JP`・`ja-JP-x`・`ja-JP-JP` などは、両方のビルドで受け付けません（`c-JP` などは 1.2.0 まで両方で受け付けていました）
+  - `art-lojban`・`zh-min-nan`・`zh-yue`・`zh-guoyu`・`und-u-ca-gregory`・`cel-gaulish` などは、両方のビルドで受け付けます。受け付けた名前で `CultureInfo` を作ることはありません（判定はカルチャー名のサブタグだけで行います）
+  - **言語の直後の拡張言語（extlang）は、それを言語として扱います**（RFC 5646 のとおり、`zh-yue` = `yue`、`zh-cmn` = `cmn`）。`zh-yue` は広東語（繁体字・香港）として判定します。
+    カルチャー圏の表は増やしていないので、表に無い言語（`cmn`・`min` など）は、ほかの表に無い言語と同じく東アジアの旧マルチバイトの判定を行いません（これまで `zh-cmn` などは `zh` と同じ簡体字でした）
+- `PlatformInformation.Os.Description` の前後の空白を除きました（BUG-0008。.NET Framework の `RuntimeInformation.OSDescription` は末尾に空白が付く）
+
+### 挙動の変更（PowerShell モジュール）
+
+最初の 2 件は 1.2.0 までと結果が変わります。残りは 1.3.0 で追加した機能（`-DetectionLineCount`・`Export-ProbedCsv`）の、リリース前の不具合の修正です。
+
+
+- **書き込みの 4 コマンド（`Set-ProbedContent` / `Add-ProbedContent` / `Out-ProbedFile` / `Export-ProbedCsv`）は、表現できない文字をエラーにします**（BUG-0001・0010・0012）。
+  1.1.0 から、書き込み先の文字エンコーディングで表現できない文字を `?`（`3F`）に、Windows PowerShell 5.1 ではベストフィット（`é` → `e`）にして、黙って書いていました
+  - エラー ID は `UnrepresentableCharacter`（`Convert-ProbedContent` と同じ）で、メッセージに最初の文字の符号位置（`U+XXXX`）と文字エンコーディングの名前を示します
+  - ファイルは書き込みの前の状態に戻します。途中まで書いていた場合も、上書きは同じフォルダーの一時ファイルに書いてから置き換えるので元のファイルは変わらず、追記は元の長さに戻します
+  - 文字エンコーディングを継承した場合・`-Encoding` で明示した場合・`-EncodingFrom` の場合のすべてで同じです。`-Encoding` に `System.Text.Encoding` のインスタンスを渡した場合も、
+    そのフォールバックの設定（置換・例外）は使いません（例外フォールバックのインスタンスでは、生の `EncoderFallbackException` で止まっていました）
+  - `Set-` / `Add-ProbedContent` は非終了エラーで、ほかのファイルへの書き込みは続けます。`Out-ProbedFile` / `Export-ProbedCsv` は終了エラーです
+  - `Add-ProbedContent` の整合性検査（`EncodingChangeOnAppend`）より先に調べます。置き換えて書く逃げ道のスイッチはありません
+- **継承した `us-ascii` は、BOM 無しの UTF-8 とみなします**（BUG-0001）。対象は、書き込み先・追記先からの継承（`-Encoding` 省略・`Auto`）、`-EncodingFrom`、
+  `-Encoding` に `us-ascii` の判定結果（`EncodingInformation`）を渡した場合、追記の整合性検査の相手（追記先の文字エンコーディング）です（`Convert-ProbedContent -EncodingFrom` も含む）
+  - 英数字だけのログや CSV に日本語を追記すると、これまでは `?` になっていましたが、UTF-8 で書きます。英数字だけを書く場合のバイト列は変わりません
+  - `us-ascii` のファイルに `-Encoding utf8NoBOM` / `utf8BOM` を明示して日本語を追記すると、これまでは `EncodingChangeOnAppend` でしたが、許可します（1.1.0 仕様書 6.1 の表を改めました）
+  - `-Encoding ascii` の明示は置き換えません（日本語を書くと `UnrepresentableCharacter`）
+- **`-DetectionLineCount` の切り出しで、BOM の無いファイルの改行の形（1 バイト・UTF-16・UTF-32）の決め方を改めました**（BUG-0002・0013）。
+  先頭 64 KiB を単位に区切って数えた値で決め、改行はその形だけで探します（1.3.0 仕様書 2.4）。
+  `0x00` を含む 64 KiB 以内の 1 バイトのファイルは、行で切らずにファイル全体で判定します
+  - これまでは、`0x00` があれば UTF-16 / UTF-32 の形の最初の改行で決めていたため、`0x00` を含む ASCII の CSV を UTF-16 として読み（レコードが化ける・消える）、
+    `-Append` で UTF-16 の改行を書いてファイルを壊していました。最初の改行より前に U+0D00 / U+0A00 がある BOM 無しの UTF-16 は、逆のバイト順として読んでいました
+  - 型を誤る既知の限界は 1.3.0 仕様書 2.4 の表にあります（U+0D00 / U+0A00 が文字の 1 割以上の UTF-16、先頭 64 KiB に英数字も改行も無い UTF-16、平仮名だけの UTF-16、
+    各行に `00` が 1 つある Shift_JIS などのファイル、U+0000 を含む UTF-16 / UTF-32）
+- **`-DetectionLineCount` で UTF-16 / UTF-32 に読み替えたときの `LineBreak` を、読み替えた後の単位で数えます**（BUG-0014）。
+  1.3.0 仕様書 3.2 の「改行の型は読み替えない」は誤りだったので改めました。英数字と「上」だけの BOM 無しの UTF-16 / UTF-32 の CR のファイルに、LF を追記していました
+- **`-DetectionLineCount` で `us-ascii` を UTF-8 に読み替えたときは、全体の検証で ISO-2022 のエスケープシーケンス（`ESC` の後に `$`・`(`・`)`）も探し、
+  見つかれば `DetectionVerificationFailed` で止めます**（BUG-0009）。先頭 N 行が英数字だけの ISO-2022-JP / KR の CSV を、エスケープシーケンスのまま読み、UTF-8 を追記していました
+- **`Export-ProbedCsv -Append -Force` で追記先のヘッダーに空の列名がある場合は、`CannotAppendCsvWithEmptyPropertyName` で止めます。**
+  標準の `Export-Csv` と同じ点で止まりますが、標準の ID（汎用の `Argument`）と .NET の文言（「"name" の値が無効」）を本モジュールのものに替えました。`-Force` が無い場合は、標準と同じ `CannotAppendCsvWithMismatchedPropertyNames` です
+
+### 挙動の変更（PowerShell モジュール。パス・同じファイル・リンク）
+
+テスト担当のブラックボックステスト（BUG-0003〜0008・0011・0015〜0017、H-17）への対応です。実装記録 10 章に、実測と決定の根拠があります。
+
+- **別名 `FullName` を `-Path` から `-LiteralPath` に移しました**（BUG-0003）。対象は `Get-ProbedContent`・`Import-ProbedCsv`・`Set-ProbedContent`・`Add-ProbedContent`。
+  `Get-ChildItem` / `Get-Item` / `New-Object System.IO.FileInfo` から渡したファイルは、`-LiteralPath` に `PSPath` か `FullName` で束縛され、名前に `[ ]` があってもそのファイルそのものを読み書きします
+  （これまでは `a[1].csv` を流すと `a1.csv` を読み書きし、一致するファイルが無ければ黙って何もしませんでした）。文字列をパイプラインで渡した場合は、これまでどおり `-Path`（ワイルドカード）です
+  - 6 つのコマンドの束縛の形をそろえました。`-LiteralPath` の別名は `PSPath`・`LP`・`FullName`。`Convert-ProbedContent -Path` は文字列をパイプラインから受け取るようになり、`-LiteralPath` は `FullName` でも受け取ります。
+    `Resolve-Encoding -Path` は、もともとワイルドカードを展開しないので変えていません
+- **`Set-ProbedContent` / `Add-ProbedContent -Path` のワイルドカードがどのファイルにも一致しないときは、非終了エラー `ItemNotFound`（ObjectNotFound）にします**（BUG-0015）。
+  ID と分類は、両ホストの標準の `Set-Content` / `Add-Content` の実測と同じです。読み込み（`Get-ProbedContent`・`Import-ProbedCsv`）は、これまでどおりエラーにしません
+- **同じファイルかどうかを、パスの文字列ではなくファイルの実体で比べます**（BUG-0004・0017）。Windows ではボリュームのシリアル番号とファイル ID、Linux / macOS ではリンクを解決したパスで比べます。
+  - `\\?\`・`\\?\UNC\`・UNC の管理共有・`\\.\`・subst・シンボリックリンク・ジャンクション・ハードリンク・`::$DATA` の書き方でも `SamePathRoundTrip` で止まり、読み込み中のファイルを切り詰めません。
+    `Get-ProbedContent | Add-ProbedContent` が終わらずにファイルが増え続けることもなくなりました（**Linux / macOS のハードリンクと、macOS などで大文字・小文字だけが違う名前は除く**。下の「Linux / macOS の既知の制限」の D2・D5）
+  - `Convert-ProbedContent -Destination` に変換元のフォルダーを別の書き方で渡しても、`DestinationIsSource`（N9）にします。`-Force` でも変換元を書き換えません（これまでは `DestinationExists` か、`-Force` で書き換えていました）。N8 も実体で比べます
+    （macOS などで大文字・小文字だけが違う書き方は除く。下の D6）
+- **1 回の呼び出しで同じ実体を 2 回指定したときの扱いを改めました**（BUG-0016）。`Set-ProbedContent` は 1 回書いたのと同じ結果にします（2 回目が追記になっていました。パスをパイプラインから受け取る場合も同じ）。
+  `Add-ProbedContent` は、1 回の指定の中の重複は 1 回だけ追記し（7.x の標準の `Add-Content` と同じ）、パイプラインのレコードをまたぐ場合はレコードごとに追記します（両ホストの標準と同じ）
+- **追記の整合性検査（`EncodingChangeOnAppend`）で止まった場合も、ファイルを元に戻します。** `Add-ProbedContent`・`Out-ProbedFile -Append`・`Export-ProbedCsv -Append` で、
+  それまでに書いた行（前のレコードの分も）を取り消し、追記を始める前の長さに戻します（追記先が無かった場合は、作ったファイルを消します）。
+  これで「エラーで止まったら、そのファイルには、その呼び出しで書いた分を残さない」にそろいました（パイプラインの停止 Ctrl+C では、これまでどおり書いた内容を残します）
+- **上書きのリンク・権限の扱いを改めました**（H-17）。一時ファイルで置き換える方法は残し、次の場合だけ書き方を切り替えます（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent`）
+  - シンボリックリンク・ジャンクションは最後までたどり、実体のフォルダーに一時ファイルを作って実体を置き換えます。リンクはそのまま残ります（これまではリンクがただのファイルに置き換わっていました）
+  - ハードリンク（リンク数が 2 以上）と、フォルダーにファイルを作る権限が無い場合は、元のファイルを一時フォルダーに写してから元のファイルに直接書き、失敗したら写しから書き戻します（ハードリンクが切れていました・書けませんでした）
+  - 書き込み先がリンク切れのシンボリックリンクの場合、`Set-ProbedContent` は書かずに非終了エラー `LinkTargetNotFound`（新しい ID）を報告します（標準の `Set-Content` も書きません）。
+    `Out-ProbedFile`・`Export-ProbedCsv`・追記は、標準の `Out-File`・`Export-Csv`・`Add-Content` と同じく、リンクの先にファイルを作ります
+    （**Linux / macOS では、追記（`Add-ProbedContent`・`-Append`）はエラーになり、リンクの先に作りません**。下の「Linux / macOS の既知の制限」の D3）
+  - 読み取り専用の検査と `-Force` は、リンクではなくリンクの先の実体に対して行います
+  - Linux / macOS では、置き換える前に元のファイルのアクセス権（UnixFileMode）を一時ファイルに写します（所有者・ACL・拡張属性は写せません。ハードリンクは切れます。既知の限界。下の D1・D7）
+  - **1.2.0 からの変更（Linux / macOS）: 1 MiB を超える上書きは、ファイルを置き換えるようになりました。** 1.2.0 の `Set-ProbedContent`・`Out-ProbedFile` は、大きさによらず元のファイルに直接書いていました。
+    1.3.0 では、1 MiB を超える上書き（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`。`Export-ProbedCsv` は 1.3.0 で追加したコマンド）は一時ファイルで置き換えるので、
+    **ハードリンクが切れ（D1）、ACL と拡張属性が消えます（D7）。** モードと macOS の隠しファイルのフラグ（hidden）は保ちます。1 MiB 以内の上書きと追記は、元のファイルに直接書くので、どれも保ちます。
+    その代わり、ハードリンクの別名や大文字・小文字だけが違う名前で、読み込み中のファイルに上書きしても、中身を失わなくなりました
+    （1.2.0 は読み込み中のファイルを切り詰めていました。macOS で 1.2 MB のファイルが 4,098 バイトになりました。実装記録 16 章）
+  - `Convert-ProbedContent` は 1.2.0 より良くなりました。1.2.0 は大きさによらずファイルを置き換えていたので、Linux / macOS では小さなファイルでもハードリンクが切れ、
+    ACL・拡張属性・モード・hidden フラグを失っていました（macOS で確かめました）。1.3.0 は、1 MiB 以内ならすべて保ち、1 MiB を超えてもモードと hidden フラグは保ちます
+  - `Convert-ProbedContent` の一時ファイルの名前は、ほかのコマンドと同じ `.<名前>.<8 桁の 16 進>.probedtmp` になりました（第六次 B で `.~probed<8 桁>.probedtmp` に改めました）（これまでは `.<名前>.<GUID>.tmp`）
+- **書く内容と元のファイルがどちらも 1 MiB 以内なら、一時ファイルを使わず、元のファイルの中身をメモリに写してから直接書きます**（第五次の仕上げ。`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`（`-Append` なし）・`Convert-ProbedContent`）。
+  上の一時ファイルによる置き換え（`File.Replace`）で、小さなファイルへの書き込みが第四次の約 10 倍遅くなっていたためです。失敗したらメモリの写しから書き戻します（まだ無いファイルは直接作り、失敗したら消します）。
+  書く内容が途中で 1 MiB を超えたら、その時点で一時ファイルによる置き換えなどに切り替えます。1 MiB 以内のハードリンクも切らずに直接書きます（写しを作りません）
+  - 書いている最中にプロセスが強制終了されると、1 MiB 以内のファイルが書きかけで残ることがあります（既知の限界）
+  - ほかのプロセスが開いているときに失敗する条件が変わります（置き換えは削除の共有、直接の書き込みは書き込みの共有を相手が許していないと失敗します。どちらも完了の時点）
+  - まだ無いファイルは、開いた時点で（空のファイルとして）作ります。メモリにためる量は、プロセス全体で 64 MiB までです
+- **`a.txt::$DATA`（主ストリームの名前）は `a.txt` として扱います**（BUG-0004）。Windows PowerShell 5.1 では生の `NotSupportedException` で止まり、7.x では同じファイルの検出をすり抜けていました。
+  代替データストリーム（`a.txt:alt` など）は、両ホストでエラー `AlternateDataStreamNotSupported`（新しい ID、InvalidArgument）にします
+- **`Resolve-Encoding` の `-Strategy` / `-Culture` の検証を、ほかのコマンドと同じ部品にしました**（BUG-0006）。解釈できない値は、生の `ArgumentException`（分類 NotSpecified、英語の文言）ではなく、
+  `InvalidStrategy` / `InvalidCulture`（InvalidArgument、5 言語のメッセージ）の終了エラーです
+- **`-Culture` に受け付ける名前を、名前の形（BCP 47）で決めます**（BUG-0007。クラスライブラリと同じ規則）。`-Culture C` / `root` は両ホストで `InvalidCulture` です（7.x では判定に進んでいました）。
+  `-Culture zh-yue` は広東語（香港）として判定します（拡張言語を言語として扱う）
+- `Resolve-Encoding -License` の表示の誤りを直しました（`Copyright c` → `Copyright (c)`。クラスライブラリの `EncodingProbe.License` と `LICENSE.txt` の MIT License の本文に抜けていた `THE USE OR` を、原文どおりに戻しました）。
+  著作権の表記を、すべての箇所（`LICENSE.txt`・`EncodingProbe.License`・`-License`・NuGet パッケージとモジュールのアセンブリの Copyright・`.psd1`）で `Copyright (c) 2026 Motoi Tsushima` にそろえました（年が 2025 と 2026、名前が `Motoi Tsushima` と `motoi.tsushima`、記号が `(c)` と `©` で混在していました）
+- ヘルプ: `-AllowEncodingChange` で `-Encoding` を省略すると判定する（追記先から継承する）ことを書きました（BUG-0011。挙動は変えていません）。
+  `Resolve-Encoding -DetectionLineCount` が `us-ascii` と報告する場合は `LineBreak` も `us-ascii` として数えた値であること、`ConvertTo-DotNetEncoding` の例 2 を `Convert-Path` を使う形にしたこと（BUG-0008）、
+  上書きの書き方・リンク・ほかのプロセスが開いているときに失敗する時点（完了の時点）・同じファイルの判定・代替データストリームを、注意事項に書きました
+
+### 挙動の変更（PowerShell モジュール。第六次 A）
+
+テスト担当のブラックボックステスト（BUG-0018・0020・0021・0031・0032・0033・0037・0042）への対応です。実装記録 11 章に、実測と決定の根拠があります。
+
+- **`ansi` / `oem` を、スレッドのカルチャーではなく、システムのロケールの ANSI / OEM コードページにしました**（BUG-0032。1.1.0 から）。
+  Windows では `GetACP` / `GetOEMCP` で、5.1 の `Default` / `Oem`、7.x の `oem` と同じです。対象はすべての `-Encoding` と `ConvertTo-DotNetEncoding`、`Get-EncodingProbePlatformInfo` の `Locale`
+  - **標準の 7.x の `-Encoding ansi` は、プロセスの開始時の現在のカルチャー（「形式」）の ANSI コードページなので、「形式」をシステムのロケールと違う値にしている環境では本モジュールと違います**
+    （例: 日本語の Windows で形式を英語（米国）にすると、標準は 1252、本モジュールは 932）。リリース前の補足で訂正しました（第六次 A の時点では「標準の 7.x の `ansi` と同じ」と書いていました。実装記録 15 章）
+  - システムの ANSI / OEM が 65001（「ベータ: ワールドワイド言語サポートで Unicode UTF-8 を使用」）の場合は、BOM 無しの UTF-8 として扱います
+  - Linux / macOS では今までどおり、現在のカルチャー（環境変数 `LC_ALL` / `LANG` などから決まる）の値です（README と 1.3.0 仕様書 25.5 に、実測した値を書きました）
+  - **`-Encoding 0` は拒否します**（使えないコードページの `1`・`2`・`3` などと同じエラー）。これまでは `Encoding.GetEncoding(0)`（実行環境の既定）になっていました
+- **BOM が 2 個以上続くファイルを読むとき、取り除く BOM は先頭の 1 個だけにしました**（BUG-0021。1.1.0 から）。2 個目の U+FEFF は文字として残ります（7.x の標準の `Get-Content`・`Import-Csv` と同じ）。
+  BOM 付きの語彙（`utf8BOM`・`unicodeBOM`・裸の `unicode` など）を指定した場合と、追記先から「BOM あり」と判定した場合（`Export-ProbedCsv -Append` のヘッダーの読み取り）に、2 個目の BOM まで取り除いていました。
+  `-Encoding` の指定（`Auto`・BOM 付きの語彙・`NoBOM`・WebName）によらず同じ結果になり、`Get-ProbedContent -Raw` で読んで `Set-ProbedContent -EncodingFrom -NoNewline` で書き戻すと元のバイト列と一致します
+  - BOM が 2 個続く CSV への `Export-ProbedCsv -Append` は、最初の列名を U+FEFF 付きで読むので、7.x の標準の `Export-Csv -Append` と同じく `CannotAppendCsvWithMismatchedPropertyNames` になります（これまでは追記していました）
+- **Windows PowerShell 5.1 でも、途中で切れたファイルの末尾を、7.x と同じく置き換えの文字として読みます**（BUG-0042）。長さが奇数の UTF-16 の末尾の 1 バイト、UTF-32 の 1〜3 バイト、
+  途中で切れた UTF-8 や 2 バイトのコードページの先行バイト、ISO-2022 の途中で切れたエスケープシーケンスなどを、5.1 では黙って捨てていました。
+  置き換えの文字は文字エンコーディングによって違い（U+FFFD・`・`・`?` など）、両ホストで同じです（`Get-ProbedContent`・`-Raw`・`Import-ProbedCsv`・`Export-ProbedCsv -Append` の追記先の読み取り）
+  - 既知の差: GB18030 の途中で切れた 4 バイトの列（`81 30` など）は、.NET Framework と .NET の復号器の違いで、置き換えの文字の数が両ホストで違います（直していません）
+  - `Convert-ProbedContent` は今までどおり、不正なバイト列として変換しません（`InvalidSourceBytes`）
+- **ISO-2022 の追記先が ASCII 以外の状態のまま終わっている場合は、追記の前に ASCII に戻すシーケンスを書きます**（BUG-0018）。対象は `Add-ProbedContent`・`Out-ProbedFile -Append`・`Export-ProbedCsv -Append` で、
+  書く文字エンコーディングが ISO-2022-JP（50220・50221・50222）・ISO-2022-KR（50225）の場合です（追記先から継承した場合と、`-Encoding` で明示した場合）
+  - ISO-2022-JP は、SO の後に SI が無ければ SI、最後の G0 の指示が `ESC ( B` 以外なら `ESC ( B` を書きます。ISO-2022-KR は SI だけです。JIS のまま CRLF で終わっている形（改行は状態を戻さない）も同じです
+  - 書く順序は「戻すシーケンス → 補う改行（`Export-ProbedCsv`）→ 追記する内容」です。これまでは追記した行・レコードが 2 バイト文字として読まれて失われていました
+  - 何も書かない呼び出しでは書きません。エラーで止まったら、戻すシーケンスも残しません
+  - `-AllowEncodingChange` で別の文字エンコーディング（UTF-8 など）を追記する場合は、追記先の状態に手を入れません
+- **CSV の列名の比較を、5.1 でも 7.x（.NET 10）の `OrdinalIgnoreCase` と同じにしました**（BUG-0020）。`ǅ` / `ǆ`、語末のシグマ `ς` / `Σ`、補助面の `𐐀` / `𐐨` などで、5.1 だけが別の列として扱っていました
+  - 対象: `Import-ProbedCsv` の列名（`-Header` を含む）の重複の検査、`Export-ProbedCsv -Append` の列の照合と、照合した列の値の取り出し、`-QuoteFields` の照合
+  - 5.1 では照合が通った列の値を空で書いていました（照合は大文字小文字を区別しない規則で通るのに、値は PSObject の規則で引いていたため）
+- **`Set-ProbedContent` / `Add-ProbedContent` の `-Value` の配列の `$null` の要素を、標準の `Set-Content` / `Add-Content` と同じく飛ばします**（BUG-0033）。
+  これまでは `$null` ごとに改行だけを書いていました。すべて `$null` なら `-Value $null` と同じく何も書きません（`Set-` は空のファイル）。パイプラインで渡した場合は、もともと標準と同じでした
+- **`Convert-ProbedContent` は、UTF-7 の `System.Text.Encoding` のインスタンス（`UTF7Encoding` など、コードページが 65000 のもの）を、名前の `utf7` と同じ `EncodingNotAllowedForWrite` で拒否します**（BUG-0037）。
+  これまでは受け付けて UTF-7 で書いていました。ほかの書き込みのコマンドは、もともとインスタンスも拒否していました（`ParameterArgumentTransformationError`）
+
+### 挙動の変更（PowerShell モジュール。第六次 B）
+
+テスト担当のブラックボックステスト（BUG-0025・0026・0027・0028・0030・0035）と、前回の引き継ぎ（ACL の時点）への対応です。実装記録 12 章、1.3.0 仕様書 26 章に、実測と決定の根拠があります。
+
+- **同じパイプラインで、書き込み側が先に開いたファイルを読み込み側が後から開いた場合（逆向きの往復）も `SamePathRoundTrip` にします**（BUG-0028）。
+  `Get-ProbedContent a.txt, z.txt | Out-ProbedFile z.txt`、`Import-ProbedCsv a.csv, z.csv | Export-ProbedCsv z.csv`、`Get-ChildItem *.txt | Get-ProbedContent | Out-ProbedFile z.txt` などです
+  - 読み込み側（`Get-ProbedContent`・`Import-ProbedCsv`・`Convert-ProbedContent`）は読まずに非終了エラーを出して次へ進み、書き込み側（`Set-`・`Add-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`、`-Append` を含む）は書き込みを元に戻して `SamePathRoundTrip` を出します（Set / Add は非終了、Out / Export は終了エラー）。ファイルは元のままです（まだ無かったファイルは残りません）
+  - **1 MiB 以内の上書きと、1 MiB を超える置き換えもエラーになります。** 第五次（1.3.0 の開発中）までは元のファイルに触れていなかったのでエラーにならず、z.txt は「a.txt の内容 + z.txt の元の内容」になっていました（1.2.0 までは z.txt の元の内容が消えていました）
+  - 1 MiB を超える新しいファイルは、完了まで書き込み先が無いので、読み込み側では「ファイルが無い」ではなく `SamePathRoundTrip` にします
+- **ほかのプログラムが書き込み用に開いているファイル（書き込み中のログなど）も、判定・変換のために読めます**（BUG-0026）。
+  `Resolve-Encoding`・追記先や書き込み先の判定・`-EncodingFrom` の参照ファイル・`Convert-ProbedContent` の変換元を、`Get-ProbedContent` と同じ共有モードで開きます
+  - それでも開けない場合は、ID の付いたエラー（`ReadFailed`・`ReadAccessDenied`。5 言語のメッセージ）です。**`Resolve-Encoding` は非終了エラーにして、残りのファイルを処理します**（これまでは生の `IOException` の終了エラーで、残りのファイルを処理しませんでした）。追記の 3 コマンドも、生の `IOException` の終了エラーではなくなりました
+  - 追記（`Add-ProbedContent`・`-Append`）は、ほかのプログラムが書き込み用に開いている間は、今までどおり書けません（`WriteFailed`。5 言語のメッセージ）。7.x の標準の `Add-Content` は書きます
+- **大きなファイルとメモリ不足を、ID の付いたエラーにしました**（BUG-0030）。`Resolve-Encoding` は読む前に大きさを調べ、上限（2 GB）を超えれば `-DetectionLineCount` を案内する非終了エラーにします。
+  全体を読む判定のメモリ不足は `NotEnoughMemoryToDetect`、`Convert-ProbedContent` は `FileTooLargeToConvert` / `NotEnoughMemoryToConvert` です（Windows PowerShell 5.1 では生の `OutOfMemoryException` / `IOException` でした）
+  - **`Resolve-Encoding` のエラーの種類が混ざります。** ファイルが無い場合と、`-DetectionLineCount` で切り出す範囲が上限を超える場合は、今までどおり終了エラーです
+  - **既知の制限: `Get-ProbedContent -Raw` で文字列を作る段階のメモリ不足は、生の `OutOfMemoryException` の終了エラーのままです**（BUG-0030 の残り。1.4.0 で扱います。実装記録 14 章、1.3.0 仕様書 26.5）。
+    `NotEnoughMemoryToDetect` の対象は全体を読む判定だけで、判定の後にファイル全体を 1 つの文字列にする段階は対象外です。終了エラーなので、`-Path` に複数のファイルを渡した場合、残りのファイルは処理されません。
+    `-Encoding` を明示しても避けられません（判定を飛ばしても、文字列を作る段階のメモリの量は変わりません）
+    - **Windows PowerShell 5.1 の 32 ビット版で、数百 MB のファイルの場合**（600 MB で確かめました）: 64 ビット版を使うか、`-Raw` を使わずに行で読んでください
+    - **復号した後の文字数が約 10.7 億を超える場合**（.NET の文字列の長さの上限。文字数は UTF-16 の単位で、補助面の文字は 2 と数えます。英数字だけのファイルでは約 1 GiB）: 64 ビット版でも、メモリが十分あっても避けられません。`-Raw` を使わずに行で読むか、ファイルを分けてください。標準の `Get-Content -Raw` も 1 つの文字列を作るため、同じ上限があります
+    - 改行の無い巨大な 1 行を行で読む場合、`Import-ProbedCsv` の巨大なフィールド・ヘッダー、`Export-ProbedCsv -Append` の改行の無い巨大な追記先も、同じく生の `OutOfMemoryException` になります（1.3.0 仕様書 26.5）
+- **書き込みに成功したファイルに、Archive 属性を付けます**（BUG-0025）。1 MiB を超える上書き（置き換え）で、元のファイルに無かった Archive 属性が付いていませんでした（標準の `Set-Content` は付けます）。元に戻した場合は、書き込みの前の属性のままです
+- **`WriteAccessDenied` のメッセージを、本モジュールの 5 言語のメッセージにしました**（BUG-0025）。.NET の例外の文面（PowerShell 7.x では英語）でした
+- **隠し・システム属性のファイルへの書き込みと代替データストリーム**（BUG-0025。第五次で直っていたことを確かめました）: 書き込みの 4 コマンドと `Convert-ProbedContent` は、`-Force` なしで書け、代替データストリーム（`Zone.Identifier` など）を保ちます。
+  **標準の `Out-File` / `Export-Csv` は、隠し・システム属性のファイルに書けず（`-Force` でも同じ）、代替データストリームを消すので、`Out-ProbedFile` / `Export-ProbedCsv` はこれと違います**（両ホストで実測）。標準の `Set-Content` とは同じです
+- **置き換えに使う一時ファイルの名前を、元の名前によらない `.~probed<8 桁の 16 進>.probedtmp` にしました**（BUG-0027）。名前の長いファイル（7.x では名前が 218 文字以上、5.1 ではパスが 222 文字以上）に 1 MiB を超えて書けませんでした（`Convert-ProbedContent` も同じ）。
+  一時ファイルのパスが長さの上限を超える場合は、元のファイルを一時フォルダーに写してから直接書きます
+  - **書いている最中にプロセスが強制終了されて一時ファイルが残った場合、名前からはどのファイルのものかが分かりません**（書き込み先と同じフォルダーにあります）
+- **`Out-ProbedFile` の結果が、利用者の `$PSDefaultParameterValues['Out-String:Width']` などの影響を受けないようにしました**（BUG-0035。標準の `Out-File` と同じ）。`Out-ProbedFile -Width` への既定値（`'Out-ProbedFile:Width'`・`'*:Width'`）は、今までどおり効きます
+- **ACL で書き込みを拒否したファイルの `WriteAccessDenied` を、大きさによらず開く時点で出します**（第五次の仕上げでは、1 MiB 以内は完了の時点でした）。ほかのハンドルが開いているときに失敗する条件は変わりません
+
+### 挙動の変更（PowerShell モジュール。第六次 C）
+
+テスト担当のブラックボックステスト（BUG-0038・0039・0041・0045）への対応と、文書の追記（BUG-0022・0023・0029・0034・0036・0040・0043・0044・0008 の追記）です。実装記録 13 章、1.3.0 仕様書 27 章に、決定の根拠と、BUG ごとに書いた場所の一覧があります。
+
+- **`-Culture` も、`-Encoding`・`-Strategy` と同じく名前の前後の空白を除いてから受け付けます**（BUG-0038）。`-Culture ' ko-KR'` は `InvalidCulture` でした。
+  除いた名前を判定に渡します（`Resolve-Encoding` の `Culture` にも除いた名前が出ます）。名前の途中の空白は今までどおり `InvalidCulture` です。クラスライブラリの検証は変えていません
+- **逆シリアル化した判定結果などを `-Encoding` に渡したときのメッセージを、型が違うことと渡し方を示すものにしました**（BUG-0039）。
+  `Import-Clixml`・ジョブ・リモート・`Select-Object *`・`ConvertFrom-Json` を通した判定結果（`Deserialized.…EncodingInformation` などの `PSCustomObject`）は、今までどおり受け付けません。
+  メッセージは「文字エンコーディング '' を解決できませんでした」から、型名と、`CodePage` の値または BOM を明示した統一語彙名を渡すよう案内するもの（`EncodingObjectNotUsable`）になりました。ID は `ParameterArgumentTransformationError` のままです
+- **`Get-ProbedContent -TotalCount` に、標準と同じ別名 `-Head`・`-First` を付けました**（BUG-0041）。`-1` は今までどおり受け付けません（7.x の標準と同じ）。ヘルプの既定値を「-1 (unlimited)」から「None (all lines)」に直しました
+- **メッセージの細部を直しました**（BUG-0045）
+  - 列名の重複のエラー（`Import-ProbedCsv`、`Export-ProbedCsv -Append` の追記先）に、ファイルのパスを示します。`Import-ProbedCsv -Header` の値が重複している場合は、`-Header` の値が重複していると分かる文です。ID・分類・対象は変えていません
+  - `EncodingChangeOnAppend` は、文字エンコーディングを WebName（`utf-8`・`utf-16`）ではなく統一語彙名（`utf8NoBOM`・`unicodeBOM` など）で示します
+  - 繁体字・簡体字中国語の `DetectionVerificationFailed` の語順を直しました。英語の `-DetectionLineCount` の 3 つのメッセージは、行数が 1 のときに「first 1 lines」となっていたので、「the beginning of the file (with -DetectionLineCount N)」に言い換えました
+- **ディスクの空き不足などの書き込みの失敗（`WriteFailed`）も、エラー コードを示す 5 言語のメッセージにしました。** 第六次 B では共有違反・ロック違反だけで、ほかは .NET の例外の文面（7.x では英語）でした
+- 文書だけの追記（挙動は変えていません）
+  - 列名が重複した追記先への `Export-ProbedCsv -Append` の ID（`AlreadyPresentPSMemberInfoInternalCollectionAdd`）は、標準（両ホストとも `RuntimeException`）と違います。`Import-ProbedCsv` と同じ ID にそろえたもので、1.3.0 仕様書 20 章・21 章に書きました（BUG-0022）
+  - 追記先の最後の値の引用符が閉じていない（`1,"2` で終わる）と、追記したレコードがその値の中に入って読み戻せなくなります。既知の限界として 1.3.0 仕様書 18.3 と `Export-ProbedCsv -Append` のヘルプに書きました。1.4.0 で検討します（BUG-0023）
+  - `-UseCulture` の区切り文字はホストの .NET のカルチャーのデータに従うので、ms-ID・fa-AF・es-BZ など 36 のカルチャーで両ホストで違います（5.1 は `;`、7.x は `,`）。日付・数値の書式（BUG-0005）と同じ扱いです（BUG-0029）
+  - `$PSDefaultParameterValues['*:Encoding'] = 'utf8'` は、書き込みの 4 コマンドでは PowerShell の規則で無視され（警告だけ）、`-Encoding` を省略したものとして書きます。既定値には `utf8NoBOM` か `utf8BOM` を使ってください（BUG-0034。ヘルプと README）
+  - `Set-` / `Add-ProbedContent` は文字列以外の値を不変カルチャーで文字列にします（標準は現在のカルチャー）。1.1.0 仕様書 5.8 に標準との差異として書き、数値の書式のホストの差（`-0.0` は 7.x で `-0`、5.1 で `0`。`Export-ProbedCsv` の `0.1 + 0.2` は 5.1 で `0.3`、7.x で `0.30000000000000004`）を既知の限界にしました（BUG-0036）
+  - 0 バイト・BOM だけのファイルの `Get-ProbedContent -Raw` は空の文字列を返します（標準は `$null`）。1.1.0 仕様書 4.6 とヘルプに書きました（BUG-0040）
+  - `Convert-ProbedContent` は、BOM だけのファイルを指定によらず 0 バイトにします（`-Bom Add` でも）。1.2.0 仕様書 13.1 とヘルプに書きました。見直しは 1.4.0 で検討します（BUG-0043）
+  - 既定の判定方式（`Combined`）と `NativeOnly` は、HZ-GB-2312 と UTF-7 を判定しません（us-ascii になります）。HZ は `-Strategy UtfUnknownOnly` で判定でき、確実に読むには `-Encoding` で明示します。既定で HZ を採ると `~{` を含む英数字のテキストを誤判定するためで、条件を付けて採るかは 1.4.0 で検討します（BUG-0044。1.1.0 仕様書 4.4 とヘルプ）
+  - README の 1.2.0 の節の「5.1 でも同じバイト列になる」に、表などの整形結果はホストで違うことがある旨を書きました（BUG-0008 の追記。1.2.0 仕様書 2.3）
+
+### Linux / macOS の既知の制限（PowerShell モジュール）
+
+リリース前に WSL の Ubuntu 24.04（ext4）と macOS 15.8（APFS）で、PowerShell 7.6.9 を使って確かめて見つかったものです。1.3.0 では直さず、1.4.0 で直します（D1〜D7）。
+どれも元のファイルの中身は失いません（D6 は `-Force` を付けたときに 1 件目の変換結果を、D7 は ACL と拡張属性を失います）。
+実測と原因は実装記録 15 章（Linux）と 16 章（macOS）、仕様の上の位置付けは 1.3.0 仕様書 28 章にあります。Windows には当てはまりません。
+
+- **D1: 1 MiB を超えるハードリンクに上書きすると、リンクが切れます**（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent`）。
+  書いた名前だけが新しい内容になり、ほかの名前は古い内容のままです。書く内容と元のファイルがどちらも 1 MiB 以内なら、リンクは保たれます。
+  Linux / macOS では .NET からリンク数を取れないため、写してから直接書く方法が選ばれず、一時ファイルで置き換えるためです（macOS でも同じく起きます）。
+  1.2.0 の `Set-ProbedContent`・`Out-ProbedFile` では起きませんでした（上の「挙動の変更」）
+- **D2: 読み込みと追記を別のハードリンク名で行うと、終わらずにファイルが増え続けます**（`Get-ProbedContent t.txt | Add-ProbedContent hard.txt` など。`Get-ProbedContent a.txt, t.txt | Add-ProbedContent hard.txt` の逆向きも同じ）。
+  Linux / macOS の同じファイルの判定はリンクを解決したパスで比べるので、ハードリンクを別のファイルとみなすためです（macOS でも同じく起き、1.2.0 にもありました）。標準の `Add-Content` も同じく増え続けます（同じ名前でも）。
+  上書き（`Set-`・`Out-`・`Export-`）は名前が違っても内容を失いません（1 MiB 以内は読み終えてから書き、1 MiB を超えると D1 のとおりリンクが切れます）
+- **D3: リンク切れのシンボリックリンクへの追記は、エラーになります**（`Add-ProbedContent` は `AutoEncodingRequiresExistingFile`、`Out-ProbedFile -Append`・`Export-ProbedCsv -Append` は `ReadFailed`）。
+  Windows では、標準の `Add-Content`・`Out-File -Append` と同じくリンクの先にファイルを作ります。Linux / macOS の .NET が、リンク切れのリンクをリンク自身の長さを持つ既存のファイルとして報告するためです
+  （`Add-ProbedContent -Encoding <名前> -AllowEncodingChange` は作ります。標準の `Export-Csv -Append` もエラーになります）。
+  同じ原因で、リンク切れのリンクを「無いファイル」と扱わないため、`-Encoding` を付けない `Set-ProbedContent` は .NET の英語の文言（「Could not find file」）の `AutoEncodingRequiresExistingFile` に、
+  `Get-ProbedContent`・`Convert-ProbedContent`・`Resolve-Encoding` は `FileNotFound` ではなく `ReadFailed`（error code 0x80070002）になります
+  （macOS で確かめました。`-Encoding` を付けた `Set-ProbedContent` は、仕様どおり `LinkTargetNotFound` です）
+- **D4: 共有を許さずに開かれたファイル（.NET の `FileShare.None`。Linux / macOS の .NET は `flock` の勧告ロックで表します）を読み書きしたときのエラーのメッセージが「error code 0x0000000B」（macOS では「error code 0x00000023」）になります。** ID（`ReadFailed`・`WriteFailed`）は正しく、ファイルは変わりません。
+  Windows の「別のプロセスが使用中」のメッセージになりません（標準の `Get-Content` は「being used by another process」です）。数値は errno の EAGAIN で、Linux は 11、macOS は 35 です
+- **D5: 大文字・小文字を区別しないファイルシステム（macOS の標準の APFS など）で、大文字・小文字だけが違う名前（`t.txt` と `T.TXT`、`sub` と `SUB`）を同じファイルと判定しません。**
+  読み込みと追記をそういう名前で行うと、終わらずにファイルが増え続けることがあります（D2 と同じ形。`Add-ProbedContent`・`Out-ProbedFile -Append`・`Export-ProbedCsv -Append`。逆向きも同じ）。
+  中身は失いませんが、ディスクを使い切ることがあります。上書きは正しい結果になります。Linux / macOS の同じファイルの判定は、パスの文字列を大文字・小文字を区別して比べるためです（1.2.0 にもありました）。
+  標準のコマンドは、同じ条件で、上書きなら中身を失い、追記なら増え続けます（同じ名前でも同じです）
+- **D6: `Convert-ProbedContent -Destination` の、名前の衝突（N8）と変換元との一致（N9）の検査が、大文字・小文字の違いですり抜けます**（D5 と同じ原因。1.2.0 にもありました）。
+  `-Force` が無ければ `DestinationExists` で止まります（ID が違うだけです）。`-Force` を付けたときだけ、1 件目の変換結果を上書きするか（`one/a.txt` と `two/A.TXT` を同じ出力先へ）、
+  変換元をその場で変換します（変換元が `sub/a.txt` で `-Destination SUB`）
+- **D7: 1 MiB を超える上書き（`Set-ProbedContent`・`Out-ProbedFile`・`Export-ProbedCsv`・`Convert-ProbedContent`）で、ACL と拡張属性が消えます。**
+  上の「挙動の変更」のとおり、一時ファイルで置き換えるためです。モードと macOS の hidden フラグは保ちます。1 MiB 以内の上書きと追記、標準の `Set-Content` は保ちます。
+  macOS では ACL と拡張属性で、Linux（ext4）では拡張属性（`user.`）で確かめました。Linux の POSIX ACL は、仕組みから同じく消えると考えられますが、確かめていません
+- **`LANG` が未設定の Linux（不変カルチャー）では、カルチャーによる絞り込みが効かず、日本語のファイルの判定が `-1` や UTF.Unknown の結果（`51932` など）になります。**
+  東アジア以外のカルチャーと同じ扱い（1.2.0 のカルチャーゲート）で、Windows で形式を英語にした場合と同じ結果です。`-Culture ja-JP` を指定するか、`LANG=ja_JP.UTF-8` などを設定してください。
+  macOS では、`LANG` が未設定のとき（`C`・`C.UTF-8`・`POSIX`、`LC_ALL=''` も）不変カルチャーにならず、システムの地域設定のカルチャーになります（地域が日本なら ja-JP）
+- **Linux / macOS では、`Export-ProbedCsv -Append` が追記先の CRLF を引き継ぐ**（1.3.0 仕様書 16.3）ため、LF を書く標準の `Export-Csv -Append` と違います（1.3.0 仕様書 21 章の表）
+
+### 追加したコマンド
+
+- **`Import-ProbedCsv`** … 文字エンコーディングを判定して CSV ファイルを読み込み、レコードごとにオブジェクトを出力します（標準の `Import-Csv` に対応）
+  - 解析は PowerShell 7.x の `Import-Csv` から移植した処理で行い、ホストの `Import-Csv` は呼びません。
+    **Windows PowerShell 5.1 でも 7.x と同じ結果になります**
+  - 標準の `Import-Csv` との差異:
+    - 文字エンコーディングを判定します（`-Encoding` で統一語彙・WebName・コードページを指定することもできます）
+    - 5.1 でも、CR だけの改行の CSV を読みます（5.1 の標準は、エラーも警告も出さずに 0 件を返します）
+    - 5.1 でも、W3C 拡張ログ形式（`#Fields:`）に対応し、`#TYPE` の型名を 7.x の順序にし、`Get-ChildItem | Import-ProbedCsv` が動きます
+    - ワイルドカードが複数のファイルに一致した場合は、順に読みます（標準はエラー）
+    - 存在しないファイルや列名の重複は非終了エラーとし、残りのファイルを読み続けます（標準は終了エラー）
+    - ワイルドカードが 0 件の場合はエラーにしません（`Get-ProbedContent` と同じ）
+- **`Export-ProbedCsv`** … オブジェクトを CSV の行に変換し、文字エンコーディング・BOM・改行を指定してファイルに書き出します（標準の `Export-Csv` に対応）
+  - 文字列化は PowerShell 7.x の `Export-Csv` から移植した処理で行い、ホストの `Export-Csv` / `ConvertTo-Csv` は呼びません。
+    **5.1 と 7.x でバイト単位まで同じファイルになります**（日付・数値の書式は、カルチャーとホストの .NET によって違うことがあります。ko-KR・zh-TW・zh-HK・ar-SA など。BUG-0005）
+  - 文字エンコーディング・BOM・改行・追記・ファイルを開く時点・読み取り専用・`-WhatIf` は `Out-ProbedFile` の規則に従います
+  - 標準の `Export-Csv` との差異:
+    - 5.1 でも、既定の文字エンコーディングは `utf8NoBOM` です（5.1 の標準は ASCII で書くため、日本語が `???` になります）
+    - 既定で `#TYPE` 行を書きません。`-NoTypeInformation` は受け付けるだけで何もしません
+    - `-UseQuotes` / `-QuoteFields` / `-NoHeader` を 5.1 でも使えます。辞書はキーを列として書きます
+    - `-Append` は追記先の文字エンコーディングと改行を継承し、整合性を検査します（標準は文字エンコーディングや改行が混ざります）
+    - **追記先の最後の行に改行が無い場合は、改行を補ってから追記します**（標準は行をつなげてしまいます）
+    - `Import-ProbedCsv a.csv | Export-ProbedCsv a.csv` は `SamePathRoundTrip` で止まり、ファイルを壊しません（標準は 0 バイトになります）
+    - ファイルを切り詰めるのは最初の行を書く直前です（標準は開始時）
+  - 2 件目以降のオブジェクトの、列に無いプロパティは黙って書きません（標準と同じ）
+- 両コマンドとも、`-Culture`（文字エンコーディングの判定のカルチャー）と `-UseCulture`（区切り文字）は別のものです
+
+### `-DetectionLineCount`
+
+- `Resolve-Encoding` / `Import-ProbedCsv` / `Export-ProbedCsv` に、判定に使う先頭の行数を指定する `-DetectionLineCount` を追加しました。
+  巨大なファイルを先頭の N 行だけで判定できます。行数は物理的な行数（CR-LF / LF / CR）で、CSV のレコード数ではありません
+- `Resolve-Encoding -DetectionLineCount` は、先頭 N 行が何に見えるかをそのまま報告します。`Resolve-Encoding` の既存のパラメーターと戻り値は変えていません
+- `Import-ProbedCsv` / `Export-ProbedCsv` では、先頭 N 行が ASCII だけなら BOM 無しの UTF-8 とみなし（改行のバイト列から UTF-16 / UTF-32 と分かればそちら）、
+  **使う前にファイル全体を厳密に復号して検証します。** 判定を誤っていれば（先頭が英数字で後半に日本語がある Shift_JIS など）、
+  何も読み書きせずにエラー `DetectionVerificationFailed` で止まります。検証のためにファイルを 2 回読みます。`-Encoding` を明示すれば、判定も検証も行いません
+
+### ライセンス
+
+- CSV の読み書き処理に、PowerShell（`PowerShell/PowerShell` の `CsvCommands.cs`、コミット `db1d0a56`。Copyright (c) Microsoft Corporation、MIT License）のコードの一部を改変して含めました。
+  `THIRD-PARTY-NOTICES.txt` に MIT License の全文を載せ、`Resolve-Encoding -License` の出力にも追記しました。このコードは PowerShell モジュールにだけ含まれ、NuGet パッケージには含まれません
+
+### 内部の変更
+
+- `Out-ProbedFile` の殻（パスの解決、事前の検査、ファイルを開く時点、空の入力、後始末）を `Export-ProbedCsv` と共用するため、基底クラスに切り出しました。挙動は変えていません
+
 ## 1.2.0
 
 文字エンコーディング判定を東アジア以外の言語に対応させ、PowerShell モジュールに

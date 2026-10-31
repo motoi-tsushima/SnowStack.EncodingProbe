@@ -222,6 +222,111 @@ namespace SnowStack.EncodingProbe
         }
 
         /// <summary>
+        /// 判定した文字エンコーディングの単位で改行コードを数え、種類を判定する（1.3.0 第五次）
+        /// </summary>
+        /// <remarks>
+        /// <see cref="DetectLineBreak()"/> はバイト単位で 0x0A / 0x0D を数えるため、UTF-16 / UTF-32 では
+        /// 文字の一部のバイトを改行と数えてしまう（UTF-16LE の「上」U+4E0A = 0A 4E、「不」U+4E0D = 0D 4E など）。
+        /// UTF-16 は 2 バイト、UTF-32 は 4 バイトの単位に区切り、単位の値が U+000A / U+000D のものだけを改行とする。
+        /// 単位はオフセット 0 から区切る（BOM はちょうど 1 単位なので、BOM の有無で区切りは変わらない）。末尾の端数のバイトは数えない。
+        /// それ以外のコードページは <see cref="DetectLineBreak()"/> と同じくバイト単位で数える。
+        /// <br/>
+        /// 公開の <see cref="DetectLineBreak()"/> の挙動は変えていない（文字エンコーディングを知らずに呼ばれるため）。
+        /// </remarks>
+        /// <param name="buffer">判定対象のバイト配列</param>
+        /// <param name="length">先頭から数えるバイト数</param>
+        /// <param name="codePage">判定した文字エンコーディングのコードページ</param>
+        internal static LineBreakType DetectLineBreak(byte[] buffer, int length, int codePage)
+        {
+            int unitSize;
+            bool bigEndian;
+
+            switch (codePage)
+            {
+                case CodePageUtf16Le:
+                    unitSize = 2;
+                    bigEndian = false;
+                    break;
+                case CodePageUtf16Be:
+                    unitSize = 2;
+                    bigEndian = true;
+                    break;
+                case CodePageUtf32Le:
+                    unitSize = 4;
+                    bigEndian = false;
+                    break;
+                case CodePageUtf32Be:
+                    unitSize = 4;
+                    bigEndian = true;
+                    break;
+                default:
+                    return new EncodingDetector(length == buffer.Length ? buffer : buffer.Take(length).ToArray()).DetectLineBreak();
+            }
+
+            int countCrLf = 0;
+            int countLf = 0;
+            int countCr = 0;
+            int units = length / unitSize;
+
+            for (int i = 0; i < units; i++)
+            {
+                long value = ReadUnit(buffer, i * unitSize, unitSize, bigEndian);
+
+                if (value == 0x0D)
+                {
+                    if (i + 1 < units && ReadUnit(buffer, (i + 1) * unitSize, unitSize, bigEndian) == 0x0A)
+                    {
+                        countCrLf++;
+                        i++; // LF の単位をスキップ
+                    }
+                    else
+                    {
+                        countCr++;
+                    }
+                }
+                else if (value == 0x0A)
+                {
+                    countLf++;
+                }
+            }
+
+            return DetermineLineBreakType(countCrLf, countLf, countCr);
+        }
+
+        /// <summary>
+        /// 指定位置から始まる 1 単位（2 バイトまたは 4 バイト）の値を返す
+        /// </summary>
+        private static long ReadUnit(byte[] buffer, int offset, int unitSize, bool bigEndian)
+        {
+            long value = 0;
+
+            for (int k = 0; k < unitSize; k++)
+            {
+                value = bigEndian
+                    ? (value << 8) | buffer[offset + k]
+                    : value | ((long)buffer[offset + k] << (8 * k));
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// 判定したコードページが UTF-16 / UTF-32 なら、改行コードをその単位で数え直す（1.3.0 第五次）
+        /// </summary>
+        private void RecountLineBreakByUnit(EncodingInformation encInfo)
+        {
+            switch (encInfo.CodePage)
+            {
+                case CodePageUtf16Le:
+                case CodePageUtf16Be:
+                case CodePageUtf32Le:
+                case CodePageUtf32Be:
+                    encInfo.LineBreak = DetectLineBreak(this._buffer, this.BufferSize, encInfo.CodePage);
+                    break;
+            }
+        }
+
+        /// <summary>
         /// 改行コード出現回数から種類を判定する
         /// </summary>
         private static LineBreakType DetermineLineBreakType(int countCrLf, int countLf, int countCr)
@@ -460,6 +565,7 @@ namespace SnowStack.EncodingProbe
                 encInfo.Bom = true;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
+                RecountLineBreakByUnit(encInfo);
 
                 return encInfo;
             }
@@ -491,11 +597,23 @@ namespace SnowStack.EncodingProbe
                 {
                     encInfo.CodePage = CodePageAscii;
                     encInfo.Bom = false;
+
+                    // 0x00 を含む場合だけ、英数字だけの BOM 無し UTF-32 / UTF-16 であるかを厳密に調べる（1.3.0）。
+                    // 成立しなければ ASCII のまま（UTF-8 の判定には進まない）
+                    if (Array.IndexOf(this._buffer, (byte)0x00, 0, this.BufferSize) >= 0)
+                    {
+                        int nulPaddedCodePage;
+                        if (NulPaddedUnicode_Detection(out nulPaddedCodePage) == false)
+                        {
+                            encInfo.CodePage = nulPaddedCodePage;
+                        }
+                    }
                 }
 
                 encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
+                RecountLineBreakByUnit(encInfo);
 
                 return encInfo;
             }
@@ -518,6 +636,7 @@ namespace SnowStack.EncodingProbe
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
+                RecountLineBreakByUnit(encInfo);
 
                 return encInfo;
             }
@@ -540,6 +659,7 @@ namespace SnowStack.EncodingProbe
                 encInfo.Bom = false;
                 encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                 encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
+                RecountLineBreakByUnit(encInfo);
 
                 return encInfo;
             }
@@ -618,7 +738,11 @@ namespace SnowStack.EncodingProbe
                             useShiftJis = (encInfo.LineBreak == LineBreakType.CrLf);
                         }
 
-                        encInfo.CodePage = useShiftJis ? CodePageShiftJis : CodePageEucJp;
+                        // 標本を厳密に復号できない候補は選ばない（1.3.0 第六次。BUG-0031）。
+                        // バイト構造だけでは Shift_JIS として成り立っても、CP932 に無い 2 バイト（FC CB など）を含むことがある
+                        encInfo.CodePage = useShiftJis
+                            ? ExcludeUndecodableCandidate(CodePageShiftJis, CodePageEucJp)
+                            : ExcludeUndecodableCandidate(CodePageEucJp, CodePageShiftJis);
                         encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
                         encInfo.UsePSName = EncodingDetector.SetUsePSName(encInfo.PSEncodingName);
@@ -629,8 +753,8 @@ namespace SnowStack.EncodingProbe
                     // 韓国語カルチャーの場合、EUC-KR と CP949 の両方に該当するか確認する
                     if (eucCodePage == CodePageEucKr && !CP949_Detection())
                     {
-                        // 両方に該当 → CP949 を優先
-                        encInfo.CodePage = CodePageCp949;
+                        // 両方に該当 → CP949 を優先（標本を厳密に復号できなければ EUC-KR。1.3.0 第六次）
+                        encInfo.CodePage = ExcludeUndecodableCandidate(CodePageCp949, CodePageEucKr);
                         encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                         encInfo.Bom = false;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
@@ -643,8 +767,8 @@ namespace SnowStack.EncodingProbe
                     // （香港カルチャーは EUC-TW を候補にしないので、ここには来ない）
                     if (eucCodePage == CodePageEucTw && !CP950_Detection())
                     {
-                        // 両方に該当 → CP950 を優先
-                        encInfo.CodePage = CodePageCp950;
+                        // 両方に該当 → CP950 を優先（標本を厳密に復号できなければ EUC-TW。1.3.0 第六次）
+                        encInfo.CodePage = ExcludeUndecodableCandidate(CodePageCp950, CodePageEucTw);
                         encInfo.EncodingWebName = EncodingName(encInfo.CodePage);
                         encInfo.Bom = false;
                         encInfo.PSEncodingName = EncodingDetector.PSEncodingName(encInfo.CodePage, encInfo.Bom);
@@ -679,6 +803,74 @@ namespace SnowStack.EncodingProbe
 
             // 不明
             return encInfo;
+        }
+
+        /// <summary>
+        /// バイト列だけでは区別できない 2 つの候補から、カルチャーや改行で決めた候補（<paramref name="preferred"/>）を返す。
+        /// ただし、判定に使った標本をその候補で厳密に（例外フォールバックで）復号できず、もう一方では復号できる場合は、もう一方を返す
+        /// （1.3.0 第六次。BUG-0031）。
+        /// </summary>
+        /// <remarks>
+        /// 曖昧解消（EUC-JP と Shift_JIS、EUC-KR と CP949、EUC-TW と CP950）はバイト構造の妥当性しか見ていないため、
+        /// 構造上は成り立つが文字の割り当てが無いバイト列（短い EUC-JP の FC CB など）を、改行が CRLF・改行なしのときに Shift_JIS と判定し、
+        /// 黙って化けて読んでいた。
+        /// <list type="bullet">
+        /// <item>どちらの候補も厳密に復号できない場合は、今までどおり <paramref name="preferred"/></item>
+        /// <item>その TFM で作れない候補（.NET に無い EUC-TW の 51950 など）は、外さない（「復号できない」とみなさない）</item>
+        /// </list>
+        /// 復号を確かめるのは判定に使った標本（<see cref="_buffer"/> の先頭 <see cref="BufferSize"/> バイト）だけ。
+        /// </remarks>
+        private int ExcludeUndecodableCandidate(int preferred, int other)
+        {
+            if (CanDecodeStrictly(this._buffer, this.BufferSize, preferred) == false
+                && CanDecodeStrictly(this._buffer, this.BufferSize, other) != false)
+            {
+                return other;
+            }
+
+            return preferred;
+        }
+
+        /// <summary>
+        /// 標本（<paramref name="buffer"/> の先頭 <paramref name="length"/> バイト）をコードページで厳密に復号できるか。
+        /// その TFM でコードページを作れない場合は null。
+        /// </summary>
+        /// <remarks>
+        /// クラスライブラリは CodePagesEncodingProvider をグローバルに登録しない（ホストの登録状況で判定が変わらないようにする）。
+        /// .NET では提供者から直接取り出し、.NET Framework は標準で持っているものを使う。両 TFM で同じ結果になる。
+        /// </remarks>
+        internal static bool? CanDecodeStrictly(byte[] buffer, int length, int codePage)
+        {
+            Encoding? strict;
+
+            try
+            {
+#if NETFRAMEWORK
+                strict = Encoding.GetEncoding(codePage, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
+#else
+                strict = CodePagesEncodingProvider.Instance.GetEncoding(
+                    codePage, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
+#endif
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is NotSupportedException)
+            {
+                strict = null;
+            }
+
+            if (strict == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                strict.GetCharCount(buffer, 0, length);
+                return true;
+            }
+            catch (DecoderFallbackException)
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -1008,6 +1200,85 @@ namespace SnowStack.EncodingProbe
             }
 
             return outOfSpecification;
+        }
+
+        /// <summary>
+        /// 0x00 を含み、すべてのバイトが 0x80 未満の入力が、英数字（U+0001〜U+007F）だけの BOM 無し UTF-32 / UTF-16 であるか判定する
+        /// </summary>
+        /// <remarks>
+        /// 入力を先頭から単位に区切り、UTF-32LE → UTF-32BE → UTF-16LE → UTF-16BE の順に、
+        /// すべての単位が「1 バイトだけ 00 以外、残りが 00」の形（UTF-16LE なら <c>&lt;00 以外&gt; 00</c>）に合うものを探す。
+        /// 0x00 を含む ASCII のテキスト（末尾の 00、00 で埋めた固定長レコードなど）は、ほとんどの場合この形にならない。
+        /// <br/>
+        /// 既存の <see cref="Utf32_Detection"/> / <see cref="Utf16_Detection"/> は使わない。
+        /// すべてのバイトが 0x80 未満という前提では、既存の UTF-16 の判定はほぼ常に成立してしまい、
+        /// 0x00 を含む ASCII のテキストまで UTF-16 と判定するためである
+        /// （docs/EncodingProbe-1.3.0-調査-NUL入りの入力の判定.md 4.2 節、修正案 2 は 7 章）。
+        /// <br/>
+        /// 2 バイトとも 0x01〜0x7F になる文字（「上」U+4E0A = 0A 4E など）や U+0000 を含む UTF-16 / UTF-32 はこの形にならず、
+        /// ASCII のままとなる（既知の限界。docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md 4 章）。
+        /// </remarks>
+        /// <param name="codePage">判別した文字エンコーディングのコードページ（判別できない場合は-1）(出力引数)</param>
+        /// <returns>true=英数字だけの UTF-32 / UTF-16 では無い</returns>
+        private bool NulPaddedUnicode_Detection(out int codePage)
+        {
+            codePage = -1;
+
+            if (this.BufferSize >= 4 && this.BufferSize % 4 == 0)
+            {
+                if (AllUnitsMatch(4, 0))
+                {
+                    codePage = CodePageUtf32Le;
+                    return false;
+                }
+
+                if (AllUnitsMatch(4, BufferIndex3))
+                {
+                    codePage = CodePageUtf32Be;
+                    return false;
+                }
+            }
+
+            if (this.BufferSize >= 2 && this.BufferSize % 2 == 0)
+            {
+                if (AllUnitsMatch(2, 0))
+                {
+                    codePage = CodePageUtf16Le;
+                    return false;
+                }
+
+                if (AllUnitsMatch(2, 1))
+                {
+                    codePage = CodePageUtf16Be;
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 先頭から unitSize バイトずつ区切ったすべての単位で、位置 nonZeroIndex のバイトが 00 以外、残りのバイトが 00 であるか判定する
+        /// </summary>
+        /// <param name="unitSize">単位のバイト数（BufferSize はその倍数であること）</param>
+        /// <param name="nonZeroIndex">単位の中で 00 以外であるべきバイトの位置</param>
+        /// <returns>true=すべての単位が形に合う</returns>
+        private bool AllUnitsMatch(int unitSize, int nonZeroIndex)
+        {
+            for (int i = 0; i < this.BufferSize; i += unitSize)
+            {
+                for (int k = 0; k < unitSize; k++)
+                {
+                    bool isZero = this._buffer[i + k] == 0x00;
+
+                    if (isZero == (k == nonZeroIndex))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         /// <summary>

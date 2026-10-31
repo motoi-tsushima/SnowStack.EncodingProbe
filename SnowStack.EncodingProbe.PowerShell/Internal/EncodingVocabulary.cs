@@ -28,22 +28,22 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         private const int CodePageUtf7 = 65000;
 
         /// <summary>コードページ：UTF-8</summary>
-        private const int CodePageUtf8 = 65001;
+        internal const int CodePageUtf8 = 65001;
 
         /// <summary>コードページ：UTF-16 リトルエンディアン</summary>
-        private const int CodePageUtf16Le = 1200;
+        internal const int CodePageUtf16Le = 1200;
 
         /// <summary>コードページ：UTF-16 ビッグエンディアン</summary>
-        private const int CodePageUtf16Be = 1201;
+        internal const int CodePageUtf16Be = 1201;
 
         /// <summary>コードページ：UTF-32 リトルエンディアン</summary>
-        private const int CodePageUtf32Le = 12000;
+        internal const int CodePageUtf32Le = 12000;
 
         /// <summary>コードページ：UTF-32 ビッグエンディアン</summary>
-        private const int CodePageUtf32Be = 12001;
+        internal const int CodePageUtf32Be = 12001;
 
         /// <summary>コードページ：US-ASCII</summary>
-        private const int CodePageAscii = 20127;
+        internal const int CodePageAscii = 20127;
 
         /// <summary>「対象ファイルからの検出に委ねる」ことを表す語彙</summary>
         private const string AutoName = "Auto";
@@ -123,14 +123,50 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             CodePagesProviderRegistration.EnsureRegistered();
 
             object? value = UnwrapPSObject(input);
+
+            if (value is PSCustomObject)
+            {
+                // 逆シリアル化した判定結果（Deserialized.*.EncodingInformation）・Select-Object の結果などは今までどおり受け付けない。
+                // 文字列にすると空になり「'' を解決できない」としか言えなかったので、型が違うことと渡し方を示す（1.3.0 第六次 C。BUG-0039）
+                throw Error(ValidationMessages.EncodingObjectNotUsable(DescribeTypeName(input)));
+            }
+
             EncodingSpec spec = ResolveCore(value, allowAuto);
 
             if (usage == EncodingUsage.Write)
             {
                 ValidateForWrite(spec, Describe(value));
+
+                if (value is EncodingInformation)
+                {
+                    // 判定結果を渡した場合は継承と同じに扱う（第五次の決定）
+                    spec = TreatInheritedAsciiAsUtf8(spec);
+                }
             }
 
             return spec;
+        }
+
+        /// <summary>
+        /// 継承した文字エンコーディングが us-ascii なら、BOM 無しの UTF-8 に置き換える（1.3.0 第五次。BUG-0001）。
+        /// 改行の情報はそのまま引き継ぐ。
+        /// </summary>
+        /// <remarks>
+        /// us-ascii と判定されるのは、すべてのバイトが 0x80 未満のファイルであり、それは BOM 無しの UTF-8 としても正しい。
+        /// us-ascii のまま書くと、英数字だけのログや CSV に日本語を書き足せない（第四次までは黙って '?' にしていた）。
+        /// ASCII の文字だけを書く場合のバイト列は us-ascii と同じである。
+        /// -DetectionLineCount の読み替え（1.3.0 仕様書 3.2）と同じ考え方で、
+        /// 書き込み先・追記先からの継承（-Encoding 省略・Auto）、-EncodingFrom、-Encoding に判定結果（EncodingInformation）を渡した場合、
+        /// 追記の整合性検査の相手（追記先の文字エンコーディング）に使う。-Encoding ascii の明示は置き換えない。
+        /// </remarks>
+        public static EncodingSpec TreatInheritedAsciiAsUtf8(EncodingSpec spec)
+        {
+            if (spec.IsAuto || spec.Encoding == null || spec.Encoding.CodePage != CodePageAscii)
+            {
+                return spec;
+            }
+
+            return EncodingSpec.Create(new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), emitBom: false, spec.LineBreak);
         }
 
         /// <summary>
@@ -456,6 +492,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
         /// </summary>
         private static EncodingSpec FromCodePage(int codePage, string original)
         {
+            if (codePage == 0)
+            {
+                // Encoding.GetEncoding(0) は実行環境の既定（.NET Framework は ANSI、.NET は UTF-8）を返すが、
+                // 0 は語彙に無いので、使えないコードページ（1・2・3 など）と同じく拒否する（1.3.0 第六次。BUG-0032）
+                throw Error(ValidationMessages.UnknownEncoding(original));
+            }
+
             if (IsUnicodeCodePage(codePage))
             {
                 // 数値指定にはBOM方針が含まれないため、未指定として扱う
@@ -523,6 +566,13 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
                 throw Error(ValidationMessages.CodePageNotAvailable(vocabulary));
             }
 
+            if (codePage == CodePageUtf8)
+            {
+                // システムの ANSI / OEM が 65001（「ベータ: ワールドワイド言語サポートで Unicode UTF-8 を使用」）の場合は、
+                // BOM 無しの UTF-8 とする（1.3.0 第六次）。GetEncoding(65001) は BOM 付きのインスタンスを返す
+                return EncodingSpec.Create(BuildEncoding(CodePageUtf8, emitBom: false), false);
+            }
+
             try
             {
                 return EncodingSpec.Create(Encoding.GetEncoding(codePage), false);
@@ -533,31 +583,17 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
             }
         }
 
-        /// <summary>システムのANSIコードページを取得する（取得できない場合は -1）</summary>
-        private static int GetAnsiCodePage()
-        {
-            try
-            {
-                return CultureInfo.CurrentCulture.TextInfo.ANSICodePage;
-            }
-            catch (NotSupportedException)
-            {
-                return -1;
-            }
-        }
+        /// <summary>
+        /// システムのANSIコードページを取得する（取得できない場合は -1）。
+        /// Windows ではシステムのロケールの値で、スレッドのカルチャーには従わない（1.3.0 第六次。BUG-0032）。
+        /// Get-EncodingProbePlatformInfo の Locale.AnsiCodePage と同じ値。
+        /// </summary>
+        private static int GetAnsiCodePage() => SystemCodePages.GetAnsiCodePage();
 
-        /// <summary>システムのOEMコードページを取得する（取得できない場合は -1）</summary>
-        private static int GetOemCodePage()
-        {
-            try
-            {
-                return CultureInfo.CurrentCulture.TextInfo.OEMCodePage;
-            }
-            catch (NotSupportedException)
-            {
-                return -1;
-            }
-        }
+        /// <summary>
+        /// システムのOEMコードページを取得する（取得できない場合は -1）。規則は <see cref="GetAnsiCodePage"/> と同じ。
+        /// </summary>
+        private static int GetOemCodePage() => SystemCodePages.GetOemCodePage();
 
         /// <summary>
         /// 書き込み用途で許されない指定を弾く。
@@ -706,6 +742,14 @@ namespace SnowStack.EncodingProbe.PowerShell.Internal
 
             return value.ToString() ?? value.GetType().Name;
         }
+
+        /// <summary>
+        /// PSCustomObject の型名（PowerShell の型名の先頭。Deserialized.SnowStack.EncodingProbe.EncodingInformation など）を返す
+        /// </summary>
+        private static string DescribeTypeName(object? input)
+            => input is PSObject psObject && psObject.TypeNames.Count > 0
+                ? psObject.TypeNames[0]
+                : typeof(PSCustomObject).FullName!;
 
         /// <summary>
         /// パラメータ束縛の段階で失敗させるための例外を生成する

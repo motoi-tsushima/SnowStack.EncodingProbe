@@ -1,0 +1,56 @@
+id	command	current	proposal	strict	changed
+A1-crlf-u16le	Resolve-Encoding	20127 / us-ascii / CrLf	1200 / utf-16 / CrLf	1200 / utf-16 / CrLf	1:変化 2:変化
+A1-crlf-u16le	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / CrLf	1200 / utf-16 / CrLf	1200 / utf-16 / CrLf	1:変化 2:変化
+A1-crlf-u16le	Get-ProbedContent	7 行; 1 行目: 41 00 2C 00 42 00	3 行; 1 行目: 41 2C 42	3 行; 1 行目: 41 2C 42	1:変化 2:変化
+A1-crlf-u16le	Import-ProbedCsv	6 行; 列名: [41 00] [00 42 00]; 1 行目: [00] []	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	1:変化 2:変化
+A1-crlf-u16le	Import-ProbedCsv -DetectionLineCount 1	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	
+A1-crlf-u16be	Resolve-Encoding	20127 / us-ascii / CrLf	1201 / unicodeFFFE / CrLf	1201 / unicodeFFFE / CrLf	1:変化 2:変化
+A1-crlf-u16be	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / CrLf	1201 / unicodeFFFE / CrLf	1201 / unicodeFFFE / CrLf	1:変化 2:変化
+A1-crlf-u16be	Get-ProbedContent	6 行; 1 行目: 00 41 00 2C 00 42 00	3 行; 1 行目: 41 2C 42	3 行; 1 行目: 41 2C 42	1:変化 2:変化
+A1-crlf-u16be	Import-ProbedCsv	5 行; 列名: [00 41 00] [00 42 00]; 1 行目: [00] []	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	1:変化 2:変化
+A1-crlf-u16be	Import-ProbedCsv -DetectionLineCount 1	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	
+A1-crlf-u32le	Resolve-Encoding	20127 / us-ascii / CrLf	12000 / utf-32 / CrLf	12000 / utf-32 / CrLf	1:変化 2:変化
+A1-crlf-u32le	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / CrLf	12000 / utf-32 / CrLf	12000 / utf-32 / CrLf	1:変化 2:変化
+A1-crlf-u32le	Get-ProbedContent	7 行; 1 行目: 41 00 00 00 2C 00 00 00 42 00 00 00	3 行; 1 行目: 41 2C 42	3 行; 1 行目: 41 2C 42	1:変化 2:変化
+A1-crlf-u32le	Import-ProbedCsv	6 行; 列名: [41 00 00 00] [00 00 00 42 00 00 00]; 1 行目: [00 00 00] []	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	1:変化 2:変化
+A1-crlf-u32le	Import-ProbedCsv -DetectionLineCount 1	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	
+A1-crlf-u32be	Resolve-Encoding	20127 / us-ascii / CrLf	12001 / utf-32BE / CrLf	12001 / utf-32BE / CrLf	1:変化 2:変化
+A1-crlf-u32be	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / CrLf	12001 / utf-32BE / CrLf	12001 / utf-32BE / CrLf	1:変化 2:変化
+A1-crlf-u32be	Get-ProbedContent	6 行; 1 行目: 00 00 00 41 00 00 00 2C 00 00 00 42 00 00 00	3 行; 1 行目: 41 2C 42	3 行; 1 行目: 41 2C 42	1:変化 2:変化
+A1-crlf-u32be	Import-ProbedCsv	5 行; 列名: [00 00 00 41 00 00 00] [00 00 00 42 00 00 00]; 1 行目: [00 00 00] []	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	1:変化 2:変化
+A1-crlf-u32be	Import-ProbedCsv -DetectionLineCount 1	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	2 行; 列名: [41] [42]; 1 行目: [31] [32]	
+B1-13+1	Resolve-Encoding	20127 / us-ascii / None	1200 / utf-16 / None	20127 / us-ascii / None	1:変化 1≠2
+B1-13+1	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / None	1200 / utf-16 / None	20127 / us-ascii / None	1:変化 1≠2
+B1-13+1	Get-ProbedContent	1 行; 1 行目: 48 65 6C 6C 6F 2C 20 57 6F 72 6C 64 21 00	1 行; 1 行目: 6548 6C6C 2C6F 5720 726F 646C 21	1 行; 1 行目: 48 65 6C 6C 6F 2C 20 57 6F 72 6C 64 21 00	1:変化 1≠2
+B1-13+1	Import-ProbedCsv	(行なし)	(行なし)	(行なし)	
+B1-13+1	Import-ProbedCsv -DetectionLineCount 1	(行なし)	(行なし)	(行なし)	
+B3-rec8-nonl-x4	Resolve-Encoding	20127 / us-ascii / None	1200 / utf-16 / None	20127 / us-ascii / None	1:変化 1≠2
+B3-rec8-nonl-x4	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / None	1200 / utf-16 / None	20127 / us-ascii / None	1:変化 1≠2
+B3-rec8-nonl-x4	Get-ProbedContent	1 行; 1 行目: 49 44 30 30 31 00 00 00 41 6C 69 63 65 00 00 00 42 00 00 00 00 00 00 00 43 68 61 72 6C 69 65 30	1 行; 1 行目: 4449 3030 31 00 6C41 6369 65 00 42 00 00 00 6843 7261 696C 3065	1 行; 1 行目: 49 44 30 30 31 00 00 00 41 6C 69 63 65 00 00 00 42 00 00 00 00 00 00 00 43 68 61 72 6C 69 65 30	1:変化 1≠2
+B3-rec8-nonl-x4	Import-ProbedCsv	(行なし)	(行なし)	(行なし)	
+B3-rec8-nonl-x4	Import-ProbedCsv -DetectionLineCount 1	(行なし)	(行なし)	(行なし)	
+B3-rec16-crlf-x3	Resolve-Encoding	20127 / us-ascii / CrLf	1200 / utf-16 / CrLf	20127 / us-ascii / CrLf	1:変化 1≠2
+B3-rec16-crlf-x3	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / CrLf	1200 / utf-16 / CrLf	20127 / us-ascii / CrLf	1:変化 1≠2
+B3-rec16-crlf-x3	Get-ProbedContent	3 行; 1 行目: 49 44 30 30 31 00 00 00 00 00 00 00 00 00 00 00	1 行; 1 行目: 4449 3030 31 00 00 00 00 00 0A0D 6C41 6369 65 00 00 00 00 00 0A0D 42 00 00 00 00 00 00 00 0A0D	3 行; 1 行目: 49 44 30 30 31 00 00 00 00 00 00 00 00 00 00 00	1:変化 1≠2
+B3-rec16-crlf-x3	Import-ProbedCsv	2 行; 列名: [49 44 30 30 31 00 00 00 00 00 00 00 00 00 00 00]; 1 行目: [41 6C 69 63 65 00 00 00 00 00 00 00 00 00 00 00]	(行なし)	2 行; 列名: [49 44 30 30 31 00 00 00 00 00 00 00 00 00 00 00]; 1 行目: [41 6C 69 63 65 00 00 00 00 00 00 00 00 00 00 00]	1:変化 1≠2
+B3-rec16-crlf-x3	Import-ProbedCsv -DetectionLineCount 1	2 行; 列名: [49 44 30 30 31 00 00 00 00 00 00 00 00 00 00 00]; 1 行目: [41 6C 69 63 65 00 00 00 00 00 00 00 00 00 00 00]	(行なし)	2 行; 列名: [49 44 30 30 31 00 00 00 00 00 00 00 00 00 00 00]; 1 行目: [41 6C 69 63 65 00 00 00 00 00 00 00 00 00 00 00]	1:変化 1≠2
+B6-zero2	Resolve-Encoding	20127 / us-ascii / None	20127 / us-ascii / None	20127 / us-ascii / None	
+B6-zero2	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / None	20127 / us-ascii / None	20127 / us-ascii / None	
+B6-zero2	Get-ProbedContent	1 行; 1 行目: 00 00	1 行; 1 行目: 00 00	1 行; 1 行目: 00 00	
+B6-zero2	Import-ProbedCsv	(行なし)	(行なし)	(行なし)	
+B6-zero2	Import-ProbedCsv -DetectionLineCount 1	(行なし)	(行なし)	(行なし)	
+B6-zero4	Resolve-Encoding	20127 / us-ascii / None	20127 / us-ascii / None	20127 / us-ascii / None	
+B6-zero4	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / None	20127 / us-ascii / None	20127 / us-ascii / None	
+B6-zero4	Get-ProbedContent	1 行; 1 行目: 00 00 00 00	1 行; 1 行目: 00 00 00 00	1 行; 1 行目: 00 00 00 00	
+B6-zero4	Import-ProbedCsv	(行なし)	(行なし)	(行なし)	
+B6-zero4	Import-ProbedCsv -DetectionLineCount 1	(行なし)	(行なし)	(行なし)	
+A6-ue-u16le	Resolve-Encoding	20127 / us-ascii / LfAndCrLf	1200 / utf-16 / LfAndCrLf	20127 / us-ascii / LfAndCrLf	1:変化 1≠2
+A6-ue-u16le	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / LfAndCrLf	1200 / utf-16 / LfAndCrLf	20127 / us-ascii / LfAndCrLf	1:変化 1≠2
+A6-ue-u16le	Get-ProbedContent	4 行; 1 行目: 41 00 2C 00	1 行; 1 行目: 41 2C 4E0A	4 行; 1 行目: 41 00 2C 00	1:変化 1≠2
+A6-ue-u16le	Import-ProbedCsv	3 行; 列名: [41 00] [00]; 1 行目: [4E] []	(行なし)	3 行; 列名: [41 00] [00]; 1 行目: [4E] []	1:変化 1≠2
+A6-ue-u16le	Import-ProbedCsv -DetectionLineCount 1	(行なし)	(行なし)	(行なし)	
+B9-4100	Resolve-Encoding	20127 / us-ascii / None	1200 / utf-16 / None	1200 / utf-16 / None	1:変化 2:変化
+B9-4100	Resolve-Encoding -DetectionLineCount 1	20127 / us-ascii / None	1200 / utf-16 / None	1200 / utf-16 / None	1:変化 2:変化
+B9-4100	Get-ProbedContent	1 行; 1 行目: 41 00	1 行; 1 行目: 41	1 行; 1 行目: 41	1:変化 2:変化
+B9-4100	Import-ProbedCsv	(行なし)	(行なし)	(行なし)	
+B9-4100	Import-ProbedCsv -DetectionLineCount 1	(行なし)	(行なし)	(行なし)	

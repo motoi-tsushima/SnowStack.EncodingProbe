@@ -125,5 +125,115 @@
 
         /// <summary>ディレクトリを変換対象から除いた（詳細メッセージ）</summary>
         SkippedDirectory,
+
+        // ---- 1.3.0: -DetectionLineCount と CSV ----
+
+        /// <summary>先頭 N 行の切り出しが、判定できる大きさを超えた</summary>
+        DetectionLinesTooLarge,
+
+        /// <summary>先頭 N 行で判定した文字エンコーディングで、ファイル全体を復号できなかった</summary>
+        DetectionVerificationFailed,
+
+        /// <summary>CSV のヘッダーに同じ列名が複数ある</summary>
+        CsvHeaderAlreadyPresent,
+
+        /// <summary>CSV のヘッダーに空の列名があり、既定の名前で補った（警告）</summary>
+        CsvUnspecifiedHeader,
+
+        /// <summary>追記するオブジェクトに、追記先の列に当たるプロパティが無い</summary>
+        CsvAppendMismatchedPropertyName,
+
+        /// <summary>全体の判定の上限を超えるファイル（-DetectionLineCount を案内する。Import-ProbedCsv / Export-ProbedCsv）</summary>
+        FileTooLargeToDetectUseLineCount,
+
+        /// <summary>Import-ProbedCsv の解析の途中で、不正なバイト列が見つかった</summary>
+        InvalidBytesDuringImport,
+
+        /// <summary>Export-ProbedCsv で -QuoteFields と -UseQuotes が同時に指定された</summary>
+        CannotSpecifyQuoteFieldsAndUseQuotes,
+
+        /// <summary>Export-ProbedCsv で -Path と -LiteralPath が両方指定された、またはどちらも指定されなかった</summary>
+        CannotSpecifyPathAndLiteralPath,
+
+        // ---- 1.3.0 第五次 ----
+
+        /// <summary>書き込み系のコマンドで、表現できない文字があったため書き込まなかった（ファイルは変更していない）</summary>
+        UnrepresentableCharacterOnWrite,
+
+        /// <summary>us-ascii を UTF-8 に読み替えて全体を検証したら、ISO-2022 のエスケープシーケンスがあった</summary>
+        DetectionVerificationIso2022Escape,
+
+        /// <summary>Export-ProbedCsv -Append -Force で、追記先のヘッダーに空の列名がある</summary>
+        CsvAppendEmptyPropertyName,
+
+        // ---- 1.3.0 第五次の後半 ----
+
+        /// <summary>Set-ProbedContent / Add-ProbedContent の -Path のワイルドカードが、どのファイルにも一致しなかった（書き込まなかった）</summary>
+        WildcardMatchedNoFileForWrite,
+
+        /// <summary>代替データストリーム（a.txt:alt など）が指定された</summary>
+        AlternateDataStreamNotSupported,
+
+        /// <summary>Set-ProbedContent の書き込み先が、リンク先の存在しないシンボリックリンクだった</summary>
+        LinkTargetNotFound,
+
+        /// <summary>写してから直接書く方法で失敗し、写しから書き戻せなかった（写しを一時フォルダーに残した）</summary>
+        RestoreFromBackupFailed,
+
+        // ---- 1.3.0 第六次 B ----
+
+        /// <summary>書き込む権限が無い（ファイルの ACL・フォルダーの権限など。読み取り専用属性は FileIsReadOnly）</summary>
+        WriteAccessDenied,
+
+        // ---- 1.3.0 第六次 B（BUG-0026） ----
+
+        /// <summary>ほかのプログラムが共有を許さずに開いているため、読み込めなかった</summary>
+        FileInUseForRead,
+
+        /// <summary>読み込めなかった（共有違反・権限以外の理由。{1} は HRESULT）</summary>
+        FileReadFailed,
+
+        /// <summary>読み込む権限が無い</summary>
+        ReadAccessDenied,
+
+        /// <summary>ほかのプログラムが共有を許さずに開いているため、書き込めなかった</summary>
+        FileInUseForWrite,
+
+        // ---- 1.3.0 第六次 B（BUG-0030） ----
+
+        /// <summary>ファイル全体を読んで判定するためのメモリが足りなかった</summary>
+        NotEnoughMemoryToDetect,
+
+        /// <summary>Convert-ProbedContent でファイル全体を読んで変換するためのメモリが足りなかった</summary>
+        NotEnoughMemoryToConvert,
+
+        /// <summary>Convert-ProbedContent で変換できる大きさを超えている</summary>
+        FileTooLargeToConvert,
+
+        // ---- 1.3.0 第六次 B（BUG-0028） ----
+
+        /// <summary>読み込もうとしたファイルに、同じパイプラインで書き込み中だった（読み込み側。書き込みは取り消した）</summary>
+        SamePathReadWhileWriting,
+
+        /// <summary>書き込み中のファイルを同じパイプラインで読み込もうとしたので、書き込みを取り消した（書き込み側）</summary>
+        SamePathWriteCancelled,
+
+        // ---- 1.3.0 第六次 C ----
+
+        /// <summary>文字エンコーディングとして PSCustomObject（逆シリアル化した判定結果など）が渡された（1.3.0 第六次 C。BUG-0039）</summary>
+        EncodingObjectNotUsable,
+
+        // ---- 1.3.0 第六次 C（列名の重複の場所） ----
+
+        /// <summary>ファイルのヘッダーで列名が重複している（パスを示す。1.3.0 第六次 C。BUG-0045 (a)）</summary>
+        CsvHeaderAlreadyPresentInFile,
+
+        /// <summary>-Header の値で列名が重複している（読まなかったファイルのパスを示す。1.3.0 第六次 C。BUG-0045 (a)）</summary>
+        CsvHeaderAlreadyPresentInParameter,
+
+        // ---- 1.3.0 第六次 C（書き込みの失敗） ----
+
+        /// <summary>共有違反以外の理由（ディスクの空き不足など）で書き込めなかった（エラー コードを示す。1.3.0 第六次 C）</summary>
+        FileWriteFailed,
     }
 }

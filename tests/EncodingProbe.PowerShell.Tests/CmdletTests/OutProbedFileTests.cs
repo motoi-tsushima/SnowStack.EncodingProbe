@@ -341,10 +341,11 @@ public class OutProbedFileTests : IClassFixture<ProbedCommandRunspaceFixture>
     }
 
     /// <summary>
-    /// 整合性検査: 不一致の行の手前で終了エラーになり、それまでの行は追記先のエンコーディングで残ること。
+    /// 整合性検査: 不一致の行で終了エラーになり、それまでに書いた行も取り消して、追記の前の内容に戻ること
+    /// （1.3.0 第五次の後半。第五次の前半までは、それまでの行を残していた）。
     /// </summary>
     [Fact]
-    public void Append_Mismatch_StopsBeforeTheLineAndKeepsEarlierLines()
+    public void Append_Mismatch_StopsAndRestoresTheFile()
     {
         using var directory = new TemporaryDirectory();
         string path = directory.Write("out.txt", new byte[] { 0x82, 0xA0, 0x0A });
@@ -352,7 +353,7 @@ public class OutProbedFileTests : IClassFixture<ProbedCommandRunspaceFixture>
         Assert.Equal(
             "EncodingChangeOnAppend",
             Run($"'x', 'い', 'y' | Out-ProbedFile -LiteralPath '{path}' utf8NoBOM -Append -Culture ja-JP -LineBreak Lf"));
-        Assert.Equal(new byte[] { 0x82, 0xA0, 0x0A, 0x78, 0x0A }, File.ReadAllBytes(path));
+        Assert.Equal(new byte[] { 0x82, 0xA0, 0x0A }, File.ReadAllBytes(path));
     }
 
     /// <summary>

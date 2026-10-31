@@ -10,13 +10,15 @@ public sealed record LocaleInformation
 
     /// <summary>
     /// システムのANSIコードページ(Windows PowerShellの-Encoding "Default"相当)。
-    /// 非Windows環境や取得不可の場合は -1。
+    /// Windows ではシステムのロケールの値（GetACP）で、スレッドのカルチャーには従わない（1.3.0 で改めた）。
+    /// 非Windows環境では現在のカルチャーの TextInfo.ANSICodePage。取得できない場合は -1。
     /// </summary>
     public int AnsiCodePage { get; internal set; } = -1;
 
     /// <summary>
     /// システムのOEMコードページ(Windows PowerShellの-Encoding "Oem"相当)。
-    /// 非Windows環境や取得不可の場合は -1。
+    /// Windows ではシステムのロケールの値（GetOEMCP）で、スレッドのカルチャーには従わない（1.3.0 で改めた）。
+    /// 非Windows環境では現在のカルチャーの TextInfo.OEMCodePage。取得できない場合は -1。
     /// </summary>
     public int OemCodePage { get; internal set; } = -1;
 
