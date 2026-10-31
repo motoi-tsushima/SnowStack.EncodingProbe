@@ -5,11 +5,19 @@ SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更を�
 
 ## 1.3.0
 
+2026年10月31日にリリースしました（クラスライブラリ・PowerShell モジュールとも）。
+
 PowerShell モジュールに CSV の読み書きコマンド `Import-ProbedCsv` / `Export-ProbedCsv` を追加し、
 `Resolve-Encoding` に `-DetectionLineCount` を追加しました。
 
 クラスライブラリ（NuGet パッケージ `SnowStack.EncodingProbe`）は、判定処理の不具合を 3 件直し、カルチャー名の検証・OS の説明・ANSI / OEM コードページの挙動を改めて、1.3.0 としました（公開 API の変更はありません）。
 モジュール 1.3.0 はクラスライブラリ 1.3.0 を同梱します。
+
+ブログの解説記事:
+
+- [SnowStack.EncodingProbe 1.3.0 解説](https://snow-stack.net/encodingprobe_1_3_0/)
+- [SnowStack.EncodingProbe NuGet Package 解説](https://snow-stack.net/encodingprobe_guide/)
+- [SnowStack.EncodingProbe.PowerShell 解説](https://snow-stack.net/encodingprobe_powershell_guide/)
 
 仕様は `docs/EncodingProbe-1.3.0-仕様書.md` と `docs/EncodingProbe-1.3.0-仕様書-追補-NUL入りの入力の判定.md`（クラスライブラリの修正）、
 根拠となった標準の CSV コマンドの実測は `docs/EncodingProbe-1.3.0-調査-CSVコマンド挙動の実測.md`、

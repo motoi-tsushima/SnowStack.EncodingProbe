@@ -49,6 +49,10 @@ UTF.Unknown は欧米などのシングルバイト文字エンコーディン�
 
 ## version 1.3.0 の変更点
 
+1.3.0 の変更点は、ブログの以下の記事で解説しています。
+
+[SnowStack.EncodingProbe 1.3.0 解説](https://snow-stack.net/encodingprobe_1_3_0/)
+
 ### BOM 無しの UTF-16 / UTF-32 の判定の修正（クラスライブラリ・PowerShell モジュール共通）
 
 クラスライブラリ（NuGet パッケージ）を 1.3.0 とし、判定処理の不具合を 2 件（この節と次の節）直し、カルチャー名の検証を改めました（下の「カルチャー名の検証」）。公開 API は変えていません。
@@ -354,6 +358,8 @@ NuGet.org より SnowStack.EncodingProbe を公開しました。
 
 2026年9月30日に 1.2.0 をリリースしました（クラスライブラリ・PowerShell モジュールとも）。
 
+2026年10月31日に 1.3.0 をリリースしました（クラスライブラリ・PowerShell モジュールとも）。
+
 以下の記事で使い方の解説を行っています。
 
 [SnowStack.EncodingProbe NuGet Package 解説](https://snow-stack.net/encodingprobe_guide/)
@@ -361,6 +367,10 @@ NuGet.org より SnowStack.EncodingProbe を公開しました。
 また、PowerShell コマンドレットの解説は同ブログの以下の記事で解説しています。
 
 [SnowStack.EncodingProbe.PowerShell 解説](https://snow-stack.net/encodingprobe_powershell_guide/)
+
+1.3.0 の変更点は、同ブログの以下の記事で解説しています。
+
+[SnowStack.EncodingProbe 1.3.0 解説](https://snow-stack.net/encodingprobe_1_3_0/)
 
 
 
