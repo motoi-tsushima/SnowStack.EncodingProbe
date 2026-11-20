@@ -3,6 +3,23 @@
 このファイルは SnowStack.EncodingProbe（NuGet パッケージ）と
 SnowStack.EncodingProbe.PowerShell（PowerShell モジュール）の変更をまとめたものです。
 
+## 1.3.1
+
+未リリースです（クラスライブラリだけ。PowerShell モジュールは 1.3.0 のままです）。
+
+既知の脆弱性がある NuGet パッケージを修正版に上げました。ライブラリのコード・判定結果・公開 API の変更はありません。
+経緯と確認の結果は `docs/EncodingProbe-1.3.1-修正記録-脆弱性のあるNuGetパッケージの更新.md` にあります。
+
+### 依存パッケージの更新
+
+- **クラスライブラリ:** ビルド時にだけ使う `Microsoft.SourceLink.GitHub` を 10.0.301 から 10.0.404 に上げました。
+  依存する `Microsoft.Build.Tasks.Git` の情報漏えいの脆弱性（CVE-2026-62900 / GHSA-23fw-v26w-5fgq）への対応です。
+  SourceLink は NuGet パッケージの依存に含まれず（`PrivateAssets`）、DLL の動作には関わりません。
+  公開済みのシンボルパッケージ（`.snupkg`）の SourceLink 情報に、認証情報などが入っていないことを確かめました
+- **テストプロジェクト（配布物には含まれません）:** `Microsoft.PowerShell.SDK` を 7.6.4 から 7.6.10 に、
+  `System.Security.Cryptography.Xml` を 10.0.10 から 10.0.15 に上げました（`System.Security.Cryptography.Pkcs` も 10.0.15 になります）。
+  署名付き XML / CMS の処理での DoS の脆弱性（CVE-2026-96958・CVE-2026-96959・CVE-2026-96960・CVE-2026-84008・CVE-2026-70162）への対応です
+
 ## 1.3.0
 
 2026年10月31日にリリースしました（クラスライブラリ・PowerShell モジュールとも）。
